@@ -1,0 +1,39 @@
+rmoriedata -- Bundled open-data fixtures for rmorie
+Copyright (C) 2026 Vansh Singh Ruhela <hadesllm@proton.me>
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU Affero General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU Affero General Public License for more details.
+
+You should have received a copy of the GNU Affero General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+The full AGPL-3.0-or-later text is in the LICENSE file at this
+repository's root.
+
+================================================================================
+Contact
+================================================================================
+
+Author:       Vansh Singh Ruhela
+Email:        hadesllm@proton.me
+ORCID:        https://orcid.org/0009-0004-1750-3592
+GitHub:       https://github.com/rootcoder007/rmoriedata
+Issues:       https://github.com/rootcoder007/rmoriedata/issues
+
+================================================================================
+Data attribution
+================================================================================
+
+This package bundles snapshots of publicly-available open data from
+Canadian and US government data portals. The wrapper code in this package
+is AGPL-3.0-or-later; the bundled data files themselves are under each
+portal's own open-data license (Open Government Licence, Creative Commons
+attribution variants, public domain), as documented in per-file headers
+inside inst/extdata/.
