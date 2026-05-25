@@ -1,0 +1,25 @@
+Package: rmoriedata
+Type: Package
+Title: Bundled Datasets for the rmorie Package
+Version: 0.1.0
+Authors@R: c(
+  person(
+    given = "Vansh Singh",
+    family = "Ruhela",
+    email = "hadesllm@proton.me",
+    role = c("aut", "cre"),
+    comment = c(ORCID = "0009-0004-1750-3592")
+  )
+ )
+Description: Bundled open data fixtures used by the 'rmorie' package
+  for examples, vignettes, and tests. Split out so 'rmorie' itself
+  stays within CRAN's package-size soft cap. Contains snapshots of
+  publicly-available datasets from CKAN/Socrata/Opendatasoft portals
+  (Chicago, NYC, Toronto, Vancouver, etc.), Statistics Canada CCJS
+  tables, and synthetic fixtures for unit tests.
+License: AGPL-3
+Encoding: UTF-8
+Depends:
+  R (>= 4.3.0)
+URL: https://github.com/rootcoder007/rmoriedata
+BugReports: https://github.com/rootcoder007/rmoriedata/issues
