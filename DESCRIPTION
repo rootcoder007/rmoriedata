@@ -17,7 +17,7 @@ Description: Bundled open data fixtures used by the 'rmorie' package
   publicly-available datasets from CKAN/Socrata/Opendatasoft portals
   (Chicago, NYC, Toronto, Vancouver, etc.), Statistics Canada CCJS
   tables, and synthetic fixtures for unit tests.
-License: AGPL-3
+License: AGPL (>= 3)
 Encoding: UTF-8
 Depends:
   R (>= 4.3.0)
