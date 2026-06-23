@@ -20,7 +20,7 @@ explains how it is enforced.
 
 ## Reporting a vulnerability
 
-Email **<hadesllm@proton.me>** with subject `[SECURITY] rmoriedata` —
+Email **<vsruhela@proton.me>** with subject `[SECURITY] rmoriedata` —
 **do not** open a public GitHub Issue for security reports. GitHub's
 [private vulnerability reporting](https://github.com/rootcoder007/rmoriedata/security/advisories/new)
 will be enabled at first public push. PGP preferred:
@@ -248,4 +248,4 @@ ITSG-33: Treasury Board of Canada IT Security Guidance. NIST 800-53 Rev 5 modera
 ---
 
 Maintainer: **Vansh Singh Ruhela** ([rootcoder007](https://github.com/rootcoder007))
-&nbsp;·&nbsp; <hadesllm@proton.me>
+&nbsp;·&nbsp; <vsruhela@proton.me>
