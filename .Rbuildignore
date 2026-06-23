@@ -4,3 +4,9 @@
 ^\.gitignore$
 ^README\.md$
 ^LICENSE\.md$
+^data-raw$
+^\.serena$
+^\.pre-commit-config\.yaml$
+^\.DS_Store$
+^Dockerfile$
+^\.dockerignore$
