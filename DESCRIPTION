@@ -28,10 +28,13 @@ Depends:
 Imports:
   stats
 Suggests:
-  testthat (>= 3.0.0)
+  testthat (>= 3.0.0),
+  DBI,
+  RSQLite
 Config/testthat/edition: 3
 URL: https://github.com/rootcoder007/rmoriedata
 BugReports: https://github.com/rootcoder007/rmoriedata/issues
 biocViews:
   Software,
   ExperimentData
+RoxygenNote: 7.3.3
