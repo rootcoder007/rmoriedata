@@ -4,3 +4,6 @@
 .Ruserdata
 *.Rcheck
 *.tar.gz
+
+# local Serena scope — never commit
+.serena/
