@@ -10,3 +10,6 @@
 ^\.DS_Store$
 ^Dockerfile$
 ^\.dockerignore$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
