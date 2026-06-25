@@ -3,9 +3,10 @@
 # only base-R imports), so the build is small and fast.
 FROM rocker/r-ver:4.4.1
 
-# DBI + RSQLite power the data loaders (binary install via Posit PM).
-RUN R -e "options(repos = c(CRAN = 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); \
-          install.packages(c('DBI','RSQLite'))"
+# DBI + RSQLite power the data loaders; rmoriebricklayer (from r-universe)
+# is the shared provenance layer rmoriedata now imports.
+RUN R -e "options(repos = c('https://rootcoder007.r-universe.dev', 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); \
+          install.packages(c('DBI','RSQLite','rmoriebricklayer'))"
 
 WORKDIR /pkg
 COPY . /pkg
