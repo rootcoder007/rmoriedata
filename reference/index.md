@@ -6,6 +6,8 @@
   : Cell suppression with optional complementary suppression
 - [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
   : Catalogue of bundled datasets
+- [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
+  : SHA256 checksums of bundled rmoriedata files
 - [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
   : Data dictionary (JSON) for a dataset, if one is bundled
 - [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
