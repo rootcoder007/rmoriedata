@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
 Title: Bundled Datasets for the rmorie Package
-Version: 0.1.1
+Version: 0.2.0
 Authors@R: c(
   person(
     given = "Vansh Singh",
@@ -27,6 +27,8 @@ Depends:
   R (>= 4.3.0)
 Imports:
   stats,
+  rmoriebricklayer (>= 0.2.0)
+LinkingTo:
   rmoriebricklayer
 Suggests:
   testthat (>= 3.0.0),
@@ -41,3 +43,4 @@ biocViews:
   Software,
   ExperimentData
 Config/roxygen2/version: 8.0.0
+RoxygenNote: 7.3.3
