@@ -21,7 +21,7 @@ Description: Bundled open data fixtures used by the 'rmorie' package
   without re-identification risk: Laplace and Gaussian differential
   privacy mechanisms and k-anonymity, l-diversity, and cell
   suppression verifiers.
-License: AGPL (>= 3)
+License: AGPL (>= 3) + file LICENSE
 Encoding: UTF-8
 Depends:
   R (>= 4.3.0)
