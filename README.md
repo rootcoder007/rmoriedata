@@ -1,5 +1,7 @@
 # rmoriedata
 
+[![r-universe](https://rootcoder007.r-universe.dev/badges/rmoriedata)](https://rootcoder007.r-universe.dev/rmoriedata)
+
 Bundled open-data fixtures for [rmorie](https://github.com/rootcoder007/rmorie).
 This is a **data-only** companion package — no functions, just `inst/extdata/`
 files used by `rmorie`'s examples, vignettes, and tests.
