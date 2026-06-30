@@ -5,5 +5,15 @@
 *.Rcheck
 *.tar.gz
 
+# Compiled C/C++ objects (src/ is source-only)
+*.o
+*.so
+*.dll
+*.a
+src/symbols.rds
+
+# OS cruft
+.DS_Store
+
 # local Serena scope — never commit
 .serena/

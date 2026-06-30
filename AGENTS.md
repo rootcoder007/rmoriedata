@@ -3,11 +3,24 @@
 Behavioural guidance for AI coding agents working in this repository.
 `CLAUDE.md` and `GEMINI.md` are thin pointers (`@AGENTS.md`).
 
-**rmoriedata** is a data-only companion R package for [rmorie] — it
-ships bundled open-data fixtures and nothing else. No exported
-functions, no business logic, no analyses.
+**rmoriedata** is the data + light-helper companion R package for
+[rmorie]. Its core job is bundled open-data fixtures, but it has grown a
+small, deliberate set of analyst-facing helpers:
+
+- **Differential privacy + re-identification risk** — `morie_dp_*`,
+  `morie_k_anonymity_verify`, `morie_l_diversity_verify`,
+  `morie_cell_suppress` (base-R only).
+- **Shared C backend** — `morie_core_sha256()` / `morie_core_mean()`
+  delegate to the ecosystem's compiled core via
+  `LinkingTo: rmoriebricklayer` (one shared copy of morie's arithmetic;
+  see [rmoriebricklayer]). `src/` exists for this and must stay a thin
+  link to the core — do NOT reimplement numeric kernels here.
+
+Keep additions small and fixture-adjacent; heavy analysis belongs in
+rmorie, not here.
 
 [rmorie]: https://github.com/rootcoder007/rmorie
+[rmoriebricklayer]: https://github.com/rootcoder007/rmorie-bricklayer
 
 ## License — AGPL-3.0-or-later
 

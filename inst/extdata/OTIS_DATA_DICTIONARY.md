@@ -1,5 +1,14 @@
 # Data on Inmates
 
+> **Dataset:** "Data on Inmates in Ontario" — Ontario Ministry of the Solicitor General.
+> **Source system:** Offender Tracking Information System (OTIS) — the internal system the
+> public detailed releases (segregation, restrictive confinement, deaths in custody) are
+> extracted from; raw OTIS is not public.
+> **Licence:** Open Government Licence – Ontario (OGL-Ontario).
+> **Catalogue:** https://data.ontario.ca/dataset/data-on-inmates-in-ontario
+> Released following the Jahn v. Ontario (2020) settlement. (The `-SG` suffix in
+> `UniqueIndividual_ID` reflects the Solicitor General source.)
+
 ## Information on Datasets
 
 ### 1. Segregation – Detailed Dataset 
