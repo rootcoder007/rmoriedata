@@ -2,8 +2,8 @@
 
 [![r-universe](https://rootcoder007.r-universe.dev/badges/rmoriedata)](https://rootcoder007.r-universe.dev/rmoriedata)
 
-Bundled open-data fixtures for [rmorie](https://github.com/rootcoder007/rmorie).
-This is a **data-only** companion package — no functions, just `inst/extdata/`
+Bundled open-data fixtures for [rmorie](https://github.com/rootcoder007/rmorie),
+plus a small set of base-R helpers. Its core job remains the `inst/extdata/`
 files used by `rmorie`'s examples, vignettes, and tests.
 
 ## Install
@@ -15,6 +15,18 @@ pak::pkg_install("rootcoder007/rmoriedata")
 # remotes
 remotes::install_github("rootcoder007/rmoriedata")
 ```
+
+## Functions
+
+A small, deliberate set of base-R helpers (the bulk of the package is still data):
+
+- **Data access** — `morie_data_catalog()`, `morie_data_load()`,
+  `morie_data_dictionary()`, `morie_data_checksums()`.
+- **Differential privacy + re-identification risk** — `morie_dp_laplace_count()`,
+  `morie_dp_gaussian_mean()`, `morie_dp_laplace_histogram()`,
+  `morie_cell_suppress()`, `morie_k_anonymity_verify()`, `morie_l_diversity_verify()`.
+- **Shared compiled core** — `morie_core_sha256()` and `morie_core_mean()` delegate
+  to the family's C core via `LinkingTo: rmoriebricklayer` (one source of truth).
 
 ## Why a separate package?
 
