@@ -46,8 +46,11 @@ jobs:
           extra-packages: any::rcmdcheck
           # rmoriebricklayer is not on CRAN; it lives on r-universe. Add it to
           # the dependency-resolution repos so pak can satisfy the hard Import
-          # rmoriebricklayer (>= 0.2.0) on every platform (not just from cache).
+          # rmoriebricklayer (>= 0.2.0) on every platform.
           extra-repositories: https://rootcoder007.r-universe.dev
+          # Bust the stale dependency cache that pinned rmoriebricklayer 0.1.0
+          # (restored over the pre-installed 0.2.0, causing "unsuitable version").
+          cache-version: 2
           needs: check
 
       - uses: r-lib/actions/check-r-package@2e3959d284a9ed60162f28a0f9891d1150f47f72 # v2
