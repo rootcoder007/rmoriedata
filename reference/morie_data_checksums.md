@@ -23,14 +23,14 @@ and `sha256`.
 ``` r
 head(morie_data_checksums())
 #>                                              file bytes
-#> 1                         OTIS_DATA_DICTIONARY.md 22607
+#> 1                         OTIS_DATA_DICTIONARY.md 23210
 #> 2 useofforce_agrregatesummarybyyear_2020-2022.csv   289
 #> 3        useofforce_detaileddataset_2020-2022.csv  6830
 #> 4                      uof_individual_records.csv  5221
 #> 5                            uof_main_records.csv  1446
 #> 6                     uof_probe_cycle_records.csv   220
 #>                                                             sha256
-#> 1 5764a7d3696dbd88f7c18cd2863a482f597e0692afca503bfc93c608202548e9
+#> 1 bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00
 #> 2 f3051269a22394b6930ba1961e7b6ed5e4454d483db1ea7cd930f1541330dfce
 #> 3 4fa3b0ada472f2386ffc4cb81e438e68a57818e476b12524370cfab25ae1084a
 #> 4 6d3a5986e39f4751901a1a2adb9e25be836266e1900bd41c8611fec7218187f4

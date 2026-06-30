@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,7 +35,12 @@
 <div id="agentsmd" class="section level1">
 
 <p>Behavioural guidance for AI coding agents working in this repository. <code>CLAUDE.md</code> and <code>GEMINI.md</code> are thin pointers (<code>@AGENTS.md</code>).</p>
-<p><strong>rmoriedata</strong> is a data-only companion R package for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a> — it ships bundled open-data fixtures and nothing else. No exported functions, no business logic, no analyses.</p>
+<p><strong>rmoriedata</strong> is the data + light-helper companion R package for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>. Its core job is bundled open-data fixtures, but it has grown a small, deliberate set of analyst-facing helpers:</p>
+<ul><li>
+<strong>Differential privacy + re-identification risk</strong> — <code>morie_dp_*</code>, <code>morie_k_anonymity_verify</code>, <code>morie_l_diversity_verify</code>, <code>morie_cell_suppress</code> (base-R only).</li>
+<li>
+<strong>Shared C backend</strong> — <code><a href="reference/morie_core.html">morie_core_sha256()</a></code> / <code><a href="reference/morie_core.html">morie_core_mean()</a></code> delegate to the ecosystem’s compiled core via <code>LinkingTo: rmoriebricklayer</code> (one shared copy of morie’s arithmetic; see <a href="https://github.com/rootcoder007/rmorie-bricklayer" class="external-link">rmoriebricklayer</a>). <code>src/</code> exists for this and must stay a thin link to the core — do NOT reimplement numeric kernels here.</li>
+</ul><p>Keep additions small and fixture-adjacent; heavy analysis belongs in rmorie, not here.</p>
 <div class="section level2">
 <h2 id="license--agpl-30-or-later">License — AGPL-3.0-or-later<a class="anchor" aria-label="anchor" href="#license--agpl-30-or-later"></a></h2>
 <p>Strong copyleft, matching morie + rmorie. See those repos’ AGENTS.md for the full rationale. Short version:</p>

@@ -4,6 +4,9 @@
 
 - [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
   : Cell suppression with optional complementary suppression
+- [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  : Shared C-core helpers (rmorie ecosystem backend)
 - [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
   : Catalogue of bundled datasets
 - [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)

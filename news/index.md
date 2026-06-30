@@ -2,6 +2,22 @@
 
 ## rmoriedata (development version)
 
+### rmoriedata 0.2.0
+
+#### Connected to the shared rmorie C core
+
+- rmoriedata now declares `LinkingTo: rmoriebricklayer (>= 0.2.0)` and
+  links the ecosystem’s shared compiled core instead of duplicating any
+  C code.
+- New exports
+  [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  and
+  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  call the shared kernels directly (fast data-integrity hashing +
+  summaries for the bundled fixtures, with no dependency on rmorie).
+  Tests assert they are byte-identical to `rmoriebricklayer`’s own
+  `core_sha256()` / `core_mean()`.
+
 ### rmoriedata 0.1.1
 
 #### New exported helpers — differential privacy + re-identification risk
