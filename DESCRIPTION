@@ -27,7 +27,7 @@ Depends:
   R (>= 4.3.0)
 Imports:
   stats,
-  rmoriebricklayer (>= 0.2.0)
+  rmoriebricklayer (>= 0.2.1)
 LinkingTo:
   rmoriebricklayer
 Suggests:
