@@ -1,43 +1,47 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 #
-# Loader API over the bundled SQLite store (inst/extdata/rmoriedata.sqlite).
-# The store consolidates every bundled tabular fixture into one queryable
-# file plus a `_catalog` and `_dictionaries` table. Built by data-raw/build_db.R.
+# Loader API over the bundled Parquet store (inst/extdata/parquet/).
+# Migrated from SQLite -> Parquet on 2026-07-01 so the package no longer needs
+# RSQLite (whose vendored boost is a slow/timeout-prone source compile on
+# r-universe Windows). Parquet is cross-language (R / Python / DuckDB / Arrow).
+# Each table is one <slug>.parquet, plus `_catalog.parquet` and
+# `_dictionaries.parquet`. Rebuilt by data-raw/migrate_sqlite_to_parquet.R.
 
-.rmoriedata_db_path <- function() {
-  p <- system.file("extdata", "rmoriedata.sqlite", package = "rmoriedata")
-  if (!nzchar(p))
-    stop("rmoriedata.sqlite not found; reinstall rmoriedata.", call. = FALSE)
+.rmoriedata_parquet_dir <- function() {
+  p <- system.file("extdata", "parquet", package = "rmoriedata")
+  if (!nzchar(p) || !dir.exists(p)) {
+    stop("rmoriedata parquet store not found; reinstall rmoriedata.",
+      call. = FALSE)
+  }
   p
 }
 
-.rmoriedata_need_db <- function() {
-  if (!requireNamespace("DBI", quietly = TRUE) ||
-      !requireNamespace("RSQLite", quietly = TRUE))
-    stop("This function needs the 'DBI' and 'RSQLite' packages. ",
-         "Install with install.packages(c(\"DBI\", \"RSQLite\")).",
-         call. = FALSE)
+.rmoriedata_read <- function(name) {
+  f <- file.path(.rmoriedata_parquet_dir(), paste0(name, ".parquet"))
+  if (!file.exists(f)) {
+    return(NULL)
+  }
+  as.data.frame(nanoparquet::read_parquet(f))
 }
 
 #' Catalogue of bundled datasets
 #'
-#' Lists every dataset in the bundled SQLite store, including row/column
+#' Lists every dataset in the bundled Parquet store, including row/column
 #' counts and the original source path each table was built from.
 #'
 #' @return A `data.frame` with columns `slug`, `source_path`, `kind`,
 #'   `n_rows`, `n_cols`.
 #' @seealso [morie_data_load()], [morie_data_dictionary()]
 #' @examples
-#' if (requireNamespace("RSQLite", quietly = TRUE)) {
-#'   cat <- morie_data_catalog()
-#'   head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
-#' }
+#' cat <- morie_data_catalog()
+#' head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
 #' @export
 morie_data_catalog <- function() {
-  .rmoriedata_need_db()
-  con <- DBI::dbConnect(RSQLite::SQLite(), .rmoriedata_db_path())
-  on.exit(DBI::dbDisconnect(con))
-  DBI::dbReadTable(con, "_catalog")
+  cat <- .rmoriedata_read("_catalog")
+  if (is.null(cat)) {
+    stop("rmoriedata catalog not found; reinstall rmoriedata.", call. = FALSE)
+  }
+  cat
 }
 
 #' Load a bundled dataset by slug
@@ -46,20 +50,16 @@ morie_data_catalog <- function() {
 #' @return A `data.frame`.
 #' @seealso [morie_data_catalog()]
 #' @examples
-#' if (requireNamespace("RSQLite", quietly = TRUE)) {
-#'   df <- morie_data_load("chicago_iucr_codes")
-#'   str(df)
-#' }
+#' df <- morie_data_load("chicago_iucr_codes")
+#' str(df)
 #' @export
 morie_data_load <- function(slug) {
-  .rmoriedata_need_db()
-  con <- DBI::dbConnect(RSQLite::SQLite(), .rmoriedata_db_path())
-  on.exit(DBI::dbDisconnect(con))
-  tables <- DBI::dbListTables(con)
-  if (!slug %in% tables)
+  f <- file.path(.rmoriedata_parquet_dir(), paste0(slug, ".parquet"))
+  if (!file.exists(f)) {
     stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
-                 slug), call. = FALSE)
-  DBI::dbReadTable(con, slug)
+      slug), call. = FALSE)
+  }
+  as.data.frame(nanoparquet::read_parquet(f))
 }
 
 #' Data dictionary (JSON) for a dataset, if one is bundled
@@ -69,18 +69,17 @@ morie_data_load <- function(slug) {
 #' @return A character scalar of JSON, or `NULL` if no dictionary exists.
 #' @seealso [morie_data_catalog()]
 #' @examples
-#' if (requireNamespace("RSQLite", quietly = TRUE)) {
-#'   dicts <- morie_data_catalog()
-#'   subset(dicts, kind == "dictionary", "slug")
-#' }
+#' dicts <- morie_data_catalog()
+#' subset(dicts, kind == "dictionary", "slug")
 #' @export
 morie_data_dictionary <- function(slug) {
-  .rmoriedata_need_db()
-  con <- DBI::dbConnect(RSQLite::SQLite(), .rmoriedata_db_path())
-  on.exit(DBI::dbDisconnect(con))
-  if (!"_dictionaries" %in% DBI::dbListTables(con)) return(NULL)
-  d <- DBI::dbReadTable(con, "_dictionaries")
+  d <- .rmoriedata_read("_dictionaries")
+  if (is.null(d)) {
+    return(NULL)
+  }
   row <- d[d$slug == slug, , drop = FALSE]
-  if (!nrow(row)) return(NULL)
+  if (!nrow(row)) {
+    return(NULL)
+  }
   row$dictionary_json[[1]]
 }

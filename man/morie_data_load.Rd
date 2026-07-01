@@ -16,10 +16,8 @@ A `data.frame`.
 Load a bundled dataset by slug
 }
 \examples{
-if (requireNamespace("RSQLite", quietly = TRUE)) {
-  df <- morie_data_load("chicago_iucr_codes")
-  str(df)
-}
+df <- morie_data_load("chicago_iucr_codes")
+str(df)
 }
 \seealso{
 [morie_data_catalog()]

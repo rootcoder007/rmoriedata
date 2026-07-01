@@ -27,13 +27,12 @@ Depends:
   R (>= 4.3.0)
 Imports:
   stats,
+  nanoparquet,
   rmoriebricklayer (>= 0.2.1)
 LinkingTo:
   rmoriebricklayer
 Suggests:
-  testthat (>= 3.0.0),
-  DBI,
-  RSQLite
+  testthat (>= 3.0.0)
 Additional_repositories:
   https://rootcoder007.r-universe.dev
 Config/testthat/edition: 3
