@@ -25,10 +25,8 @@ A \`data.frame\`.
 ## Examples
 
 ``` r
-if (requireNamespace("RSQLite", quietly = TRUE)) {
-  df <- morie_data_load("chicago_iucr_codes")
-  str(df)
-}
+df <- morie_data_load("chicago_iucr_codes")
+str(df)
 #> 'data.frame':    410 obs. of  5 variables:
 #>  $ iucr                 : chr  "031A" "031B" "033A" "033B" ...
 #>  $ primary_description  : chr  "ROBBERY" "ROBBERY" "ROBBERY" "ROBBERY" ...

@@ -59,6 +59,8 @@ per-file headers in `inst/extdata/` for attribution.
 
 ## All functions
 
+- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  : Ask the rmorie agent about the bundled datasets
 - [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
   : Cell suppression with optional complementary suppression
 - [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)

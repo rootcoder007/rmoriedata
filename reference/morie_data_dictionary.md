@@ -26,10 +26,8 @@ A character scalar of JSON, or \`NULL\` if no dictionary exists.
 ## Examples
 
 ``` r
-if (requireNamespace("RSQLite", quietly = TRUE)) {
-  dicts <- morie_data_catalog()
-  subset(dicts, kind == "dictionary", "slug")
-}
+dicts <- morie_data_catalog()
+subset(dicts, kind == "dictionary", "slug")
 #>                          slug
 #> 56 arsau_2020_2022_dictionary
 #> 57      arsau_2023_dictionary
