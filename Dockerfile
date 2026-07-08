@@ -3,15 +3,19 @@
 # only base-R imports), so the build is small and fast.
 FROM rocker/r-ver:4.4.1
 
-# DBI + RSQLite power the data loaders; rmoriebricklayer (from r-universe)
-# is the shared provenance layer rmoriedata now imports.
-RUN R -e "options(repos = c('https://rootcoder007.r-universe.dev', 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); \
-          install.packages(c('DBI','RSQLite','rmoriebricklayer'))"
-
 WORKDIR /pkg
+
+# Install dependencies straight from DESCRIPTION (the authoritative list),
+# so new Imports never drift out of sync with this image. rmoriebricklayer
+# resolves from r-universe, the rest from Posit's CRAN mirror.
+COPY DESCRIPTION /pkg/DESCRIPTION
+RUN R -e "options(repos = c('https://rootcoder007.r-universe.dev', 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); \
+          install.packages('remotes'); \
+          remotes::install_deps('/pkg', dependencies = c('Depends', 'Imports', 'LinkingTo'))"
+
 COPY . /pkg
 
-# Install the package and verify the SQLite-backed catalogue loads.
+# Install the package and verify the Parquet-backed catalogue loads.
 RUN R CMD INSTALL --no-multiarch --with-keep.source /pkg \
     && Rscript -e 'stopifnot(requireNamespace("rmoriedata", quietly = TRUE)); cat(nrow(rmoriedata::morie_data_catalog()), "datasets in the bundled store\n")'
 
