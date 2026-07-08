@@ -17,10 +17,8 @@ A character scalar of JSON, or `NULL` if no dictionary exists.
 Data dictionary (JSON) for a dataset, if one is bundled
 }
 \examples{
-if (requireNamespace("RSQLite", quietly = TRUE)) {
-  dicts <- morie_data_catalog()
-  subset(dicts, kind == "dictionary", "slug")
-}
+dicts <- morie_data_catalog()
+subset(dicts, kind == "dictionary", "slug")
 }
 \seealso{
 [morie_data_catalog()]

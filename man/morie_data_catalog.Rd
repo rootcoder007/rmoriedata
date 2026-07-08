@@ -15,10 +15,8 @@ Lists every dataset in the bundled SQLite store, including row/column
 counts and the original source path each table was built from.
 }
 \examples{
-if (requireNamespace("RSQLite", quietly = TRUE)) {
-  cat <- morie_data_catalog()
-  head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
-}
+cat <- morie_data_catalog()
+head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
 }
 \seealso{
 [morie_data_load()], [morie_data_dictionary()]
