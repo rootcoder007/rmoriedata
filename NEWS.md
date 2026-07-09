@@ -1,5 +1,16 @@
 # rmoriedata (development version)
 
+## rmoriedata 0.2.3
+
+* CRAN size compliance: removed the legacy `inst/extdata/rmoriedata.sqlite`
+  (retired by the sqlite-to-parquet migration; no shipped code read it —
+  the loader API is Parquet-only via `nanoparquet`, and the file remains
+  backed up outside the package). Tarball drops from 5.5 MB to 4.25 MB.
+* License field is now plain `AGPL (>= 3)` (the LICENSE file was a
+  verbatim copy of the standard license, which CRAN flags).
+* `CITATION.cff`, `NOTICE`, and `LICENSE` are excluded from the built
+  package (`.Rbuildignore`), clearing the top-level-files NOTE.
+
 ## rmoriedata 0.2.0
 
 ### Connected to the shared rmorie C core
@@ -7,7 +18,7 @@
 * rmoriedata now declares `LinkingTo: rmoriebricklayer (>= 0.2.0)` and links
   the ecosystem's shared compiled core instead of duplicating any C code.
 * New exports `morie_core_sha256()` and `morie_core_mean()` call the shared
-  kernels directly (fast data-integrity hashing + summaries for the bundled
+  kernels directly (fast data-integrity hashing + summaries for the integrated
   fixtures, with no dependency on rmorie). Tests assert they are
   byte-identical to `rmoriebricklayer`'s own `core_sha256()` / `core_mean()`.
 
@@ -16,7 +27,7 @@
 ### New exported helpers — differential privacy + re-identification risk
 
 Six small, base-R-only helpers for analysts releasing aggregate statistics
-from the bundled fixtures (or any other dataset) without re-identification
+from the integrated fixtures (or any other dataset) without re-identification
 risk:
 
 * `morie_dp_laplace_count()` — (epsilon, 0)-DP count via the Laplace
@@ -46,4 +57,4 @@ informative errors.
 
 ## rmoriedata 0.1.0
 
-* Initial public release. Bundled fixtures only; no exported functions.
+* Initial public release. Integrated fixtures only; no exported functions.

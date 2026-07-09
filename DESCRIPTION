@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
 Title: Integrated Datasets for the rmorie Package
-Version: 0.2.2
+Version: 0.2.3
 Authors@R: c(
   person(
     given = "Vansh Singh",
@@ -21,7 +21,7 @@ Description: Integrated open data fixtures used by the 'rmorie' package
   without re-identification risk: Laplace and Gaussian differential
   privacy mechanisms and k-anonymity, l-diversity, and cell
   suppression verifiers.
-License: AGPL (>= 3) + file LICENSE
+License: AGPL (>= 3)
 Encoding: UTF-8
 Depends:
   R (>= 4.3.0)
