@@ -1,5 +1,16 @@
 # rmoriedata (development version)
 
+## rmoriedata 0.2.3
+
+* CRAN size compliance: removed the legacy `inst/extdata/rmoriedata.sqlite`
+  (retired by the sqlite-to-parquet migration; no shipped code read it —
+  the loader API is Parquet-only via `nanoparquet`, and the file remains
+  backed up outside the package). Tarball drops from 5.5 MB to 4.25 MB.
+* License field is now plain `AGPL (>= 3)` (the LICENSE file was a
+  verbatim copy of the standard license, which CRAN flags).
+* `CITATION.cff`, `NOTICE`, and `LICENSE` are excluded from the built
+  package (`.Rbuildignore`), clearing the top-level-files NOTE.
+
 ## rmoriedata 0.2.0
 
 ### Connected to the shared rmorie C core
