@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
-Title: Bundled Datasets for the rmorie Package
-Version: 0.2.0
+Title: Integrated Datasets for the rmorie Package
+Version: 0.2.1
 Authors@R: c(
   person(
     given = "Vansh Singh",
@@ -11,7 +11,7 @@ Authors@R: c(
     comment = c(ORCID = "0009-0004-1750-3592")
   )
  )
-Description: Bundled open data fixtures used by the 'rmorie' package
+Description: Integrated open data fixtures used by the 'rmorie' package
   for examples, vignettes, and tests. Split out so 'rmorie' itself
   stays within CRAN's package-size soft cap. Contains snapshots of
   publicly-available datasets from CKAN/Socrata/Opendatasoft portals
