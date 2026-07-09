@@ -23,7 +23,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -51,7 +51,7 @@
 <div class="page-header"><h1 id="rmoriedata">rmoriedata<a class="anchor" aria-label="anchor" href="#rmoriedata"></a>
 </h1></div>
 <p><a href="https://rootcoder007.r-universe.dev/rmoriedata" class="external-link"><img src="https://rootcoder007.r-universe.dev/badges/rmoriedata" alt="r-universe"></a></p>
-<p>Bundled open-data fixtures for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>, plus a small set of base-R helpers. Its core job remains the <code>inst/extdata/</code> files used by <code>rmorie</code>’s examples, vignettes, and tests.</p>
+<p>Integrated open-data fixtures for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>, plus a small set of base-R helpers. Its core job remains the <code>inst/extdata/</code> files used by <code>rmorie</code>’s examples, vignettes, and tests.</p>
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
@@ -78,7 +78,7 @@
 <div class="section level2">
 <h2 id="why-a-separate-package">Why a separate package?<a class="anchor" aria-label="anchor" href="#why-a-separate-package"></a>
 </h2>
-<p>CRAN packages have a 5 MB soft-cap on source tarball size. <code>rmorie</code>’s ~6.4 MB of bundled fixtures would push it over that threshold and trigger a reviewer pushback. Splitting the data out keeps <code>rmorie</code> lean (~few hundred KB of code) and lets data ship at any size via r-universe.</p>
+<p>CRAN packages have a 5 MB soft-cap on source tarball size. <code>rmorie</code>’s ~6.4 MB of integrated fixtures would push it over that threshold and trigger a reviewer pushback. Splitting the data out keeps <code>rmorie</code> lean (~few hundred KB of code) and lets data ship at any size via r-universe.</p>
 </div>
 <div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>

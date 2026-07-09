@@ -2,7 +2,7 @@
 
 [![r-universe](https://rootcoder007.r-universe.dev/badges/rmoriedata)](https://rootcoder007.r-universe.dev/rmoriedata)
 
-Bundled open-data fixtures for
+Integrated open-data fixtures for
 [rmorie](https://github.com/rootcoder007/rmorie), plus a small set of
 base-R helpers. Its core job remains the `inst/extdata/` files used by
 `rmorie`’s examples, vignettes, and tests.
@@ -45,7 +45,7 @@ still data):
 ## Why a separate package?
 
 CRAN packages have a 5 MB soft-cap on source tarball size. `rmorie`’s
-~6.4 MB of bundled fixtures would push it over that threshold and
+~6.4 MB of integrated fixtures would push it over that threshold and
 trigger a reviewer pushback. Splitting the data out keeps `rmorie` lean
 (~few hundred KB of code) and lets data ship at any size via r-universe.
 
