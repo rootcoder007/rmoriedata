@@ -35,6 +35,27 @@ CRAN packages have a 5 MB soft-cap on source tarball size. `rmorie`'s
 a reviewer pushback. Splitting the data out keeps `rmorie` lean
 (~few hundred KB of code) and lets data ship at any size via r-universe.
 
+## Citation
+
+If you use rmoriedata in your research, please cite the software:
+
+> Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie Package.* https://github.com/rootcoder007/rmoriedata
+
+BibTeX (or run `citation("rmoriedata")` after installation for the entry
+stamped with the exact installed version, sourced from `inst/CITATION`):
+
+```bibtex
+@Manual{ruhela_rmoriedata_2026,
+  title  = {rmoriedata: Integrated Datasets for the rmorie Package},
+  author = {Ruhela, Vansh Singh},
+  year   = {2026},
+  url    = {https://github.com/rootcoder007/rmoriedata}
+}
+```
+
+See [`CITATION.cff`](https://github.com/rootcoder007/rmoriedata/blob/main/CITATION.cff) for the
+machine-readable metadata GitHub's "Cite this repository" button uses.
+
 ## License
 
 AGPL-3.0-or-later. The fixtures themselves are public-domain or
