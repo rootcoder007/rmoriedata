@@ -6,7 +6,7 @@ authors:
     given-names: "Vansh Singh"
     orcid: "https://orcid.org/0009-0004-1750-3592"
     name-particle: "Singh"
-version: "0.2.2"
+version: "0.2.3"
 url: "https://github.com/rootcoder007/rmoriedata"
 repository-code: "https://github.com/rootcoder007/rmoriedata"
 license: "AGPL-3.0-or-later"
