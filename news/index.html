@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -35,18 +35,25 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="development version" id="rmoriedata-development-version">rmoriedata (development version)<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version"></a></h2>
 <div class="section level3">
-<h3 id="rmoriedata-development-version-1">rmoriedata 0.2.0<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-1"></a></h3>
+<h3 id="rmoriedata-development-version-1">rmoriedata 0.2.3<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-1"></a></h3>
+<ul><li>CRAN size compliance: removed the legacy <code>inst/extdata/rmoriedata.sqlite</code> (retired by the sqlite-to-parquet migration; no shipped code read it — the loader API is Parquet-only via <code>nanoparquet</code>, and the file remains backed up outside the package). Tarball drops from 5.5 MB to 4.25 MB.</li>
+<li>License field is now plain <code>AGPL (&gt;= 3)</code> (the LICENSE file was a verbatim copy of the standard license, which CRAN flags).</li>
+<li>
+<code>CITATION.cff</code>, <code>NOTICE</code>, and <code>LICENSE</code> are excluded from the built package (<code>.Rbuildignore</code>), clearing the top-level-files NOTE.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="rmoriedata-development-version-2">rmoriedata 0.2.0<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-2"></a></h3>
 <div class="section level4">
 <h4 id="connected-to-the-shared-rmorie-c-core-development-version">Connected to the shared rmorie C core<a class="anchor" aria-label="anchor" href="#connected-to-the-shared-rmorie-c-core-development-version"></a></h4>
 <ul><li>rmoriedata now declares <code>LinkingTo: rmoriebricklayer (&gt;= 0.2.0)</code> and links the ecosystem’s shared compiled core instead of duplicating any C code.</li>
-<li>New exports <code><a href="../reference/morie_core.html">morie_core_sha256()</a></code> and <code><a href="../reference/morie_core.html">morie_core_mean()</a></code> call the shared kernels directly (fast data-integrity hashing + summaries for the bundled fixtures, with no dependency on rmorie). Tests assert they are byte-identical to <code>rmoriebricklayer</code>’s own <code>core_sha256()</code> / <code>core_mean()</code>.</li>
+<li>New exports <code><a href="../reference/morie_core.html">morie_core_sha256()</a></code> and <code><a href="../reference/morie_core.html">morie_core_mean()</a></code> call the shared kernels directly (fast data-integrity hashing + summaries for the integrated fixtures, with no dependency on rmorie). Tests assert they are byte-identical to <code>rmoriebricklayer</code>’s own <code>core_sha256()</code> / <code>core_mean()</code>.</li>
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="rmoriedata-development-version-2">rmoriedata 0.1.1<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-2"></a></h3>
+<h3 id="rmoriedata-development-version-3">rmoriedata 0.1.1<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-3"></a></h3>
 <div class="section level4">
 <h4 id="new-exported-helpers--differential-privacy--re-identification-risk-development-version">New exported helpers — differential privacy + re-identification risk<a class="anchor" aria-label="anchor" href="#new-exported-helpers--differential-privacy--re-identification-risk-development-version"></a></h4>
-<p>Six small, base-R-only helpers for analysts releasing aggregate statistics from the bundled fixtures (or any other dataset) without re-identification risk:</p>
+<p>Six small, base-R-only helpers for analysts releasing aggregate statistics from the integrated fixtures (or any other dataset) without re-identification risk:</p>
 <ul><li>
 <code><a href="../reference/morie_dp_laplace_count.html">morie_dp_laplace_count()</a></code> — (epsilon, 0)-DP count via the Laplace mechanism (sensitivity 1).</li>
 <li>
@@ -70,8 +77,8 @@
 </ul></div>
 </div>
 <div class="section level3">
-<h3 id="rmoriedata-development-version-3">rmoriedata 0.1.0<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-3"></a></h3>
-<ul><li>Initial public release. Bundled fixtures only; no exported functions.</li>
+<h3 id="rmoriedata-development-version-4">rmoriedata 0.1.0<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version-4"></a></h3>
+<ul><li>Initial public release. Integrated fixtures only; no exported functions.</li>
 </ul></div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
