@@ -81,6 +81,22 @@
 <p>CRAN packages have a 5 MB soft-cap on source tarball size. <code>rmorie</code>’s ~6.4 MB of integrated fixtures would push it over that threshold and trigger a reviewer pushback. Splitting the data out keeps <code>rmorie</code> lean (~few hundred KB of code) and lets data ship at any size via r-universe.</p>
 </div>
 <div class="section level2">
+<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+</h2>
+<p>If you use rmoriedata in your research, please cite the software:</p>
+<blockquote>
+<p>Ruhela, V. S. (2026). <em>rmoriedata: Integrated Datasets for the rmorie Package.</em> <a href="https://github.com/rootcoder007/rmoriedata" class="external-link uri">https://github.com/rootcoder007/rmoriedata</a></p>
+</blockquote>
+<p>BibTeX (or run <code>citation("rmoriedata")</code> after installation for the entry stamped with the exact installed version, sourced from <code>inst/CITATION</code>):</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">ruhela_rmoriedata_2026</span>,</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="dt">title</span>  = {rmoriedata: Integrated Datasets for the rmorie Package},</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="dt">author</span> = {Ruhela, Vansh Singh},</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="dt">url</span>    = {https://github.com/rootcoder007/rmoriedata}</span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>}</span></code></pre></div>
+<p>See <a href="https://github.com/rootcoder007/rmoriedata/blob/main/CITATION.cff" class="external-link"><code>CITATION.cff</code></a> for the machine-readable metadata GitHub’s “Cite this repository” button uses.</p>
+</div>
+<div class="section level2">
 <h2 id="license">License<a class="anchor" aria-label="anchor" href="#license"></a>
 </h2>
 <p>AGPL-3.0-or-later. The fixtures themselves are public-domain or under permissive open-data licenses from their source portals; see the per-file headers in <code>inst/extdata/</code> for attribution.</p>
