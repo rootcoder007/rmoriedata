@@ -32,7 +32,11 @@ Imports:
 LinkingTo:
   rmoriebricklayer
 Suggests:
-  testthat (>= 3.0.0)
+  testthat (>= 3.0.0),
+  tibble,
+  curl
+LazyData: true
+LazyDataCompression: xz
 Additional_repositories:
   https://rootcoder007.r-universe.dev
 Config/testthat/edition: 3

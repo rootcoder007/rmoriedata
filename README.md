@@ -28,6 +28,33 @@ A small, deliberate set of base-R helpers (the bulk of the package is still data
 - **Shared compiled core** — `morie_core_sha256()` and `morie_core_mean()` delegate
   to the family's C core via `LinkingTo: rmoriebricklayer` (one source of truth).
 
+## Chicago sample data — R and Python
+
+Bundled samples (`complaint_sample`, `arrest_sample`) from the City of Chicago
+open data; the full datasets are fetched on demand and cached.
+
+```r
+library(rmoriedata)
+data(complaint_sample)                       # bundled sample, offline
+crimes <- load_chicago_data("complaints", full = TRUE)   # full data (Socrata)
+pq <- load_chicago_data("arrests", as = "parquet_path")  # Parquet for Python
+```
+
+```python
+import pandas as pd
+df = pd.read_parquet(pq)                      # path printed by load_chicago_data
+
+# Or read the bundled .rda directly (no R install) — use the date_iso column,
+# since POSIXct does not roundtrip cleanly through pyreadr:
+import pyreadr
+complaints = pyreadr.read_r("rmoriedata/data/complaint_sample.rda")["complaint_sample"]
+```
+
+**Recommended Python bridge:** the Parquet path (`as = "parquet_path"`) — typed,
+columnar, read natively by pandas/polars/duckdb with correct timestamps and no R
+runtime. `pyreadr` on the `.rda` works for quick read-only access but is slower
+and mangles `POSIXct` (use `date_iso`).
+
 ## Why a separate package?
 
 CRAN packages have a 5 MB soft-cap on source tarball size. `rmorie`'s
