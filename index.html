@@ -76,6 +76,24 @@
 </ul>
 </div>
 <div class="section level2">
+<h2 id="chicago-sample-data--r-and-python">Chicago sample data — R and Python<a class="anchor" aria-label="anchor" href="#chicago-sample-data--r-and-python"></a>
+</h2>
+<p>Bundled samples (<code>complaint_sample</code>, <code>arrest_sample</code>) from the City of Chicago open data; the full datasets are fetched on demand and cached.</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rootcoder007/rmoriedata" class="external-link">rmoriedata</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">complaint_sample</span><span class="op">)</span>                       <span class="co"># bundled sample, offline</span></span>
+<span><span class="va">crimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>   <span class="co"># full data (Socrata)</span></span>
+<span><span class="va">pq</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"arrests"</span>, as <span class="op">=</span> <span class="st">"parquet_path"</span><span class="op">)</span>  <span class="co"># Parquet for Python</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>df <span class="op">=</span> pd.read_parquet(pq)                      <span class="co"># path printed by load_chicago_data</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># Or read the bundled .rda directly (no R install) — use the date_iso column,</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a><span class="co"># since POSIXct does not roundtrip cleanly through pyreadr:</span></span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a><span class="im">import</span> pyreadr</span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>complaints <span class="op">=</span> pyreadr.read_r(<span class="st">"rmoriedata/data/complaint_sample.rda"</span>)[<span class="st">"complaint_sample"</span>]</span></code></pre></div>
+<p><strong>Recommended Python bridge:</strong> the Parquet path (<code>as = "parquet_path"</code>) — typed, columnar, read natively by pandas/polars/duckdb with correct timestamps and no R runtime. <code>pyreadr</code> on the <code>.rda</code> works for quick read-only access but is slower and mangles <code>POSIXct</code> (use <code>date_iso</code>).</p>
+</div>
+<div class="section level2">
 <h2 id="why-a-separate-package">Why a separate package?<a class="anchor" aria-label="anchor" href="#why-a-separate-package"></a>
 </h2>
 <p>CRAN packages have a 5 MB soft-cap on source tarball size. <code>rmorie</code>’s ~6.4 MB of integrated fixtures would push it over that threshold and trigger a reviewer pushback. Splitting the data out keeps <code>rmorie</code> lean (~few hundred KB of code) and lets data ship at any size via r-universe.</p>
@@ -88,12 +106,12 @@
 <p>Ruhela, V. S. (2026). <em>rmoriedata: Integrated Datasets for the rmorie Package.</em> <a href="https://github.com/rootcoder007/rmoriedata" class="external-link uri">https://github.com/rootcoder007/rmoriedata</a></p>
 </blockquote>
 <p>BibTeX (or run <code>citation("rmoriedata")</code> after installation for the entry stamped with the exact installed version, sourced from <code>inst/CITATION</code>):</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">ruhela_rmoriedata_2026</span>,</span>
-<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>  <span class="dt">title</span>  = {rmoriedata: Integrated Datasets for the rmorie Package},</span>
-<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>  <span class="dt">author</span> = {Ruhela, Vansh Singh},</span>
-<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
-<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="dt">url</span>    = {https://github.com/rootcoder007/rmoriedata}</span>
-<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>}</span></code></pre></div>
+<div class="sourceCode" id="cb4"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">ruhela_rmoriedata_2026</span>,</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>  <span class="dt">title</span>  = {rmoriedata: Integrated Datasets for the rmorie Package},</span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="dt">author</span> = {Ruhela, Vansh Singh},</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>  <span class="dt">url</span>    = {https://github.com/rootcoder007/rmoriedata}</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>}</span></code></pre></div>
 <p>See <a href="https://github.com/rootcoder007/rmoriedata/blob/main/CITATION.cff" class="external-link"><code>CITATION.cff</code></a> for the machine-readable metadata GitHub’s “Cite this repository” button uses.</p>
 </div>
 <div class="section level2">

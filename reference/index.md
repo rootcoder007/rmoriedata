@@ -2,8 +2,14 @@
 
 ## All functions
 
+- [`arrest_sample`](https://rootcoder007.github.io/rmoriedata/reference/arrest_sample.md)
+  : Chicago arrests sample
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   : Ask the rmorie agent about the bundled datasets
+- [`complaint_sample`](https://rootcoder007.github.io/rmoriedata/reference/complaint_sample.md)
+  : Chicago reported-crime sample ("complaints")
+- [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+  : Load Chicago crime or arrest data
 - [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
   : Cell suppression with optional complementary suppression
 - [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
