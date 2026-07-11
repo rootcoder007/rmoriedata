@@ -21,9 +21,13 @@ test_that("type + as are validated", {
   expect_error(load_chicago_data("arrests", as = "xml"), "should be one of")
 })
 
-test_that("full=TRUE is network-gated (skipped offline / on CRAN)", {
+test_that("full=TRUE fetches live Chicago data (opt-in only)", {
+  # Heavy live Socrata fetch — never run in CI/CRAN. Opt in explicitly with
+  # RMORIEDATA_TEST_LIVE=true when you actually want to hit the network.
   skip_on_cran()
-  skip_if_offline()
+  if (!identical(tolower(Sys.getenv("RMORIEDATA_TEST_LIVE")), "true")) {
+    skip("live network test (set RMORIEDATA_TEST_LIVE=true to run)")
+  }
   df <- load_chicago_data("complaints", full = TRUE)
   expect_s3_class(df, "data.frame")
   expect_gt(nrow(df), 0L)
