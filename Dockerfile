@@ -1,7 +1,7 @@
 # rmoriedata — bundled open-data fixtures for the morie family, installed
 # into a reproducible R environment. Data-only package (no compiled code,
 # only base-R imports), so the build is small and fast.
-FROM rocker/r-ver:4.4.1
+FROM rocker/r-ver:4.6.1
 
 WORKDIR /pkg
 
