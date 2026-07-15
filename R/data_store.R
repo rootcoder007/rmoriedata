@@ -54,6 +54,10 @@ morie_data_catalog <- function() {
 #' str(df)
 #' @export
 morie_data_load <- function(slug) {
+  if (is.null(slug) || length(slug) != 1L || is.na(slug) || !is.character(slug)) {
+    stop("`slug` must be a single dataset slug (character). ",
+         "See morie_data_catalog() for valid slugs.", call. = FALSE)
+  }
   f <- file.path(.rmoriedata_parquet_dir(), paste0(slug, ".parquet"))
   if (!file.exists(f)) {
     stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
@@ -75,11 +79,14 @@ morie_data_load <- function(slug) {
 morie_data_dictionary <- function(slug) {
   d <- .rmoriedata_read("_dictionaries")
   if (is.null(d)) {
-    return(NULL)
+    message("No data dictionaries are bundled in this installation.")
+    return(invisible(NULL))
   }
   row <- d[d$slug == slug, , drop = FALSE]
   if (!nrow(row)) {
-    return(NULL)
+    message("No dictionary bundled for '", slug,
+            "'. Rows with kind == \"dictionary\" in morie_data_catalog() list the ones available.")
+    return(invisible(NULL))
   }
   row$dictionary_json[[1]]
 }
