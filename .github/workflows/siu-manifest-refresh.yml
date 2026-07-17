@@ -1,0 +1,40 @@
+# Weekly incremental refresh of the SIU drid manifest.
+#
+# Crawls the SIU director's-reports indexes (en + fr), appends any new
+# reports to inst/extdata/siu_drid_manifest.csv.gz, and commits the
+# result. Only new drids trigger page fetches, at a polite 2-second
+# rate, so the weekly run is minutes long and gentle on siu.on.ca.
+name: siu-manifest-refresh
+
+on:
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: r-lib/actions/setup-r@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
+        with:
+          use-public-rspm: true
+      - name: Install httr2
+        run: Rscript -e 'install.packages("httr2")'
+      - name: Refresh manifest
+        run: Rscript data-raw/refresh_siu_manifest.R
+      - name: Commit if changed
+        run: |
+          if git diff --quiet inst/extdata/siu_drid_manifest.csv.gz; then
+            echo "Manifest unchanged; nothing to commit."
+            exit 0
+          fi
+          rows=$(Rscript -e 'cat(nrow(read.csv(gzfile("inst/extdata/siu_drid_manifest.csv.gz"))))')
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add inst/extdata/siu_drid_manifest.csv.gz
+          git commit -m "data: weekly SIU manifest refresh (${rows} rows)"
+          git push
