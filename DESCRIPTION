@@ -37,6 +37,8 @@ Suggests:
   curl
 LazyData: true
 LazyDataCompression: xz
+Remotes:
+  rootcoder007/rmorie-bricklayer
 Additional_repositories:
   https://rootcoder007.r-universe.dev
 Config/testthat/edition: 3

@@ -19,14 +19,15 @@ jobs:
       - uses: r-lib/actions/setup-r@v2
         with:
           use-public-rspm: true
-      - name: Pre-install rmoriebricklayer (r-universe; not yet on CRAN)
-        run: install.packages("rmoriebricklayer", repos = c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"))
-        shell: Rscript {0}
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
+          # bricklayer comes from GitHub HEAD via DESCRIPTION `Remotes:`
+          # (latest; new exports present immediately). r-universe is the
+          # binary fallback for other deps.
           extra-packages: any::pkgdown, local::.
+          extra-repositories: https://rootcoder007.r-universe.dev
           needs: website
-          cache-version: 1
+          cache-version: 2
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
         shell: Rscript {0}
