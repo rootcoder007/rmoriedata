@@ -8,8 +8,12 @@
   : Ask the rmorie agent about the bundled datasets
 - [`complaint_sample`](https://rootcoder007.github.io/rmoriedata/reference/complaint_sample.md)
   : Chicago reported-crime sample ("complaints")
+- [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
+  : Download a CIHI data table (live, with Wayback fallback)
 - [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
   : Load Chicago crime or arrest data
+- [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
+  : Catalogue of CIHI open data-table workbooks (with Wayback fallbacks)
 - [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
   : Cell suppression with optional complementary suppression
 - [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
