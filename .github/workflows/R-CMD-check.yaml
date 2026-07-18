@@ -41,17 +41,35 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
+      - name: Install libcurl (bricklayer's C++ SystemRequirement)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
+
+      - name: Install rmoriebricklayer (GitHub HEAD preferred; r-universe fallback)
+        # Not on CRAN. Prefer the GitHub HEAD (always the latest -- new exports
+        # like bricklayer_fetch present immediately); fall back to the
+        # r-universe binary if GitHub is unavailable. Runs before dependency
+        # resolution so the hard Import is already satisfied.
+        run: |
+          install.packages("remotes", repos = "https://cloud.r-project.org")
+          ok <- tryCatch({
+            remotes::install_github("rootcoder007/rmorie-bricklayer",
+                                    upgrade = "never", force = TRUE); TRUE
+          }, error = function(e) { message("github: ", conditionMessage(e)); FALSE })
+          if (!ok || !requireNamespace("rmoriebricklayer", quietly = TRUE)) {
+            message("falling back to r-universe")
+            install.packages("rmoriebricklayer",
+                             repos = c("https://rootcoder007.r-universe.dev",
+                                       "https://cloud.r-project.org"))
+          }
+          if (!requireNamespace("rmoriebricklayer", quietly = TRUE))
+            stop("rmoriebricklayer unavailable from GitHub and r-universe")
+          cat("rmoriebricklayer", as.character(packageVersion("rmoriebricklayer")), "\n")
+        shell: Rscript {0}
+
       - uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
         with:
           extra-packages: any::rcmdcheck
-          # rmoriebricklayer is not on CRAN. DESCRIPTION's `Remotes:` field
-          # points pak at the GitHub HEAD (always the latest), so newly added
-          # exports (e.g. bricklayer_fetch) are present immediately rather than
-          # after r-universe's rebuild lag. r-universe stays here as a binary
-          # fallback for every OTHER dependency. pak installs bricklayer's
-          # SystemRequirements (libcurl) via apt before compiling it, so the
-          # ordering is correct on Ubuntu; macOS/Windows ship libcurl.
-          extra-repositories: https://rootcoder007.r-universe.dev
           cache-version: 3
           needs: check
       - uses: r-lib/actions/check-r-package@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
