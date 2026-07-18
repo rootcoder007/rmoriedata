@@ -31,7 +31,7 @@ morie_core_mean(x)
 
 ``` r
 morie_core_sha256("abc")
-#> Error in morie_core_sha256("abc"): function 'rmbl_sha256_hex' not provided by package 'rmoriebricklayer'
+#> [1] "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
 morie_core_mean(1:10)
-#> Error in morie_core_mean(1:10): function 'rmbl_mean' not provided by package 'rmoriebricklayer'
+#> [1] 5.5
 ```
