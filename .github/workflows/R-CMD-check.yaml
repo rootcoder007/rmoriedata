@@ -41,25 +41,19 @@ jobs:
           http-user-agent: ${{ matrix.config.http-user-agent }}
           use-public-rspm: true
 
-      - name: Pre-install rmoriebricklayer (r-universe; not yet on CRAN)
-        run: install.packages("rmoriebricklayer", repos = c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"))
-        shell: Rscript {0}
-
       - uses: r-lib/actions/setup-r-dependencies@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
         with:
           extra-packages: any::rcmdcheck
-          # rmoriebricklayer is not on CRAN; it lives on r-universe. Add it to
-          # the dependency-resolution repos so pak can satisfy the hard Import
-          # rmoriebricklayer (>= 0.2.0) on every platform.
+          # rmoriebricklayer is not on CRAN. DESCRIPTION's `Remotes:` field
+          # points pak at the GitHub HEAD (always the latest), so newly added
+          # exports (e.g. bricklayer_fetch) are present immediately rather than
+          # after r-universe's rebuild lag. r-universe stays here as a binary
+          # fallback for every OTHER dependency. pak installs bricklayer's
+          # SystemRequirements (libcurl) via apt before compiling it, so the
+          # ordering is correct on Ubuntu; macOS/Windows ship libcurl.
           extra-repositories: https://rootcoder007.r-universe.dev
-          # Bust the stale dependency cache that pinned rmoriebricklayer 0.1.0
-          # (restored over the pre-installed 0.2.0, causing "unsuitable version").
-          cache-version: 2
+          cache-version: 3
           needs: check
-
-      - name: Reinstall rmoriebricklayer (overwrite any cache-restored 0.2.0)
-        run: install.packages("rmoriebricklayer", repos = "https://rootcoder007.r-universe.dev")
-        shell: Rscript {0}
       - uses: r-lib/actions/check-r-package@d3c5be51b12e724e68f33216ca3c148b66d5f0b6 # v2
         with:
           upload-snapshots: true
