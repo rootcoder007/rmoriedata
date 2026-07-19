@@ -59,17 +59,33 @@
 #' }
 #' @export
 load_siu_reports <- function(lang = c("all", "en", "fr"),
-                             as = c("data.frame", "tibble")) {
+                             as = c("data.frame", "tibble"),
+                             format = c("csv", "parquet")) {
   lang <- match.arg(lang)
   as <- match.arg(as)
-  path <- system.file("extdata", "siu_directors_reports.csv.gz",
-                      package = "rmoriedata")
-  if (!nzchar(path)) {
-    stop("bundled SIU director's-report corpus not found in rmoriedata",
-         call. = FALSE)
+  format <- match.arg(format)
+  if (format == "parquet") {
+    if (!requireNamespace("nanoparquet", quietly = TRUE)) {
+      stop("format = \"parquet\" needs the 'nanoparquet' package; ",
+           "install it or use format = \"csv\".", call. = FALSE)
+    }
+    ppath <- system.file("extdata", "siu_directors_reports.parquet",
+                         package = "rmoriedata")
+    if (!nzchar(ppath)) {
+      stop("bundled SIU parquet corpus not found in rmoriedata", call. = FALSE)
+    }
+    df <- as.data.frame(nanoparquet::read_parquet(ppath),
+                        stringsAsFactors = FALSE)
+  } else {
+    path <- system.file("extdata", "siu_directors_reports.csv.gz",
+                        package = "rmoriedata")
+    if (!nzchar(path)) {
+      stop("bundled SIU director's-report corpus not found in rmoriedata",
+           call. = FALSE)
+    }
+    df <- utils::read.csv(gzfile(path), stringsAsFactors = FALSE,
+                          colClasses = "character", check.names = FALSE)
   }
-  df <- utils::read.csv(gzfile(path), stringsAsFactors = FALSE,
-                        colClasses = "character", check.names = FALSE)
   if (lang != "all" && "X_language" %in% names(df)) {
     df <- df[df[["X_language"]] == lang, , drop = FALSE]
   } else if (lang != "all" && "_language" %in% names(df)) {

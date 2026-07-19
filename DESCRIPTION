@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
 Title: Integrated Datasets for the rmorie Package
-Version: 0.2.4
+Version: 0.2.5
 Authors@R: c(
   person(
     given = "Vansh Singh",
@@ -37,7 +37,8 @@ Suggests:
   curl,
   jsonlite,
   knitr,
-  rmarkdown
+  rmarkdown,
+  nanoparquet
 VignetteBuilder: knitr
 LazyData: true
 LazyDataCompression: xz
