@@ -32,16 +32,22 @@ binary is not installed.
 ## Examples
 
 ``` r
-if (FALSE) { # \dontrun{
+# \donttest{
+# Routed to the optional rmorie CLI agent when it is installed; with no
+# binary on PATH each call returns an install hint instantly (no error,
+# no network), so this is safe to execute anywhere.
 # Plain question -> routed to the rmorie CLI agent (auto backend).
 ask("which bundled datasets cover Toronto police use-of-force?")
+#> [1] "rmorie CLI not found on PATH. Install rmorie-cli to use ask()."
 
 # Pin a specific model.
 ask("summarise the SIU director's-report corpus", model = "gpt-4o-mini")
+#> [1] "rmorie CLI not found on PATH. Install rmorie-cli to use ask()."
 
 # Force a backend (see rmorie::agent for the available values).
 ask("list the Chicago datasets", backend = "ollama")
-} # }
+#> [1] "rmorie CLI not found on PATH. Install rmorie-cli to use ask()."
+# }
 
 # With no rmorie binary on PATH the call returns an install hint, not an
 # error -- safe to run anywhere:
