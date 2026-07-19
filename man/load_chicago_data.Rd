@@ -55,13 +55,17 @@ if (requireNamespace("tibble", quietly = TRUE)) {
 
 \donttest{
 # `as = "parquet_path"` writes a Parquet file and returns its path --
-# the recommended bridge to Python (pandas.read_parquet).
+# the recommended bridge to Python (pandas.read_parquet). Offline: the
+# bundled sample is written, no network.
 pq <- load_chicago_data("arrests", as = "parquet_path")
 file.exists(pq)
+}
 
+\dontrun{
 # `full = TRUE` fetches the complete dataset from the Chicago SODA API
-# (network, large; cached across sessions). `mirror` tries an
-# offline-friendly Parquet mirror first when set.
+# (live network, ~millions of rows; cached across sessions). `mirror`
+# tries an offline-friendly Parquet mirror first when set. Network-only,
+# so it is not run in automated checks.
 big <- load_chicago_data("complaints", full = TRUE,
                          mirror = getOption("rmoriedata.mirror"))
 nrow(big)
