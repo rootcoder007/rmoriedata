@@ -12,7 +12,10 @@
 #' @return Character scalar: the agent's output, or a message if the
 #'   \code{rmorie} binary is not installed.
 #' @examples
-#' \dontrun{
+#' \donttest{
+#' # Routed to the optional rmorie CLI agent when it is installed; with no
+#' # binary on PATH each call returns an install hint instantly (no error,
+#' # no network), so this is safe to execute anywhere.
 #' # Plain question -> routed to the rmorie CLI agent (auto backend).
 #' ask("which bundled datasets cover Toronto police use-of-force?")
 #'
