@@ -22,6 +22,10 @@ load_siu_reports(
 
 \item{as}{Return format: \code{"data.frame"} (default) or
 \code{"tibble"}.}
+
+\item{format}{Bundle to read: \code{"csv"} (default, the gzip CSV --
+no extra dependency) or \code{"parquet"} (columnar; requires the
+\pkg{nanoparquet} package). Both hold the identical corpus.}
 }
 \value{
 A \code{data.frame} (or tibble) of SIU director's-report rows.

@@ -27,7 +27,6 @@ Depends:
   R (>= 4.3.0)
 Imports:
   stats,
-  nanoparquet,
   rmoriebricklayer (>= 0.2.1)
 LinkingTo:
   rmoriebricklayer
