@@ -35,6 +35,12 @@ subsystem.
 
   Return format: `"data.frame"` (default) or `"tibble"`.
 
+- format:
+
+  Bundle to read: `"csv"` (default, the gzip CSV – no extra dependency)
+  or `"parquet"` (columnar; requires the nanoparquet package). Both hold
+  the identical corpus.
+
 ## Value
 
 A `data.frame` (or tibble) of SIU director's-report rows.
