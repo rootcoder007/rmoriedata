@@ -45,6 +45,9 @@
 #' }
 #'
 #' \dontrun{
+#' # Not run: fetches the full multi-million-row dataset from the live
+#' # Chicago Socrata service; check machines must not depend on remote
+#' # services or long downloads.
 #' # `full = TRUE` fetches the complete dataset from the Chicago SODA API
 #' # (live network, ~millions of rows; cached across sessions). `mirror`
 #' # tries an offline-friendly Parquet mirror first when set. Network-only,

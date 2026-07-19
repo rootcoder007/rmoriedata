@@ -34,6 +34,8 @@ cat <- load_cihi_data_tables()
 head(cat$title, 3)
 
 \dontrun{
+# Not run: downloads a table from the live CIHI web service; check
+# machines must not depend on remote-service availability.
 # `which` by title substring (case-insensitive; must match exactly one).
 f1 <- fetch_cihi_table("Hospital Beds")           # -> tempfile path
 

@@ -1,6 +1,6 @@
 Package: rmoriedata
 Type: Package
-Title: Integrated Datasets for the rmorie Package
+Title: Integrated Datasets for the 'rmorie' Package
 Version: 0.2.5
 Authors@R: c(
   person(
@@ -13,14 +13,19 @@ Authors@R: c(
  )
 Description: Integrated open data fixtures used by the 'rmorie' package
   for examples, vignettes, and tests. Split out so 'rmorie' itself
-  stays within CRAN's package-size soft cap. Contains snapshots of
-  publicly-available datasets from CKAN/Socrata/Opendatasoft portals
-  (Chicago, NYC, Toronto, Vancouver, etc.), Statistics Canada CCJS
-  tables, and synthetic fixtures for unit tests. Also ships a small
-  set of analyst-facing helpers for releasing aggregate statistics
-  without re-identification risk: Laplace and Gaussian differential
-  privacy mechanisms and k-anonymity, l-diversity, and cell
-  suppression verifiers.
+  stays within the 'CRAN' package-size soft cap. Contains snapshots of
+  publicly available datasets from open-data portals built on the
+  Comprehensive Knowledge Archive Network ('CKAN', <https://ckan.org/>),
+  'Socrata' (<https://dev.socrata.com/>), and 'Opendatasoft'
+  (<https://www.opendatasoft.com/>) (Chicago, New York City, Toronto,
+  Vancouver, and others), Statistics Canada Canadian Centre for Justice
+  and Community Safety Statistics ('CCJS') tables, a multi-agent-reviewed
+  corpus of Ontario Special Investigations Unit ('SIU',
+  <https://www.siu.on.ca/>) director's reports, and synthetic fixtures
+  for unit tests. Also ships a small set of analyst-facing helpers for
+  releasing aggregate statistics without re-identification risk: Laplace
+  and Gaussian differential privacy mechanisms and k-anonymity,
+  l-diversity, and cell suppression verifiers.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Depends:

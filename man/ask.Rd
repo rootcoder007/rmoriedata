@@ -23,7 +23,10 @@ Convenience wrapper that forwards a dataset-focused question to the
 \code{rmorie::agent} for the full interface and requirements.
 }
 \examples{
-\dontrun{
+\donttest{
+# Routed to the optional rmorie CLI agent when it is installed; with no
+# binary on PATH each call returns an install hint instantly (no error,
+# no network), so this is safe to execute anywhere.
 # Plain question -> routed to the rmorie CLI agent (auto backend).
 ask("which bundled datasets cover Toronto police use-of-force?")
 
