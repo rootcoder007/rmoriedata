@@ -30,6 +30,9 @@
 #'   \code{"fr"}: filter to the English-only, French-only, or all rows.
 #' @param as Return format: \code{"data.frame"} (default) or
 #'   \code{"tibble"}.
+#' @param format Bundle to read: \code{"csv"} (default, the gzip CSV --
+#'   no extra dependency) or \code{"parquet"} (columnar; requires the
+#'   \pkg{nanoparquet} package). Both hold the identical corpus.
 #' @return A \code{data.frame} (or tibble) of SIU director's-report rows.
 #' @source Ontario Special Investigations Unit director's reports,
 #'   \url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
