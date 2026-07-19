@@ -48,3 +48,10 @@ reference:
       - morie_core_mean
       - morie_core_sha256
       - ask
+  - title: Sample data objects
+    desc: >
+      Small documented data frames bundled for examples and tests
+      (lazy-loaded via data()).
+    contents:
+      - arrest_sample
+      - complaint_sample
