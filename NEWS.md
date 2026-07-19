@@ -1,3 +1,7 @@
+# rmoriedata 0.2.4
+
+* SIU corpus: bundle the multi-agent panel-REVIEWED director's reports (subject-official count now 100% for all 2182 English reports; witness-officer-only cases resolved to 0). Adds a `panel_reviewed` flag column (65 cols).
+
 # rmoriedata (development version)
 
 ## rmoriedata 0.2.3
