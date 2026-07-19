@@ -36,6 +36,21 @@ add-or-remove-one neighbouring-databases definition.
 
 ``` r
 set.seed(1)
+# A single noised release of a true count of 42.
 morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
 #> [1] 41.36704
+
+# Smaller epsilon = stronger privacy = more noise.
+morie_dp_laplace_count(42, epsilon = 0.1)   # noisier
+#> [1] 39.04619
+morie_dp_laplace_count(42, epsilon = 5.0)   # closer to 42
+#> [1] 42.0315
+
+# The mechanism is unbiased: averaging many releases returns ~the truth.
+mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
+#> [1] 41.98897
+
+# For display, clip to a non-negative integer.
+round(pmax(0, morie_dp_laplace_count(3, epsilon = 0.5)))
+#> [1] 3
 ```

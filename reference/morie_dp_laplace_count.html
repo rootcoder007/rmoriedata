@@ -21,7 +21,8 @@ or leaving the dataset changes the count by at most 1."><meta name="google-site-
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/rmoriedata.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -35,7 +36,7 @@ or leaving the dataset changes the count by at most 1."><meta name="google-site-
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Differentially-private count via the Laplace mechanism</h1>
-
+      <small class="dont-index">Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/R/dp.R" class="external-link"><code>R/dp.R</code></a></small>
       <div class="d-none name"><code>morie_dp_laplace_count.Rd</code></div>
     </div>
 
@@ -67,8 +68,8 @@ Typical range: 0.1 to 5.0.</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A noised count (numeric, may be fractional or negative). Caller
-should usually clip to a non-negative integer for display:
-<code>round(pmax(0, x))</code>.</p>
+  should usually clip to a non-negative integer for display:
+  <code>round(pmax(0, x))</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -79,8 +80,23 @@ add-or-remove-one neighbouring-databases definition.</p>
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="co"># A single noised release of a true count of 42.</span></span></span>
 <span class="r-in"><span><span class="fu">morie_dp_laplace_count</span><span class="op">(</span>true_count <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41.36704</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Smaller epsilon = stronger privacy = more noise.</span></span></span>
+<span class="r-in"><span><span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span>   <span class="co"># noisier</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 39.04619</span>
+<span class="r-in"><span><span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">5.0</span><span class="op">)</span>   <span class="co"># closer to 42</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 42.0315</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># The mechanism is unbiased: averaging many releases returns ~the truth.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41.98897</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># For display, clip to a non-negative integer.</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">3</span>, epsilon <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 3</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

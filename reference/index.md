@@ -20,6 +20,8 @@ analysis functions consume.
   : Catalogue of CIHI open data-table workbooks (with Wayback fallbacks)
 - [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
   : Download a CIHI data table (live, with Wayback fallback)
+- [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  : Load the Ontario SIU director's-report corpus
 
 ## Differential privacy
 

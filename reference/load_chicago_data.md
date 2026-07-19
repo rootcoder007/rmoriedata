@@ -54,9 +54,40 @@ package), so no arrow install is required.
 ## Examples
 
 ``` r
-df <- load_chicago_data("complaints")             # bundled sample
+# `type` selects the dataset; the bundled sample is returned by default.
+comp <- load_chicago_data("complaints")           # reported incidents
+arr  <- load_chicago_data("arrests")              # arrests
+nrow(comp); nrow(arr)
+#> [1] 25000
+#> [1] 25000
+head(sort(table(comp$primary_type), decreasing = TRUE), 5)
+#> 
+#>           THEFT         BATTERY CRIMINAL DAMAGE         ASSAULT   OTHER OFFENSE 
+#>            5825            4800            2362            1975            1760 
+
+# `as = "tibble"` returns a tibble when the package is installed.
+if (requireNamespace("tibble", quietly = TRUE)) {
+  tb <- load_chicago_data("complaints", as = "tibble")
+  class(tb)
+}
+#> [1] "tbl_df"     "tbl"        "data.frame"
+
 # \donttest{
+# `as = "parquet_path"` writes a Parquet file and returns its path --
+# the recommended bridge to Python (pandas.read_parquet). Offline: the
+# bundled sample is written, no network.
 pq <- load_chicago_data("arrests", as = "parquet_path")
-# Python: pandas.read_parquet(pq)
+file.exists(pq)
+#> [1] TRUE
 # }
+
+if (FALSE) { # \dontrun{
+# `full = TRUE` fetches the complete dataset from the Chicago SODA API
+# (live network, ~millions of rows; cached across sessions). `mirror`
+# tries an offline-friendly Parquet mirror first when set. Network-only,
+# so it is not run in automated checks.
+big <- load_chicago_data("complaints", full = TRUE,
+                         mirror = getOption("rmoriedata.mirror"))
+nrow(big)
+} # }
 ```

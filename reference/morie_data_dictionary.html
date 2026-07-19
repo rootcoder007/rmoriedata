@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/rmoriedata.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -62,16 +63,30 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">dicts</span> <span class="op">&lt;-</span> <span class="fu"><a href="morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">dicts</span>, <span class="va">kind</span> <span class="op">==</span> <span class="st">"dictionary"</span>, <span class="st">"slug"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                          slug</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 56 arsau_2020_2022_dictionary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 57      arsau_2023_dictionary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 58      arsau_2024_dictionary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 59 corrections_uof_dictionary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 60            otis_dictionary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 61             tps_dictionary</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 62             uof_dictionary</span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Which dictionaries are bundled?</span></span></span>
+<span class="r-in"><span><span class="va">cat</span>  <span class="op">&lt;-</span> <span class="fu"><a href="morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">dict_slugs</span> <span class="op">&lt;-</span> <span class="va">cat</span><span class="op">$</span><span class="va">slug</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"dictionary"</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="va">dict_slugs</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "arsau_2020_2022_dictionary" "arsau_2023_dictionary"     </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [3] "arsau_2024_dictionary"      "corrections_uof_dictionary"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [5] "otis_dictionary"            "tps_dictionary"            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [7] "uof_dictionary"            </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Fetch one dictionary's JSON (returns a character scalar of JSON).</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">dict_slugs</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">js</span> <span class="op">&lt;-</span> <span class="fu">morie_data_dictionary</span><span class="op">(</span><span class="va">dict_slugs</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/substr.html" class="external-link">substr</a></span><span class="op">(</span><span class="va">js</span>, <span class="fl">1</span>, <span class="fl">200</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="co"># Parse it if you have jsonlite:</span></span></span>
+<span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"jsonlite"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span>    <span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="fu">jsonlite</span><span class="fu">::</span><span class="fu"><a href="https://jeroen.r-universe.dev/jsonlite/reference/fromJSON.html" class="external-link">fromJSON</a></span><span class="op">(</span><span class="va">js</span><span class="op">)</span>, max.level <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> List of 2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ UseOfForce_DetailedDataset_2020-2022.csv       :'data.frame':	168 obs. of  5 variables:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ UseofForce_AgrregateSummaryByYear_2020-2022.csv:'data.frame':	7 obs. of  5 variables:</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Unknown / non-dictionary slug: informative message, returns NULL.</span></span></span>
+<span class="r-in"><span><span class="fu">morie_data_dictionary</span><span class="op">(</span><span class="st">"no_such_dictionary"</span><span class="op">)</span></span></span>
+<span class="r-msg co"><span class="r-pr">#&gt;</span> No dictionary bundled for 'no_such_dictionary'. Rows with kind == "dictionary" in morie_data_catalog() list the ones available.</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

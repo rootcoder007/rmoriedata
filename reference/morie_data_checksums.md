@@ -21,7 +21,14 @@ and `sha256`.
 ## Examples
 
 ``` r
-head(morie_data_checksums())
+# One row per bundled file: name, size in bytes, SHA256 digest.
+ck <- morie_data_checksums()
+str(ck)
+#> 'data.frame':    124 obs. of  3 variables:
+#>  $ file  : chr  "OTIS_DATA_DICTIONARY.md" "useofforce_agrregatesummarybyyear_2020-2022.csv" "useofforce_detaileddataset_2020-2022.csv" "uof_individual_records.csv" ...
+#>  $ bytes : num  23210 289 6830 5221 1446 ...
+#>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "f3051269a22394b6930ba1961e7b6ed5e4454d483db1ea7cd930f1541330dfce" "4fa3b0ada472f2386ffc4cb81e438e68a57818e476b12524370cfab25ae1084a" "6d3a5986e39f4751901a1a2adb9e25be836266e1900bd41c8611fec7218187f4" ...
+head(ck)
 #>                                              file bytes
 #> 1                         OTIS_DATA_DICTIONARY.md 23210
 #> 2 useofforce_agrregatesummarybyyear_2020-2022.csv   289
@@ -36,4 +43,21 @@ head(morie_data_checksums())
 #> 4 6d3a5986e39f4751901a1a2adb9e25be836266e1900bd41c8611fec7218187f4
 #> 5 610bc3f8217b75d486b749ffe4ace23987862fafccffaae3b31137b46b2a7a79
 #> 6 1564ebdec4ea20334e2a2a8a906a774290ac0d37bf97444dcb17898e4d71d617
+
+# Total bundled payload and the largest few files.
+sum(ck$bytes)
+#> [1] 9921368
+head(ck[order(-ck$bytes), c("file", "bytes")], 3)
+#>                             file   bytes
+#> 29           describe_corpus.Rds 1712072
+#> 28      cpads_pumf_synthetic.csv  893252
+#> 38 nyc_opendata_bulk_catalog.csv  781038
+
+# Provenance workflow: pin the digest of a file you depend on, then
+# assert it hasn't changed under you in a later session / reinstall.
+if (nrow(ck)) {
+  pinned <- ck$sha256[1]
+  again  <- morie_data_checksums()
+  stopifnot(again$sha256[again$file == ck$file[1]] == pinned)
+}
 ```

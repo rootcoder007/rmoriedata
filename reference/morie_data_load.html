@@ -15,7 +15,8 @@
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/rmoriedata.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -61,14 +62,663 @@
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">morie_data_load</span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">df</span><span class="op">)</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Load a bundled lookup table by its slug.</span></span></span>
+<span class="r-in"><span><span class="va">iucr</span> <span class="op">&lt;-</span> <span class="fu">morie_data_load</span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">iucr</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	410 obs. of  5 variables:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ iucr                 : chr  "031A" "031B" "033A" "033B" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ primary_description  : chr  "ROBBERY" "ROBBERY" "ROBBERY" "ROBBERY" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ secondary_description: chr  "ARMED - HANDGUN" "ARMED - OTHER FIREARM" "ATTEMPT ARMED - HANDGUN" "ATTEMPT ARMED - OTHER FIREARM" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ index_code           : chr  "I" "I" "I" "I" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ active               : chr  "True" "True" "True" "True" ...</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">iucr</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   iucr primary_description         secondary_description index_code active</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1 031A             ROBBERY               ARMED - HANDGUN          I   True</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 031B             ROBBERY         ARMED - OTHER FIREARM          I   True</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 033A             ROBBERY       ATTEMPT ARMED - HANDGUN          I   True</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 033B             ROBBERY ATTEMPT ARMED - OTHER FIREARM          I   True</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5 041A             BATTERY          AGGRAVATED - HANDGUN          I   True</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6 041B             BATTERY    AGGRAVATED - OTHER FIREARM          I   True</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Any slug from the catalogue works the same way.</span></span></span>
+<span class="r-in"><span><span class="va">hoods</span>   <span class="op">&lt;-</span> <span class="fu">morie_data_load</span><span class="op">(</span><span class="st">"chicago_neighborhoods"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">offense</span> <span class="op">&lt;-</span> <span class="fu">morie_data_load</span><span class="op">(</span><span class="st">"nyc_nypd_offense_codes"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">hoods</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">offense</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 98</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 246</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Slugs are validated: an unknown one errors with guidance.</span></span></span>
+<span class="r-in"><span><span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">morie_data_load</span><span class="op">(</span><span class="st">"no_such_dataset"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> Error : No dataset 'no_such_dataset'. See morie_data_catalog() for valid slugs.</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Pattern: pick a slug programmatically from the catalogue, then load it.</span></span></span>
+<span class="r-in"><span><span class="va">cat</span>  <span class="op">&lt;-</span> <span class="fu"><a href="morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">slug</span> <span class="op">&lt;-</span> <span class="va">cat</span><span class="op">$</span><span class="va">slug</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span><span class="op">]</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu">morie_data_load</span><span class="op">(</span><span class="va">slug</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   REPORTING_YEAR      RECORD_ID  POLICE_SERVICE REPORT_TYPE TEAM_TYPE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           2020 SYNTH-DET-1001 Sample Regional      Person        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           2021 SYNTH-DET-1002             OPP      Person        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           2022 SYNTH-DET-1003 Sample Regional      Animal        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           2021 SYNTH-DET-1004             OPP      Person        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           2022 SYNTH-DET-1005 Sample Regional      Weapon        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   NUMBER_POLICE_OFFICERS_INVOLVED ASSIGNMENT_TYPE TYPE_INCIDENT_ALARM</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                              NA              NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                              NA              NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                              NA              NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                              NA              NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                              NA              NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_INCIDENT_BREAK_ENTER TYPE_INCIDENT_DOMESTIC_DISTURBANCE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                        NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                        NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                        NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_INCIDENT_HOMICIDE TYPE_INCIDENT_OTHER_DISTURBANCE TYPE_INCIDENT_ROBBERY</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                     NA                              NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                     NA                              NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                     NA                              NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                     NA                              NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                     NA                              NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_INCIDENT_SERIOUS_INJURY TYPE_INCIDENT_SUSPICIOUS_PERSON</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                           NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                           NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                           NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                           NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_INCIDENT_TRAFFIC TYPE_INCIDENT_WEAPONS_CALL TYPE_INCIDENT_OTHER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                    NA                         NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                    NA                         NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                    NA                         NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                    NA                         NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                    NA                         NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   POLICE_PRESENCE NUMBER_OF_POLICE_PRESENT ATTIRE NUMBER_OF_SUBJECTS</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1              NA                       NA     NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2              NA                       NA     NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3              NA                       NA     NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4              NA                       NA     NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5              NA                       NA     NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   RACE_SUB_ONE RACE_SUB_TWO RACE_SUB_THREE RACE TYPE_FORCE_FIREARM_DISCHARGED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1           NA           NA             NA   NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2           NA           NA             NA   NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3           NA           NA             NA   NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4           NA           NA             NA   NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5           NA           NA             NA   NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_FIREARM_DISCHARGED_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_FIREARM_DISCHARGED_FORCE_EFFECTIVE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_FIREARM_POINTED_UNKNOWN TYPE_FORCE_FIREARM_POINTED_AT_PERSON_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_FIREARM_POINTED_AT_PERSON_FORCE_EFFECTIVE TYPE_FORCE_HANDGUN_DRAWN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                   NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                   NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                   NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                   NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                   NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_HANDGUN_DRAWN_RANK TYPE_FORCE_HANDGUN_DRAWN_FORCE_EFFECTIVE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                            NA                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                            NA                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                            NA                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                            NA                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                            NA                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_LLF_DISCHARGED TYPE_FORCE_LLF_POINTED_UNKNOWN TYPE_FORCE_CEW</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                        NA                             NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        NA                             NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        NA                             NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                        NA                             NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                        NA                             NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_IMPACT_WEAPON_HARD TYPE_FORCE_IMPACT_WEAPON_HARD_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                            NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                            NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                            NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                            NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                            NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_IMPACT_WEAPON_HARD_FORCE_EFFECTIVE TYPE_FORCE_IMPACT_WEAPON_SOFT</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                            NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                            NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                            NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                            NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                            NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_IMPACT_WEAPON_SOFT_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_IMPACT_WEAPON_SOFT_FORCE_EFFECTIVE TYPE_FORCE_AEROSOL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                            NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                            NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                            NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                            NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                            NA                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_AEROSOL_WEAPON_RANK TYPE_FORCE_AEROSOL_WEAPON_FORCE_EFFECTIVE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                             NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                             NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                             NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                             NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                             NA                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_EMPTY_HAND_HARD TYPE_FORCE_EMPTY_HAND_TECHNIQUES_HARD_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_EMPTY_HAND_TECHNIQUES_HARD_FORCE_EFFECTIVE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_EMPTY_HAND_SOFT TYPE_FORCE_EMPTY_HAND_TECHNIQUES_SOFT_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                         NA                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_EMPTY_HAND_TECHNIQUES_SOFT_FORCE_EFFECTIVE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_PHYSICAL_FORCE TYPE_FORCE_OTHER TYPE_FORCE_OTHER_RANK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                        NA               NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        NA               NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        NA               NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                        NA               NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                        NA               NA                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FORCE_OTHER_FORCE_EFFECTIVE REASON_FORCE_EFFECT_ARREST</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                               NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                               NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                               NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                               NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                               NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   REASON_FORCE_PROTECT_SELF REASON_FORCE_PROTECT_PUBLIC</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                        NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                        NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                        NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   REASON_FORCE_PREVENT_ESCAPE REASON_FORCE_ACCIDENTAL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   REASON_FORCE_PREVENT_COMMISSION_OF_OFFENCE REASON_FORCE_PROTECT_OTHER_OFFICER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                         NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                         NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                         NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                         NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                         NA                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   REASON_FORCE_PROTECT_SUBJECT REASON_FORCE_OTHER TYPE_FIREARM_REVOLVER_CHECK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                           NA                 NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                           NA                 NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                           NA                 NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                           NA                 NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           NA                 NA                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FIREARM_REVOLVER_NUMBER_ROUNDS TYPE_FIREARM_RIFLE_CHECK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                  NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                  NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                  NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                  NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                  NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FIREARM_RIFLE_NUMBER_ROUNDS TYPE_FIREARM_SEMI_AUTOMATIC_CHECK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                               NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                               NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                               NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                               NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                               NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FIREARM_SEMI_AUTOMATIC_NUMBER_ROUNDS TYPE_FIREARM_SHOTGUN_CHECK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FIREARM_SHOTGUN_NUMBER_ROUNDS TYPE_FIREARM_OTHER_CHECK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TYPE_FIREARM_OTHER_NUMBER_ROUNDS DIST_SUB_ONE DIST_SUB_TWO DIST_SUB_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                               NA           NA           NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                               NA           NA           NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                               NA           NA           NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                               NA           NA           NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                               NA           NA           NA             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ALTERNATIVE_STRATEGIES_CONCEALMENT ALTERNATIVE_STRATEGIES_COVER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   ALTERNATIVE_STRATEGIES_VERBAL_INTERACTION ALTERNATIVE_STRATEGIES_OTHER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_BASEBALL_BAT_CLUB_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_BASEBALL_BAT_CLUB_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_BASEBALL_BAT_CLUB_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_KNIFE_EDGED_WEAPON_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_KNIFE_EDGED_WEAPON_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                     NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_KNIFE_EDGED_WEAPON_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_REVOLVER_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_REVOLVER_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_REVOLVER_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_RIFLE_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_RIFLE_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_RIFLE_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_SEMI_AUTOMATIC_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_SEMI_AUTOMATIC_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_SEMI_AUTOMATIC_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                   NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_SHOTGUN_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_SHOTGUN_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_SHOTGUN_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_NONE_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_NONE_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_NONE_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_UNKNOWN_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_UNKNOWN_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_UNKNOWN_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_OTHER_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_OTHER_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_SUBJECT_OTHER_SUBJECT_THREE WEAPONS_CARRIED_FIREARM</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                          NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_KNIFE_EDGED_WEAPON WEAPONS_CARRIED_IMPACT_WEAPON</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                 NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                 NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                 NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                 NA                            NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_UNARMED WEAPONS_CARRIED_UNKNOWN_WEAPON</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEAPONS_CARRIED_OTHER_WEAPON LOCATION_SUBJECT_WEAPONS_AT_HAND_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                           NA                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                           NA                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                           NA                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                           NA                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           NA                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_AT_HAND_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_AT_HAND_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_CONCEALED_PERSON_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_CONCEALED_PERSON_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_CONCEALED_PERSON_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_IN_HAND_SUBJECT_ONE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_IN_HAND_SUBJECT_TWO</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                           NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_SUBJECT_WEAPONS_IN_HAND_SUBJECT_THREE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   TOTAL_ROUNDS_FIRED_ALL_SUBJECTS LOCATION_INCIDENT_OUTDOOR_LANEWAY</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                              NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                              NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                              NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                              NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                              NA                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_OUTDOOR_MOTOR_VEHICLE LOCATION_INCIDENT_OUTDOOR_PARK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                      NA                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_OUTDOOR_ROADWAY LOCATION_INCIDENT_OUTDOOR_RURAL</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_OUTDOOR_YARD LOCATION_INCIDENT_OUTDOOR_OTHER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                             NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                             NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                             NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                             NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                             NA                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_PRIVATE_PROPERTY_APARTMENT</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_PRIVATE_PROPERTY_HALLWAY</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_PRIVATE_PROPERTY_HOUSE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                              NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_PUBLIC_PROPERTY_COMMERCIAL_SITE</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_PUBLIC_PROPERTY_FINANCIAL_INSTITUTION</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_PUBLIC_PROPERTY_PUBLIC_INSTITUTION</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                          NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LOCATION_INCIDENT_INDOOR_OTHER WEATHER_CONDITIONS_CLEAR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                             NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                             NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                             NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                             NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                             NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEATHER_CONDITIONS_CLOUDY WEATHER_CONDITIONS_FOG WEATHER_CONDITIONS_RAIN</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                        NA                     NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        NA                     NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        NA                     NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                        NA                     NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                        NA                     NA                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEATHER_CONDITIONS_SNOW_SLEET WEATHER_CONDITIONS_SUNNY</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                            NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                            NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                            NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                            NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                            NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   WEATHER_CONDITIONS_OTHER LIGHTING_CONDITIONS_DARK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                       NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                       NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                       NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                       NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                       NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LIGHTING_CONDITIONS_DAYLIGHT LIGHTING_CONDITIONS_DUSK</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                           NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                           NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                           NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                           NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                           NA                       NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LIGHTING_CONDITIONS_GOOD_ARTIFICIAL_LIGHT</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   LIGHTING_CONDITIONS_POOR_ARTIFICIAL_LIGHT LIGHTING_CONDITIONS_OTHER</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                        NA                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                        NA                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                        NA                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                        NA                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                        NA                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SELF_MEDICAL_ATTENTION_REQUIRED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SELF_NATURE_INJURIES</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_OTHER_POLICE_OFFICER_MEDICAL_ATTENTION_REQUIRED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                             NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_OTHER_POLICE_OFFICER_NATURE_INJURIES</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_THIRD_PARTY_MEDICAL_ATTENTION_REQUIRED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                    NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_THIRD_PARTY_NATURE_INJURIES</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                         NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SUBJECT1_MEDICAL_ATTENTION_REQUIRED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SUBJECT1_NATURE_INJURIES</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SUBJECT2_MEDICAL_ATTENTION_REQUIRED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SUBJECT2_NATURE_INJURIES</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                      NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SUBJECT3_MEDICAL_ATTENTION_REQUIRED</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                                 NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   PERSON_INJURED_SUBJECT3_NATURE_INJURIES REVIEWED_SUPERVISOR</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                      NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                                      NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                                      NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                      NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                                      NA                  NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   REVIEWED_TRAINING_ANALYST</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                        NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5                        NA</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

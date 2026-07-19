@@ -2,7 +2,7 @@
 
 Checks whether a data.frame satisfies k-anonymity over the supplied
 quasi-identifier columns. A dataset is k-anonymous if every combination
-of quasi-identifier values appears in at least `k` rows.
+of quasi-identifier values appears in at least \`k\` rows.
 
 ## Usage
 
@@ -65,29 +65,29 @@ df <- data.frame(
   age = c(25, 25, 25, 32, 32, 40),
   sex = c("F", "F", "F", "M", "M", "M")
 )
-morie_k_anonymity_verify(df, c("age", "sex"), k = 2)
-#> $satisfies
+
+# k = 2: the class {age=40, sex=M} has only 1 row -> VIOLATED.
+res <- morie_k_anonymity_verify(df, c("age", "sex"), k = 2)
+res$summary
+#> [1] "k=2: VIOLATED (min class size=1; 1/3 classes below threshold)"
+res$satisfies
 #> [1] FALSE
-#> 
-#> $k
-#> [1] 2
-#> 
-#> $min_class_size
-#> [1] 1
-#> 
-#> $n_classes
-#> [1] 3
-#> 
-#> $n_violations
-#> [1] 1
-#> 
-#> $violating_classes
+res$violating_classes        # the offending quasi-identifier combos
 #>   age sex .n
 #> 1  40   M  1
-#> 
-#> $summary
-#> [1] "k=2: VIOLATED (min class size=1; 1/3 classes below threshold)"
-#> 
-#> attr(,"class")
-#> [1] "morie_k_anon"
+
+# Loosening to k = 1 always holds; the default k = 5 is stricter.
+morie_k_anonymity_verify(df, c("age", "sex"), k = 1)$satisfies
+#> [1] TRUE
+morie_k_anonymity_verify(df, c("age", "sex"))$satisfies   # k = 5
+#> [1] FALSE
+
+# A single quasi-identifier is fine too.
+morie_k_anonymity_verify(df, "sex", k = 3)$min_class_size
+#> [1] 3
+
+# On real bundled data: are (year, arrest) cells 5-anonymous?
+morie_k_anonymity_verify(complaint_sample,
+  c("year", "arrest"), k = 5)$summary
+#> [1] "k=5: VIOLATED (min class size=1; 1/3 classes below threshold)"
 ```

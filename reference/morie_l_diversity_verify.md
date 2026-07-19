@@ -2,7 +2,7 @@
 
 Checks whether a data.frame satisfies l-diversity: within each
 equivalence class defined by the quasi-identifiers, the sensitive
-attribute must take at least `l` distinct values.
+attribute must take at least \`l\` distinct values.
 
 ## Usage
 
@@ -68,29 +68,26 @@ df <- data.frame(
   sex = c("F", "F", "F", "F", "M", "M", "M"),
   dx  = c("A", "B", "C", "A", "X", "Y", "Z")
 )
-morie_l_diversity_verify(df, c("age", "sex"), "dx", l = 3)
-#> $satisfies
-#> [1] TRUE
-#> 
-#> $l
-#> [1] 3
-#> 
-#> $min_diversity
-#> [1] 3
-#> 
-#> $n_classes
-#> [1] 2
-#> 
-#> $n_violations
-#> [1] 0
-#> 
-#> $violating_classes
-#> [1] age        sex        .diversity
-#> <0 rows> (or 0-length row.names)
-#> 
-#> $summary
+
+# Class {25,F} has 3 distinct dx (A,B,C); {32,M} has 3 (X,Y,Z) -> l=3 holds.
+res <- morie_l_diversity_verify(df, c("age", "sex"), "dx", l = 3)
+res$summary
 #> [1] "l=3: SATISFIED (min diversity=3; 0/2 classes below threshold)"
-#> 
-#> attr(,"class")
-#> [1] "morie_l_div"
+res$satisfies
+#> [1] TRUE
+res$min_diversity
+#> [1] 3
+
+# Demanding l = 4 fails: no class has 4 distinct sensitive values.
+bad <- morie_l_diversity_verify(df, c("age", "sex"), "dx", l = 4)
+bad$satisfies
+#> [1] FALSE
+bad$violating_classes
+#>   age sex .diversity
+#> 1  25   F          3
+#> 2  32   M          3
+
+# k-anonymity and l-diversity are complementary: check both.
+morie_k_anonymity_verify(df, c("age", "sex"), k = 3)$satisfies
+#> [1] TRUE
 ```

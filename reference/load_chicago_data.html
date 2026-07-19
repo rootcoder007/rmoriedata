@@ -23,7 +23,8 @@ the recommended bridge for Python (pandas.read_parquet)."><meta name="google-sit
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/rmoriedata.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -97,11 +98,42 @@ package), so no <span class="pkg">arrow</span> install is required.</p>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"complaints"</span><span class="op">)</span>             <span class="co"># bundled sample</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># `type` selects the dataset; the bundled sample is returned by default.</span></span></span>
+<span class="r-in"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"complaints"</span><span class="op">)</span>           <span class="co"># reported incidents</span></span></span>
+<span class="r-in"><span><span class="va">arr</span>  <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"arrests"</span><span class="op">)</span>              <span class="co"># arrests</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">arr</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 25000</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 25000</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">primary_type</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           THEFT         BATTERY CRIMINAL DAMAGE         ASSAULT   OTHER OFFENSE </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>            5825            4800            2362            1975            1760 </span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># `as = "tibble"` returns a tibble when the package is installed.</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tibble"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">tb</span> <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"complaints"</span>, as <span class="op">=</span> <span class="st">"tibble"</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">class</a></span><span class="op">(</span><span class="va">tb</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tbl_df"     "tbl"        "data.frame"</span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># `as = "parquet_path"` writes a Parquet file and returns its path --</span></span></span>
+<span class="r-in"><span><span class="co"># the recommended bridge to Python (pandas.read_parquet). Offline: the</span></span></span>
+<span class="r-in"><span><span class="co"># bundled sample is written, no network.</span></span></span>
 <span class="r-in"><span><span class="va">pq</span> <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"arrests"</span>, as <span class="op">=</span> <span class="st">"parquet_path"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="co"># Python: pandas.read_parquet(pq)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/files.html" class="external-link">file.exists</a></span><span class="op">(</span><span class="va">pq</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
+<span class="r-in"><span><span class="co"># `full = TRUE` fetches the complete dataset from the Chicago SODA API</span></span></span>
+<span class="r-in"><span><span class="co"># (live network, ~millions of rows; cached across sessions). `mirror`</span></span></span>
+<span class="r-in"><span><span class="co"># tries an offline-friendly Parquet mirror first when set. Network-only,</span></span></span>
+<span class="r-in"><span><span class="co"># so it is not run in automated checks.</span></span></span>
+<span class="r-in"><span><span class="va">big</span> <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
+<span class="r-in"><span>                         mirror <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"rmoriedata.mirror"</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">big</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
