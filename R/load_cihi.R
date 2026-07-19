@@ -25,9 +25,20 @@
 #'   Snapshotted to the Internet Archive (\url{https://web.archive.org}).
 #'   Catalogue current as of 2026-07.
 #' @examples
+#' # Full catalogue: title, live url, Wayback snapshot url.
 #' cat <- load_cihi_data_tables()
 #' nrow(cat)
+#' names(cat)
 #' head(cat$title, 3)
+#'
+#' # `archived_only = TRUE` keeps only rows that have a Wayback snapshot,
+#' # i.e. tables still retrievable if CIHI rotates the live file.
+#' arch <- load_cihi_data_tables(archived_only = TRUE)
+#' nrow(arch)                       # <= nrow(cat)
+#' all(nzchar(arch$wayback_url))    # TRUE
+#'
+#' # Find a table by keyword before fetching it.
+#' cat$title[grepl("hospital", cat$title, ignore.case = TRUE)][1:3]
 #' @export
 load_cihi_data_tables <- function(archived_only = FALSE) {
   path <- system.file("extdata", "cihi_data_tables.csv",
@@ -62,9 +73,22 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 #' @return The \code{dest} path, invisibly. Errors if both the live URL
 #'   and its Wayback fallback fail.
 #' @examples
-#' \dontrun{
+#' # Offline: inspect the catalogue to choose a `which` argument.
 #' cat <- load_cihi_data_tables()
-#' f <- fetch_cihi_table("Hospital Beds, 2024")   # live -> archive fallback
+#' head(cat$title, 3)
+#'
+#' \dontrun{
+#' # `which` by title substring (case-insensitive; must match exactly one).
+#' f1 <- fetch_cihi_table("Hospital Beds")           # -> tempfile path
+#'
+#' # `which` by row index into load_cihi_data_tables().
+#' f2 <- fetch_cihi_table(1)
+#'
+#' # `dest` chooses the output path; `timeout` bounds each request (seconds).
+#' f3 <- fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"), timeout = 60)
+#'
+#' # An ambiguous substring errors and lists the candidates:
+#' fetch_cihi_table("data")
 #' }
 #' @export
 fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {

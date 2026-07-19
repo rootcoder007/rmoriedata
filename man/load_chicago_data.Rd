@@ -41,9 +41,29 @@ Parquet I/O uses \pkg{nanoparquet} (already a hard dependency of this
 package), so no \pkg{arrow} install is required.
 }
 \examples{
-df <- load_chicago_data("complaints")             # bundled sample
+# `type` selects the dataset; the bundled sample is returned by default.
+comp <- load_chicago_data("complaints")           # reported incidents
+arr  <- load_chicago_data("arrests")              # arrests
+nrow(comp); nrow(arr)
+head(sort(table(comp$primary_type), decreasing = TRUE), 5)
+
+# `as = "tibble"` returns a tibble when the package is installed.
+if (requireNamespace("tibble", quietly = TRUE)) {
+  tb <- load_chicago_data("complaints", as = "tibble")
+  class(tb)
+}
+
 \donttest{
+# `as = "parquet_path"` writes a Parquet file and returns its path --
+# the recommended bridge to Python (pandas.read_parquet).
 pq <- load_chicago_data("arrests", as = "parquet_path")
-# Python: pandas.read_parquet(pq)
+file.exists(pq)
+
+# `full = TRUE` fetches the complete dataset from the Chicago SODA API
+# (network, large; cached across sessions). `mirror` tries an
+# offline-friendly Parquet mirror first when set.
+big <- load_chicago_data("complaints", full = TRUE,
+                         mirror = getOption("rmoriedata.mirror"))
+nrow(big)
 }
 }

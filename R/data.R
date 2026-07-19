@@ -28,8 +28,21 @@
 #' @seealso \code{\link{load_chicago_data}}
 #' @examples
 #' data(complaint_sample)
-#' nrow(complaint_sample)
+#' dim(complaint_sample)
+#' str(complaint_sample)
+#'
+#' # Most common offense types.
 #' head(sort(table(complaint_sample$primary_type), decreasing = TRUE), 5)
+#'
+#' # Arrest rate among reported incidents.
+#' mean(complaint_sample$arrest)
+#'
+#' # Incidents per year (the sample spans 2020+).
+#' table(complaint_sample$year)
+#'
+#' # Domestic-violence-flagged incidents by type.
+#' head(sort(table(complaint_sample$primary_type[complaint_sample$domestic]),
+#'           decreasing = TRUE), 3)
 "complaint_sample"
 
 #' Chicago arrests sample
@@ -53,6 +66,18 @@
 #' @seealso \code{\link{load_chicago_data}}
 #' @examples
 #' data(arrest_sample)
-#' nrow(arrest_sample)
+#' dim(arrest_sample)
+#' str(arrest_sample)
+#'
+#' # Recorded race distribution.
 #' sort(table(arrest_sample$race), decreasing = TRUE)
+#'
+#' # Charge severity (F = felony, M = misdemeanour, ...).
+#' sort(table(arrest_sample$charge_type), decreasing = TRUE)
+#'
+#' # Most frequent primary charges.
+#' head(sort(table(arrest_sample$charge_desc), decreasing = TRUE), 5)
+#'
+#' # Cross-tab race x charge type.
+#' with(arrest_sample, table(race, charge_type))
 "arrest_sample"

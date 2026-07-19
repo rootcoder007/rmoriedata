@@ -37,7 +37,18 @@
 #' @export
 #' @examples
 #' set.seed(1)
+#' # A single noised release of a true count of 42.
 #' morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
+#'
+#' # Smaller epsilon = stronger privacy = more noise.
+#' morie_dp_laplace_count(42, epsilon = 0.1)   # noisier
+#' morie_dp_laplace_count(42, epsilon = 5.0)   # closer to 42
+#'
+#' # The mechanism is unbiased: averaging many releases returns ~the truth.
+#' mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
+#'
+#' # For display, clip to a non-negative integer.
+#' round(pmax(0, morie_dp_laplace_count(3, epsilon = 0.5)))
 morie_dp_laplace_count <- function(true_count, epsilon) {
   if (length(true_count) != 1L || is.na(true_count) ||
         !is.numeric(true_count) || true_count < 0 ||
@@ -76,7 +87,20 @@ morie_dp_laplace_count <- function(true_count, epsilon) {
 #' @examples
 #' set.seed(1)
 #' x <- runif(1000, 0, 1)
+#'
+#' # A private mean of bounded data (bounds asserted by the caller).
 #' morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
+#' mean(x)                                  # the true mean, for comparison
+#'
+#' # `delta` controls the (epsilon, delta) guarantee; smaller = stronger.
+#' morie_dp_gaussian_mean(x, 0, 1, epsilon = 1.0, delta = 1e-9)
+#'
+#' # Wider bounds raise sensitivity, so the same epsilon adds more noise.
+#' morie_dp_gaussian_mean(x, lower = -5, upper = 5, epsilon = 1.0)
+#'
+#' # Out-of-range values are clipped to [lower, upper] (with a warning).
+#' y <- c(x, 2, -1)
+#' suppressWarnings(morie_dp_gaussian_mean(y, lower = 0, upper = 1, epsilon = 1))
 morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6) {
   if (!is.numeric(x) || length(x) == 0L) {
     stop("`x` must be a non-empty numeric vector.", call. = FALSE)
@@ -128,7 +152,21 @@ morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6) {
 #' @export
 #' @examples
 #' set.seed(1)
-#' morie_dp_laplace_histogram(c(120, 45, 8, 230, 17), epsilon = 0.5)
+#' true <- c(120, 45, 8, 230, 17)
+#'
+#' # Independent Laplace noise added to every bin.
+#' morie_dp_laplace_histogram(true, epsilon = 0.5)
+#'
+#' # Smaller epsilon = more noise per bin.
+#' morie_dp_laplace_histogram(true, epsilon = 0.1)
+#'
+#' # Post-process for display: clip negatives, round to integers.
+#' noisy <- morie_dp_laplace_histogram(true, epsilon = 1.0)
+#' round(pmax(0, noisy))
+#'
+#' # Release a private histogram straight from tabulated data.
+#' counts <- as.integer(table(complaint_sample$year))
+#' morie_dp_laplace_histogram(counts, epsilon = 1.0)
 morie_dp_laplace_histogram <- function(counts, epsilon) {
   if (!is.numeric(counts) || length(counts) == 0L || anyNA(counts) ||
         any(counts < 0) || any(counts != as.integer(counts))) {

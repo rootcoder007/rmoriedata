@@ -34,7 +34,20 @@
 #' @seealso [morie_data_load()], [morie_data_dictionary()]
 #' @examples
 #' cat <- morie_data_catalog()
-#' head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+#' str(cat)
+#'
+#' # How many datasets of each kind are bundled?
+#' table(cat$kind)
+#'
+#' # The tables, largest first.
+#' tbls <- cat[cat$kind == "table", c("slug", "n_rows", "n_cols")]
+#' head(tbls[order(-tbls$n_rows), ])
+#'
+#' # Every slug you can pass to morie_data_load().
+#' head(cat$slug, 10)
+#'
+#' # Where each table was originally built from.
+#' head(cat[, c("slug", "source_path")])
 #' @export
 morie_data_catalog <- function() {
   cat <- .rmoriedata_read("_catalog")
@@ -50,8 +63,23 @@ morie_data_catalog <- function() {
 #' @return A `data.frame`.
 #' @seealso [morie_data_catalog()]
 #' @examples
-#' df <- morie_data_load("chicago_iucr_codes")
-#' str(df)
+#' # Load a bundled lookup table by its slug.
+#' iucr <- morie_data_load("chicago_iucr_codes")
+#' str(iucr)
+#' head(iucr)
+#'
+#' # Any slug from the catalogue works the same way.
+#' hoods   <- morie_data_load("chicago_neighborhoods")
+#' offense <- morie_data_load("nyc_nypd_offense_codes")
+#' nrow(hoods); nrow(offense)
+#'
+#' # Slugs are validated: an unknown one errors with guidance.
+#' try(morie_data_load("no_such_dataset"))
+#'
+#' # Pattern: pick a slug programmatically from the catalogue, then load it.
+#' cat  <- morie_data_catalog()
+#' slug <- cat$slug[cat$kind == "table"][1]
+#' head(morie_data_load(slug))
 #' @export
 morie_data_load <- function(slug) {
   if (is.null(slug) || length(slug) != 1L || is.na(slug) || !is.character(slug)) {
@@ -73,8 +101,22 @@ morie_data_load <- function(slug) {
 #' @return A character scalar of JSON, or `NULL` if no dictionary exists.
 #' @seealso [morie_data_catalog()]
 #' @examples
-#' dicts <- morie_data_catalog()
-#' subset(dicts, kind == "dictionary", "slug")
+#' # Which dictionaries are bundled?
+#' cat  <- morie_data_catalog()
+#' dict_slugs <- cat$slug[cat$kind == "dictionary"]
+#' dict_slugs
+#'
+#' # Fetch one dictionary's JSON (returns a character scalar of JSON).
+#' if (length(dict_slugs)) {
+#'   js <- morie_data_dictionary(dict_slugs[1])
+#'   substr(js, 1, 200)
+#'   # Parse it if you have jsonlite:
+#'   if (requireNamespace("jsonlite", quietly = TRUE))
+#'     str(jsonlite::fromJSON(js), max.level = 1)
+#' }
+#'
+#' # Unknown / non-dictionary slug: informative message, returns NULL.
+#' morie_data_dictionary("no_such_dictionary")
 #' @export
 morie_data_dictionary <- function(slug) {
   d <- .rmoriedata_read("_dictionaries")

@@ -17,8 +17,22 @@ A character scalar of JSON, or `NULL` if no dictionary exists.
 Data dictionary (JSON) for a dataset, if one is bundled
 }
 \examples{
-dicts <- morie_data_catalog()
-subset(dicts, kind == "dictionary", "slug")
+# Which dictionaries are bundled?
+cat  <- morie_data_catalog()
+dict_slugs <- cat$slug[cat$kind == "dictionary"]
+dict_slugs
+
+# Fetch one dictionary's JSON (returns a character scalar of JSON).
+if (length(dict_slugs)) {
+  js <- morie_data_dictionary(dict_slugs[1])
+  substr(js, 1, 200)
+  # Parse it if you have jsonlite:
+  if (requireNamespace("jsonlite", quietly = TRUE))
+    str(jsonlite::fromJSON(js), max.level = 1)
+}
+
+# Unknown / non-dictionary slug: informative message, returns NULL.
+morie_data_dictionary("no_such_dictionary")
 }
 \seealso{
 [morie_data_catalog()]
