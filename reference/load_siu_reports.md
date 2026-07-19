@@ -37,9 +37,8 @@ subsystem.
 
 - format:
 
-  Bundle to read: `"csv"` (default, the gzip CSV – no extra dependency)
-  or `"parquet"` (columnar; requires the nanoparquet package). Both hold
-  the identical corpus.
+  Bundle to read: `"csv"` (default, the gzip CSV) or `"parquet"`
+  (columnar, via nanoparquet). Both hold the identical corpus.
 
 ## Value
 
