@@ -34,7 +34,11 @@ LinkingTo:
 Suggests:
   testthat (>= 3.0.0),
   tibble,
-  curl
+  curl,
+  jsonlite,
+  knitr,
+  rmarkdown
+VignetteBuilder: knitr
 LazyData: true
 LazyDataCompression: xz
 Additional_repositories:

@@ -24,6 +24,17 @@ Convenience wrapper that forwards a dataset-focused question to the
 }
 \examples{
 \dontrun{
+# Plain question -> routed to the rmorie CLI agent (auto backend).
 ask("which bundled datasets cover Toronto police use-of-force?")
+
+# Pin a specific model.
+ask("summarise the SIU director's-report corpus", model = "gpt-4o-mini")
+
+# Force a backend (see rmorie::agent for the available values).
+ask("list the Chicago datasets", backend = "ollama")
 }
+
+# With no rmorie binary on PATH the call returns an install hint, not an
+# error -- safe to run anywhere:
+if (!nzchar(Sys.which("rmorie"))) ask("hello")
 }

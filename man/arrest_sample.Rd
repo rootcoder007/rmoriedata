@@ -30,8 +30,20 @@ A CRAN-safe slice of the City of Chicago "Arrests" dataset. For the full
 }
 \examples{
 data(arrest_sample)
-nrow(arrest_sample)
+dim(arrest_sample)
+str(arrest_sample)
+
+# Recorded race distribution.
 sort(table(arrest_sample$race), decreasing = TRUE)
+
+# Charge severity (F = felony, M = misdemeanour, ...).
+sort(table(arrest_sample$charge_type), decreasing = TRUE)
+
+# Most frequent primary charges.
+head(sort(table(arrest_sample$charge_desc), decreasing = TRUE), 5)
+
+# Cross-tab race x charge type.
+with(arrest_sample, table(race, charge_type))
 }
 \seealso{
 \code{\link{load_chicago_data}}

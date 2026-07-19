@@ -11,12 +11,25 @@ A `data.frame` with columns `slug`, `source_path`, `kind`,
   `n_rows`, `n_cols`.
 }
 \description{
-Lists every dataset in the bundled SQLite store, including row/column
+Lists every dataset in the bundled Parquet store, including row/column
 counts and the original source path each table was built from.
 }
 \examples{
 cat <- morie_data_catalog()
-head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+str(cat)
+
+# How many datasets of each kind are bundled?
+table(cat$kind)
+
+# The tables, largest first.
+tbls <- cat[cat$kind == "table", c("slug", "n_rows", "n_cols")]
+head(tbls[order(-tbls$n_rows), ])
+
+# Every slug you can pass to morie_data_load().
+head(cat$slug, 10)
+
+# Where each table was originally built from.
+head(cat[, c("slug", "source_path")])
 }
 \seealso{
 [morie_data_load()], [morie_data_dictionary()]

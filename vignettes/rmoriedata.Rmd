@@ -1,0 +1,177 @@
+---
+title: "Getting started with rmoriedata"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Getting started with rmoriedata}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+library(rmoriedata)
+```
+
+`rmoriedata` bundles the open-data fixtures used across the `rmorie`
+ecosystem and ships a small set of analyst-facing helpers for releasing
+aggregate statistics without re-identification risk. Everything shown here
+runs **offline** against data that installs with the package -- no network
+required.
+
+The package has four surfaces:
+
+1. **A bundled dataset store** you browse and load by slug.
+2. **Named loaders** for the Chicago crime samples, the Ontario SIU
+   director's-report corpus, and the CIHI data-table catalogue.
+3. **Differential-privacy mechanisms** (`morie_dp_*`).
+4. **Re-identification-risk verifiers** (`morie_k_anonymity_verify`,
+   `morie_l_diversity_verify`, `morie_cell_suppress`).
+
+## 1. Browsing the bundled store
+
+Every bundled table lives in a Parquet store. `morie_data_catalog()` lists
+what's there, with row/column counts and the original source path.
+
+```{r catalog}
+cat <- morie_data_catalog()
+table(cat$kind)
+head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+```
+
+Load any table by its `slug`:
+
+```{r load}
+iucr <- morie_data_load("chicago_iucr_codes")
+head(iucr)
+```
+
+Unknown slugs error with guidance rather than failing silently:
+
+```{r load-bad, error = TRUE}
+morie_data_load("no_such_dataset")
+```
+
+Some tables ship a data dictionary (JSON). Find them via the catalogue's
+`kind` column:
+
+```{r dict}
+dict_slugs <- cat$slug[cat$kind == "dictionary"]
+head(dict_slugs)
+```
+
+## 2. The named loaders
+
+### Chicago crime samples
+
+Two CRAN-safe slices of the City of Chicago open data ship as lazy-loaded
+data objects, and `load_chicago_data()` wraps them (with an optional
+`full = TRUE` network fetch of the complete dataset).
+
+```{r chicago}
+comp <- load_chicago_data("complaints")
+dim(comp)
+head(sort(table(comp$primary_type), decreasing = TRUE), 5)
+
+arr <- load_chicago_data("arrests")
+sort(table(arr$charge_type), decreasing = TRUE)
+```
+
+### Ontario SIU director's reports
+
+The first open, machine-readable parse of the Ontario Special
+Investigations Unit director's-report corpus -- one row per report, 64
+structured columns.
+
+```{r siu}
+en <- load_siu_reports(lang = "en")
+nrow(en)
+head(sort(table(en$police_service), decreasing = TRUE), 5)
+```
+
+### CIHI data-table catalogue
+
+A catalogue of the public CIHI data-table workbooks, each with a live URL
+and an Internet Archive fallback so the table stays retrievable if CIHI
+rotates the file. (`fetch_cihi_table()` does the actual download and is a
+network call, so it isn't run here.)
+
+```{r cihi}
+tables <- load_cihi_data_tables()
+nrow(tables)
+head(tables$title, 3)
+```
+
+## 3. Data integrity
+
+Verify you're using the exact data slice the package shipped:
+
+```{r integrity}
+ck <- morie_data_checksums()
+head(ck[order(-ck$bytes), c("file", "bytes")], 3)
+
+# The same compiled SHA256 kernel the whole ecosystem uses:
+morie_core_sha256("abc")
+```
+
+## 4. Differential privacy
+
+Release counts, means, and histograms with calibrated noise. Smaller
+`epsilon` means stronger privacy and more noise.
+
+```{r dp}
+set.seed(1)
+
+# A private count of records matching a predicate.
+morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
+
+# The mechanism is unbiased -- averaging many releases recovers the truth.
+mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
+
+# A private mean of bounded data.
+x <- runif(1000, 0, 1)
+morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
+
+# A private histogram straight from tabulated data.
+counts <- as.integer(table(comp$year))
+round(pmax(0, morie_dp_laplace_histogram(counts, epsilon = 1.0)))
+```
+
+## 5. Re-identification risk
+
+Check a release against the standard disclosure-control thresholds before
+publishing it.
+
+```{r kanon}
+df <- data.frame(
+  age = c(25, 25, 25, 32, 32, 40),
+  sex = c("F", "F", "F", "M", "M", "M")
+)
+
+# k-anonymity: every quasi-identifier combo must appear >= k times.
+morie_k_anonymity_verify(df, c("age", "sex"), k = 2)$summary
+
+# l-diversity: each class must hold >= l distinct sensitive values.
+df2 <- data.frame(
+  age = c(25, 25, 25, 25, 32, 32, 32),
+  sex = c("F", "F", "F", "F", "M", "M", "M"),
+  dx  = c("A", "B", "C", "A", "X", "Y", "Z")
+)
+morie_l_diversity_verify(df2, c("age", "sex"), "dx", l = 3)$summary
+```
+
+Cell suppression hides small counts and (by default) applies complementary
+suppression so the hidden values can't be recovered from the marginals:
+
+```{r suppress}
+tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60), nrow = 3,
+              dimnames = list(c("A", "B", "C"), c("X", "Y", "Z")))
+res <- morie_cell_suppress(tbl, threshold = 5)
+res$suppressed
+```
+
+## Bridging to Python
+
+`load_chicago_data(..., as = "parquet_path")` writes a Parquet file and
+returns its path -- the recommended hand-off to `pandas.read_parquet()`.
+Because the store is Parquet throughout, the same tables load natively in
+R, Python, DuckDB, and Arrow.

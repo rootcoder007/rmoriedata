@@ -18,5 +18,20 @@ verify it used the exact data slice rmoriedata shipped, and is
 rmoriedata's integration with the bricklayer provenance layer.
 }
 \examples{
-head(morie_data_checksums())
+# One row per bundled file: name, size in bytes, SHA256 digest.
+ck <- morie_data_checksums()
+str(ck)
+head(ck)
+
+# Total bundled payload and the largest few files.
+sum(ck$bytes)
+head(ck[order(-ck$bytes), c("file", "bytes")], 3)
+
+# Provenance workflow: pin the digest of a file you depend on, then
+# assert it hasn't changed under you in a later session / reinstall.
+if (nrow(ck)) {
+  pinned <- ck$sha256[1]
+  again  <- morie_data_checksums()
+  stopifnot(again$sha256[again$file == ck$file[1]] == pinned)
+}
 }

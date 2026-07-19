@@ -36,8 +36,21 @@ full dataset use \code{load_chicago_data("complaints", full = TRUE)}.
 }
 \examples{
 data(complaint_sample)
-nrow(complaint_sample)
+dim(complaint_sample)
+str(complaint_sample)
+
+# Most common offense types.
 head(sort(table(complaint_sample$primary_type), decreasing = TRUE), 5)
+
+# Arrest rate among reported incidents.
+mean(complaint_sample$arrest)
+
+# Incidents per year (the sample spans 2020+).
+table(complaint_sample$year)
+
+# Domestic-violence-flagged incidents by type.
+head(sort(table(complaint_sample$primary_type[complaint_sample$domestic]),
+          decreasing = TRUE), 3)
 }
 \seealso{
 \code{\link{load_chicago_data}}

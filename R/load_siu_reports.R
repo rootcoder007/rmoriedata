@@ -27,9 +27,27 @@
 #'   and the Ontario Government archive (pre-2018). Parsed with the
 #'   \pkg{rmorie} SIU subsystem.
 #' @examples
-#' df <- load_siu_reports(lang = "en")
-#' nrow(df)
-#' table(df$police_service)[order(-table(df$police_service))][1:5]
+#' # Default: every parsed report, as a base data.frame.
+#' all <- load_siu_reports()
+#' nrow(all)
+#' ncol(all)
+#'
+#' # `lang` filters the corpus by report language.
+#' en <- load_siu_reports(lang = "en")   # English director's reports
+#' fr <- load_siu_reports(lang = "fr")   # French director's reports
+#' nrow(en); nrow(fr)
+#'
+#' # `as = "tibble"` returns a tibble when the tibble package is present.
+#' if (requireNamespace("tibble", quietly = TRUE)) {
+#'   tb <- load_siu_reports(lang = "en", as = "tibble")
+#'   class(tb)
+#' }
+#'
+#' # The five police services with the most reports.
+#' if (nrow(en)) {
+#'   top <- sort(table(en$police_service), decreasing = TRUE)
+#'   head(top, 5)
+#' }
 #' @export
 load_siu_reports <- function(lang = c("all", "en", "fr"),
                              as = c("data.frame", "tibble")) {

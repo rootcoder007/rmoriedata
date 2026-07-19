@@ -24,10 +24,26 @@
 #' @export
 #' @examples
 #' df <- data.frame(
-#'   age   = c(25, 25, 25, 32, 32, 40),
-#'   sex   = c("F", "F", "F", "M", "M", "M")
+#'   age = c(25, 25, 25, 32, 32, 40),
+#'   sex = c("F", "F", "F", "M", "M", "M")
 #' )
-#' morie_k_anonymity_verify(df, c("age", "sex"), k = 2)
+#'
+#' # k = 2: the class {age=40, sex=M} has only 1 row -> VIOLATED.
+#' res <- morie_k_anonymity_verify(df, c("age", "sex"), k = 2)
+#' res$summary
+#' res$satisfies
+#' res$violating_classes        # the offending quasi-identifier combos
+#'
+#' # Loosening to k = 1 always holds; the default k = 5 is stricter.
+#' morie_k_anonymity_verify(df, c("age", "sex"), k = 1)$satisfies
+#' morie_k_anonymity_verify(df, c("age", "sex"))$satisfies   # k = 5
+#'
+#' # A single quasi-identifier is fine too.
+#' morie_k_anonymity_verify(df, "sex", k = 3)$min_class_size
+#'
+#' # On real bundled data: are (year, arrest) cells 5-anonymous?
+#' morie_k_anonymity_verify(complaint_sample,
+#'   c("year", "arrest"), k = 5)$summary
 morie_k_anonymity_verify <- function(data, quasi_identifiers, k = 5) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
@@ -112,7 +128,20 @@ morie_k_anonymity_verify <- function(data, quasi_identifiers, k = 5) {
 #'   sex = c("F", "F", "F", "F", "M", "M", "M"),
 #'   dx  = c("A", "B", "C", "A", "X", "Y", "Z")
 #' )
-#' morie_l_diversity_verify(df, c("age", "sex"), "dx", l = 3)
+#'
+#' # Class {25,F} has 3 distinct dx (A,B,C); {32,M} has 3 (X,Y,Z) -> l=3 holds.
+#' res <- morie_l_diversity_verify(df, c("age", "sex"), "dx", l = 3)
+#' res$summary
+#' res$satisfies
+#' res$min_diversity
+#'
+#' # Demanding l = 4 fails: no class has 4 distinct sensitive values.
+#' bad <- morie_l_diversity_verify(df, c("age", "sex"), "dx", l = 4)
+#' bad$satisfies
+#' bad$violating_classes
+#'
+#' # k-anonymity and l-diversity are complementary: check both.
+#' morie_k_anonymity_verify(df, c("age", "sex"), k = 3)$satisfies
 morie_l_diversity_verify <- function(data, quasi_identifiers, sensitive, l = 3) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
@@ -202,8 +231,27 @@ morie_l_diversity_verify <- function(data, quasi_identifiers, sensitive, l = 3) 
 #' @export
 #' @examples
 #' tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60), nrow = 3,
-#'               dimnames = list(c("A","B","C"), c("X","Y","Z")))
-#' morie_cell_suppress(tbl, threshold = 5)
+#'               dimnames = list(c("A", "B", "C"), c("X", "Y", "Z")))
+#'
+#' # Default: primary suppression (cells 1..4) PLUS complementary suppression
+#' # so a suppressed cell can't be recovered from row/column marginals.
+#' res <- morie_cell_suppress(tbl, threshold = 5)
+#' res$suppressed              # NA where suppressed
+#' res$n_primary              # cells below threshold
+#' res$n_complementary        # extra cells hidden to protect the marginals
+#' res$primary_mask
+#'
+#' # Turn complementary suppression off: only the small cells are hidden.
+#' morie_cell_suppress(tbl, threshold = 5,
+#'                     return_complementary = FALSE)$suppressed
+#'
+#' # A higher threshold suppresses more cells.
+#' morie_cell_suppress(tbl, threshold = 50)$n_primary
+#'
+#' # Works on a 2-D table too; NA cells pass through untouched.
+#' t2 <- as.table(matrix(c(2, 40, 30, 1), 2,
+#'                       dimnames = list(c("a", "b"), c("c", "d"))))
+#' morie_cell_suppress(t2, threshold = 5)$suppressed
 morie_cell_suppress <- function(tbl, threshold = 5, return_complementary = TRUE) {
   if (length(threshold) != 1L || !is.numeric(threshold) ||
         is.na(threshold) || threshold < 1) {
