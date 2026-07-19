@@ -32,9 +32,9 @@
     </div>
 
     <div class="section level2">
-      <h2 id="all-functions">All functions<a class="anchor" aria-label="anchor" href="#all-functions"></a></h2>
+      <h2 id="bundled-datasets">Bundled datasets<a class="anchor" aria-label="anchor" href="#bundled-datasets"></a></h2>
 
-
+      <div class="section-desc"><p>Discover, load, and inspect the packaged Canadian public-data tables (OTIS carceral data, CIHI health tables, Chicago crime) that the rmorie analysis functions consume.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -43,31 +43,31 @@
 
       <dl><dt>
 
-          <code><a href="arrest_sample.html">arrest_sample</a></code>
+          <code><a href="morie_data_catalog.html">morie_data_catalog()</a></code>
 
         </dt>
-        <dd>Chicago arrests sample</dd>
+        <dd>Catalogue of bundled datasets</dd>
 
         <dt>
 
-          <code><a href="ask.html">ask()</a></code>
+          <code><a href="morie_data_load.html">morie_data_load()</a></code>
 
         </dt>
-        <dd>Ask the rmorie agent about the bundled datasets</dd>
+        <dd>Load a bundled dataset by slug</dd>
 
         <dt>
 
-          <code><a href="complaint_sample.html">complaint_sample</a></code>
+          <code><a href="morie_data_dictionary.html">morie_data_dictionary()</a></code>
 
         </dt>
-        <dd>Chicago reported-crime sample ("complaints")</dd>
+        <dd>Data dictionary (JSON) for a dataset, if one is bundled</dd>
 
         <dt>
 
-          <code><a href="fetch_cihi_table.html">fetch_cihi_table()</a></code>
+          <code><a href="morie_data_checksums.html">morie_data_checksums()</a></code>
 
         </dt>
-        <dd>Download a CIHI data table (live, with Wayback fallback)</dd>
+        <dd>SHA256 checksums of bundled rmoriedata files</dd>
 
         <dt>
 
@@ -85,54 +85,21 @@
 
         <dt>
 
-          <code><a href="morie_cell_suppress.html">morie_cell_suppress()</a></code>
+          <code><a href="fetch_cihi_table.html">fetch_cihi_table()</a></code>
 
         </dt>
-        <dd>Cell suppression with optional complementary suppression</dd>
+        <dd>Download a CIHI data table (live, with Wayback fallback)</dd>
+      </dl></div><div class="section level2">
+      <h2 id="differential-privacy">Differential privacy<a class="anchor" aria-label="anchor" href="#differential-privacy"></a></h2>
 
-        <dt>
+      <div class="section-desc"><p>Calibrated-noise mechanisms (Laplace, Gaussian) for releasing privacy-preserving counts, histograms, and means at a stated epsilon.</p></div>
 
-          <code><a href="morie_core.html">morie_core_sha256()</a></code> <code><a href="morie_core.html">morie_core_mean()</a></code>
+      <dl></dl></div><div class="section level2">
 
-        </dt>
-        <dd>Shared C-core helpers (rmorie ecosystem backend)</dd>
 
-        <dt>
 
-          <code><a href="morie_data_catalog.html">morie_data_catalog()</a></code>
 
-        </dt>
-        <dd>Catalogue of bundled datasets</dd>
-
-        <dt>
-
-          <code><a href="morie_data_checksums.html">morie_data_checksums()</a></code>
-
-        </dt>
-        <dd>SHA256 checksums of bundled rmoriedata files</dd>
-
-        <dt>
-
-          <code><a href="morie_data_dictionary.html">morie_data_dictionary()</a></code>
-
-        </dt>
-        <dd>Data dictionary (JSON) for a dataset, if one is bundled</dd>
-
-        <dt>
-
-          <code><a href="morie_data_load.html">morie_data_load()</a></code>
-
-        </dt>
-        <dd>Load a bundled dataset by slug</dd>
-
-        <dt>
-
-          <code><a href="morie_dp_gaussian_mean.html">morie_dp_gaussian_mean()</a></code>
-
-        </dt>
-        <dd>Differentially-private mean via the Gaussian mechanism with bounded inputs</dd>
-
-        <dt>
+      <dl><dt>
 
           <code><a href="morie_dp_laplace_count.html">morie_dp_laplace_count()</a></code>
 
@@ -148,6 +115,22 @@
 
         <dt>
 
+          <code><a href="morie_dp_gaussian_mean.html">morie_dp_gaussian_mean()</a></code>
+
+        </dt>
+        <dd>Differentially-private mean via the Gaussian mechanism with bounded inputs</dd>
+      </dl></div><div class="section level2">
+      <h2 id="statistical-disclosure-control">Statistical disclosure control<a class="anchor" aria-label="anchor" href="#statistical-disclosure-control"></a></h2>
+
+      <div class="section-desc"><p>Re-identification safeguards for microdata releases: k-anonymity and l-diversity checks plus small-cell suppression.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
           <code><a href="morie_k_anonymity_verify.html">morie_k_anonymity_verify()</a></code>
 
         </dt>
@@ -159,8 +142,62 @@
 
         </dt>
         <dd>l-diversity verification</dd>
+
+        <dt>
+
+          <code><a href="morie_cell_suppress.html">morie_cell_suppress()</a></code>
+
+        </dt>
+        <dd>Cell suppression with optional complementary suppression</dd>
+      </dl></div><div class="section level2">
+      <h2 id="core-utilities">Core utilities<a class="anchor" aria-label="anchor" href="#core-utilities"></a></h2>
+
+      <div class="section-desc"><p>Shared primitives used across the package.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="morie_core.html">morie_core_sha256()</a></code> <code><a href="morie_core.html">morie_core_mean()</a></code>
+
+        </dt>
+        <dd>Shared C-core helpers (rmorie ecosystem backend)</dd>
+
+        <dt>
+
+          <code><a href="ask.html">ask()</a></code>
+
+        </dt>
+        <dd>Ask the rmorie agent about the bundled datasets</dd>
+      </dl></div><div class="section level2">
+      <h2 id="sample-data-objects">Sample data objects<a class="anchor" aria-label="anchor" href="#sample-data-objects"></a></h2>
+
+      <div class="section-desc"><p>Small documented data frames bundled for examples and tests (lazy-loaded via data()).</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="arrest_sample.html">arrest_sample</a></code>
+
+        </dt>
+        <dd>Chicago arrests sample</dd>
+
+        <dt>
+
+          <code><a href="complaint_sample.html">complaint_sample</a></code>
+
+        </dt>
+        <dd>Chicago reported-crime sample ("complaints")</dd>
       </dl></div>
-  </main></div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">
