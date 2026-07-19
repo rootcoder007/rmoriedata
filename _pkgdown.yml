@@ -7,10 +7,21 @@ template:
 
 home:
   links:
+    - text: Install from r-universe
+      href: https://rootcoder007.r-universe.dev/rmoriedata
     - text: Analysis package (rmorie)
       href: https://github.com/rootcoder007/rmorie
     - text: Source on GitHub
       href: https://github.com/rootcoder007/rmoriedata
+
+navbar:
+  structure:
+    right: [search, universe, github]
+  components:
+    universe:
+      icon: fa-box-open
+      href: https://rootcoder007.r-universe.dev/rmoriedata
+      aria-label: r-universe
 
 reference:
   - title: Bundled datasets
