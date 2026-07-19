@@ -10,7 +10,11 @@ Ontario Special Investigations Unit director's reports,
   \pkg{rmorie} SIU subsystem.
 }
 \usage{
-load_siu_reports(lang = c("all", "en", "fr"), as = c("data.frame", "tibble"))
+load_siu_reports(
+  lang = c("all", "en", "fr"),
+  as = c("data.frame", "tibble"),
+  format = c("csv", "parquet")
+)
 }
 \arguments{
 \item{lang}{One of \code{"all"} (default), \code{"en"}, or
