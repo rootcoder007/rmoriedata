@@ -15,7 +15,7 @@ rmoriedata's integration with the bricklayer provenance layer."><meta name="goog
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -67,7 +67,7 @@ rmoriedata's integration with the bricklayer provenance layer.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># One row per bundled file: name, size in bytes, SHA256 digest.</span></span></span>
 <span class="r-in"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu">morie_data_checksums</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">ck</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	124 obs. of  3 variables:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	125 obs. of  3 variables:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ file  : chr  "OTIS_DATA_DICTIONARY.md" "useofforce_agrregatesummarybyyear_2020-2022.csv" "useofforce_detaileddataset_2020-2022.csv" "uof_individual_records.csv" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ bytes : num  23210 289 6830 5221 1446 ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "f3051269a22394b6930ba1961e7b6ed5e4454d483db1ea7cd930f1541330dfce" "4fa3b0ada472f2386ffc4cb81e438e68a57818e476b12524370cfab25ae1084a" "6d3a5986e39f4751901a1a2adb9e25be836266e1900bd41c8611fec7218187f4" ...</span>
@@ -89,12 +89,12 @@ rmoriedata's integration with the bricklayer provenance layer.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Total bundled payload and the largest few files.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 9954858</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 10990685</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             file   bytes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 29           describe_corpus.Rds 1712072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 28      cpads_pumf_synthetic.csv  893252</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 38 nyc_opendata_bulk_catalog.csv  781038</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              file   bytes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 29            describe_corpus.Rds 1712072</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 106 siu_directors_reports.parquet 1035827</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28       cpads_pumf_synthetic.csv  893252</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Provenance workflow: pin the digest of a file you depend on, then</span></span></span>
 <span class="r-in"><span><span class="co"># assert it hasn't changed under you in a later session / reinstall.</span></span></span>

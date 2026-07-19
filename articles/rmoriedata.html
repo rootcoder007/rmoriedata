@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -199,10 +199,10 @@ download and is a network call, so it isn’t run here.)</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                             file   bytes</span></span>
-<span><span class="co">#&gt; 28           describe_corpus.Rds 1712072</span></span>
-<span><span class="co">#&gt; 27      cpads_pumf_synthetic.csv  893252</span></span>
-<span><span class="co">#&gt; 37 nyc_opendata_bulk_catalog.csv  781038</span></span>
+<span><span class="co">#&gt;                              file   bytes</span></span>
+<span><span class="co">#&gt; 28            describe_corpus.Rds 1712072</span></span>
+<span><span class="co">#&gt; 106 siu_directors_reports.parquet 1035827</span></span>
+<span><span class="co">#&gt; 27       cpads_pumf_synthetic.csv  893252</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
 <span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>

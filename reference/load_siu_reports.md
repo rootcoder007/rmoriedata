@@ -10,7 +10,11 @@ news-release linkage), plus a `panel_reviewed` flag.
 ## Usage
 
 ``` r
-load_siu_reports(lang = c("all", "en", "fr"), as = c("data.frame", "tibble"))
+load_siu_reports(
+  lang = c("all", "en", "fr"),
+  as = c("data.frame", "tibble"),
+  format = c("csv", "parquet")
+)
 ```
 
 ## Source

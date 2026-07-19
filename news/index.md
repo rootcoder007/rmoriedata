@@ -1,5 +1,12 @@
 # Changelog
 
+## rmoriedata 0.2.5
+
+- SIU corpus also bundled as Parquet;
+  `load_siu_reports(format = "parquet")` reads it via nanoparquet
+  (columnar / SQL-friendly). CSV remains the default (no extra
+  dependency).
+
 ## rmoriedata 0.2.4
 
 - SIU corpus: bundle the multi-agent panel-REVIEWED director’s reports
