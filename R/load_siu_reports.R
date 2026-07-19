@@ -3,12 +3,21 @@
 
 #' Load the Ontario SIU director's-report corpus
 #'
-#' Returns the bundled, parsed Ontario Special Investigations Unit (SIU)
-#' director's-report table: one row per report drid, 64 structured
+#' Returns the bundled Ontario Special Investigations Unit (SIU)
+#' director's-report table: one row per report drid, 65 structured
 #' columns (police service, incident / notification / decision dates,
 #' investigator and witness / subject-official counts, affected-person
 #' demographics, injuries, legislation, charges verdict, director's
-#' decision, and news-release linkage).
+#' decision, and news-release linkage), plus a \code{panel_reviewed}
+#' flag.
+#'
+#' For every English report (\code{panel_reviewed == "TRUE"}), the 16
+#' key columns were verified by a multi-agent LLM review panel against
+#' the full report text and the parser's guess resolved to the correct
+#' value; the subject-official count is filled for 100\% of English
+#' reports (witness-officer-only investigations are a genuine 0). French
+#' reports carry the parser values. See the \code{siu} pipeline repo for
+#' the audit provenance.
 #'
 #' This is the machine-readable companion to the SIU parser and
 #' data-mining subsystem in \pkg{rmorie} / \pkg{morie} -- the first
