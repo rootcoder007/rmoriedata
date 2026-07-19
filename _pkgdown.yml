@@ -26,6 +26,7 @@ reference:
       - load_chicago_data
       - load_cihi_data_tables
       - fetch_cihi_table
+      - load_siu_reports
   - title: Differential privacy
     desc: >
       Calibrated-noise mechanisms (Laplace, Gaussian) for releasing
