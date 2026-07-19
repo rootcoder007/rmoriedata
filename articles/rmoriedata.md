@@ -115,11 +115,11 @@ nrow(en)
 head(sort(table(en$police_service), decreasing = TRUE), 5)
 #> 
 #>          Toronto Police Service       Ontario Provincial Police 
-#>                             462                             437 
+#>                             467                             404 
 #>            Peel Regional Police Niagara Regional Police Service 
-#>                             169                             103 
-#>           London Police Service 
-#>                              87
+#>                             188                              95 
+#>         Hamilton Police Service 
+#>                              91
 ```
 
 ### CIHI data-table catalogue

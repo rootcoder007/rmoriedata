@@ -46,7 +46,7 @@ head(ck)
 
 # Total bundled payload and the largest few files.
 sum(ck$bytes)
-#> [1] 9921368
+#> [1] 9954858
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                             file   bytes
 #> 29           describe_corpus.Rds 1712072
