@@ -9,12 +9,35 @@ files used by `rmorie`'s examples, vignettes, and tests.
 ## Install
 
 ```r
-# pak (recommended)
-pak::pkg_install("rootcoder007/rmoriedata")
+# r-universe (recommended -- prebuilt binaries, no compiler needed)
+install.packages(
+  "rmoriedata",
+  repos = c("https://rootcoder007.r-universe.dev",
+            "https://cloud.r-project.org")
+)
 
-# remotes
-remotes::install_github("rootcoder007/rmoriedata")
+# or from GitHub source
+# pak::pkg_install("rootcoder007/rmoriedata")
+# remotes::install_github("rootcoder007/rmoriedata")
 ```
+
+## Quick start
+
+```r
+library(rmoriedata)
+
+# Browse and load a bundled table by slug.
+cat <- morie_data_catalog()
+head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+iucr <- morie_data_load("chicago_iucr_codes")
+
+# Release a private count, then check a table for re-identification risk.
+morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
+df <- data.frame(age = c(25, 25, 25, 40), sex = c("F", "F", "F", "M"))
+morie_k_anonymity_verify(df, c("age", "sex"), k = 2)$summary
+```
+
+See `vignette("rmoriedata")` for the full tour.
 
 ## Functions
 
