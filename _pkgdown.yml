@@ -4,3 +4,47 @@ template:
   includes:
     in_header: |
       <meta name="google-site-verification" content="8ORzeHrfoPIOrujfV-km-kXCi9HD8dvL5GYH-GqwjYI">
+
+home:
+  links:
+    - text: Analysis package (rmorie)
+      href: https://github.com/rootcoder007/rmorie
+    - text: Source on GitHub
+      href: https://github.com/rootcoder007/rmoriedata
+
+reference:
+  - title: Bundled datasets
+    desc: >
+      Discover, load, and inspect the packaged Canadian public-data tables
+      (OTIS carceral data, CIHI health tables, Chicago crime) that the rmorie
+      analysis functions consume.
+    contents:
+      - morie_data_catalog
+      - morie_data_load
+      - morie_data_dictionary
+      - morie_data_checksums
+      - load_chicago_data
+      - load_cihi_data_tables
+      - fetch_cihi_table
+  - title: Differential privacy
+    desc: >
+      Calibrated-noise mechanisms (Laplace, Gaussian) for releasing
+      privacy-preserving counts, histograms, and means at a stated epsilon.
+    contents:
+      - morie_dp_laplace_count
+      - morie_dp_laplace_histogram
+      - morie_dp_gaussian_mean
+  - title: Statistical disclosure control
+    desc: >
+      Re-identification safeguards for microdata releases: k-anonymity and
+      l-diversity checks plus small-cell suppression.
+    contents:
+      - morie_k_anonymity_verify
+      - morie_l_diversity_verify
+      - morie_cell_suppress
+  - title: Core utilities
+    desc: Shared primitives used across the package.
+    contents:
+      - morie_core_mean
+      - morie_core_sha256
+      - ask
