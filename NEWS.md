@@ -1,5 +1,10 @@
 # rmoriedata 0.2.5
 
+* `load_chicago_data(full = TRUE)` gains `limit` (exact row cap) and
+  `fraction` (share of the live dataset, total looked up first); bounded
+  fetches never touch the full-dataset cache. Network examples are now
+  `\donttest{}` with `try()` so they degrade gracefully offline.
+
 * SIU corpus also bundled as Parquet; `load_siu_reports(format = "parquet")` reads it via nanoparquet (columnar / SQL-friendly). CSV remains the default (no extra dependency).
 
 # rmoriedata 0.2.4

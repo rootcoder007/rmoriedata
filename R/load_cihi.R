@@ -77,20 +77,19 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 #' cat <- load_cihi_data_tables()
 #' head(cat$title, 3)
 #'
-#' \dontrun{
-#' # Not run: downloads a table from the live CIHI web service; check
-#' # machines must not depend on remote-service availability.
+#' \donttest{
+#' # Downloads a table from the live CIHI web service; try() keeps the
+#' # example graceful when the service is unreachable.
 #' # `which` by title substring (case-insensitive; must match exactly one).
-#' f1 <- fetch_cihi_table("Hospital Beds")           # -> tempfile path
+#' f1 <- try(fetch_cihi_table("Hospital Beds"))      # -> tempfile path
 #'
-#' # `which` by row index into load_cihi_data_tables().
-#' f2 <- fetch_cihi_table(1)
-#'
-#' # `dest` chooses the output path; `timeout` bounds each request (seconds).
-#' f3 <- fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"), timeout = 60)
+#' # `which` by row index into load_cihi_data_tables(); `dest` chooses the
+#' # output path and `timeout` bounds each request (seconds).
+#' f3 <- try(fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"),
+#'                            timeout = 60))
 #'
 #' # An ambiguous substring errors and lists the candidates:
-#' fetch_cihi_table("data")
+#' try(fetch_cihi_table("data"))
 #' }
 #' @export
 fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
