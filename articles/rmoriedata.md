@@ -27,7 +27,7 @@ cat <- morie_data_catalog()
 table(cat$kind)
 #> 
 #> dictionary      table 
-#>          8         88
+#>          8         89
 head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
 #>                                                          slug n_rows n_cols
 #> 1                 arsau_uof_detailed_dataset_2020_2022_sample      5    167
@@ -150,9 +150,9 @@ Verify you’re using the exact data slice the package shipped:
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file    bytes
-#> 166             rmoriedata.sqlite 14831616
+#> 167             rmoriedata.sqlite 14835712
 #> 28            describe_corpus.Rds  1712072
-#> 172 siu_directors_reports.parquet  1035827
+#> 173 siu_directors_reports.parquet  1035827
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 morie_core_sha256("abc")

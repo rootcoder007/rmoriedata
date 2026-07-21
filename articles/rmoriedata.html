@@ -97,7 +97,7 @@ counts and the original source path.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; dictionary      table </span></span>
-<span><span class="co">#&gt;          8         88</span></span>
+<span><span class="co">#&gt;          8         89</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                                          slug n_rows n_cols</span></span>
 <span><span class="co">#&gt; 1                 arsau_uof_detailed_dataset_2020_2022_sample      5    167</span></span>
@@ -200,9 +200,9 @@ download and is a network call, so it isn’t run here.)</p>
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                              file    bytes</span></span>
-<span><span class="co">#&gt; 166             rmoriedata.sqlite 14831616</span></span>
+<span><span class="co">#&gt; 167             rmoriedata.sqlite 14835712</span></span>
 <span><span class="co">#&gt; 28            describe_corpus.Rds  1712072</span></span>
-<span><span class="co">#&gt; 172 siu_directors_reports.parquet  1035827</span></span>
+<span><span class="co">#&gt; 173 siu_directors_reports.parquet  1035827</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
 <span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>

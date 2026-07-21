@@ -61,7 +61,7 @@ counts and the original source path each table was built from.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu">morie_data_catalog</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">cat</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	96 obs. of  5 variables:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	97 obs. of  5 variables:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ slug       : chr  "arsau_uof_detailed_dataset_2020_2022_sample" "arsau_uof_individual_records_sample" "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022" "arsau_2020_2022_useofforce_detaileddataset_2020_2022" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ source_path: chr  "arsau_uof_detailed_dataset_2020_2022_sample.csv" "arsau_uof_individual_records_sample.csv" "arsau/2020-2022/useofforce_agrregatesummarybyyear_2020-2022.csv" "arsau/2020-2022/useofforce_detaileddataset_2020-2022.csv" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ kind       : chr  "table" "table" "table" "table" ...</span>
@@ -72,18 +72,18 @@ counts and the original source path each table was built from.</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dictionary      table </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          8         88 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          8         89 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The tables, largest first.</span></span></span>
 <span class="r-in"><span><span class="va">tbls</span> <span class="op">&lt;-</span> <span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tbls</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">tbls</span><span class="op">$</span><span class="va">n_rows</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                              slug n_rows n_cols</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 71          siu_directors_reports   5157     65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 72              siu_drid_manifest   4749      9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 31      nyc_opendata_bulk_catalog   2851      7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 72          siu_directors_reports   5157     65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 73              siu_drid_manifest   4749      9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 32      nyc_opendata_bulk_catalog   2851      7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 23 edmonton_opendata_bulk_catalog   2027      7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 20  chicago_opendata_bulk_catalog   1856      7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34                otis_b01_sample   1000     18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 35                otis_b01_sample   1000     18</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Every slug you can pass to morie_data_load().</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">slug</span>, <span class="fl">10</span><span class="op">)</span></span></span>

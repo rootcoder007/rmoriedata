@@ -23,7 +23,7 @@ A \`data.frame\` with columns \`slug\`, \`source_path\`, \`kind\`,
 ``` r
 cat <- morie_data_catalog()
 str(cat)
-#> 'data.frame':    96 obs. of  5 variables:
+#> 'data.frame':    97 obs. of  5 variables:
 #>  $ slug       : chr  "arsau_uof_detailed_dataset_2020_2022_sample" "arsau_uof_individual_records_sample" "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022" "arsau_2020_2022_useofforce_detaileddataset_2020_2022" ...
 #>  $ source_path: chr  "arsau_uof_detailed_dataset_2020_2022_sample.csv" "arsau_uof_individual_records_sample.csv" "arsau/2020-2022/useofforce_agrregatesummarybyyear_2020-2022.csv" "arsau/2020-2022/useofforce_detaileddataset_2020-2022.csv" ...
 #>  $ kind       : chr  "table" "table" "table" "table" ...
@@ -34,18 +34,18 @@ str(cat)
 table(cat$kind)
 #> 
 #> dictionary      table 
-#>          8         88 
+#>          8         89 
 
 # The tables, largest first.
 tbls <- cat[cat$kind == "table", c("slug", "n_rows", "n_cols")]
 head(tbls[order(-tbls$n_rows), ])
 #>                              slug n_rows n_cols
-#> 71          siu_directors_reports   5157     65
-#> 72              siu_drid_manifest   4749      9
-#> 31      nyc_opendata_bulk_catalog   2851      7
+#> 72          siu_directors_reports   5157     65
+#> 73              siu_drid_manifest   4749      9
+#> 32      nyc_opendata_bulk_catalog   2851      7
 #> 23 edmonton_opendata_bulk_catalog   2027      7
 #> 20  chicago_opendata_bulk_catalog   1856      7
-#> 34                otis_b01_sample   1000     18
+#> 35                otis_b01_sample   1000     18
 
 # Every slug you can pass to morie_data_load().
 head(cat$slug, 10)
