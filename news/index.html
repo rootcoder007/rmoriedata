@@ -36,7 +36,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.5" id="rmoriedata-025">rmoriedata 0.2.5<a class="anchor" aria-label="anchor" href="#rmoriedata-025"></a></h2>
-<ul><li>SIU corpus also bundled as Parquet; <code>load_siu_reports(format = "parquet")</code> reads it via nanoparquet (columnar / SQL-friendly). CSV remains the default (no extra dependency).</li>
+<ul><li><p><code>load_chicago_data(full = TRUE)</code> gains <code>limit</code> (exact row cap) and <code>fraction</code> (share of the live dataset, total looked up first); bounded fetches never touch the full-dataset cache. Network examples are now <code>\donttest{}</code> with <code><a href="https://rdrr.io/r/base/try.html" class="external-link">try()</a></code> so they degrade gracefully offline.</p></li>
+<li><p>SIU corpus also bundled as Parquet; <code>load_siu_reports(format = "parquet")</code> reads it via nanoparquet (columnar / SQL-friendly). CSV remains the default (no extra dependency).</p></li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.4" id="rmoriedata-024">rmoriedata 0.2.4<a class="anchor" aria-label="anchor" href="#rmoriedata-024"></a></h2>
