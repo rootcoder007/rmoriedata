@@ -27,7 +27,7 @@ cat <- morie_data_catalog()
 table(cat$kind)
 #> 
 #> dictionary      table 
-#>          7         55
+#>          8         88
 head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
 #>                                                          slug n_rows n_cols
 #> 1                 arsau_uof_detailed_dataset_2020_2022_sample      5    167
@@ -71,7 +71,7 @@ dict_slugs <- cat$slug[cat$kind == "dictionary"]
 head(dict_slugs)
 #> [1] "arsau_2020_2022_dictionary" "arsau_2023_dictionary"     
 #> [3] "arsau_2024_dictionary"      "corrections_uof_dictionary"
-#> [5] "otis_dictionary"            "tps_dictionary"
+#> [5] "cpads_data_provenance"      "otis_dictionary"
 ```
 
 ## 2. The named loaders
@@ -149,10 +149,10 @@ Verify you’re using the exact data slice the package shipped:
 
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
-#>                              file   bytes
-#> 28            describe_corpus.Rds 1712072
-#> 137 siu_directors_reports.parquet 1035827
-#> 27       cpads_pumf_synthetic.csv  893252
+#>                              file    bytes
+#> 165             rmoriedata.sqlite 14831616
+#> 28            describe_corpus.Rds  1712072
+#> 171 siu_directors_reports.parquet  1035827
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 morie_core_sha256("abc")

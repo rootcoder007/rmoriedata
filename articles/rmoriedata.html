@@ -97,7 +97,7 @@ counts and the original source path.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; dictionary      table </span></span>
-<span><span class="co">#&gt;          7         55</span></span>
+<span><span class="co">#&gt;          8         88</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                                          slug n_rows n_cols</span></span>
 <span><span class="co">#&gt; 1                 arsau_uof_detailed_dataset_2020_2022_sample      5    167</span></span>
@@ -129,7 +129,7 @@ catalogue’s <code>kind</code> column:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">dict_slugs</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "arsau_2020_2022_dictionary" "arsau_2023_dictionary"     </span></span>
 <span><span class="co">#&gt; [3] "arsau_2024_dictionary"      "corrections_uof_dictionary"</span></span>
-<span><span class="co">#&gt; [5] "otis_dictionary"            "tps_dictionary"</span></span></code></pre></div>
+<span><span class="co">#&gt; [5] "cpads_data_provenance"      "otis_dictionary"</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="the-named-loaders">2. The named loaders<a class="anchor" aria-label="anchor" href="#the-named-loaders"></a>
@@ -199,10 +199,10 @@ download and is a network call, so it isn’t run here.)</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                              file   bytes</span></span>
-<span><span class="co">#&gt; 28            describe_corpus.Rds 1712072</span></span>
-<span><span class="co">#&gt; 137 siu_directors_reports.parquet 1035827</span></span>
-<span><span class="co">#&gt; 27       cpads_pumf_synthetic.csv  893252</span></span>
+<span><span class="co">#&gt;                              file    bytes</span></span>
+<span><span class="co">#&gt; 165             rmoriedata.sqlite 14831616</span></span>
+<span><span class="co">#&gt; 28            describe_corpus.Rds  1712072</span></span>
+<span><span class="co">#&gt; 171 siu_directors_reports.parquet  1035827</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
 <span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>

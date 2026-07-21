@@ -32,8 +32,8 @@ dict_slugs <- cat$slug[cat$kind == "dictionary"]
 dict_slugs
 #> [1] "arsau_2020_2022_dictionary" "arsau_2023_dictionary"     
 #> [3] "arsau_2024_dictionary"      "corrections_uof_dictionary"
-#> [5] "otis_dictionary"            "tps_dictionary"            
-#> [7] "uof_dictionary"            
+#> [5] "cpads_data_provenance"      "otis_dictionary"           
+#> [7] "tps_dictionary"             "uof_dictionary"            
 
 # Fetch one dictionary's JSON (returns a character scalar of JSON).
 if (length(dict_slugs)) {
