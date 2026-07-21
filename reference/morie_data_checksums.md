@@ -24,7 +24,7 @@ and `sha256`.
 # One row per bundled file: name, size in bytes, SHA256 digest.
 ck <- morie_data_checksums()
 str(ck)
-#> 'data.frame':    125 obs. of  3 variables:
+#> 'data.frame':    156 obs. of  3 variables:
 #>  $ file  : chr  "OTIS_DATA_DICTIONARY.md" "useofforce_agrregatesummarybyyear_2020-2022.csv" "useofforce_detaileddataset_2020-2022.csv" "uof_individual_records.csv" ...
 #>  $ bytes : num  23210 289 6830 5221 1446 ...
 #>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "f3051269a22394b6930ba1961e7b6ed5e4454d483db1ea7cd930f1541330dfce" "4fa3b0ada472f2386ffc4cb81e438e68a57818e476b12524370cfab25ae1084a" "6d3a5986e39f4751901a1a2adb9e25be836266e1900bd41c8611fec7218187f4" ...
@@ -46,11 +46,11 @@ head(ck)
 
 # Total bundled payload and the largest few files.
 sum(ck$bytes)
-#> [1] 10990685
+#> [1] 11003278
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
 #> 29            describe_corpus.Rds 1712072
-#> 106 siu_directors_reports.parquet 1035827
+#> 137 siu_directors_reports.parquet 1035827
 #> 28       cpads_pumf_synthetic.csv  893252
 
 # Provenance workflow: pin the digest of a file you depend on, then

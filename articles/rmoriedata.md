@@ -151,7 +151,7 @@ ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
 #> 28            describe_corpus.Rds 1712072
-#> 106 siu_directors_reports.parquet 1035827
+#> 137 siu_directors_reports.parquet 1035827
 #> 27       cpads_pumf_synthetic.csv  893252
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
