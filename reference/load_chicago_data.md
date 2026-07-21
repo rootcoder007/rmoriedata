@@ -14,7 +14,9 @@ load_chicago_data(
   type = c("arrests", "complaints"),
   as = c("data.frame", "tibble", "parquet_path"),
   full = FALSE,
-  mirror = getOption("rmoriedata.mirror", NULL)
+  mirror = getOption("rmoriedata.mirror", NULL),
+  limit = NULL,
+  fraction = NULL
 )
 ```
 
@@ -40,6 +42,19 @@ load_chicago_data(
   Optional base URL of an r-universe/drat mirror to try before Socrata
   (offline-friendly fallback). Defaults to
   `getOption("rmoriedata.mirror")`.
+
+- limit:
+
+  Optional row cap for a `full = TRUE` fetch (passed to the Socrata
+  `$limit` parameter). A bounded fetch skips the mirror and is never
+  written to the full-dataset cache. Default `NULL` fetches everything.
+
+- fraction:
+
+  Optional share of the dataset, in `(0, 1]`, for a `full = TRUE` fetch:
+  the live row count is looked up and `limit` is set to
+  `ceiling(total * fraction)`. Give either `fraction` or `limit`, not
+  both.
 
 ## Value
 
@@ -81,16 +96,20 @@ file.exists(pq)
 #> [1] TRUE
 # }
 
-if (FALSE) { # \dontrun{
-# Not run: fetches the full multi-million-row dataset from the live
-# Chicago Socrata service; check machines must not depend on remote
-# services or long downloads.
-# `full = TRUE` fetches the complete dataset from the Chicago SODA API
-# (live network, ~millions of rows; cached across sessions). `mirror`
-# tries an offline-friendly Parquet mirror first when set. Network-only,
-# so it is not run in automated checks.
-big <- load_chicago_data("complaints", full = TRUE,
-                         mirror = getOption("rmoriedata.mirror"))
-nrow(big)
-} # }
+# \donttest{
+# `full = TRUE` fetches from the live Chicago SODA API; `limit` bounds
+# the request (seconds, not minutes) and try() keeps the example
+# graceful when the service is unreachable. Omit `limit` for the
+# complete multi-million-row dataset (cached across sessions); `mirror`
+# tries an offline-friendly Parquet mirror first when set.
+big <- try(load_chicago_data("complaints", full = TRUE, limit = 1000))
+if (!inherits(big, "try-error")) nrow(big)
+#> [1] 1000
+
+# `fraction` takes a share of the dataset instead of a row count:
+# 0.001 = 0.1% of all rows (the live total is looked up first).
+tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
+if (!inherits(tiny, "try-error")) nrow(tiny)
+#> [1] 74
+# }
 ```

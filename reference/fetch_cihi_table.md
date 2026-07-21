@@ -46,19 +46,33 @@ head(cat$title, 3)
 #> [2] "Wait Times for Priority Procedures in Canada, 2008 to 2025 — Data Tables"        
 #> [3] "Health Workforce in Canada, 2024 — Quick Stats"                                  
 
-if (FALSE) { # \dontrun{
-# Not run: downloads a table from the live CIHI web service; check
-# machines must not depend on remote-service availability.
+# \donttest{
+# Downloads a table from the live CIHI web service; try() keeps the
+# example graceful when the service is unreachable.
 # `which` by title substring (case-insensitive; must match exactly one).
-f1 <- fetch_cihi_table("Hospital Beds")           # -> tempfile path
+f1 <- try(fetch_cihi_table("Hospital Beds"))      # -> tempfile path
+#> Error : 'Hospital Beds' matches 7 tables; be more specific:
+#>   Hospital Beds, 2024–2025
+#>   Hospital Beds Staffed and In Operation, 2023–2024
+#>   Hospital Beds Staffed and In Operation, 2022–2023
+#>   Hospital Beds Staffed and In Operation, 2021–2022
+#>   Hospital Beds Staffed and In Operation, 2020–2021
+#>   Hospital Beds Staffed and In Operation, 2019–2020
 
-# `which` by row index into load_cihi_data_tables().
-f2 <- fetch_cihi_table(1)
-
-# `dest` chooses the output path; `timeout` bounds each request (seconds).
-f3 <- fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"), timeout = 60)
+# `which` by row index into load_cihi_data_tables(); `dest` chooses the
+# output path and `timeout` bounds each request (seconds).
+f3 <- try(fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"),
+                           timeout = 60))
+#> Error : 'bricklayer_fetch' is not an exported object from 'namespace:rmoriebricklayer'
 
 # An ambiguous substring errors and lists the candidates:
-fetch_cihi_table("data")
-} # }
+try(fetch_cihi_table("data"))
+#> Error : 'data' matches 134 tables; be more specific:
+#>   Wait Times for Priority Procedures in Canada, 2008 to 2025 — Data Tables
+#>   Formulary Coverage in the Pharmaceutical Data Tool
+#>   How Canada Compares: Results From the Commonwealth Fund’s 2025 International Health Policy Survey of Primary Care Physicians in 10 Countries — Data Tables
+#>   NACRS Emergency Department Visits and Lengths of Stay by Province/Territory, 2025–2026 (Q1 to Q2) — Provisional Data
+#>   Deceased Donation, Living Donation and Transplantation in Canada: Summary Volumes — Data Tables
+#>   Adult Organ Donation and Transplantation, 2015 to 2024 — Supplementary Data Tables
+# }
 ```

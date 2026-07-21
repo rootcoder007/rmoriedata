@@ -57,7 +57,9 @@ the recommended bridge for Python (<code>pandas.read_parquet</code>).</p>
 <span>  type <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"arrests"</span>, <span class="st">"complaints"</span><span class="op">)</span>,</span>
 <span>  as <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"data.frame"</span>, <span class="st">"tibble"</span>, <span class="st">"parquet_path"</span><span class="op">)</span>,</span>
 <span>  full <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  mirror <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"rmoriedata.mirror"</span>, <span class="cn">NULL</span><span class="op">)</span></span>
+<span>  mirror <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"rmoriedata.mirror"</span>, <span class="cn">NULL</span><span class="op">)</span>,</span>
+<span>  limit <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fraction <span class="op">=</span> <span class="cn">NULL</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -84,6 +86,20 @@ large) instead of the bundled sample; cached across sessions as Parquet.</p></dd
 <dd><p>Optional base URL of an r-universe/drat mirror to try before
 Socrata (offline-friendly fallback). Defaults to
 <code>getOption("rmoriedata.mirror")</code>.</p></dd>
+
+
+<dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
+<dd><p>Optional row cap for a <code>full = TRUE</code> fetch (passed to
+the Socrata <code>$limit</code> parameter). A bounded fetch skips the mirror
+and is never written to the full-dataset cache. Default <code>NULL</code>
+fetches everything.</p></dd>
+
+
+<dt id="arg-fraction">fraction<a class="anchor" aria-label="anchor" href="#arg-fraction"></a></dt>
+<dd><p>Optional share of the dataset, in <code>(0, 1]</code>, for a
+<code>full = TRUE</code> fetch: the live row count is looked up and
+<code>limit</code> is set to <code>ceiling(total * fraction)</code>. Give either
+<code>fraction</code> or <code>limit</code>, not both.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -126,18 +142,22 @@ package), so no <span class="pkg">arrow</span> install is required.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="cn">FALSE</span><span class="op">)</span> <span class="op">{</span> <span class="co"># \dontrun{</span></span></span>
-<span class="r-in"><span><span class="co"># Not run: fetches the full multi-million-row dataset from the live</span></span></span>
-<span class="r-in"><span><span class="co"># Chicago Socrata service; check machines must not depend on remote</span></span></span>
-<span class="r-in"><span><span class="co"># services or long downloads.</span></span></span>
-<span class="r-in"><span><span class="co"># `full = TRUE` fetches the complete dataset from the Chicago SODA API</span></span></span>
-<span class="r-in"><span><span class="co"># (live network, ~millions of rows; cached across sessions). `mirror`</span></span></span>
-<span class="r-in"><span><span class="co"># tries an offline-friendly Parquet mirror first when set. Network-only,</span></span></span>
-<span class="r-in"><span><span class="co"># so it is not run in automated checks.</span></span></span>
-<span class="r-in"><span><span class="va">big</span> <span class="op">&lt;-</span> <span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>,</span></span>
-<span class="r-in"><span>                         mirror <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/options.html" class="external-link">getOption</a></span><span class="op">(</span><span class="st">"rmoriedata.mirror"</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">big</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="op">}</span> <span class="co"># }</span></span></span>
+<span class="r-in"><span><span class="co"># \donttest{</span></span></span>
+<span class="r-in"><span><span class="co"># `full = TRUE` fetches from the live Chicago SODA API; `limit` bounds</span></span></span>
+<span class="r-in"><span><span class="co"># the request (seconds, not minutes) and try() keeps the example</span></span></span>
+<span class="r-in"><span><span class="co"># graceful when the service is unreachable. Omit `limit` for the</span></span></span>
+<span class="r-in"><span><span class="co"># complete multi-million-row dataset (cached across sessions); `mirror`</span></span></span>
+<span class="r-in"><span><span class="co"># tries an offline-friendly Parquet mirror first when set.</span></span></span>
+<span class="r-in"><span><span class="va">big</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">1000</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">big</span>, <span class="st">"try-error"</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">big</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 1000</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># `fraction` takes a share of the dataset instead of a row count:</span></span></span>
+<span class="r-in"><span><span class="co"># 0.001 = 0.1% of all rows (the live total is looked up first).</span></span></span>
+<span class="r-in"><span><span class="va">tiny</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"arrests"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, fraction <span class="op">=</span> <span class="fl">0.0001</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">tiny</span>, <span class="st">"try-error"</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">tiny</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 74</span>
+<span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
