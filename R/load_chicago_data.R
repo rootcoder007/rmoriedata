@@ -18,6 +18,14 @@
 #'   returns its path).
 #' @param full If \code{TRUE}, fetch the complete dataset from Socrata (network,
 #'   large) instead of the bundled sample; cached across sessions as Parquet.
+#' @param limit Optional row cap for a \code{full = TRUE} fetch (passed to
+#'   the Socrata \code{$limit} parameter). A bounded fetch skips the mirror
+#'   and is never written to the full-dataset cache. Default \code{NULL}
+#'   fetches everything.
+#' @param fraction Optional share of the dataset, in \code{(0, 1]}, for a
+#'   \code{full = TRUE} fetch: the live row count is looked up and
+#'   \code{limit} is set to \code{ceiling(total * fraction)}. Give either
+#'   \code{fraction} or \code{limit}, not both.
 #' @param mirror Optional base URL of an r-universe/drat mirror to try before
 #'   Socrata (offline-friendly fallback). Defaults to
 #'   \code{getOption("rmoriedata.mirror")}.
@@ -44,27 +52,45 @@
 #' file.exists(pq)
 #' }
 #'
-#' \dontrun{
-#' # Not run: fetches the full multi-million-row dataset from the live
-#' # Chicago Socrata service; check machines must not depend on remote
-#' # services or long downloads.
-#' # `full = TRUE` fetches the complete dataset from the Chicago SODA API
-#' # (live network, ~millions of rows; cached across sessions). `mirror`
-#' # tries an offline-friendly Parquet mirror first when set. Network-only,
-#' # so it is not run in automated checks.
-#' big <- load_chicago_data("complaints", full = TRUE,
-#'                          mirror = getOption("rmoriedata.mirror"))
-#' nrow(big)
+#' \donttest{
+#' # `full = TRUE` fetches from the live Chicago SODA API; `limit` bounds
+#' # the request (seconds, not minutes) and try() keeps the example
+#' # graceful when the service is unreachable. Omit `limit` for the
+#' # complete multi-million-row dataset (cached across sessions); `mirror`
+#' # tries an offline-friendly Parquet mirror first when set.
+#' big <- try(load_chicago_data("complaints", full = TRUE, limit = 1000))
+#' if (!inherits(big, "try-error")) nrow(big)
+#'
+#' # `fraction` takes a share of the dataset instead of a row count:
+#' # 0.001 = 0.1% of all rows (the live total is looked up first).
+#' tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
+#' if (!inherits(tiny, "try-error")) nrow(tiny)
 #' }
 #' @export
 load_chicago_data <- function(type = c("arrests", "complaints"),
                               as = c("data.frame", "tibble", "parquet_path"),
                               full = FALSE,
-                              mirror = getOption("rmoriedata.mirror", NULL)) {
+                              mirror = getOption("rmoriedata.mirror", NULL),
+                              limit = NULL,
+                              fraction = NULL) {
   type <- match.arg(type)
   as   <- match.arg(as)
+  if (!is.null(limit) && !is.null(fraction)) {
+    stop("give either `limit` (rows) or `fraction` (share of the dataset), ",
+         "not both.", call. = FALSE)
+  }
+  if (!is.null(limit)) {
+    stopifnot(is.numeric(limit), length(limit) == 1L, limit >= 1)
+  }
+  if (!is.null(fraction)) {
+    stopifnot(is.numeric(fraction), length(fraction) == 1L,
+              fraction > 0, fraction <= 1)
+    total <- .rmd_full_count(type)
+    limit <- max(1L, as.integer(ceiling(total * fraction)))
+  }
 
-  df <- if (isTRUE(full)) .rmd_fetch_full(type, mirror) else .rmd_sample(type)
+  df <- if (isTRUE(full)) .rmd_fetch_full(type, mirror, limit)
+        else .rmd_sample(type)
 
   switch(as,
     "data.frame"   = as.data.frame(df, stringsAsFactors = FALSE),
@@ -101,15 +127,34 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   }
 }
 
-.rmd_fetch_full <- function(type, mirror) {
+.rmd_full_count <- function(type) {
+  u <- paste0(.rmd_endpoint(type), "?$select=count(*)")
+  n <- tryCatch(
+    suppressWarnings(as.numeric(utils::read.csv(u)[1, 1])),
+    error = function(e) NA_real_
+  )
+  if (is.na(n) || n < 1) {
+    stop("could not determine the total row count for Chicago '", type,
+         "' (needed to resolve `fraction`); check your connection or use ",
+         "`limit` instead.", call. = FALSE)
+  }
+  n
+}
+
+.rmd_fetch_full <- function(type, mirror, limit = NULL) {
+  # A bounded fetch is never cached and never reads the full cache: the
+  # `<type>_full.parquet` cache must only ever hold the complete dataset.
+  bounded <- !is.null(limit)
   cache <- file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))
-  if (file.exists(cache)) {
+  if (!bounded && file.exists(cache)) {
     return(as.data.frame(nanoparquet::read_parquet(cache)))
   }
   # Try the optional mirror first (offline-friendly), then Socrata.
+  n <- if (bounded) as.integer(limit) else 5000000L
   urls <- c(
-    if (!is.null(mirror)) file.path(mirror, paste0(type, "_full.parquet")),
-    paste0(.rmd_endpoint(type), "?$limit=5000000")
+    if (!bounded && !is.null(mirror))
+      file.path(mirror, paste0(type, "_full.parquet")),
+    paste0(.rmd_endpoint(type), "?$limit=", n)
   )
   for (u in urls) {
     df <- tryCatch(
@@ -121,7 +166,7 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
       error = function(e) NULL
     )
     if (!is.null(df)) {
-      try(nanoparquet::write_parquet(df, cache), silent = TRUE)
+      if (!bounded) try(nanoparquet::write_parquet(df, cache), silent = TRUE)
       return(df)
     }
   }
