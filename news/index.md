@@ -20,9 +20,7 @@
   witness-officer-only cases resolved to 0). Adds a `panel_reviewed`
   flag column (65 cols).
 
-## rmoriedata (development version)
-
-### rmoriedata 0.2.3
+## rmoriedata 0.2.3
 
 - CRAN size compliance: removed the legacy
   `inst/extdata/rmoriedata.sqlite` (retired by the sqlite-to-parquet
@@ -34,7 +32,7 @@
 - `CITATION.cff`, `NOTICE`, and `LICENSE` are excluded from the built
   package (`.Rbuildignore`), clearing the top-level-files NOTE.
 
-### rmoriedata 0.2.0
+## rmoriedata 0.2.0
 
 #### Connected to the shared rmorie C core
 
@@ -50,7 +48,7 @@
   Tests assert they are byte-identical to `rmoriebricklayer`’s own
   `core_sha256()` / `core_mean()`.
 
-### rmoriedata 0.1.1
+## rmoriedata 0.1.1
 
 #### New exported helpers — differential privacy + re-identification risk
 
@@ -88,7 +86,7 @@ informative errors.
 - `tests/testthat/test-k-anonymity.R` — hand-built fixtures with known
   equivalence-class structure; complementary-suppression correctness.
 
-### rmoriedata 0.1.0
+## rmoriedata 0.1.0
 
 - Initial public release. Integrated fixtures only; no exported
   functions.
