@@ -8,12 +8,55 @@ test_that("load_chicago_data returns correct type per `as`", {
   expect_s3_class(load_chicago_data("arrests", as = "tibble"), "tbl_df")
 })
 
-test_that("parquet_path writes a readable file (nanoparquet)", {
+test_that("parquet_path writes a file the native codec reads back", {
   p <- load_chicago_data("complaints", as = "parquet_path")
   expect_true(file.exists(p))
-  back <- as.data.frame(nanoparquet::read_parquet(p))
+  expect_identical(readBin(p, "raw", 4L), charToRaw("PAR1"))
+  back <- morie_read_parquet(p)
   expect_gt(nrow(back), 0L)
   expect_true("case_number" %in% names(back))
+})
+
+test_that("the native codec agrees with nanoparquet byte for byte", {
+  # The point of the swap is that an independent implementation reads
+  # our output and we read its input. Without this cross-check the
+  # codec would only ever be checked against itself, which proves
+  # nothing about whether the files are really Parquet.
+  skip_if_not_installed("nanoparquet")
+  p <- load_chicago_data("complaints", as = "parquet_path")
+
+  ours <- morie_read_parquet(p)
+  theirs <- as.data.frame(nanoparquet::read_parquet(p))
+  expect_identical(names(ours), names(theirs))
+  expect_identical(nrow(ours), nrow(theirs))
+  for (nm in names(theirs)) {
+    a <- ours[[nm]]
+    b <- theirs[[nm]]
+    if (inherits(a, "POSIXct") || inherits(a, "Date")) a <- as.numeric(a)
+    if (inherits(b, "POSIXct") || inherits(b, "Date")) b <- as.numeric(b)
+    expect_equal(a, b, info = nm)
+  }
+
+  # and the other direction: nanoparquet reads what we write
+  q <- tempfile(fileext = ".parquet")
+  on.exit(unlink(q), add = TRUE)
+  morie_write_parquet(ours, q)
+  rt <- as.data.frame(nanoparquet::read_parquet(q))
+  expect_identical(names(rt), names(ours))
+  expect_identical(nrow(rt), nrow(ours))
+})
+
+test_that("a corrupted cell is detected, so the check above can fail", {
+  # A comparison that cannot go red is not evidence.
+  skip_if_not_installed("nanoparquet")
+  df <- data.frame(case_number = c("a", "b", "c"),
+                   stringsAsFactors = FALSE)
+  q <- tempfile(fileext = ".parquet")
+  on.exit(unlink(q), add = TRUE)
+  df$case_number[2] <- "CANARY"
+  morie_write_parquet(df, q)
+  expect_identical(
+    as.data.frame(nanoparquet::read_parquet(q))$case_number[2], "CANARY")
 })
 
 test_that("type + as are validated", {
@@ -78,7 +121,8 @@ test_that("a bounded fetch never reads or writes the full-dataset cache", {
   # network failure, error rather than silently serving the cache.
   had <- file.exists(cache)
   if (!had) {
-    nanoparquet::write_parquet(data.frame(case_number = "cached"), cache)
+    morie_write_parquet(data.frame(case_number = "cached",
+                                   stringsAsFactors = FALSE), cache)
     on.exit(unlink(cache), add = TRUE)
   }
   testthat::local_mocked_bindings(
@@ -92,6 +136,6 @@ test_that("a bounded fetch never reads or writes the full-dataset cache", {
   # And the poisoned cache was not overwritten by the bounded attempt.
   if (!had) {
     expect_identical(
-      as.character(nanoparquet::read_parquet(cache)$case_number), "cached")
+      as.character(morie_read_parquet(cache)$case_number), "cached")
   }
 })
