@@ -9,7 +9,7 @@
 #' tibble, or written to a Parquet file whose path is returned -- the last being
 #' the recommended bridge for Python (\code{pandas.read_parquet}).
 #'
-#' Parquet I/O uses \pkg{nanoparquet} (already a hard dependency of this
+#' Parquet I/O uses this package's own native codec (R/aaa_parquet.R); no
 #' package), so no \pkg{arrow} install is required.
 #'
 #' @param type One of \code{"arrests"} or \code{"complaints"}.
@@ -147,7 +147,7 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   bounded <- !is.null(limit)
   cache <- file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))
   if (!bounded && file.exists(cache)) {
-    return(as.data.frame(nanoparquet::read_parquet(cache)))
+    return(morie_read_parquet(cache))
   }
   # Try the optional mirror first (offline-friendly), then Socrata.
   n <- if (bounded) as.integer(limit) else 5000000L
@@ -159,14 +159,14 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   for (u in urls) {
     df <- tryCatch(
       if (grepl("\\.parquet$", u)) {
-        as.data.frame(nanoparquet::read_parquet(u))
+        morie_read_parquet(u)
       } else {
         utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE)
       },
       error = function(e) NULL
     )
     if (!is.null(df)) {
-      if (!bounded) try(nanoparquet::write_parquet(df, cache), silent = TRUE)
+      if (!bounded) try(morie_write_parquet(df, cache), silent = TRUE)
       return(df)
     }
   }
@@ -175,11 +175,11 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
 }
 
 .rmd_write_parquet <- function(df, type, full) {
-  # nanoparquet maps POSIXct to a parquet TIMESTAMP, which reads back cleanly
+  # The native writer maps POSIXct to a parquet TIMESTAMP, which reads back
   # in pandas/polars; the `date_iso` string column is the lossless fallback
   # for readers that don't map the timestamp logical type.
   suffix <- if (isTRUE(full)) "full" else "sample"
   path <- file.path(.rmd_cache_dir(), paste0(type, "_", suffix, ".parquet"))
-  nanoparquet::write_parquet(as.data.frame(df), path)
+  morie_write_parquet(as.data.frame(df), path)
   path
 }
