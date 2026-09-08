@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,19 @@
       <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.1" id="rmoriedata-031---2026-09-08">rmoriedata 0.3.1 - 2026-09-08<a class="anchor" aria-label="anchor" href="#rmoriedata-031---2026-09-08"></a></h2>
+<div class="section level3">
+<h3 id="source-tarball-down-to-mb-under-crans-mb-guideline-0-3-1">Source tarball down to 4.77 MB, under CRAN’s 5 MB guideline<a class="anchor" aria-label="anchor" href="#source-tarball-down-to-mb-under-crans-mb-guideline-0-3-1"></a></h3>
+<p>The package shipped 9.2 MB, and most of the excess was duplication:</p>
+<ul><li>
+<code>rmoriedata.sqlite</code> (15 MB uncompressed) was retired by the SQLite-to-Parquet migration and no shipped code reads it. Kept in the repository, excluded from the tarball.</li>
+<li>The SIU director’s-report corpus was bundled three times – as a top-level Parquet file, again inside the Parquet store, and as a <code>.csv.gz</code>. <code>load_siu_reports(format = "parquet")</code> now reads the store copy that <code><a href="../reference/morie_data_load.html">morie_data_load()</a></code> already serves, so the top-level duplicate is gone. The CSV remains: it is the default format and a genuinely different encoding, not a third copy of the same one.</li>
+<li>
+<code>describe_corpus.Rds</code> (1.6 MB, and it does not compress) is referenced by no R code, Rd page or test. Excluded.</li>
+</ul><p>Verified after the change: the Parquet path, the CSV path and the <code>siu_directors_reports</code> store slug all return the same 5,157 x 65 corpus.</p>
+</div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.0" id="rmoriedata-030---2026-09-08">rmoriedata 0.3.0 - 2026-09-08<a class="anchor" aria-label="anchor" href="#rmoriedata-030---2026-09-08"></a></h2>
 <div class="section level3">

@@ -1,5 +1,29 @@
 # Changelog
 
+## rmoriedata 0.3.1 - 2026-09-08
+
+### Source tarball down to 4.77 MB, under CRAN’s 5 MB guideline
+
+The package shipped 9.2 MB, and most of the excess was duplication:
+
+- `rmoriedata.sqlite` (15 MB uncompressed) was retired by the
+  SQLite-to-Parquet migration and no shipped code reads it. Kept in the
+  repository, excluded from the tarball.
+- The SIU director’s-report corpus was bundled three times – as a
+  top-level Parquet file, again inside the Parquet store, and as a
+  `.csv.gz`. `load_siu_reports(format = "parquet")` now reads the store
+  copy that
+  [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+  already serves, so the top-level duplicate is gone. The CSV remains:
+  it is the default format and a genuinely different encoding, not a
+  third copy of the same one.
+- `describe_corpus.Rds` (1.6 MB, and it does not compress) is referenced
+  by no R code, Rd page or test. Excluded.
+
+Verified after the change: the Parquet path, the CSV path and the
+`siu_directors_reports` store slug all return the same 5,157 x 65
+corpus.
+
 ## rmoriedata 0.3.0 - 2026-09-08
 
 ### Native Parquet codec: one fewer hard dependency
