@@ -1,4 +1,4 @@
-# R/load_chicago_data.R
+# Chicago crime + arrest loaders.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 #' Load Chicago crime or arrest data
@@ -33,9 +33,10 @@
 #'   path when \code{as = "parquet_path"}.
 #' @examples
 #' # `type` selects the dataset; the bundled sample is returned by default.
-#' comp <- load_chicago_data("complaints")           # reported incidents
-#' arr  <- load_chicago_data("arrests")              # arrests
-#' nrow(comp); nrow(arr)
+#' comp <- load_chicago_data("complaints") # reported incidents
+#' arr <- load_chicago_data("arrests") # arrests
+#' nrow(comp)
+#' nrow(arr)
 #' head(sort(table(comp$primary_type), decreasing = TRUE), 5)
 #'
 #' # `as = "tibble"` returns a tibble when the package is installed.
@@ -74,27 +75,34 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
                               limit = NULL,
                               fraction = NULL) {
   type <- match.arg(type)
-  as   <- match.arg(as)
+  as <- match.arg(as)
   if (!is.null(limit) && !is.null(fraction)) {
     stop("give either `limit` (rows) or `fraction` (share of the dataset), ",
-         "not both.", call. = FALSE)
+      "not both.",
+      call. = FALSE
+    )
   }
   if (!is.null(limit)) {
     stopifnot(is.numeric(limit), length(limit) == 1L, limit >= 1)
   }
   if (!is.null(fraction)) {
-    stopifnot(is.numeric(fraction), length(fraction) == 1L,
-              fraction > 0, fraction <= 1)
+    stopifnot(
+      is.numeric(fraction), length(fraction) == 1L,
+      fraction > 0, fraction <= 1
+    )
     total <- .rmd_full_count(type)
     limit <- max(1L, as.integer(ceiling(total * fraction)))
   }
 
-  df <- if (isTRUE(full)) .rmd_fetch_full(type, mirror, limit)
-        else .rmd_sample(type)
+  df <- if (isTRUE(full)) {
+    .rmd_fetch_full(type, mirror, limit)
+  } else {
+    .rmd_sample(type)
+  }
 
   switch(as,
-    "data.frame"   = as.data.frame(df, stringsAsFactors = FALSE),
-    "tibble"       = {
+    "data.frame" = as.data.frame(df, stringsAsFactors = FALSE),
+    "tibble" = {
       if (!requireNamespace("tibble", quietly = TRUE)) {
         return(as.data.frame(df, stringsAsFactors = FALSE))
       }
@@ -135,8 +143,10 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   )
   if (is.na(n) || n < 1) {
     stop("could not determine the total row count for Chicago '", type,
-         "' (needed to resolve `fraction`); check your connection or use ",
-         "`limit` instead.", call. = FALSE)
+      "' (needed to resolve `fraction`); check your connection or use ",
+      "`limit` instead.",
+      call. = FALSE
+    )
   }
   n
 }
@@ -152,8 +162,9 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   # Try the optional mirror first (offline-friendly), then Socrata.
   n <- if (bounded) as.integer(limit) else 5000000L
   urls <- c(
-    if (!bounded && !is.null(mirror))
-      file.path(mirror, paste0(type, "_full.parquet")),
+    if (!bounded && !is.null(mirror)) {
+      file.path(mirror, paste0(type, "_full.parquet"))
+    },
     paste0(.rmd_endpoint(type), "?$limit=", n)
   )
   for (u in urls) {
@@ -171,7 +182,9 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
     }
   }
   stop("could not fetch full Chicago '", type,
-       "' data from mirror or Socrata; check your connection.", call. = FALSE)
+    "' data from mirror or Socrata; check your connection.",
+    call. = FALSE
+  )
 }
 
 .rmd_write_parquet <- function(df, type, full) {

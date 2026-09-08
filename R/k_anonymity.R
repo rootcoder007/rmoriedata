@@ -32,33 +32,38 @@
 #' res <- morie_k_anonymity_verify(df, c("age", "sex"), k = 2)
 #' res$summary
 #' res$satisfies
-#' res$violating_classes        # the offending quasi-identifier combos
+#' res$violating_classes # the offending quasi-identifier combos
 #'
 #' # Loosening to k = 1 always holds; the default k = 5 is stricter.
 #' morie_k_anonymity_verify(df, c("age", "sex"), k = 1)$satisfies
-#' morie_k_anonymity_verify(df, c("age", "sex"))$satisfies   # k = 5
+#' morie_k_anonymity_verify(df, c("age", "sex"))$satisfies # k = 5
 #'
 #' # A single quasi-identifier is fine too.
 #' morie_k_anonymity_verify(df, "sex", k = 3)$min_class_size
 #'
 #' # On real bundled data: are (year, arrest) cells 5-anonymous?
 #' morie_k_anonymity_verify(complaint_sample,
-#'   c("year", "arrest"), k = 5)$summary
+#'   c("year", "arrest"),
+#'   k = 5
+#' )$summary
 morie_k_anonymity_verify <- function(data, quasi_identifiers, k = 5) {
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
   if (!is.character(quasi_identifiers) || length(quasi_identifiers) == 0L) {
     stop("`quasi_identifiers` must be a non-empty character vector.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   missing_cols <- setdiff(quasi_identifiers, names(data))
   if (length(missing_cols) > 0L) {
     stop("Columns not found in `data`: ",
-         paste(missing_cols, collapse = ", "), call. = FALSE)
+      paste(missing_cols, collapse = ", "),
+      call. = FALSE
+    )
   }
   if (length(k) != 1L || !is.numeric(k) || is.na(k) ||
-        k < 1 || k != as.integer(k)) {
+    k < 1 || k != as.integer(k)) {
     stop("`k` must be a single positive integer.", call. = FALSE)
   }
   k <- as.integer(k)
@@ -148,7 +153,8 @@ morie_l_diversity_verify <- function(data, quasi_identifiers, sensitive, l = 3) 
   }
   if (!is.character(quasi_identifiers) || length(quasi_identifiers) == 0L) {
     stop("`quasi_identifiers` must be a non-empty character vector.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (!is.character(sensitive) || length(sensitive) != 1L) {
     stop("`sensitive` must be a single column name.", call. = FALSE)
@@ -156,10 +162,12 @@ morie_l_diversity_verify <- function(data, quasi_identifiers, sensitive, l = 3) 
   missing_cols <- setdiff(c(quasi_identifiers, sensitive), names(data))
   if (length(missing_cols) > 0L) {
     stop("Columns not found in `data`: ",
-         paste(missing_cols, collapse = ", "), call. = FALSE)
+      paste(missing_cols, collapse = ", "),
+      call. = FALSE
+    )
   }
   if (length(l) != 1L || !is.numeric(l) || is.na(l) ||
-        l < 1 || l != as.integer(l)) {
+    l < 1 || l != as.integer(l)) {
     stop("`l` must be a single positive integer.", call. = FALSE)
   }
   l <- as.integer(l)
@@ -230,35 +238,40 @@ morie_l_diversity_verify <- function(data, quasi_identifiers, sensitive, l = 3) 
 #' }
 #' @export
 #' @examples
-#' tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60), nrow = 3,
-#'               dimnames = list(c("A", "B", "C"), c("X", "Y", "Z")))
+#' tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60),
+#'   nrow = 3,
+#'   dimnames = list(c("A", "B", "C"), c("X", "Y", "Z"))
+#' )
 #'
 #' # Default: primary suppression (cells 1..4) PLUS complementary suppression
 #' # so a suppressed cell can't be recovered from row/column marginals.
 #' res <- morie_cell_suppress(tbl, threshold = 5)
-#' res$suppressed              # NA where suppressed
-#' res$n_primary              # cells below threshold
-#' res$n_complementary        # extra cells hidden to protect the marginals
+#' res$suppressed # NA where suppressed
+#' res$n_primary # cells below threshold
+#' res$n_complementary # extra cells hidden to protect the marginals
 #' res$primary_mask
 #'
 #' # Turn complementary suppression off: only the small cells are hidden.
-#' morie_cell_suppress(tbl, threshold = 5,
-#'                     return_complementary = FALSE)$suppressed
+#' morie_cell_suppress(tbl,
+#'   threshold = 5,
+#'   return_complementary = FALSE
+#' )$suppressed
 #'
 #' # A higher threshold suppresses more cells.
 #' morie_cell_suppress(tbl, threshold = 50)$n_primary
 #'
 #' # Works on a 2-D table too; NA cells pass through untouched.
 #' t2 <- as.table(matrix(c(2, 40, 30, 1), 2,
-#'                       dimnames = list(c("a", "b"), c("c", "d"))))
+#'   dimnames = list(c("a", "b"), c("c", "d"))
+#' ))
 #' morie_cell_suppress(t2, threshold = 5)$suppressed
 morie_cell_suppress <- function(tbl, threshold = 5, return_complementary = TRUE) {
   if (length(threshold) != 1L || !is.numeric(threshold) ||
-        is.na(threshold) || threshold < 1) {
+    is.na(threshold) || threshold < 1) {
     stop("`threshold` must be a single positive number.", call. = FALSE)
   }
   if (length(return_complementary) != 1L ||
-        !is.logical(return_complementary) || is.na(return_complementary)) {
+    !is.logical(return_complementary) || is.na(return_complementary)) {
     stop("`return_complementary` must be TRUE or FALSE.", call. = FALSE)
   }
 
@@ -271,8 +284,10 @@ morie_cell_suppress <- function(tbl, threshold = 5, return_complementary = TRUE)
   }
 
   primary <- !is.na(m) & m > 0 & m < threshold
-  complementary <- matrix(FALSE, nrow = nrow(m), ncol = ncol(m),
-                          dimnames = dimnames(m))
+  complementary <- matrix(FALSE,
+    nrow = nrow(m), ncol = ncol(m),
+    dimnames = dimnames(m)
+  )
 
   if (return_complementary && any(primary)) {
     # ROW pass: any row with exactly one primary-suppressed cell needs

@@ -1,8 +1,10 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 test_that("load_chicago_data returns correct type per `as`", {
-  expect_s3_class(load_chicago_data("complaints", as = "data.frame"),
-                  "data.frame")
+  expect_s3_class(
+    load_chicago_data("complaints", as = "data.frame"),
+    "data.frame"
+  )
 
   skip_if_not_installed("tibble")
   expect_s3_class(load_chicago_data("arrests", as = "tibble"), "tbl_df")
@@ -49,14 +51,17 @@ test_that("the native codec agrees with nanoparquet byte for byte", {
 test_that("a corrupted cell is detected, so the check above can fail", {
   # A comparison that cannot go red is not evidence.
   skip_if_not_installed("nanoparquet")
-  df <- data.frame(case_number = c("a", "b", "c"),
-                   stringsAsFactors = FALSE)
+  df <- data.frame(
+    case_number = c("a", "b", "c"),
+    stringsAsFactors = FALSE
+  )
   q <- tempfile(fileext = ".parquet")
   on.exit(unlink(q), add = TRUE)
   df$case_number[2] <- "CANARY"
   morie_write_parquet(df, q)
   expect_identical(
-    as.data.frame(nanoparquet::read_parquet(q))$case_number[2], "CANARY")
+    as.data.frame(nanoparquet::read_parquet(q))$case_number[2], "CANARY"
+  )
 })
 
 test_that("type + as are validated", {
@@ -77,8 +82,10 @@ test_that("full=TRUE fetches live Chicago data (opt-in only)", {
 })
 
 test_that("limit and fraction are mutually exclusive and validated", {
-  expect_error(load_chicago_data("arrests", full = TRUE, limit = 5,
-                                 fraction = 0.5), "not both")
+  expect_error(load_chicago_data("arrests",
+    full = TRUE, limit = 5,
+    fraction = 0.5
+  ), "not both")
   expect_error(load_chicago_data("arrests", full = TRUE, limit = 0))
   expect_error(load_chicago_data("arrests", full = TRUE, limit = "x"))
   expect_error(load_chicago_data("arrests", full = TRUE, fraction = 0))
@@ -97,7 +104,7 @@ test_that("fraction resolves to a row cap from the live total (mocked)", {
     .package = "rmoriedata"
   )
   df <- load_chicago_data("complaints", full = TRUE, fraction = 0.05)
-  expect_identical(seen_limit, 50L)      # ceiling(1000 * 0.05)
+  expect_identical(seen_limit, 50L) # 5 percent of 1000 rows, rounded up
   expect_equal(nrow(df), 50L)
 })
 
@@ -121,8 +128,10 @@ test_that("a bounded fetch never reads or writes the full-dataset cache", {
   # network failure, error rather than silently serving the cache.
   had <- file.exists(cache)
   if (!had) {
-    morie_write_parquet(data.frame(case_number = "cached",
-                                   stringsAsFactors = FALSE), cache)
+    morie_write_parquet(data.frame(
+      case_number = "cached",
+      stringsAsFactors = FALSE
+    ), cache)
     on.exit(unlink(cache), add = TRUE)
   }
   testthat::local_mocked_bindings(
@@ -136,6 +145,7 @@ test_that("a bounded fetch never reads or writes the full-dataset cache", {
   # And the poisoned cache was not overwritten by the bounded attempt.
   if (!had) {
     expect_identical(
-      as.character(morie_read_parquet(cache)$case_number), "cached")
+      as.character(morie_read_parquet(cache)$case_number), "cached"
+    )
   }
 })

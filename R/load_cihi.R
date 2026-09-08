@@ -1,4 +1,4 @@
-# R/load_cihi.R
+# CIHI data-table loaders.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 #' Catalogue of CIHI open data-table workbooks (with Wayback fallbacks)
@@ -34,18 +34,20 @@
 #' # `archived_only = TRUE` keeps only rows that have a Wayback snapshot,
 #' # i.e. tables still retrievable if CIHI rotates the live file.
 #' arch <- load_cihi_data_tables(archived_only = TRUE)
-#' nrow(arch)                       # <= nrow(cat)
-#' all(nzchar(arch$wayback_url))    # TRUE
+#' nrow(arch) # <= nrow(cat)
+#' all(nzchar(arch$wayback_url)) # TRUE
 #'
 #' # Find a table by keyword before fetching it.
 #' cat$title[grepl("hospital", cat$title, ignore.case = TRUE)][1:3]
 #' @export
 load_cihi_data_tables <- function(archived_only = FALSE) {
   path <- system.file("extdata", "cihi_data_tables.csv",
-                      package = "rmoriedata")
+    package = "rmoriedata"
+  )
   if (!nzchar(path)) {
     stop("bundled CIHI data-table catalogue not found in rmoriedata",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   df <- utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
   if (isTRUE(archived_only) && "wayback_url" %in% names(df)) {
@@ -81,12 +83,14 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 #' # Downloads a table from the live CIHI web service; try() keeps the
 #' # example graceful when the service is unreachable.
 #' # `which` by title substring (case-insensitive; must match exactly one).
-#' f1 <- try(fetch_cihi_table("Hospital Beds"))      # -> tempfile path
+#' f1 <- try(fetch_cihi_table("Hospital Beds")) # -> tempfile path
 #'
 #' # `which` by row index into load_cihi_data_tables(); `dest` chooses the
 #' # output path and `timeout` bounds each request (seconds).
-#' f3 <- try(fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"),
-#'                            timeout = 60))
+#' f3 <- try(fetch_cihi_table(1,
+#'   dest = tempfile(fileext = ".xlsx"),
+#'   timeout = 60
+#' ))
 #'
 #' # An ambiguous substring errors and lists the candidates:
 #' try(fetch_cihi_table("data"))
@@ -95,7 +99,9 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
   if (!requireNamespace("rmoriebricklayer", quietly = TRUE)) {
     stop("fetch_cihi_table() needs 'rmoriebricklayer' for the shared ",
-         "fetch-with-fallback engine.", call. = FALSE)
+      "fetch-with-fallback engine.",
+      call. = FALSE
+    )
   }
   cat_df <- load_cihi_data_tables()
   if (is.numeric(which)) {
@@ -105,7 +111,9 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
     if (length(hits) == 0L) stop("no CIHI table matches '", which, "'.", call. = FALSE)
     if (length(hits) > 1L) {
       stop("'", which, "' matches ", length(hits), " tables; be more specific:\n  ",
-           paste(utils::head(cat_df$title[hits], 6), collapse = "\n  "), call. = FALSE)
+        paste(utils::head(cat_df$title[hits], 6), collapse = "\n  "),
+        call. = FALSE
+      )
     }
     idx <- hits
   }
@@ -116,6 +124,7 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
   }
   wb <- if ("wayback_url" %in% names(row)) row[["wayback_url"]] else ""
   rmoriebricklayer::bricklayer_fetch(row[["url"]], dest,
-                                     wayback = wb, timeout = timeout)
+    wayback = wb, timeout = timeout
+  )
   invisible(dest)
 }

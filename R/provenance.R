@@ -24,7 +24,7 @@
 #' # assert it hasn't changed under you in a later session / reinstall.
 #' if (nrow(ck)) {
 #'   pinned <- ck$sha256[1]
-#'   again  <- morie_data_checksums()
+#'   again <- morie_data_checksums()
 #'   stopifnot(again$sha256[again$file == ck$file[1]] == pinned)
 #' }
 #' @export
@@ -42,8 +42,8 @@ morie_data_checksums <- function() {
     return(empty)
   }
   data.frame(
-    file   = basename(files),
-    bytes  = file.size(files),
+    file = basename(files),
+    bytes = file.size(files),
     sha256 = vapply(files, rmoriebricklayer::sha256_file, character(1)),
     row.names = NULL,
     stringsAsFactors = FALSE

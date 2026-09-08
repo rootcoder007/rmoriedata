@@ -41,8 +41,8 @@
 #' morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
 #'
 #' # Smaller epsilon = stronger privacy = more noise.
-#' morie_dp_laplace_count(42, epsilon = 0.1)   # noisier
-#' morie_dp_laplace_count(42, epsilon = 5.0)   # closer to 42
+#' morie_dp_laplace_count(42, epsilon = 0.1) # noisier
+#' morie_dp_laplace_count(42, epsilon = 5.0) # closer to 42
 #'
 #' # The mechanism is unbiased: averaging many releases returns ~the truth.
 #' mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
@@ -51,12 +51,12 @@
 #' round(pmax(0, morie_dp_laplace_count(3, epsilon = 0.5)))
 morie_dp_laplace_count <- function(true_count, epsilon) {
   if (length(true_count) != 1L || is.na(true_count) ||
-        !is.numeric(true_count) || true_count < 0 ||
-        true_count != as.integer(true_count)) {
+    !is.numeric(true_count) || true_count < 0 ||
+    true_count != as.integer(true_count)) {
     stop("`true_count` must be a single non-negative integer.", call. = FALSE)
   }
   if (length(epsilon) != 1L || is.na(epsilon) ||
-        !is.numeric(epsilon) || epsilon <= 0) {
+    !is.numeric(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   sensitivity <- 1
@@ -90,7 +90,7 @@ morie_dp_laplace_count <- function(true_count, epsilon) {
 #'
 #' # A private mean of bounded data (bounds asserted by the caller).
 #' morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
-#' mean(x)                                  # the true mean, for comparison
+#' mean(x) # the true mean, for comparison
 #'
 #' # `delta` controls the (epsilon, delta) guarantee; smaller = stronger.
 #' morie_dp_gaussian_mean(x, 0, 1, epsilon = 1.0, delta = 1e-9)
@@ -109,17 +109,18 @@ morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6) {
     stop("`x` must not contain NA.", call. = FALSE)
   }
   if (length(lower) != 1L || length(upper) != 1L ||
-        !is.numeric(lower) || !is.numeric(upper) ||
-        is.na(lower) || is.na(upper) || lower >= upper) {
+    !is.numeric(lower) || !is.numeric(upper) ||
+    is.na(lower) || is.na(upper) || lower >= upper) {
     stop("`lower` and `upper` must be finite scalars with lower < upper.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||
-        is.na(epsilon) || epsilon <= 0) {
+    is.na(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   if (length(delta) != 1L || !is.numeric(delta) ||
-        is.na(delta) || delta <= 0 || delta >= 1) {
+    is.na(delta) || delta <= 0 || delta >= 1) {
     stop("`delta` must be a single number in (0, 1).", call. = FALSE)
   }
 
@@ -169,12 +170,13 @@ morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6) {
 #' morie_dp_laplace_histogram(counts, epsilon = 1.0)
 morie_dp_laplace_histogram <- function(counts, epsilon) {
   if (!is.numeric(counts) || length(counts) == 0L || anyNA(counts) ||
-        any(counts < 0) || any(counts != as.integer(counts))) {
+    any(counts < 0) || any(counts != as.integer(counts))) {
     stop("`counts` must be a non-empty vector of non-negative integers.",
-         call. = FALSE)
+      call. = FALSE
+    )
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||
-        is.na(epsilon) || epsilon <= 0) {
+    is.na(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   scale <- 1 / epsilon
