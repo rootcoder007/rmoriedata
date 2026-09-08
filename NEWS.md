@@ -1,3 +1,13 @@
+# rmoriedata 0.3.2 - 2026-09-08
+
+## describe_corpus.Rds ships here again
+
+The narrative corpus behind `morie_describe()` was excluded from the
+0.3.1 tarball to get this package under 5 MB, which left rmorie
+carrying the only shipped copy. rmorie has no room for it either, so
+the corpus is back where it belongs, and both packages sit in the
+5-10 MB range CRAN accepts with a written justification.
+
 # rmoriedata 0.3.1 - 2026-09-08
 
 ## Source tarball down to 4.77 MB, under CRAN's 5 MB guideline
