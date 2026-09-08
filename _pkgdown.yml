@@ -67,3 +67,9 @@ reference:
     contents:
       - arrest_sample
       - complaint_sample
+  - title: International datasets
+    desc: >
+      Non-Canadian tables in the bundled store, reached by slug through
+      morie_data_load().
+    contents:
+      - rmoriedata-victoria
