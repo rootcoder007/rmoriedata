@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
 Title: Integrated Datasets for the 'rmorie' Package
-Version: 0.2.5
+Version: 0.3.0
 Authors@R: c(
   person(
     given = "Vansh Singh",
@@ -32,12 +32,12 @@ Depends:
   R (>= 4.3.0)
 Imports:
   stats,
-  nanoparquet,
   rmoriebricklayer (>= 0.2.1)
 LinkingTo:
   rmoriebricklayer
 Suggests:
   testthat (>= 3.0.0),
+  nanoparquet,
   tibble,
   curl,
   jsonlite,

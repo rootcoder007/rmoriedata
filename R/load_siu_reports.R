@@ -31,7 +31,7 @@
 #' @param as Return format: \code{"data.frame"} (default) or
 #'   \code{"tibble"}.
 #' @param format Bundle to read: \code{"csv"} (default, the gzip CSV) or
-#'   \code{"parquet"} (columnar, via \pkg{nanoparquet}). Both hold the
+#'   \code{"parquet"} (columnar, native codec). Both hold the
 #'   identical corpus.
 #' @return A \code{data.frame} (or tibble) of SIU director's-report rows.
 #' @source Ontario Special Investigations Unit director's reports,
@@ -68,16 +68,12 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
   as <- match.arg(as)
   format <- match.arg(format)
   if (format == "parquet") {
-    if (!requireNamespace("nanoparquet", quietly = TRUE)) {
-      stop("format = \"parquet\" needs the 'nanoparquet' package; ",
-           "install it or use format = \"csv\".", call. = FALSE)
-    }
     ppath <- system.file("extdata", "siu_directors_reports.parquet",
                          package = "rmoriedata")
     if (!nzchar(ppath)) {
       stop("bundled SIU parquet corpus not found in rmoriedata", call. = FALSE)
     }
-    df <- as.data.frame(nanoparquet::read_parquet(ppath),
+    df <- as.data.frame(morie_read_parquet(ppath),
                         stringsAsFactors = FALSE)
   } else {
     path <- system.file("extdata", "siu_directors_reports.csv.gz",

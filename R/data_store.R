@@ -21,7 +21,7 @@
   if (!file.exists(f)) {
     return(NULL)
   }
-  as.data.frame(nanoparquet::read_parquet(f))
+  morie_read_parquet(f)
 }
 
 #' Catalogue of bundled datasets
@@ -91,7 +91,7 @@ morie_data_load <- function(slug) {
     stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
       slug), call. = FALSE)
   }
-  as.data.frame(nanoparquet::read_parquet(f))
+  morie_read_parquet(f)
 }
 
 #' Data dictionary (JSON) for a dataset, if one is bundled
