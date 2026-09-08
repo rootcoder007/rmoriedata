@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
 Title: Integrated Datasets for the 'rmorie' Package
-Version: 0.2.5
+Version: 0.2.6
 Authors@R: c(
   person(
     given = "Vansh Singh",
