@@ -1,5 +1,36 @@
 # Changelog
 
+## rmoriedata 0.3.0 - 2026-09-08
+
+### Native Parquet codec: one fewer hard dependency
+
+- `nanoparquet` is gone from Imports. The bundled store is now read and
+  written by this package’s own codec (`R/aaa_parquet.R`), so a plain
+  install no longer pulls a compiled Parquet dependency, and
+  `load_siu_reports(format = "parquet")` works on a machine that never
+  had one – previously it turned a missing optional package into a hard
+  stop, despite the corpus being bundled in exactly that format.
+
+### Victorian crime data
+
+- Ten Victorian (Australia) crime tables added to the bundled Parquet
+  store, from the Crime Statistics Agency’s “Latest Victorian crime
+  data” release (year ending March 2026, CC BY 4.0): criminal incidents,
+  recorded offences, victim reports, alleged offender incidents, family
+  incidents, the LGA cuts of each, and the two Indigenous-status
+  breakdowns. Reach them as `morie_data_load("vic_<key>")`; they appear
+  in
+  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
+  like any other slug.
+- The workbooks are .xlsx and were read with rmorie’s native reader, so
+  the bundled data comes through the same code path a user hits – no
+  readxl/openxlsx dependency and no second parser to disagree with the
+  first. Rebuild with `data-raw/build_vic_tables.R`.
+- This closes a real gap rather than adding a convenience: rmorie’s
+  `morie_datasets_vic_table()` defaults to `offline = TRUE`, and with
+  nothing bundled it returned a 0-row frame on any machine that had not
+  already downloaded the workbook.
+
 ## rmoriedata 0.2.5
 
 - `load_chicago_data(full = TRUE)` gains `limit` (exact row cap) and

@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,20 @@
       <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.0" id="rmoriedata-030---2026-09-08">rmoriedata 0.3.0 - 2026-09-08<a class="anchor" aria-label="anchor" href="#rmoriedata-030---2026-09-08"></a></h2>
+<div class="section level3">
+<h3 id="native-parquet-codec-one-fewer-hard-dependency-0-3-0">Native Parquet codec: one fewer hard dependency<a class="anchor" aria-label="anchor" href="#native-parquet-codec-one-fewer-hard-dependency-0-3-0"></a></h3>
+<ul><li>
+<code>nanoparquet</code> is gone from Imports. The bundled store is now read and written by this package’s own codec (<code>R/aaa_parquet.R</code>), so a plain install no longer pulls a compiled Parquet dependency, and <code>load_siu_reports(format = "parquet")</code> works on a machine that never had one – previously it turned a missing optional package into a hard stop, despite the corpus being bundled in exactly that format.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="victorian-crime-data-0-3-0">Victorian crime data<a class="anchor" aria-label="anchor" href="#victorian-crime-data-0-3-0"></a></h3>
+<ul><li>Ten Victorian (Australia) crime tables added to the bundled Parquet store, from the Crime Statistics Agency’s “Latest Victorian crime data” release (year ending March 2026, CC BY 4.0): criminal incidents, recorded offences, victim reports, alleged offender incidents, family incidents, the LGA cuts of each, and the two Indigenous-status breakdowns. Reach them as <code>morie_data_load("vic_&lt;key&gt;")</code>; they appear in <code><a href="../reference/morie_data_catalog.html">morie_data_catalog()</a></code> like any other slug.</li>
+<li>The workbooks are .xlsx and were read with rmorie’s native reader, so the bundled data comes through the same code path a user hits – no readxl/openxlsx dependency and no second parser to disagree with the first. Rebuild with <code>data-raw/build_vic_tables.R</code>.</li>
+<li>This closes a real gap rather than adding a convenience: rmorie’s <code>morie_datasets_vic_table()</code> defaults to <code>offline = TRUE</code>, and with nothing bundled it returned a 0-row frame on any machine that had not already downloaded the workbook.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.2.5" id="rmoriedata-025">rmoriedata 0.2.5<a class="anchor" aria-label="anchor" href="#rmoriedata-025"></a></h2>
 <ul><li><p><code>load_chicago_data(full = TRUE)</code> gains <code>limit</code> (exact row cap) and <code>fraction</code> (share of the live dataset, total looked up first); bounded fetches never touch the full-dataset cache. Network examples are now <code>\donttest{}</code> with <code><a href="https://rdrr.io/r/base/try.html" class="external-link">try()</a></code> so they degrade gracefully offline.</p></li>

@@ -110,6 +110,6 @@ if (!inherits(big, "try-error")) nrow(big)
 # 0.001 = 0.1% of all rows (the live total is looked up first).
 tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
 if (!inherits(tiny, "try-error")) nrow(tiny)
-#> [1] 74
+#> [1] 75
 # }
 ```

@@ -67,3 +67,11 @@ via data()).
   : Chicago arrests sample
 - [`complaint_sample`](https://rootcoder007.github.io/rmoriedata/reference/complaint_sample.md)
   : Chicago reported-crime sample ("complaints")
+
+## International datasets
+
+Non-Canadian tables in the bundled store, reached by slug through
+morie_data_load().
+
+- [`rmoriedata-victoria`](https://rootcoder007.github.io/rmoriedata/reference/rmoriedata-victoria.md)
+  : Victorian crime statistics (Crime Statistics Agency Victoria)

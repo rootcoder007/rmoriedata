@@ -21,7 +21,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -97,15 +97,15 @@ counts and the original source path.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; dictionary      table </span></span>
-<span><span class="co">#&gt;          8         89</span></span>
+<span><span class="co">#&gt;          8         99</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                                                          slug n_rows n_cols</span></span>
-<span><span class="co">#&gt; 1                 arsau_uof_detailed_dataset_2020_2022_sample      5    167</span></span>
-<span><span class="co">#&gt; 2                         arsau_uof_individual_records_sample      5    112</span></span>
-<span><span class="co">#&gt; 3 arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022      5      6</span></span>
-<span><span class="co">#&gt; 4        arsau_2020_2022_useofforce_detaileddataset_2020_2022      5    167</span></span>
+<span><span class="co">#&gt; 2 arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022      5      6</span></span>
+<span><span class="co">#&gt; 3        arsau_2020_2022_useofforce_detaileddataset_2020_2022      5    167</span></span>
 <span><span class="co">#&gt; 5                           arsau_2023_uof_individual_records      5    112</span></span>
-<span><span class="co">#&gt; 6                                 arsau_2023_uof_main_records      5     23</span></span></code></pre></div>
+<span><span class="co">#&gt; 6                                 arsau_2023_uof_main_records      5     23</span></span>
+<span><span class="co">#&gt; 7                          arsau_2023_uof_probe_cycle_records      5      3</span></span>
+<span><span class="co">#&gt; 8                   arsau_2023_uof_weapon_records_invaliddata      5      5</span></span></code></pre></div>
 <p>Load any table by its <code>slug</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">iucr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_load.html">morie_data_load</a></span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span>
@@ -200,9 +200,9 @@ download and is a network call, so it isn’t run here.)</p>
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                              file    bytes</span></span>
-<span><span class="co">#&gt; 167             rmoriedata.sqlite 14835712</span></span>
+<span><span class="co">#&gt; 177             rmoriedata.sqlite 14835712</span></span>
 <span><span class="co">#&gt; 28            describe_corpus.Rds  1712072</span></span>
-<span><span class="co">#&gt; 173 siu_directors_reports.parquet  1035827</span></span>
+<span><span class="co">#&gt; 183 siu_directors_reports.parquet  1035827</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
 <span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>

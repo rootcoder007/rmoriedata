@@ -63,7 +63,6 @@ f1 <- try(fetch_cihi_table("Hospital Beds"))      # -> tempfile path
 # output path and `timeout` bounds each request (seconds).
 f3 <- try(fetch_cihi_table(1, dest = tempfile(fileext = ".xlsx"),
                            timeout = 60))
-#> Error : 'bricklayer_fetch' is not an exported object from 'namespace:rmoriebricklayer'
 
 # An ambiguous substring errors and lists the candidates:
 try(fetch_cihi_table("data"))

@@ -9,7 +9,7 @@ counts and the original source path each table was built from."><meta name="goog
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,57 +61,57 @@ counts and the original source path each table was built from.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu">morie_data_catalog</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">cat</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	97 obs. of  5 variables:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ slug       : chr  "arsau_uof_detailed_dataset_2020_2022_sample" "arsau_uof_individual_records_sample" "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022" "arsau_2020_2022_useofforce_detaileddataset_2020_2022" ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ source_path: chr  "arsau_uof_detailed_dataset_2020_2022_sample.csv" "arsau_uof_individual_records_sample.csv" "arsau/2020-2022/useofforce_agrregatesummarybyyear_2020-2022.csv" "arsau/2020-2022/useofforce_detaileddataset_2020-2022.csv" ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ kind       : chr  "table" "table" "table" "table" ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ n_rows     : int  5 5 5 5 5 5 5 5 5 5 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ n_cols     : int  167 112 6 167 112 23 3 5 112 23 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	107 obs. of  5 variables:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ slug       : chr  "arsau_2020_2022_dictionary" "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022" "arsau_2020_2022_useofforce_detaileddataset_2020_2022" "arsau_2023_dictionary" ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ source_path: chr  "arsau_2020_2022_dictionary.json" "arsau/2020-2022/useofforce_agrregatesummarybyyear_2020-2022.csv" "arsau/2020-2022/useofforce_detaileddataset_2020-2022.csv" "arsau_2023_dictionary.json" ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ kind       : chr  "dictionary" "table" "table" "dictionary" ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ n_rows     : int  NA 5 5 NA 5 5 5 5 NA 5 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ n_cols     : int  NA 6 167 NA 112 23 3 5 NA 112 ...</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># How many datasets of each kind are bundled?</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> dictionary      table </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>          8         89 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>          8         99 </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The tables, largest first.</span></span></span>
 <span class="r-in"><span><span class="va">tbls</span> <span class="op">&lt;-</span> <span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tbls</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">tbls</span><span class="op">$</span><span class="va">n_rows</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                              slug n_rows n_cols</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 72          siu_directors_reports   5157     65</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 73              siu_drid_manifest   4749      9</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 32      nyc_opendata_bulk_catalog   2851      7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23 edmonton_opendata_bulk_catalog   2027      7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20  chicago_opendata_bulk_catalog   1856      7</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 35                otis_b01_sample   1000     18</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                               slug n_rows n_cols</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 78           siu_directors_reports   5157     65</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 79               siu_drid_manifest   4749      9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 37       nyc_opendata_bulk_catalog   2851      7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 28  edmonton_opendata_bulk_catalog   2027      7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23   chicago_opendata_bulk_catalog   1856      7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 105          vic_recorded_offences   1129      7</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Every slug you can pass to morie_data_load().</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">slug</span>, <span class="fl">10</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "arsau_uof_detailed_dataset_2020_2022_sample"                </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "arsau_uof_individual_records_sample"                        </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022"</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "arsau_2020_2022_useofforce_detaileddataset_2020_2022"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "arsau_2020_2022_dictionary"                                 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "arsau_2020_2022_useofforce_detaileddataset_2020_2022"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "arsau_2023_dictionary"                                      </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "arsau_2023_uof_individual_records"                          </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "arsau_2023_uof_main_records"                                </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "arsau_2023_uof_probe_cycle_records"                         </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "arsau_2023_uof_weapon_records_invaliddata"                  </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "arsau_2024_uof_individual_records"                          </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "arsau_2024_uof_main_records"                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "arsau_2024_dictionary"                                      </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "arsau_2024_uof_individual_records"                          </span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Where each table was originally built from.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"source_path"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                          slug</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 arsau_uof_detailed_dataset_2020_2022_sample</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                         arsau_uof_individual_records_sample</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        arsau_2020_2022_useofforce_detaileddataset_2020_2022</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                  arsau_2020_2022_dictionary</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        arsau_2020_2022_useofforce_detaileddataset_2020_2022</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                       arsau_2023_dictionary</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5                           arsau_2023_uof_individual_records</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6                                 arsau_2023_uof_main_records</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                       source_path</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 1                 arsau_uof_detailed_dataset_2020_2022_sample.csv</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2                         arsau_uof_individual_records_sample.csv</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 arsau/2020-2022/useofforce_agrregatesummarybyyear_2020-2022.csv</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4        arsau/2020-2022/useofforce_detaileddataset_2020-2022.csv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 1                                 arsau_2020_2022_dictionary.json</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 arsau/2020-2022/useofforce_agrregatesummarybyyear_2020-2022.csv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3        arsau/2020-2022/useofforce_detaileddataset_2020-2022.csv</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4                                      arsau_2023_dictionary.json</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5                           arsau/2023/uof_individual_records.csv</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6                                 arsau/2023/uof_main_records.csv</span>
 </code></pre></div>
