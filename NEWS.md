@@ -1,4 +1,15 @@
-# rmoriedata 0.2.6
+# rmoriedata 0.3.0 - 2026-09-08
+
+## Native Parquet codec: one fewer hard dependency
+
+* `nanoparquet` is gone from Imports. The bundled store is now read and
+  written by this package's own codec (`R/aaa_parquet.R`), so a plain
+  install no longer pulls a compiled Parquet dependency, and
+  `load_siu_reports(format = "parquet")` works on a machine that never
+  had one -- previously it turned a missing optional package into a hard
+  stop, despite the corpus being bundled in exactly that format.
+
+## Victorian crime data
 
 * Ten Victorian (Australia) crime tables added to the bundled Parquet
   store, from the Crime Statistics Agency's "Latest Victorian crime data"
