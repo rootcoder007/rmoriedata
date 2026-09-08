@@ -1,4 +1,4 @@
-# R/load_siu_reports.R
+# SIU director's-report corpus loaders.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 #' Load the Ontario SIU director's-report corpus
@@ -45,9 +45,10 @@
 #' ncol(all)
 #'
 #' # `lang` filters the corpus by report language.
-#' en <- load_siu_reports(lang = "en")   # English director's reports
-#' fr <- load_siu_reports(lang = "fr")   # French director's reports
-#' nrow(en); nrow(fr)
+#' en <- load_siu_reports(lang = "en") # English director's reports
+#' fr <- load_siu_reports(lang = "fr") # French director's reports
+#' nrow(en)
+#' nrow(fr)
 #'
 #' # `as = "tibble"` returns a tibble when the tibble package is present.
 #' if (requireNamespace("tibble", quietly = TRUE)) {
@@ -69,21 +70,27 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
   format <- match.arg(format)
   if (format == "parquet") {
     ppath <- system.file("extdata", "siu_directors_reports.parquet",
-                         package = "rmoriedata")
+      package = "rmoriedata"
+    )
     if (!nzchar(ppath)) {
       stop("bundled SIU parquet corpus not found in rmoriedata", call. = FALSE)
     }
     df <- as.data.frame(morie_read_parquet(ppath),
-                        stringsAsFactors = FALSE)
+      stringsAsFactors = FALSE
+    )
   } else {
     path <- system.file("extdata", "siu_directors_reports.csv.gz",
-                        package = "rmoriedata")
+      package = "rmoriedata"
+    )
     if (!nzchar(path)) {
       stop("bundled SIU director's-report corpus not found in rmoriedata",
-           call. = FALSE)
+        call. = FALSE
+      )
     }
-    df <- utils::read.csv(gzfile(path), stringsAsFactors = FALSE,
-                          colClasses = "character", check.names = FALSE)
+    df <- utils::read.csv(gzfile(path),
+      stringsAsFactors = FALSE,
+      colClasses = "character", check.names = FALSE
+    )
   }
   if (lang != "all" && "X_language" %in% names(df)) {
     df <- df[df[["X_language"]] == lang, , drop = FALSE]

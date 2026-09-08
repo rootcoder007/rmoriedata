@@ -42,7 +42,8 @@
 #'
 #' # Domestic-violence-flagged incidents by type.
 #' head(sort(table(complaint_sample$primary_type[complaint_sample$domestic]),
-#'           decreasing = TRUE), 3)
+#'   decreasing = TRUE
+#' ), 3)
 "complaint_sample"
 
 #' Chicago arrests sample

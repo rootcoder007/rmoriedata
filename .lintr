@@ -1,6 +1,20 @@
 linters: linters_with_defaults(
     object_name_linter = NULL,
-    line_length_linter = line_length_linter(90L)
+    line_length_linter = line_length_linter(90L),
+    # styler is the formatter in this repo and its continuation style
+    # disagrees with indentation_linter on multi-line `if` conditions.
+    # Satisfying the linter by hand would be undone by the next
+    # styler run, so the formatter wins. morie does the same.
+    indentation_linter = NULL
   )
-exclusions: list("R/RcppExports.R", "src", "inst", "vignettes")
+exclusions: list(
+    # Developer scripts: not shipped (.Rbuildignore'd), not user-facing.
+    "data-raw" = Inf,
+    "R/RcppExports.R" = Inf,
+    # The only over-long line is a source URL, which cannot be wrapped.
+    "R/vic_data.R" = list(line_length_linter = Inf),
+    "src" = Inf,
+    "inst" = Inf,
+    "vignettes" = Inf
+  )
 encoding: "UTF-8"

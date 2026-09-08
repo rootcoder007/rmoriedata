@@ -11,7 +11,8 @@
   p <- system.file("extdata", "parquet", package = "rmoriedata")
   if (!nzchar(p) || !dir.exists(p)) {
     stop("rmoriedata parquet store not found; reinstall rmoriedata.",
-      call. = FALSE)
+      call. = FALSE
+    )
   }
   p
 }
@@ -69,27 +70,32 @@ morie_data_catalog <- function() {
 #' head(iucr)
 #'
 #' # Any slug from the catalogue works the same way.
-#' hoods   <- morie_data_load("chicago_neighborhoods")
+#' hoods <- morie_data_load("chicago_neighborhoods")
 #' offense <- morie_data_load("nyc_nypd_offense_codes")
-#' nrow(hoods); nrow(offense)
+#' nrow(hoods)
+#' nrow(offense)
 #'
 #' # Slugs are validated: an unknown one errors with guidance.
 #' try(morie_data_load("no_such_dataset"))
 #'
 #' # Pattern: pick a slug programmatically from the catalogue, then load it.
-#' cat  <- morie_data_catalog()
+#' cat <- morie_data_catalog()
 #' slug <- cat$slug[cat$kind == "table"][1]
 #' head(morie_data_load(slug))
 #' @export
 morie_data_load <- function(slug) {
   if (is.null(slug) || length(slug) != 1L || is.na(slug) || !is.character(slug)) {
     stop("`slug` must be a single dataset slug (character). ",
-         "See morie_data_catalog() for valid slugs.", call. = FALSE)
+      "See morie_data_catalog() for valid slugs.",
+      call. = FALSE
+    )
   }
   f <- file.path(.rmoriedata_parquet_dir(), paste0(slug, ".parquet"))
   if (!file.exists(f)) {
-    stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
-      slug), call. = FALSE)
+    stop(sprintf(
+      "No dataset '%s'. See morie_data_catalog() for valid slugs.",
+      slug
+    ), call. = FALSE)
   }
   morie_read_parquet(f)
 }
@@ -102,7 +108,7 @@ morie_data_load <- function(slug) {
 #' @seealso [morie_data_catalog()]
 #' @examples
 #' # Which dictionaries are bundled?
-#' cat  <- morie_data_catalog()
+#' cat <- morie_data_catalog()
 #' dict_slugs <- cat$slug[cat$kind == "dictionary"]
 #' dict_slugs
 #'
@@ -111,8 +117,9 @@ morie_data_load <- function(slug) {
 #'   js <- morie_data_dictionary(dict_slugs[1])
 #'   substr(js, 1, 200)
 #'   # Parse it if you have jsonlite:
-#'   if (requireNamespace("jsonlite", quietly = TRUE))
+#'   if (requireNamespace("jsonlite", quietly = TRUE)) {
 #'     str(jsonlite::fromJSON(js), max.level = 1)
+#'   }
 #' }
 #'
 #' # Unknown / non-dictionary slug: informative message, returns NULL.
@@ -126,8 +133,11 @@ morie_data_dictionary <- function(slug) {
   }
   row <- d[d$slug == slug, , drop = FALSE]
   if (!nrow(row)) {
-    message("No dictionary bundled for '", slug,
-            "'. Rows with kind == \"dictionary\" in morie_data_catalog() list the ones available.")
+    message(
+      "No dictionary bundled for '", slug,
+      "'. Rows with kind == \"dictionary\" in morie_data_catalog() ",
+      "list the ones available."
+    )
     return(invisible(NULL))
   }
   row$dictionary_json[[1]]

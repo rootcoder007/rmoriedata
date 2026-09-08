@@ -16,8 +16,8 @@
 #'   digest. `morie_core_mean()` returns a length-1 numeric.
 #' @examples
 #' ## ---- morie_core_sha256(): 64-char lowercase hex digest --------------
-#' morie_core_sha256("abc")            # hash a character scalar
-#' morie_core_sha256("")               # the empty string still hashes
+#' morie_core_sha256("abc") # hash a character scalar
+#' morie_core_sha256("") # the empty string still hashes
 #' morie_core_sha256(charToRaw("abc")) # identical digest from raw bytes
 #'
 #' # character input and its raw-byte equivalent agree:
@@ -31,11 +31,11 @@
 #' morie_core_sha256(serialize(list(a = 1, b = "x"), NULL))
 #'
 #' ## ---- morie_core_mean(): fast length-1 mean --------------------------
-#' morie_core_mean(1:10)               # 5.5
-#' morie_core_mean(c(2, 4, 6))         # 4
-#' morie_core_mean(c(-1, 0, 1))        # 0
-#' morie_core_mean(c(1, 2, NA))        # NA propagates (no na.rm)
-#' morie_core_mean(complaint_sample$year)  # mean over a bundled column
+#' morie_core_mean(1:10) # 5.5
+#' morie_core_mean(c(2, 4, 6)) # 4
+#' morie_core_mean(c(-1, 0, 1)) # 0
+#' morie_core_mean(c(1, 2, NA)) # NA propagates (no na.rm)
+#' morie_core_mean(complaint_sample$year) # mean over a bundled column
 #' @useDynLib rmoriedata, .registration = TRUE
 #' @name morie_core
 NULL

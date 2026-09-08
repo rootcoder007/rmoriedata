@@ -38,10 +38,12 @@ ask <- function(question, model = NULL, backend = "auto") {
   }
   preamble <- paste0(
     "You are helping explore the datasets bundled in the MORIE packages ",
-    "(rmoriedata). Prefer the bundled catalog. Question: ", question)
+    "(rmoriedata). Prefer the bundled catalog. Question: ", question
+  )
   args <- c("agent", "--backend", backend)
   if (!is.null(model)) args <- c(args, "-m", model)
   args <- c(args, preamble)
   paste(suppressWarnings(
-    system2(bin, args = args, stdout = TRUE, stderr = TRUE)), collapse = "\n")
+    system2(bin, args = args, stdout = TRUE, stderr = TRUE)
+  ), collapse = "\n")
 }
