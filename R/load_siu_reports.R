@@ -69,9 +69,17 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
   as <- match.arg(as)
   format <- match.arg(format)
   if (format == "parquet") {
-    ppath <- system.file("extdata", "siu_directors_reports.parquet",
+    # The corpus lives once, in the Parquet store that morie_data_load()
+    # reads. It used to be shipped a second time at the top of extdata,
+    # byte-identical, costing 0.7 MB of the source tarball for nothing.
+    ppath <- system.file("extdata", "parquet", "siu_directors_reports.parquet",
       package = "rmoriedata"
     )
+    if (!nzchar(ppath)) {
+      ppath <- system.file("extdata", "siu_directors_reports.parquet",
+        package = "rmoriedata"
+      )
+    }
     if (!nzchar(ppath)) {
       stop("bundled SIU parquet corpus not found in rmoriedata", call. = FALSE)
     }
