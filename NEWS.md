@@ -1,3 +1,7 @@
+# rmoriedata 0.3.2.9000 (development)
+
+* Documentation is generated with markdown roxygen; backticks in the help pages are now `\code{}` (they rendered as stray opening quotes in the PDF manual).
+
 # rmoriedata 0.3.2 - 2026-09-08
 
 ## describe_corpus.Rds ships here again

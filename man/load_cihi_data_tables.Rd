@@ -5,9 +5,9 @@
 \title{Catalogue of CIHI open data-table workbooks (with Wayback fallbacks)}
 \source{
 Canadian Institute for Health Information, Data tables
-  (\url{https://www.cihi.ca/en/access-data-and-reports/data-tables}).
-  Snapshotted to the Internet Archive (\url{https://web.archive.org}).
-  Catalogue current as of 2026-07.
+(\url{https://www.cihi.ca/en/access-data-and-reports/data-tables}).
+Snapshotted to the Internet Archive (\url{https://web.archive.org}).
+Catalogue current as of 2026-07.
 }
 \usage{
 load_cihi_data_tables(archived_only = FALSE)
@@ -18,7 +18,7 @@ snapshot. Default \code{FALSE} (return the full catalogue).}
 }
 \value{
 A \code{data.frame} with columns \code{title}, \code{url},
-  \code{wayback_url}.
+\code{wayback_url}.
 }
 \description{
 Returns the bundled catalogue of the public data-table \code{.xlsx}
@@ -45,8 +45,8 @@ head(cat$title, 3)
 # `archived_only = TRUE` keeps only rows that have a Wayback snapshot,
 # i.e. tables still retrievable if CIHI rotates the live file.
 arch <- load_cihi_data_tables(archived_only = TRUE)
-nrow(arch)                       # <= nrow(cat)
-all(nzchar(arch$wayback_url))    # TRUE
+nrow(arch) # <= nrow(cat)
+all(nzchar(arch$wayback_url)) # TRUE
 
 # Find a table by keyword before fetching it.
 cat$title[grepl("hospital", cat$title, ignore.case = TRUE)][1:3]

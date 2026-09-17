@@ -7,24 +7,24 @@
 \format{
 A base \code{data.frame} with up to 25,000 rows and 16 columns:
 \describe{
-  \item{case_number}{Chicago PD records-division number (character).}
-  \item{date_iso}{Incident timestamp as an ISO-8601 string with offset
-    (lossless across R/Python).}
-  \item{date}{Incident timestamp as \code{POSIXct} (America/Chicago).}
-  \item{iucr}{Illinois Uniform Crime Reporting code (character).}
-  \item{primary_type}{Primary FBI crime classification.}
-  \item{description}{Secondary description of the offense.}
-  \item{arrest}{Whether an arrest was made (logical).}
-  \item{domestic}{Whether domestic-violence related (logical).}
-  \item{beat,district,ward,community_area}{Geographic area codes (integer).}
-  \item{fbi_code}{FBI crime code (character).}
-  \item{year}{Year of the incident (integer).}
-  \item{latitude,longitude}{WGS84 coordinates (numeric).}
+\item{case_number}{Chicago PD records-division number (character).}
+\item{date_iso}{Incident timestamp as an ISO-8601 string with offset
+(lossless across R/Python).}
+\item{date}{Incident timestamp as \code{POSIXct} (America/Chicago).}
+\item{iucr}{Illinois Uniform Crime Reporting code (character).}
+\item{primary_type}{Primary FBI crime classification.}
+\item{description}{Secondary description of the offense.}
+\item{arrest}{Whether an arrest was made (logical).}
+\item{domestic}{Whether domestic-violence related (logical).}
+\item{beat,district,ward,community_area}{Geographic area codes (integer).}
+\item{fbi_code}{FBI crime code (character).}
+\item{year}{Year of the incident (integer).}
+\item{latitude,longitude}{WGS84 coordinates (numeric).}
 }
 }
 \source{
 City of Chicago Open Data Portal, "Crimes - 2001 to present"
-  (dataset \code{ijzp-q8t2}). \url{https://data.cityofchicago.org/}
+(dataset \code{ijzp-q8t2}). \url{https://data.cityofchicago.org/}
 }
 \usage{
 complaint_sample
@@ -50,7 +50,8 @@ table(complaint_sample$year)
 
 # Domestic-violence-flagged incidents by type.
 head(sort(table(complaint_sample$primary_type[complaint_sample$domestic]),
-          decreasing = TRUE), 3)
+  decreasing = TRUE
+), 3)
 }
 \seealso{
 \code{\link{load_chicago_data}}

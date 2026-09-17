@@ -14,8 +14,8 @@ Typical range: 0.1 to 5.0.}
 }
 \value{
 A noised count (numeric, may be fractional or negative). Caller
-  should usually clip to a non-negative integer for display:
-  \code{round(pmax(0, x))}.
+should usually clip to a non-negative integer for display:
+\code{round(pmax(0, x))}.
 }
 \description{
 Adds Laplace noise calibrated to sensitivity / epsilon. Use when releasing
@@ -33,8 +33,8 @@ set.seed(1)
 morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
 
 # Smaller epsilon = stronger privacy = more noise.
-morie_dp_laplace_count(42, epsilon = 0.1)   # noisier
-morie_dp_laplace_count(42, epsilon = 5.0)   # closer to 42
+morie_dp_laplace_count(42, epsilon = 0.1) # noisier
+morie_dp_laplace_count(42, epsilon = 5.0) # closer to 42
 
 # The mechanism is unbiased: averaging many releases returns ~the truth.
 mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))

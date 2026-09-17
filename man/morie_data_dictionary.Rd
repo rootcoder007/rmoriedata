@@ -7,18 +7,18 @@
 morie_data_dictionary(slug)
 }
 \arguments{
-\item{slug}{Dictionary slug; see [morie_data_catalog()] rows where
-`kind == "dictionary"`.}
+\item{slug}{Dictionary slug; see \code{\link[=morie_data_catalog]{morie_data_catalog()}} rows where
+\code{kind == "dictionary"}.}
 }
 \value{
-A character scalar of JSON, or `NULL` if no dictionary exists.
+A character scalar of JSON, or \code{NULL} if no dictionary exists.
 }
 \description{
 Data dictionary (JSON) for a dataset, if one is bundled
 }
 \examples{
 # Which dictionaries are bundled?
-cat  <- morie_data_catalog()
+cat <- morie_data_catalog()
 dict_slugs <- cat$slug[cat$kind == "dictionary"]
 dict_slugs
 
@@ -27,13 +27,14 @@ if (length(dict_slugs)) {
   js <- morie_data_dictionary(dict_slugs[1])
   substr(js, 1, 200)
   # Parse it if you have jsonlite:
-  if (requireNamespace("jsonlite", quietly = TRUE))
+  if (requireNamespace("jsonlite", quietly = TRUE)) {
     str(jsonlite::fromJSON(js), max.level = 1)
+  }
 }
 
 # Unknown / non-dictionary slug: informative message, returns NULL.
 morie_data_dictionary("no_such_dictionary")
 }
 \seealso{
-[morie_data_catalog()]
+\code{\link[=morie_data_catalog]{morie_data_catalog()}}
 }
