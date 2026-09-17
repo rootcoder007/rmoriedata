@@ -1,0 +1,871 @@
+"Year","Year ending","Police Region","Local Government Area","Victim Reports","Rate per 100,000 population"
+2026,"March","1 North West Metro","Banyule",4596,3448.744380081
+2026,"March","1 North West Metro","Brimbank",8636,4341.423976613
+2026,"March","1 North West Metro","Darebin",8028,4934.25454213
+2026,"March","1 North West Metro","Hobsons Bay",3359,3434.188341745
+2026,"March","1 North West Metro","Hume",10053,3466.47837331
+2026,"March","1 North West Metro","Maribyrnong",6444,6724.287254443
+2026,"March","1 North West Metro","Melbourne",20267,10366.225141985
+2026,"March","1 North West Metro","Melton",6692,2549.494509931
+2026,"March","1 North West Metro","Merri-bek",7390,3910.278931081
+2026,"March","1 North West Metro","Moonee Valley",4910,3760.908373425
+2026,"March","1 North West Metro","Nillumbik",952,1489.366670555
+2026,"March","1 North West Metro","Whittlesea",7430,2760.203751982
+2026,"March","1 North West Metro","Wyndham",10591,2901.444824861
+2026,"March","1 North West Metro","Yarra",7739,7589.908402844
+2026,"March","1 North West Metro","Total",107087,4189.36545633
+2026,"March","2 Eastern","Alpine",211,1589.873215561
+2026,"March","2 Eastern","Bass Coast",1378,3055.130260682
+2026,"March","2 Eastern","Baw Baw",1963,3064.453854118
+2026,"March","2 Eastern","Benalla",510,3459.315941373
+2026,"March","2 Eastern","Boroondara",5466,3059.404610883
+2026,"March","2 Eastern","East Gippsland",2346,4673.042074057
+2026,"March","2 Eastern","Greater Shepparton",3341,4753.919179744
+2026,"March","2 Eastern","Indigo",248,1385.396504692
+2026,"March","2 Eastern","Knox",4238,2583.039629275
+2026,"March","2 Eastern","Latrobe",5144,6446.347475591
+2026,"March","2 Eastern","Manningham",2501,1880.656099931
+2026,"March","2 Eastern","Mansfield",185,1667.94613837
+2026,"March","2 Eastern","Maroondah",3339,2769.087502548
+2026,"March","2 Eastern","Mitchell",1722,2694.642891637
+2026,"March","2 Eastern","Moira",936,3007.887814478
+2026,"March","2 Eastern","Monash",7501,3532.30149554
+2026,"March","2 Eastern","Murrindindi",326,2049.363186197
+2026,"March","2 Eastern","South Gippsland",856,2735.050849519
+2026,"March","2 Eastern","Strathbogie",270,2256.219165413
+2026,"March","2 Eastern","Towong",120,1933.284687633
+2026,"March","2 Eastern","Wangaratta",900,2983.979337872
+2026,"March","2 Eastern","Wellington",2214,4731.33870731
+2026,"March","2 Eastern","Whitehorse",6078,3271.118085289
+2026,"March","2 Eastern","Wodonga",1630,3602.389576884
+2026,"March","2 Eastern","Yarra Ranges",3185,1973.630676679
+2026,"March","2 Eastern","Total",56608,3136.366175169
+2026,"March","3 Southern Metro","Bayside",2752,2556.407445615
+2026,"March","3 Southern Metro","Cardinia",3773,2761.996595312
+2026,"March","3 Southern Metro","Casey",14865,3448.615026613
+2026,"March","3 Southern Metro","Frankston",6361,4376.589404447
+2026,"March","3 Southern Metro","Glen Eira",4372,2675.167959712
+2026,"March","3 Southern Metro","Greater Dandenong",9472,5625.021212394
+2026,"March","3 Southern Metro","Kingston",4966,2952.205753094
+2026,"March","3 Southern Metro","Mornington Peninsula",4669,2706.68762871
+2026,"March","3 Southern Metro","Port Phillip",8080,7034.429742161
+2026,"March","3 Southern Metro","Stonnington",7030,6080.626289507
+2026,"March","3 Southern Metro","Total",66340,3848.815290471
+2026,"March","4 Western","Ararat",561,4746.36699976
+2026,"March","4 Western","Ballarat",5963,4757.748652387
+2026,"March","4 Western","Buloke",114,1949.057356833
+2026,"March","4 Western","Campaspe",1285,3390.189750841
+2026,"March","4 Western","Central Goldfields",454,3293.441496993
+2026,"March","4 Western","Colac-Otway",676,3045.676140566
+2026,"March","4 Western","Corangamite",372,2375.139512717
+2026,"March","4 Western","Gannawarra",253,2456.576415461
+2026,"March","4 Western","Glenelg",853,4278.306910604
+2026,"March","4 Western","Golden Plains",346,1283.088142462
+2026,"March","4 Western","Greater Bendigo",4209,3289.952762231
+2026,"March","4 Western","Greater Geelong",9703,3223.485324003
+2026,"March","4 Western","Hepburn",419,2436.25601329
+2026,"March","4 Western","Hindmarsh",129,2346.100076607
+2026,"March","4 Western","Horsham",848,4183.100684036
+2026,"March","4 Western","Loddon",228,2942.417622057
+2026,"March","4 Western","Macedon Ranges",1001,1815.772460498
+2026,"March","4 Western","Mildura",3130,5425.77688407
+2026,"March","4 Western","Moorabool",1285,3126.964615187
+2026,"March","4 Western","Mount Alexander",457,2155.797887062
+2026,"March","4 Western","Moyne",307,1722.980275655
+2026,"March","4 Western","Northern Grampians",625,5259.22995343
+2026,"March","4 Western","Pyrenees",246,3103.641915447
+2026,"March","4 Western","Queenscliffe",29,783.805386644
+2026,"March","4 Western","Southern Grampians",491,2979.043730247
+2026,"March","4 Western","Surf Coast",601,1474.772490191
+2026,"March","4 Western","Swan Hill",784,3738.242069182
+2026,"March","4 Western","Warrnambool",1182,3223.5306228
+2026,"March","4 Western","West Wimmera",75,1947.39017594
+2026,"March","4 Western","Yarriambiack",186,2950.943985305
+2026,"March","4 Western","Total",36812,3313.777863448
+2026,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",708,
+2026,"March","Justice Institutions and Immigration Facilities","Total",708,
+2026,"March","Unincorporated Vic","Unincorporated Vic",64,
+2026,"March","Unincorporated Vic","Total",64,
+2025,"March","1 North West Metro","Banyule",4532,3413.421706711
+2025,"March","1 North West Metro","Brimbank",8100,4087.172836952
+2025,"March","1 North West Metro","Darebin",9261,5699.217211501
+2025,"March","1 North West Metro","Hobsons Bay",3684,3796.724758067
+2025,"March","1 North West Metro","Hume",10034,3597.898775481
+2025,"March","1 North West Metro","Maribyrnong",6178,6525.688693595
+2025,"March","1 North West Metro","Melbourne",20424,10501.797090718
+2025,"March","1 North West Metro","Melton",6519,2815.167964347
+2025,"March","1 North West Metro","Merri-bek",8520,4505.362015356
+2025,"March","1 North West Metro","Moonee Valley",4901,3755.526777573
+2025,"March","1 North West Metro","Nillumbik",1014,1589.41643024
+2025,"March","1 North West Metro","Whittlesea",7448,2867.273126244
+2025,"March","1 North West Metro","Wyndham",11274,3241.238536066
+2025,"March","1 North West Metro","Yarra",8208,8098.188563085
+2025,"March","1 North West Metro","Total",110097,4435.042381791
+2025,"March","2 Eastern","Alpine",157,1186.158960411
+2025,"March","2 Eastern","Bass Coast",1416,3190.842102891
+2025,"March","2 Eastern","Baw Baw",2309,3677.688583078
+2025,"March","2 Eastern","Benalla",520,3566.284891297
+2025,"March","2 Eastern","Boroondara",5145,2880.722952279
+2025,"March","2 Eastern","East Gippsland",2162,4352.815639534
+2025,"March","2 Eastern","Greater Shepparton",3243,4641.809203464
+2025,"March","2 Eastern","Indigo",277,1559.860344633
+2025,"March","2 Eastern","Knox",4688,2861.677450861
+2025,"March","2 Eastern","Latrobe",4854,6135.605217919
+2025,"March","2 Eastern","Manningham",2661,2002.076561936
+2025,"March","2 Eastern","Mansfield",161,1466.435923126
+2025,"March","2 Eastern","Maroondah",3689,3067.852004624
+2025,"March","2 Eastern","Mitchell",1924,3291.195538754
+2025,"March","2 Eastern","Moira",887,2873.712175209
+2025,"March","2 Eastern","Monash",7767,3666.567531971
+2025,"March","2 Eastern","Murrindindi",314,2006.646216769
+2025,"March","2 Eastern","South Gippsland",877,2819.119868848
+2025,"March","2 Eastern","Strathbogie",276,2331.277979559
+2025,"March","2 Eastern","Towong",110,1786.29425138
+2025,"March","2 Eastern","Wangaratta",900,2991.126325235
+2025,"March","2 Eastern","Wellington",2001,4298.511310176
+2025,"March","2 Eastern","Whitehorse",6295,3398.000604569
+2025,"March","2 Eastern","Wodonga",1848,4132.656484111
+2025,"March","2 Eastern","Yarra Ranges",3244,2016.083924776
+2025,"March","2 Eastern","Total",57725,3222.390435934
+2025,"March","3 Southern Metro","Bayside",3063,2858.235974768
+2025,"March","3 Southern Metro","Cardinia",3937,2949.682330376
+2025,"March","3 Southern Metro","Casey",13382,3225.130082496
+2025,"March","3 Southern Metro","Frankston",7258,4992.811397203
+2025,"March","3 Southern Metro","Glen Eira",4743,2909.369728569
+2025,"March","3 Southern Metro","Greater Dandenong",9488,5624.718408385
+2025,"March","3 Southern Metro","Kingston",5640,3355.924336997
+2025,"March","3 Southern Metro","Mornington Peninsula",5809,3373.070022123
+2025,"March","3 Southern Metro","Port Phillip",8366,7310.764283342
+2025,"March","3 Southern Metro","Stonnington",6953,6057.200602845
+2025,"March","3 Southern Metro","Total",68639,4032.502537976
+2025,"March","4 Western","Ararat",654,5574.497101943
+2025,"March","4 Western","Ballarat",5254,4283.350046062
+2025,"March","4 Western","Buloke",131,2225.242058774
+2025,"March","4 Western","Campaspe",1646,4336.828792749
+2025,"March","4 Western","Central Goldfields",539,3919.144913837
+2025,"March","4 Western","Colac-Otway",703,3165.383403125
+2025,"March","4 Western","Corangamite",393,2501.272912424
+2025,"March","4 Western","Gannawarra",290,2812.530307439
+2025,"March","4 Western","Glenelg",895,4495.680128592
+2025,"March","4 Western","Golden Plains",365,1371.149511645
+2025,"March","4 Western","Greater Bendigo",4749,3752.13324063
+2025,"March","4 Western","Greater Geelong",10137,3435.665577593
+2025,"March","4 Western","Hepburn",389,2286.755628711
+2025,"March","4 Western","Hindmarsh",129,2368.276115293
+2025,"March","4 Western","Horsham",778,3841.595891764
+2025,"March","4 Western","Loddon",218,2824.565949728
+2025,"March","4 Western","Macedon Ranges",1000,1836.07520564
+2025,"March","4 Western","Mildura",3505,6115.967823553
+2025,"March","4 Western","Moorabool",1099,2715.457600316
+2025,"March","4 Western","Mount Alexander",492,2349.682410812
+2025,"March","4 Western","Moyne",331,1863.738738739
+2025,"March","4 Western","Northern Grampians",523,4430.701457133
+2025,"March","4 Western","Pyrenees",226,2840.266432072
+2025,"March","4 Western","Queenscliffe",61,1839.011154658
+2025,"March","4 Western","Southern Grampians",494,2997.027240187
+2025,"March","4 Western","Surf Coast",679,1686.328076493
+2025,"March","4 Western","Swan Hill",848,4045.415513787
+2025,"March","4 Western","Warrnambool",1385,3820.162736174
+2025,"March","4 Western","West Wimmera",72,1839.08045977
+2025,"March","4 Western","Yarriambiack",214,3399.523431295
+2025,"March","4 Western","Total",38199,3482.158484292
+2025,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",741,
+2025,"March","Justice Institutions and Immigration Facilities","Total",741,
+2025,"March","Unincorporated Vic","Unincorporated Vic",53,
+2025,"March","Unincorporated Vic","Total",53,
+2024,"March","1 North West Metro","Banyule",3273,2489.730716568
+2024,"March","1 North West Metro","Brimbank",7311,3701.809638579
+2024,"March","1 North West Metro","Darebin",6585,4135.033814969
+2024,"March","1 North West Metro","Hobsons Bay",2646,2775.796231799
+2024,"March","1 North West Metro","Hume",7961,2940.209703689
+2024,"March","1 North West Metro","Maribyrnong",5085,5425.562562018
+2024,"March","1 North West Metro","Melbourne",15671,8354.970276971
+2024,"March","1 North West Metro","Melton",5467,2497.555894634
+2024,"March","1 North West Metro","Merri-bek",6851,3693.540213278
+2024,"March","1 North West Metro","Moonee Valley",4052,3135.640438309
+2024,"March","1 North West Metro","Nillumbik",727,1144.377282458
+2024,"March","1 North West Metro","Whittlesea",5538,2193.80600385
+2024,"March","1 North West Metro","Wyndham",8457,2522.068471907
+2024,"March","1 North West Metro","Yarra",6676,6681.211344849
+2024,"March","1 North West Metro","Total",86300,3565.535197988
+2024,"March","2 Eastern","Alpine",180,1372.474266108
+2024,"March","2 Eastern","Bass Coast",1347,3098.831324193
+2024,"March","2 Eastern","Baw Baw",1839,2976.065250109
+2024,"March","2 Eastern","Benalla",498,3422.210005498
+2024,"March","2 Eastern","Boroondara",3971,2239.138402549
+2024,"March","2 Eastern","East Gippsland",2070,4208.771323425
+2024,"March","2 Eastern","Greater Shepparton",2749,3958.585334946
+2024,"March","2 Eastern","Indigo",273,1549.55159496
+2024,"March","2 Eastern","Knox",3977,2440.536095633
+2024,"March","2 Eastern","Latrobe",4498,5731.834747815
+2024,"March","2 Eastern","Manningham",2613,1989.144584091
+2024,"March","2 Eastern","Mansfield",186,1727.019498607
+2024,"March","2 Eastern","Maroondah",2776,2331.362536952
+2024,"March","2 Eastern","Mitchell",1631,2908.397082687
+2024,"March","2 Eastern","Moira",936,3054.730589733
+2024,"March","2 Eastern","Monash",6484,3108.371125322
+2024,"March","2 Eastern","Murrindindi",357,2295.819935691
+2024,"March","2 Eastern","South Gippsland",807,2608.527006497
+2024,"March","2 Eastern","Strathbogie",266,2274.476271911
+2024,"March","2 Eastern","Towong",117,1904.606869608
+2024,"March","2 Eastern","Wangaratta",950,3162.660629869
+2024,"March","2 Eastern","Wellington",1798,3885.299392787
+2024,"March","2 Eastern","Whitehorse",5015,2743.300384554
+2024,"March","2 Eastern","Wodonga",1799,4069.859511798
+2024,"March","2 Eastern","Yarra Ranges",2718,1701.099643883
+2024,"March","2 Eastern","Total",49855,2813.643192456
+2024,"March","3 Southern Metro","Bayside",3164,2989.615715325
+2024,"March","3 Southern Metro","Cardinia",2955,2271.486882259
+2024,"March","3 Southern Metro","Casey",10795,2670.654712425
+2024,"March","3 Southern Metro","Frankston",6132,4249.74530636
+2024,"March","3 Southern Metro","Glen Eira",4187,2608.170231851
+2024,"March","3 Southern Metro","Greater Dandenong",7938,4760.50543638
+2024,"March","3 Southern Metro","Kingston",5484,3302.202070199
+2024,"March","3 Southern Metro","Mornington Peninsula",4490,2627.928618669
+2024,"March","3 Southern Metro","Port Phillip",6851,6103.667011154
+2024,"March","3 Southern Metro","Stonnington",5758,5079.39308398
+2024,"March","3 Southern Metro","Total",57754,3449.573417368
+2024,"March","4 Western","Ararat",509,4378.494623656
+2024,"March","4 Western","Ballarat",5218,4328.171268839
+2024,"March","4 Western","Buloke",135,2280.020266847
+2024,"March","4 Western","Campaspe",1431,3767.375737152
+2024,"March","4 Western","Central Goldfields",491,3588.656629148
+2024,"March","4 Western","Colac-Otway",580,2611.671469741
+2024,"March","4 Western","Corangamite",374,2373.247033441
+2024,"March","4 Western","Gannawarra",323,3124.39543432
+2024,"March","4 Western","Glenelg",616,3094.23347398
+2024,"March","4 Western","Golden Plains",359,1369.340504253
+2024,"March","4 Western","Greater Bendigo",4315,3443.927434094
+2024,"March","4 Western","Greater Geelong",9245,3202.552342418
+2024,"March","4 Western","Hepburn",380,2259.618243444
+2024,"March","4 Western","Hindmarsh",152,2795.145273998
+2024,"March","4 Western","Horsham",845,4169.339320077
+2024,"March","4 Western","Loddon",209,2706.903250874
+2024,"March","4 Western","Macedon Ranges",794,1481.757954651
+2024,"March","4 Western","Mildura",3439,6019.182973361
+2024,"March","4 Western","Moorabool",1058,2664.383389156
+2024,"March","4 Western","Mount Alexander",454,2191.436984119
+2024,"March","4 Western","Moyne",298,1686.856107778
+2024,"March","4 Western","Northern Grampians",418,3565.336062777
+2024,"March","4 Western","Pyrenees",186,2346.707040121
+2024,"March","4 Western","Queenscliffe",45,1370.697532744
+2024,"March","4 Western","Southern Grampians",487,2960.486322188
+2024,"March","4 Western","Surf Coast",635,1594.115579656
+2024,"March","4 Western","Swan Hill",771,3683.531603841
+2024,"March","4 Western","Warrnambool",1103,3072.594573514
+2024,"March","4 Western","West Wimmera",87,2229.054573405
+2024,"March","4 Western","Yarriambiack",199,3153.224528601
+2024,"March","4 Western","Total",35156,3244.717965378
+2024,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",569,
+2024,"March","Justice Institutions and Immigration Facilities","Total",569,
+2024,"March","Unincorporated Vic","Unincorporated Vic",68,
+2024,"March","Unincorporated Vic","Total",68,
+2023,"March","1 North West Metro","Banyule",2832,2190.729624358
+2023,"March","1 North West Metro","Brimbank",6782,3467.297890071
+2023,"March","1 North West Metro","Darebin",5745,3701.532157262
+2023,"March","1 North West Metro","Hobsons Bay",2792,2985.90464783
+2023,"March","1 North West Metro","Hume",7565,2886.501171389
+2023,"March","1 North West Metro","Maribyrnong",4276,4678.541730491
+2023,"March","1 North West Metro","Melbourne",13936,7891.145677027
+2023,"March","1 North West Metro","Melton",4730,2302.296942764
+2023,"March","1 North West Metro","Merri-bek",6246,3460.82880367
+2023,"March","1 North West Metro","Moonee Valley",3459,2742.299916756
+2023,"March","1 North West Metro","Nillumbik",716,1133.664777225
+2023,"March","1 North West Metro","Whittlesea",5020,2053.119350854
+2023,"March","1 North West Metro","Wyndham",8368,2592.22888935
+2023,"March","1 North West Metro","Yarra",6112,6308.640318735
+2023,"March","1 North West Metro","Total",78579,3353.661269073
+2023,"March","2 Eastern","Alpine",201,1532.362582908
+2023,"March","2 Eastern","Bass Coast",1305,3058.139807372
+2023,"March","2 Eastern","Baw Baw",1587,2619.633218336
+2023,"March","2 Eastern","Benalla",505,3490.702979194
+2023,"March","2 Eastern","Boroondara",3987,2288.748564868
+2023,"March","2 Eastern","East Gippsland",1765,3601.893800253
+2023,"March","2 Eastern","Greater Shepparton",2783,4043.588812205
+2023,"March","2 Eastern","Indigo",308,1759.49728649
+2023,"March","2 Eastern","Knox",3595,2225.289690007
+2023,"March","2 Eastern","Latrobe",4117,5284.031111225
+2023,"March","2 Eastern","Manningham",2060,1593.268055749
+2023,"March","2 Eastern","Mansfield",147,1394.422310757
+2023,"March","2 Eastern","Maroondah",2603,2219.98584258
+2023,"March","2 Eastern","Mitchell",1259,2353.622971659
+2023,"March","2 Eastern","Moira",928,3030.105139424
+2023,"March","2 Eastern","Monash",5926,2914.832394678
+2023,"March","2 Eastern","Murrindindi",307,1988.213198627
+2023,"March","2 Eastern","South Gippsland",758,2463.6786167
+2023,"March","2 Eastern","Strathbogie",205,1774.738117912
+2023,"March","2 Eastern","Towong",99,1604.278074866
+2023,"March","2 Eastern","Wangaratta",849,2838.800280871
+2023,"March","2 Eastern","Wellington",1744,3796.503907526
+2023,"March","2 Eastern","Whitehorse",4162,2333.849225041
+2023,"March","2 Eastern","Wodonga",1488,3397.027600849
+2023,"March","2 Eastern","Yarra Ranges",2718,1715.551684308
+2023,"March","2 Eastern","Total",45406,2602.525377001
+2023,"March","3 Southern Metro","Bayside",2809,2697.485931588
+2023,"March","3 Southern Metro","Cardinia",2655,2094.525832485
+2023,"March","3 Southern Metro","Casey",9431,2410.312898535
+2023,"March","3 Southern Metro","Frankston",4841,3394.168004655
+2023,"March","3 Southern Metro","Glen Eira",3927,2508.223421582
+2023,"March","3 Southern Metro","Greater Dandenong",7306,4468.966192203
+2023,"March","3 Southern Metro","Kingston",4478,2739.692503472
+2023,"March","3 Southern Metro","Mornington Peninsula",4009,2359.74830921
+2023,"March","3 Southern Metro","Port Phillip",6611,6048.490393413
+2023,"March","3 Southern Metro","Stonnington",5509,4965.433945938
+2023,"March","3 Southern Metro","Total",51576,3147.887736568
+2023,"March","4 Western","Ararat",431,3703.067273821
+2023,"March","4 Western","Ballarat",4450,3777.973987163
+2023,"March","4 Western","Buloke",105,1746.21653085
+2023,"March","4 Western","Campaspe",1543,4042.653531754
+2023,"March","4 Western","Central Goldfields",434,3202.24304582
+2023,"March","4 Western","Colac-Otway",563,2535.350806088
+2023,"March","4 Western","Corangamite",275,1732.174351222
+2023,"March","4 Western","Gannawarra",275,2652.136175137
+2023,"March","4 Western","Glenelg",588,2948.25511432
+2023,"March","4 Western","Golden Plains",280,1088.604642121
+2023,"March","4 Western","Greater Bendigo",4300,3473.62468697
+2023,"March","4 Western","Greater Geelong",8705,3084.560543138
+2023,"March","4 Western","Hepburn",320,1920.076803072
+2023,"March","4 Western","Hindmarsh",113,2038.975099242
+2023,"March","4 Western","Horsham",850,4201.472987
+2023,"March","4 Western","Loddon",181,2343.042071197
+2023,"March","4 Western","Macedon Ranges",833,1577.442384532
+2023,"March","4 Western","Mildura",3116,5450.697080483
+2023,"March","4 Western","Moorabool",891,2282.917830331
+2023,"March","4 Western","Mount Alexander",363,1770.127273614
+2023,"March","4 Western","Moyne",255,1451.998633413
+2023,"March","4 Western","Northern Grampians",366,3099.331018715
+2023,"March","4 Western","Pyrenees",174,2242.557030545
+2023,"March","4 Western","Queenscliffe",34,1055.572803477
+2023,"March","4 Western","Southern Grampians",393,2395.757132407
+2023,"March","4 Western","Surf Coast",529,1348.870416645
+2023,"March","4 Western","Swan Hill",762,3612.744168405
+2023,"March","4 Western","Warrnambool",1032,2888.652521973
+2023,"March","4 Western","West Wimmera",53,1349.287169043
+2023,"March","4 Western","Yarriambiack",192,3018.867924528
+2023,"March","4 Western","Total",32406,3028.507558652
+2023,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",797,
+2023,"March","Justice Institutions and Immigration Facilities","Total",797,
+2023,"March","Unincorporated Vic","Unincorporated Vic",64,
+2023,"March","Unincorporated Vic","Total",64,
+2022,"March","1 North West Metro","Banyule",2826,2222.41445749
+2022,"March","1 North West Metro","Brimbank",7045,3649.975390514
+2022,"March","1 North West Metro","Darebin",5176,3446.714434116
+2022,"March","1 North West Metro","Hobsons Bay",2679,2922.630476523
+2022,"March","1 North West Metro","Hume",7047,2789.344521849
+2022,"March","1 North West Metro","Maribyrnong",4559,5223.777986571
+2022,"March","1 North West Metro","Melbourne",12186,7651.831014216
+2022,"March","1 North West Metro","Melton",5017,2602.110941106
+2022,"March","1 North West Metro","Merri-bek",6053,3474.602053878
+2022,"March","1 North West Metro","Moonee Valley",3651,2973.127035831
+2022,"March","1 North West Metro","Nillumbik",760,1206.387504365
+2022,"March","1 North West Metro","Whittlesea",4987,2106.654951294
+2022,"March","1 North West Metro","Wyndham",7411,2403.500009729
+2022,"March","1 North West Metro","Yarra",5396,5876.01136871
+2022,"March","1 North West Metro","Total",74793,3322.820450053
+2022,"March","2 Eastern","Alpine",177,1347.852573865
+2022,"March","2 Eastern","Bass Coast",1308,3130.684538056
+2022,"March","2 Eastern","Baw Baw",1553,2621.00857355
+2022,"March","2 Eastern","Benalla",512,3551.609322974
+2022,"March","2 Eastern","Boroondara",3601,2127.559008596
+2022,"March","2 Eastern","East Gippsland",1930,3954.107764802
+2022,"March","2 Eastern","Greater Shepparton",2821,4102.97432914
+2022,"March","2 Eastern","Indigo",318,1838.575393154
+2022,"March","2 Eastern","Knox",3369,2113.78951199
+2022,"March","2 Eastern","Latrobe",3888,5014.444903013
+2022,"March","2 Eastern","Manningham",1709,1352.281629068
+2022,"March","2 Eastern","Mansfield",132,1279.565723149
+2022,"March","2 Eastern","Maroondah",2571,2223.202241361
+2022,"March","2 Eastern","Mitchell",1245,2415.833899292
+2022,"March","2 Eastern","Moira",752,2468.244329931
+2022,"March","2 Eastern","Monash",4990,2562.140902346
+2022,"March","2 Eastern","Murrindindi",314,2049.207074333
+2022,"March","2 Eastern","South Gippsland",662,2158.531416088
+2022,"March","2 Eastern","Strathbogie",247,2151.755379388
+2022,"March","2 Eastern","Towong",85,1384.590324157
+2022,"March","2 Eastern","Wangaratta",827,2771.633487499
+2022,"March","2 Eastern","Wellington",1721,3767.43066045
+2022,"March","2 Eastern","Whitehorse",3390,1967.761221753
+2022,"March","2 Eastern","Wodonga",1449,3342.02089628
+2022,"March","2 Eastern","Yarra Ranges",2717,1727.217825244
+2022,"March","2 Eastern","Total",42288,2471.852053622
+2022,"March","3 Southern Metro","Bayside",2269,2222.091645366
+2022,"March","3 Southern Metro","Cardinia",2488,2021.893005453
+2022,"March","3 Southern Metro","Casey",8335,2202.113606341
+2022,"March","3 Southern Metro","Frankston",4375,3102.220835579
+2022,"March","3 Southern Metro","Glen Eira",3457,2281.230822022
+2022,"March","3 Southern Metro","Greater Dandenong",6300,3961.79072941
+2022,"March","3 Southern Metro","Kingston",4018,2512.851943114
+2022,"March","3 Southern Metro","Mornington Peninsula",3527,2080.420921001
+2022,"March","3 Southern Metro","Port Phillip",6024,5802.51789206
+2022,"March","3 Southern Metro","Stonnington",4992,4705.083978963
+2022,"March","3 Southern Metro","Total",45785,2871.256580028
+2022,"March","4 Western","Ararat",461,3933.447098976
+2022,"March","4 Western","Ballarat",4501,3888.183412375
+2022,"March","4 Western","Buloke",97,1589.903294542
+2022,"March","4 Western","Campaspe",1121,2916.840133222
+2022,"March","4 Western","Central Goldfields",473,3504.742145821
+2022,"March","4 Western","Colac-Otway",593,2677.080041533
+2022,"March","4 Western","Corangamite",346,2169.278996865
+2022,"March","4 Western","Gannawarra",281,2677.975793386
+2022,"March","4 Western","Glenelg",603,3018.773466834
+2022,"March","4 Western","Golden Plains",272,1077.526442974
+2022,"March","4 Western","Greater Bendigo",3999,3266.463006224
+2022,"March","4 Western","Greater Geelong",8500,3077.624942521
+2022,"March","4 Western","Hepburn",262,1581.839038821
+2022,"March","4 Western","Hindmarsh",178,3182.549615591
+2022,"March","4 Western","Horsham",808,3978.727595036
+2022,"March","4 Western","Loddon",198,2561.448900388
+2022,"March","4 Western","Macedon Ranges",637,1221.570206727
+2022,"March","4 Western","Mildura",2803,4922.120568248
+2022,"March","4 Western","Moorabool",808,2098.210807863
+2022,"March","4 Western","Mount Alexander",380,1874.78415314
+2022,"March","4 Western","Moyne",334,1914.808232529
+2022,"March","4 Western","Northern Grampians",359,3036.197564276
+2022,"March","4 Western","Pyrenees",167,2187.29535036
+2022,"March","4 Western","Queenscliffe",85,2649.625935162
+2022,"March","4 Western","Southern Grampians",438,2678.243854714
+2022,"March","4 Western","Surf Coast",625,1618.835474513
+2022,"March","4 Western","Swan Hill",805,3806.146572104
+2022,"March","4 Western","Warrnambool",1144,3226.170332769
+2022,"March","4 Western","West Wimmera",84,2137.404580153
+2022,"March","4 Western","Yarriambiack",173,2698.907956318
+2022,"March","4 Western","Total",31535,2980.561840869
+2022,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",686,
+2022,"March","Justice Institutions and Immigration Facilities","Total",686,
+2022,"March","Unincorporated Vic","Unincorporated Vic",37,
+2022,"March","Unincorporated Vic","Total",37,
+2021,"March","1 North West Metro","Banyule",3293,2585.381172961
+2021,"March","1 North West Metro","Brimbank",7051,3585.904562353
+2021,"March","1 North West Metro","Darebin",6144,4087.93314526
+2021,"March","1 North West Metro","Hobsons Bay",2284,2475.424583004
+2021,"March","1 North West Metro","Hume",7565,3063.745342621
+2021,"March","1 North West Metro","Maribyrnong",3956,4579.498755571
+2021,"March","1 North West Metro","Melbourne",10566,6900.920906538
+2021,"March","1 North West Metro","Melton",4889,2695.951385749
+2021,"March","1 North West Metro","Merri-bek",6145,3541.786743516
+2021,"March","1 North West Metro","Moonee Valley",3314,2695.404636031
+2021,"March","1 North West Metro","Nillumbik",807,1271.867612293
+2021,"March","1 North West Metro","Whittlesea",5779,2492.764125591
+2021,"March","1 North West Metro","Wyndham",6758,2280.627155594
+2021,"March","1 North West Metro","Yarra",5738,6269.59932693
+2021,"March","1 North West Metro","Total",74289,3355.573131385
+2021,"March","2 Eastern","Alpine",192,1458.301686161
+2021,"March","2 Eastern","Bass Coast",1235,3036.263060848
+2021,"March","2 Eastern","Baw Baw",1654,2870.630705682
+2021,"March","2 Eastern","Benalla",525,3636.741479634
+2021,"March","2 Eastern","Boroondara",3918,2307.569983921
+2021,"March","2 Eastern","East Gippsland",1927,3975.080966231
+2021,"March","2 Eastern","Greater Shepparton",2856,4167.761141756
+2021,"March","2 Eastern","Indigo",230,1333.256043128
+2021,"March","2 Eastern","Knox",4187,2609.031598756
+2021,"March","2 Eastern","Latrobe",4335,5621.328630522
+2021,"March","2 Eastern","Manningham",2124,1688.112477249
+2021,"March","2 Eastern","Mansfield",163,1610.512795178
+2021,"March","2 Eastern","Maroondah",2861,2464.785698902
+2021,"March","2 Eastern","Mitchell",1639,3296.990666238
+2021,"March","2 Eastern","Moira",772,2542.233345408
+2021,"March","2 Eastern","Monash",5144,2666.763438798
+2021,"March","2 Eastern","Murrindindi",348,2298.698725147
+2021,"March","2 Eastern","South Gippsland",690,2270.633144662
+2021,"March","2 Eastern","Strathbogie",256,2251.935256861
+2021,"March","2 Eastern","Towong",99,1600.387972842
+2021,"March","2 Eastern","Wangaratta",769,2584.787065981
+2021,"March","2 Eastern","Wellington",1704,3747.608260573
+2021,"March","2 Eastern","Whitehorse",4103,2398.335252547
+2021,"March","2 Eastern","Wodonga",1157,2677.806836855
+2021,"March","2 Eastern","Yarra Ranges",2955,1877.132021776
+2021,"March","2 Eastern","Total",45843,2692.638195722
+2021,"March","3 Southern Metro","Bayside",2392,2337.581111719
+2021,"March","3 Southern Metro","Cardinia",2585,2161.859282614
+2021,"March","3 Southern Metro","Casey",8774,2374.187542957
+2021,"March","3 Southern Metro","Frankston",4719,3350.9913083
+2021,"March","3 Southern Metro","Glen Eira",3819,2535.216877547
+2021,"March","3 Southern Metro","Greater Dandenong",6857,4282.948157402
+2021,"March","3 Southern Metro","Kingston",4329,2713.188011582
+2021,"March","3 Southern Metro","Mornington Peninsula",3782,2218.962684816
+2021,"March","3 Southern Metro","Port Phillip",5910,5713.56754771
+2021,"March","3 Southern Metro","Stonnington",5020,4727.375459083
+2021,"March","3 Southern Metro","Total",48187,3044.716970283
+2021,"March","4 Western","Ararat",514,4345.987993574
+2021,"March","4 Western","Ballarat",3995,3519.699746264
+2021,"March","4 Western","Buloke",130,2120.026092629
+2021,"March","4 Western","Campaspe",1126,2920.427430231
+2021,"March","4 Western","Central Goldfields",447,3338.810875411
+2021,"March","4 Western","Colac-Otway",581,2604.330090995
+2021,"March","4 Western","Corangamite",319,1990.01871491
+2021,"March","4 Western","Gannawarra",270,2543.570419218
+2021,"March","4 Western","Glenelg",534,2662.27938977
+2021,"March","4 Western","Golden Plains",282,1132.894102523
+2021,"March","4 Western","Greater Bendigo",3963,3267.860676826
+2021,"March","4 Western","Greater Geelong",7992,2949.817666426
+2021,"March","4 Western","Hepburn",317,1922.960266909
+2021,"March","4 Western","Hindmarsh",179,3164.780763791
+2021,"March","4 Western","Horsham",679,3332.351786415
+2021,"March","4 Western","Loddon",227,2946.903803713
+2021,"March","4 Western","Macedon Ranges",847,1641.504680323
+2021,"March","4 Western","Mildura",2246,3942.702664747
+2021,"March","4 Western","Moorabool",898,2368.768135057
+2021,"March","4 Western","Mount Alexander",321,1595.9033509
+2021,"March","4 Western","Moyne",274,1584.181313599
+2021,"March","4 Western","Northern Grampians",418,3516.742386
+2021,"March","4 Western","Pyrenees",215,2821.892636829
+2021,"March","4 Western","Queenscliffe",58,1792.336217553
+2021,"March","4 Western","Southern Grampians",379,2298.083919476
+2021,"March","4 Western","Surf Coast",694,1843.391415215
+2021,"March","4 Western","Swan Hill",827,3867.920115991
+2021,"March","4 Western","Warrnambool",1093,3084.695058279
+2021,"March","4 Western","West Wimmera",68,1709.401709402
+2021,"March","4 Western","Yarriambiack",181,2780.337941628
+2021,"March","4 Western","Total",30074,2870.196019672
+2021,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",927,
+2021,"March","Justice Institutions and Immigration Facilities","Total",927,
+2021,"March","Unincorporated Vic","Unincorporated Vic",9,
+2021,"March","Unincorporated Vic","Total",9,
+2020,"March","1 North West Metro","Banyule",3914,3003.975624357
+2020,"March","1 North West Metro","Brimbank",8326,4077.115560714
+2020,"March","1 North West Metro","Darebin",7617,4849.862469438
+2020,"March","1 North West Metro","Hobsons Bay",2730,2867.85793073
+2020,"March","1 North West Metro","Hume",8866,3638.930730618
+2020,"March","1 North West Metro","Maribyrnong",4652,5202.531928694
+2020,"March","1 North West Metro","Melbourne",14285,8373.927978944
+2020,"March","1 North West Metro","Melton",5067,2919.350564051
+2020,"March","1 North West Metro","Merri-bek",7344,4079.320113314
+2020,"March","1 North West Metro","Moonee Valley",4083,3220.387108987
+2020,"March","1 North West Metro","Nillumbik",969,1506.483007369
+2020,"March","1 North West Metro","Whittlesea",6927,2998.182132964
+2020,"March","1 North West Metro","Wyndham",7239,2519.73601771
+2020,"March","1 North West Metro","Yarra",7223,7472.429703503
+2020,"March","1 North West Metro","Total",89242,3966.127787871
+2020,"March","2 Eastern","Alpine",242,1853.837904091
+2020,"March","2 Eastern","Bass Coast",1061,2724.005134788
+2020,"March","2 Eastern","Baw Baw",1954,3504.744139329
+2020,"March","2 Eastern","Benalla",468,3254.067584481
+2020,"March","2 Eastern","Boroondara",4627,2601.26493324
+2020,"March","2 Eastern","East Gippsland",2030,4240.297447466
+2020,"March","2 Eastern","Greater Shepparton",3332,4866.080556123
+2020,"March","2 Eastern","Indigo",268,1565.877884896
+2020,"March","2 Eastern","Knox",5146,3152.375001531
+2020,"March","2 Eastern","Latrobe",5244,6835.779649086
+2020,"March","2 Eastern","Manningham",2507,1958.792689883
+2020,"March","2 Eastern","Mansfield",188,1919.934640523
+2020,"March","2 Eastern","Maroondah",3071,2596.052242276
+2020,"March","2 Eastern","Mitchell",1640,3411.478376636
+2020,"March","2 Eastern","Moira",998,3293.946795168
+2020,"March","2 Eastern","Monash",6156,3065.874466485
+2020,"March","2 Eastern","Murrindindi",388,2608.929532006
+2020,"March","2 Eastern","South Gippsland",703,2322.278012685
+2020,"March","2 Eastern","Strathbogie",278,2491.485929378
+2020,"March","2 Eastern","Towong",97,1572.123176661
+2020,"March","2 Eastern","Wangaratta",861,2916.963106007
+2020,"March","2 Eastern","Wellington",1920,4256.734286664
+2020,"March","2 Eastern","Whitehorse",4794,2711.630485197
+2020,"March","2 Eastern","Wodonga",1521,3564.899451554
+2020,"March","2 Eastern","Yarra Ranges",3533,2223.74682142
+2020,"March","2 Eastern","Total",53027,3075.635447848
+2020,"March","3 Southern Metro","Bayside",2984,2841.417661734
+2020,"March","3 Southern Metro","Cardinia",2881,2472.855242264
+2020,"March","3 Southern Metro","Casey",10585,2908.206720334
+2020,"March","3 Southern Metro","Frankston",5966,4195.764851503
+2020,"March","3 Southern Metro","Glen Eira",4251,2748.680943513
+2020,"March","3 Southern Metro","Greater Dandenong",8092,4885.057471264
+2020,"March","3 Southern Metro","Kingston",5164,3164.293242481
+2020,"March","3 Southern Metro","Mornington Peninsula",5169,3037.265109939
+2020,"March","3 Southern Metro","Port Phillip",6594,5963.427207119
+2020,"March","3 Southern Metro","Stonnington",6030,5354.76423053
+2020,"March","3 Southern Metro","Total",57716,3597.012004582
+2020,"March","4 Western","Ararat",471,3952.005370029
+2020,"March","4 Western","Ballarat",5220,4675.534058847
+2020,"March","4 Western","Buloke",161,2615.334632878
+2020,"March","4 Western","Campaspe",1405,3660.8561974
+2020,"March","4 Western","Central Goldfields",466,3502.705953097
+2020,"March","4 Western","Colac-Otway",665,2985.543683218
+2020,"March","4 Western","Corangamite",332,2061.087658306
+2020,"March","4 Western","Gannawarra",270,2553.191489362
+2020,"March","4 Western","Glenelg",582,2902.019446522
+2020,"March","4 Western","Golden Plains",315,1292.785028318
+2020,"March","4 Western","Greater Bendigo",4333,3612.097567482
+2020,"March","4 Western","Greater Geelong",9647,3626.200965283
+2020,"March","4 Western","Hepburn",482,2949.996939837
+2020,"March","4 Western","Hindmarsh",160,2822.865208186
+2020,"March","4 Western","Horsham",631,3095.413294089
+2020,"March","4 Western","Loddon",217,2834.008097166
+2020,"March","4 Western","Macedon Ranges",866,1701.575824262
+2020,"March","4 Western","Mildura",3155,5502.747013168
+2020,"March","4 Western","Moorabool",916,2479.42832395
+2020,"March","4 Western","Mount Alexander",443,2221.776418075
+2020,"March","4 Western","Moyne",303,1772.862910304
+2020,"March","4 Western","Northern Grampians",396,3354.510800508
+2020,"March","4 Western","Pyrenees",222,2942.735949099
+2020,"March","4 Western","Queenscliffe",60,1938.610662359
+2020,"March","4 Western","Southern Grampians",457,2768.69017327
+2020,"March","4 Western","Surf Coast",699,1951.042509839
+2020,"March","4 Western","Swan Hill",873,4060.653983906
+2020,"March","4 Western","Warrnambool",1246,3517.985205263
+2020,"March","4 Western","West Wimmera",75,1877.816725088
+2020,"March","4 Western","Yarriambiack",240,3613.913567234
+2020,"March","4 Western","Total",35308,3410.231273331
+2020,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",974,
+2020,"March","Justice Institutions and Immigration Facilities","Total",974,
+2020,"March","Unincorporated Vic","Unincorporated Vic",59,
+2020,"March","Unincorporated Vic","Total",59,
+2019,"March","1 North West Metro","Banyule",3891,2979.166507155
+2019,"March","1 North West Metro","Brimbank",8149,3941.074908957
+2019,"March","1 North West Metro","Darebin",7086,4504.825236176
+2019,"March","1 North West Metro","Hobsons Bay",2548,2659.208081989
+2019,"March","1 North West Metro","Hume",8505,3613.45965926
+2019,"March","1 North West Metro","Maribyrnong",4077,4557.344064386
+2019,"March","1 North West Metro","Melbourne",12743,7542.378900516
+2019,"March","1 North West Metro","Melton",4863,2937.747304195
+2019,"March","1 North West Metro","Merri-bek",7428,4142.153719183
+2019,"March","1 North West Metro","Moonee Valley",3859,3052.861414806
+2019,"March","1 North West Metro","Nillumbik",1006,1560.560933234
+2019,"March","1 North West Metro","Whittlesea",6636,2935.348030716
+2019,"March","1 North West Metro","Wyndham",6009,2199.479504101
+2019,"March","1 North West Metro","Yarra",7073,7326.193238316
+2019,"March","1 North West Metro","Total",83873,3785.181591507
+2019,"March","2 Eastern","Alpine",205,1588.654680719
+2019,"March","2 Eastern","Bass Coast",1090,2911.324786325
+2019,"March","2 Eastern","Baw Baw",1754,3245.323514719
+2019,"March","2 Eastern","Benalla",448,3146.730350495
+2019,"March","2 Eastern","Boroondara",3851,2143.457473158
+2019,"March","2 Eastern","East Gippsland",1728,3640.653969324
+2019,"March","2 Eastern","Greater Shepparton",3119,4604.845496287
+2019,"March","2 Eastern","Indigo",201,1191.040530932
+2019,"March","2 Eastern","Knox",4394,2690.621402503
+2019,"March","2 Eastern","Latrobe",5294,6954.716832412
+2019,"March","2 Eastern","Manningham",2241,1766.333262396
+2019,"March","2 Eastern","Mansfield",168,1784.007645747
+2019,"March","2 Eastern","Maroondah",2855,2420.209384139
+2019,"March","2 Eastern","Mitchell",1561,3366.182908158
+2019,"March","2 Eastern","Moira",929,3086.481278448
+2019,"March","2 Eastern","Monash",4984,2494.969013126
+2019,"March","2 Eastern","Murrindindi",338,2293.546854855
+2019,"March","2 Eastern","South Gippsland",536,1791.264244895
+2019,"March","2 Eastern","Strathbogie",298,2732.190336481
+2019,"March","2 Eastern","Towong",99,1611.852816672
+2019,"March","2 Eastern","Wangaratta",796,2703.896192126
+2019,"March","2 Eastern","Wellington",1593,3565.67284448
+2019,"March","2 Eastern","Whitehorse",3957,2250.059705906
+2019,"March","2 Eastern","Wodonga",1302,3093.81237525
+2019,"March","2 Eastern","Yarra Ranges",3124,1967.935997984
+2019,"March","2 Eastern","Total",46865,2736.167800387
+2019,"March","3 Southern Metro","Bayside",2468,2347.614336808
+2019,"March","3 Southern Metro","Cardinia",2542,2269.60232853
+2019,"March","3 Southern Metro","Casey",10032,2849.951421283
+2019,"March","3 Southern Metro","Frankston",5797,4083.257026132
+2019,"March","3 Southern Metro","Glen Eira",3342,2171.032117244
+2019,"March","3 Southern Metro","Greater Dandenong",7787,4682.614133834
+2019,"March","3 Southern Metro","Kingston",4866,2982.019635
+2019,"March","3 Southern Metro","Mornington Peninsula",4515,2678.031246664
+2019,"March","3 Southern Metro","Port Phillip",6313,5647.599792453
+2019,"March","3 Southern Metro","Stonnington",4916,4319.85940246
+2019,"March","3 Southern Metro","Total",52578,3309.514997243
+2019,"March","4 Western","Ararat",462,3902.686264572
+2019,"March","4 Western","Ballarat",4767,4342.597906589
+2019,"March","4 Western","Buloke",106,1719.104768083
+2019,"March","4 Western","Campaspe",1584,4154.427192614
+2019,"March","4 Western","Central Goldfields",462,3460.933403251
+2019,"March","4 Western","Colac-Otway",767,3480.510051277
+2019,"March","4 Western","Corangamite",260,1607.816461567
+2019,"March","4 Western","Gannawarra",310,2935.05017989
+2019,"March","4 Western","Glenelg",471,2355.942376951
+2019,"March","4 Western","Golden Plains",343,1440.571188576
+2019,"March","4 Western","Greater Bendigo",3807,3220.430744243
+2019,"March","4 Western","Greater Geelong",8597,3304.83520032
+2019,"March","4 Western","Hepburn",389,2415.398944427
+2019,"March","4 Western","Hindmarsh",137,2417.07833451
+2019,"March","4 Western","Horsham",745,3688.118811881
+2019,"March","4 Western","Loddon",217,2844.409490104
+2019,"March","4 Western","Macedon Ranges",933,1859.97368526
+2019,"March","4 Western","Mildura",2894,5098.30174054
+2019,"March","4 Western","Moorabool",883,2466.962813958
+2019,"March","4 Western","Mount Alexander",347,1761.77904143
+2019,"March","4 Western","Moyne",317,1865.035006178
+2019,"March","4 Western","Northern Grampians",403,3442.384897924
+2019,"March","4 Western","Pyrenees",249,3342.730567861
+2019,"March","4 Western","Queenscliffe",86,2892.700975446
+2019,"March","4 Western","Southern Grampians",456,2784.222737819
+2019,"March","4 Western","Surf Coast",591,1727.413556251
+2019,"March","4 Western","Swan Hill",967,4517.213995422
+2019,"March","4 Western","Warrnambool",1453,4139.129443938
+2019,"March","4 Western","West Wimmera",70,1759.235988942
+2019,"March","4 Western","Yarriambiack",209,3131.086142322
+2019,"March","4 Western","Total",33282,3265.909311698
+2019,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",1052,
+2019,"March","Justice Institutions and Immigration Facilities","Total",1052,
+2019,"March","Unincorporated Vic","Unincorporated Vic",45,
+2019,"March","Unincorporated Vic","Total",45,
+2018,"March","1 North West Metro","Banyule",4242,3272.012032859
+2018,"March","1 North West Metro","Brimbank",8071,3899.467090546
+2018,"March","1 North West Metro","Darebin",7431,4730.017886355
+2018,"March","1 North West Metro","Hobsons Bay",2797,2939.569101419
+2018,"March","1 North West Metro","Hume",8956,3971.160753084
+2018,"March","1 North West Metro","Maribyrnong",4075,4585.29779118
+2018,"March","1 North West Metro","Melbourne",13101,8019.563793515
+2018,"March","1 North West Metro","Melton",4813,3065.234143639
+2018,"March","1 North West Metro","Merri-bek",7605,4280.190680947
+2018,"March","1 North West Metro","Moonee Valley",4129,3290.380676883
+2018,"March","1 North West Metro","Nillumbik",1162,1800.378048403
+2018,"March","1 North West Metro","Whittlesea",6811,3087.474671466
+2018,"March","1 North West Metro","Wyndham",6112,2378.117582973
+2018,"March","1 North West Metro","Yarra",6409,6710.713687385
+2018,"March","1 North West Metro","Total",85714,3960.032839342
+2018,"March","2 Eastern","Alpine",174,1357.04258306
+2018,"March","2 Eastern","Bass Coast",1071,2968.156749716
+2018,"March","2 Eastern","Baw Baw",1552,2959.177836673
+2018,"March","2 Eastern","Benalla",561,3962.424071196
+2018,"March","2 Eastern","Boroondara",3947,2200.283188209
+2018,"March","2 Eastern","East Gippsland",1651,3521.682557966
+2018,"March","2 Eastern","Greater Shepparton",2980,4459.342172208
+2018,"March","2 Eastern","Indigo",221,1330.283512912
+2018,"March","2 Eastern","Knox",4699,2892.422088035
+2018,"March","2 Eastern","Latrobe",4869,6441.66909216
+2018,"March","2 Eastern","Manningham",2410,1926.597437066
+2018,"March","2 Eastern","Mansfield",270,2949.852507375
+2018,"March","2 Eastern","Maroondah",2923,2495.624332978
+2018,"March","2 Eastern","Mitchell",1649,3700.960588922
+2018,"March","2 Eastern","Moira",741,2477.432296891
+2018,"March","2 Eastern","Monash",5421,2737.740518156
+2018,"March","2 Eastern","Murrindindi",306,2101.504017581
+2018,"March","2 Eastern","South Gippsland",569,1922.037562492
+2018,"March","2 Eastern","Strathbogie",313,2915.967952301
+2018,"March","2 Eastern","Towong",96,1573.770491803
+2018,"March","2 Eastern","Wangaratta",840,2869.930643343
+2018,"March","2 Eastern","Wellington",1555,3515.474871702
+2018,"March","2 Eastern","Whitehorse",4219,2418.721442863
+2018,"March","2 Eastern","Wodonga",1275,3069.256878746
+2018,"March","2 Eastern","Yarra Ranges",2943,1864.794479752
+2018,"March","2 Eastern","Total",47255,2787.251135132
+2018,"March","3 Southern Metro","Bayside",2753,2631.352570658
+2018,"March","3 Southern Metro","Cardinia",2398,2242.274066109
+2018,"March","3 Southern Metro","Casey",9221,2727.404484644
+2018,"March","3 Southern Metro","Frankston",5309,3751.121662392
+2018,"March","3 Southern Metro","Glen Eira",3641,2389.280066147
+2018,"March","3 Southern Metro","Greater Dandenong",7469,4529.549107007
+2018,"March","3 Southern Metro","Kingston",4351,2691.035037264
+2018,"March","3 Southern Metro","Mornington Peninsula",4790,2875.771475229
+2018,"March","3 Southern Metro","Port Phillip",6369,5751.672943025
+2018,"March","3 Southern Metro","Stonnington",4717,4161.814010941
+2018,"March","3 Southern Metro","Total",51018,3268.725108791
+2018,"March","4 Western","Ararat",455,3854.299025837
+2018,"March","4 Western","Ballarat",5364,4984.759497435
+2018,"March","4 Western","Buloke",109,1754.103636949
+2018,"March","4 Western","Campaspe",1259,3317.697902393
+2018,"March","4 Western","Central Goldfields",480,3600.900225056
+2018,"March","4 Western","Colac-Otway",738,3381.753196169
+2018,"March","4 Western","Corangamite",365,2248.783192656
+2018,"March","4 Western","Gannawarra",227,2141.307423828
+2018,"March","4 Western","Glenelg",650,3267.481023476
+2018,"March","4 Western","Golden Plains",284,1224.612996421
+2018,"March","4 Western","Greater Bendigo",3496,3008.96837829
+2018,"March","4 Western","Greater Geelong",9575,3781.968993779
+2018,"March","4 Western","Hepburn",410,2578.292038737
+2018,"March","4 Western","Hindmarsh",142,2495.167808821
+2018,"March","4 Western","Horsham",892,4445.773524721
+2018,"March","4 Western","Loddon",194,2551.960010524
+2018,"March","4 Western","Macedon Ranges",856,1736.237880816
+2018,"March","4 Western","Mildura",2474,4405.741354133
+2018,"March","4 Western","Moorabool",1022,2948.473833016
+2018,"March","4 Western","Mount Alexander",353,1810.256410256
+2018,"March","4 Western","Moyne",279,1651.180682961
+2018,"March","4 Western","Northern Grampians",374,3214.715489084
+2018,"March","4 Western","Pyrenees",216,2948.000545926
+2018,"March","4 Western","Queenscliffe",82,2775.897088693
+2018,"March","4 Western","Southern Grampians",489,3001.657356823
+2018,"March","4 Western","Surf Coast",657,2006.106870229
+2018,"March","4 Western","Swan Hill",924,4350.282485876
+2018,"March","4 Western","Warrnambool",1230,3532.148292795
+2018,"March","4 Western","West Wimmera",70,1765.893037336
+2018,"March","4 Western","Yarriambiack",256,3822.036428785
+2018,"March","4 Western","Total",33922,3387.254608272
+2018,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",1245,
+2018,"March","Justice Institutions and Immigration Facilities","Total",1245,
+2018,"March","Unincorporated Vic","Unincorporated Vic",71,
+2018,"March","Unincorporated Vic","Total",71,
+2017,"March","1 North West Metro","Banyule",4661,3622.726566143
+2017,"March","1 North West Metro","Brimbank",8992,4362.59193852
+2017,"March","1 North West Metro","Darebin",8229,5257.307139435
+2017,"March","1 North West Metro","Hobsons Bay",2998,3171.043863639
+2017,"March","1 North West Metro","Hume",9897,4576.668562629
+2017,"March","1 North West Metro","Maribyrnong",4490,5095.324557422
+2017,"March","1 North West Metro","Melbourne",13632,8740.926928108
+2017,"March","1 North West Metro","Melton",5260,3537.061817888
+2017,"March","1 North West Metro","Merri-bek",8118,4635.943121467
+2017,"March","1 North West Metro","Moonee Valley",4969,3996.911221757
+2017,"March","1 North West Metro","Nillumbik",1436,2229.329027851
+2017,"March","1 North West Metro","Whittlesea",8233,3839.553039277
+2017,"March","1 North West Metro","Wyndham",6959,2880.70272754
+2017,"March","1 North West Metro","Yarra",6949,7353.205718337
+2017,"March","1 North West Metro","Total",94823,4495.628019175
+2017,"March","2 Eastern","Alpine",151,1190.194687475
+2017,"March","2 Eastern","Bass Coast",1190,3424.657534247
+2017,"March","2 Eastern","Baw Baw",1477,2902.737653047
+2017,"March","2 Eastern","Benalla",576,4099.935938501
+2017,"March","2 Eastern","Boroondara",4947,2769.101595298
+2017,"March","2 Eastern","East Gippsland",1543,3338.453882602
+2017,"March","2 Eastern","Greater Shepparton",3014,4569.782427413
+2017,"March","2 Eastern","Indigo",188,1147.040878585
+2017,"March","2 Eastern","Knox",5402,3344.373935923
+2017,"March","2 Eastern","Latrobe",5725,7624.387385468
+2017,"March","2 Eastern","Manningham",2772,2233.21463674
+2017,"March","2 Eastern","Mansfield",245,2753.737214792
+2017,"March","2 Eastern","Maroondah",3579,3079.424898686
+2017,"March","2 Eastern","Mitchell",1771,4114.29898943
+2017,"March","2 Eastern","Moira",726,2443.046067907
+2017,"March","2 Eastern","Monash",5821,2974.967546738
+2017,"March","2 Eastern","Murrindindi",317,2218.33449965
+2017,"March","2 Eastern","South Gippsland",672,2288.750383161
+2017,"March","2 Eastern","Strathbogie",274,2601.595138625
+2017,"March","2 Eastern","Towong",106,1748.021108179
+2017,"March","2 Eastern","Wangaratta",867,2994.715208456
+2017,"March","2 Eastern","Wellington",1834,4180.342815463
+2017,"March","2 Eastern","Whitehorse",4300,2494.54680466
+2017,"March","2 Eastern","Wodonga",1366,3345.005754585
+2017,"March","2 Eastern","Yarra Ranges",3488,2225.966202073
+2017,"March","2 Eastern","Total",52351,3121.990259099
+2017,"March","3 Southern Metro","Bayside",2826,2726.088843872
+2017,"March","3 Southern Metro","Cardinia",3124,3055.017700327
+2017,"March","3 Southern Metro","Casey",11339,3489.502871246
+2017,"March","3 Southern Metro","Frankston",6316,4492.144437095
+2017,"March","3 Southern Metro","Glen Eira",4050,2687.42286101
+2017,"March","3 Southern Metro","Greater Dandenong",8545,5244.776705703
+2017,"March","3 Southern Metro","Kingston",4498,2808.792306732
+2017,"March","3 Southern Metro","Mornington Peninsula",4896,2981.947523571
+2017,"March","3 Southern Metro","Port Phillip",7070,6455.265104133
+2017,"March","3 Southern Metro","Stonnington",5677,5062.692849626
+2017,"March","3 Southern Metro","Total",58341,3810.445038505
+2017,"March","4 Western","Ararat",436,3696.168192608
+2017,"March","4 Western","Ballarat",5593,5298.860266601
+2017,"March","4 Western","Buloke",94,1511.011091464
+2017,"March","4 Western","Campaspe",1419,3754.067567925
+2017,"March","4 Western","Central Goldfields",498,3772.727272727
+2017,"March","4 Western","Colac-Otway",896,4149.108589951
+2017,"March","4 Western","Corangamite",432,2653.725658824
+2017,"March","4 Western","Gannawarra",248,2339.18128655
+2017,"March","4 Western","Glenelg",779,3933.946066054
+2017,"March","4 Western","Golden Plains",392,1733.516119047
+2017,"March","4 Western","Greater Bendigo",3950,3456.876558876
+2017,"March","4 Western","Greater Geelong",10287,4175.189947399
+2017,"March","4 Western","Hepburn",467,2973.007384772
+2017,"March","4 Western","Hindmarsh",179,3125
+2017,"March","4 Western","Horsham",947,4740.451519247
+2017,"March","4 Western","Loddon",234,3091.557669441
+2017,"March","4 Western","Macedon Ranges",829,1712.279252298
+2017,"March","4 Western","Mildura",2920,5267.620370537
+2017,"March","4 Western","Moorabool",1073,3185.015880554
+2017,"March","4 Western","Mount Alexander",451,2337.150852464
+2017,"March","4 Western","Moyne",334,1990.58346743
+2017,"March","4 Western","Northern Grampians",469,4046.242774566
+2017,"March","4 Western","Pyrenees",258,3522.184300341
+2017,"March","4 Western","Queenscliffe",91,3113.239822101
+2017,"March","4 Western","Southern Grampians",464,2862.960449189
+2017,"March","4 Western","Surf Coast",732,2319.759150689
+2017,"March","4 Western","Swan Hill",868,4119.796857943
+2017,"March","4 Western","Warrnambool",1339,3878.910776362
+2017,"March","4 Western","West Wimmera",65,1644.736842105
+2017,"March","4 Western","Yarriambiack",205,3056.052474657
+2017,"March","4 Western","Total",36949,3752.87440379
+2017,"March","Justice Institutions and Immigration Facilities","Justice Institutions and Immigration Facilities",917,
+2017,"March","Justice Institutions and Immigration Facilities","Total",917,
+2017,"March","Unincorporated Vic","Unincorporated Vic",81,
+2017,"March","Unincorporated Vic","Total",81,
