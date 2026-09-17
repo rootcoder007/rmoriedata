@@ -151,10 +151,10 @@ Verify you’re using the exact data slice the package shipped:
 
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
-#>                        file    bytes
-#> 81        rmoriedata.sqlite 14835712
-#> 33      describe_corpus.Rds  1712072
-#> 32 cpads_pumf_synthetic.csv   893252
+#>                             file   bytes
+#> 33           describe_corpus.Rds 1712072
+#> 32      cpads_pumf_synthetic.csv  893252
+#> 43 nyc_opendata_bulk_catalog.csv  781038
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 morie_core_sha256("abc")
