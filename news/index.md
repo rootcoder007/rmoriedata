@@ -2,6 +2,11 @@
 
 ## rmoriedata 0.3.3
 
+- [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md)
+  now rejects infinite `lower` or `upper` with the error its message
+  already promised, instead of returning `NaN` with a warning from
+  [`rnorm()`](https://rdrr.io/r/stats/Normal.html).
+
 - The data store ships every table once.
   [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
   reads the table’s CSV (the file rmorie reads by name) and applies a
@@ -16,6 +21,7 @@
   has `n_rows` and `n_cols` for every table;
   [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
   returns the shipped JSON.
+
 - Documentation is generated with markdown roxygen; backticks in the
   help pages are now `\code{}` (they rendered as stray opening quotes in
   the PDF manual).
