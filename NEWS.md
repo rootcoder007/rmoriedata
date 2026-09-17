@@ -1,5 +1,8 @@
 # rmoriedata 0.3.3
 
+* `load_siu_reports(format = "parquet")` pointed at the parquet copy this
+  release removed; the option now errors with a note that the gzip CSV is
+  the same corpus. rmorie reads the corpus through the default `"csv"`.
 * `morie_dp_gaussian_mean()` now rejects infinite `lower` or `upper` with
   the error its message already promised, instead of returning `NaN` with
   a warning from `rnorm()`.

@@ -30,9 +30,9 @@
 #'   \code{"fr"}: filter to the English-only, French-only, or all rows.
 #' @param as Return format: \code{"data.frame"} (default) or
 #'   \code{"tibble"}.
-#' @param format Bundle to read: \code{"csv"} (default, the gzip CSV) or
-#'   \code{"parquet"} (columnar, native codec). Both hold the
-#'   identical corpus.
+#' @param format Kept for compatibility; only \code{"csv"} (the gzip
+#'   CSV) is bundled. The parquet copy of the corpus was retired in 0.3.3,
+#'   and asking for it is an error.
 #' @return A \code{data.frame} (or tibble) of SIU director's-report rows.
 #' @source Ontario Special Investigations Unit director's reports,
 #'   \url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
@@ -64,42 +64,26 @@
 #' @export
 load_siu_reports <- function(lang = c("all", "en", "fr"),
                              as = c("data.frame", "tibble"),
-                             format = c("csv", "parquet")) {
+                             format = "csv") {
   lang <- match.arg(lang)
   as <- match.arg(as)
-  format <- match.arg(format)
-  if (format == "parquet") {
-    # The corpus lives once, in the Parquet store that morie_data_load()
-    # reads. It used to be shipped a second time at the top of extdata,
-    # byte-identical, costing 0.7 MB of the source tarball for nothing.
-    ppath <- system.file("extdata", "parquet", "siu_directors_reports.parquet",
-      package = "rmoriedata"
-    )
-    if (!nzchar(ppath)) {
-      ppath <- system.file("extdata", "siu_directors_reports.parquet",
-        package = "rmoriedata"
-      )
-    }
-    if (!nzchar(ppath)) {
-      stop("bundled SIU parquet corpus not found in rmoriedata", call. = FALSE)
-    }
-    df <- as.data.frame(morie_read_parquet(ppath),
-      stringsAsFactors = FALSE
-    )
-  } else {
-    path <- system.file("extdata", "siu_directors_reports.csv.gz",
-      package = "rmoriedata"
-    )
-    if (!nzchar(path)) {
-      stop("bundled SIU director's-report corpus not found in rmoriedata",
-        call. = FALSE
-      )
-    }
-    df <- utils::read.csv(gzfile(path),
-      stringsAsFactors = FALSE,
-      colClasses = "character", check.names = FALSE
+  if (!identical(format, "csv")) {
+    stop("only the gzip CSV bundle ships; the parquet copy of the SIU ",
+         "corpus was retired in rmoriedata 0.3.3 (same rows, same columns).",
+         call. = FALSE)
+  }
+  path <- system.file("extdata", "siu_directors_reports.csv.gz",
+    package = "rmoriedata"
+  )
+  if (!nzchar(path)) {
+    stop("bundled SIU director's-report corpus not found in rmoriedata",
+      call. = FALSE
     )
   }
+  df <- utils::read.csv(gzfile(path),
+    stringsAsFactors = FALSE,
+    colClasses = "character", check.names = FALSE
+  )
   if (lang != "all" && "X_language" %in% names(df)) {
     df <- df[df[["X_language"]] == lang, , drop = FALSE]
   } else if (lang != "all" && "_language" %in% names(df)) {

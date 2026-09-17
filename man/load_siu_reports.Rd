@@ -13,7 +13,7 @@ and the Ontario Government archive (pre-2018). Parsed with the
 load_siu_reports(
   lang = c("all", "en", "fr"),
   as = c("data.frame", "tibble"),
-  format = c("csv", "parquet")
+  format = "csv"
 )
 }
 \arguments{
@@ -23,9 +23,9 @@ load_siu_reports(
 \item{as}{Return format: \code{"data.frame"} (default) or
 \code{"tibble"}.}
 
-\item{format}{Bundle to read: \code{"csv"} (default, the gzip CSV) or
-\code{"parquet"} (columnar, native codec). Both hold the
-identical corpus.}
+\item{format}{Kept for compatibility; only \code{"csv"} (the gzip
+CSV) is bundled. The parquet copy of the corpus was retired in 0.3.3,
+and asking for it is an error.}
 }
 \value{
 A \code{data.frame} (or tibble) of SIU director's-report rows.
