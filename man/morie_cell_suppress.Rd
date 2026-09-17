@@ -19,19 +19,19 @@ recovered from marginal sums.}
 \value{
 A list with class \code{"morie_cell_suppress"}:
 \describe{
-  \item{\code{suppressed}}{numeric matrix, suppressed cells set to NA.}
-  \item{\code{primary_mask}}{logical matrix, TRUE for primary suppressions.}
-  \item{\code{complementary_mask}}{logical matrix, TRUE for complementary
-    suppressions (all FALSE when \code{return_complementary = FALSE}).}
-  \item{\code{n_primary}}{integer.}
-  \item{\code{n_complementary}}{integer.}
-  \item{\code{threshold}}{the threshold used.}
+\item{\code{suppressed}}{numeric matrix, suppressed cells set to NA.}
+\item{\code{primary_mask}}{logical matrix, TRUE for primary suppressions.}
+\item{\code{complementary_mask}}{logical matrix, TRUE for complementary
+suppressions (all FALSE when \code{return_complementary = FALSE}).}
+\item{\code{n_primary}}{integer.}
+\item{\code{n_complementary}}{integer.}
+\item{\code{threshold}}{the threshold used.}
 }
 }
 \description{
 Standard StatCan / open-data complementary-suppression: identifies
-counts below `threshold`, suppresses them by setting to `NA`, and
-(if `return_complementary = TRUE`) also suppresses the smallest other
+counts below \code{threshold}, suppresses them by setting to \code{NA}, and
+(if \code{return_complementary = TRUE}) also suppresses the smallest other
 count in each affected row and column so the suppressed value can't be
 reconstructed from marginals.
 }
@@ -40,26 +40,31 @@ Only finite numeric cells are eligible for suppression. \code{NA} cells
 in the input pass through unchanged.
 }
 \examples{
-tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60), nrow = 3,
-              dimnames = list(c("A", "B", "C"), c("X", "Y", "Z")))
+tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60),
+  nrow = 3,
+  dimnames = list(c("A", "B", "C"), c("X", "Y", "Z"))
+)
 
 # Default: primary suppression (cells 1..4) PLUS complementary suppression
 # so a suppressed cell can't be recovered from row/column marginals.
 res <- morie_cell_suppress(tbl, threshold = 5)
-res$suppressed              # NA where suppressed
-res$n_primary              # cells below threshold
-res$n_complementary        # extra cells hidden to protect the marginals
+res$suppressed # NA where suppressed
+res$n_primary # cells below threshold
+res$n_complementary # extra cells hidden to protect the marginals
 res$primary_mask
 
 # Turn complementary suppression off: only the small cells are hidden.
-morie_cell_suppress(tbl, threshold = 5,
-                    return_complementary = FALSE)$suppressed
+morie_cell_suppress(tbl,
+  threshold = 5,
+  return_complementary = FALSE
+)$suppressed
 
 # A higher threshold suppresses more cells.
 morie_cell_suppress(tbl, threshold = 50)$n_primary
 
 # Works on a 2-D table too; NA cells pass through untouched.
 t2 <- as.table(matrix(c(2, 40, 30, 1), 2,
-                      dimnames = list(c("a", "b"), c("c", "d"))))
+  dimnames = list(c("a", "b"), c("c", "d"))
+))
 morie_cell_suppress(t2, threshold = 5)$suppressed
 }

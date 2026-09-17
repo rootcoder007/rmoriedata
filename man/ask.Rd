@@ -15,7 +15,7 @@ ask(question, model = NULL, backend = "auto")
 }
 \value{
 Character scalar: the agent's output, or a message if the
-  \code{rmorie} binary is not installed.
+\code{rmorie} binary is not installed.
 }
 \description{
 Convenience wrapper that forwards a dataset-focused question to the

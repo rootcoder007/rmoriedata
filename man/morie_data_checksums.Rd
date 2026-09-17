@@ -8,7 +8,7 @@ morie_data_checksums()
 }
 \value{
 A data frame with one row per bundled file and columns
-  \code{file}, \code{bytes}, and \code{sha256}.
+\code{file}, \code{bytes}, and \code{sha256}.
 }
 \description{
 Computes the SHA256 digest of every file rmoriedata bundles in
@@ -31,7 +31,7 @@ head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 # assert it hasn't changed under you in a later session / reinstall.
 if (nrow(ck)) {
   pinned <- ck$sha256[1]
-  again  <- morie_data_checksums()
+  again <- morie_data_checksums()
   stopifnot(again$sha256[again$file == ck$file[1]] == pinned)
 }
 }

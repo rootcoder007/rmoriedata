@@ -17,20 +17,20 @@ public-health / open-data threshold).}
 \value{
 A list with class \code{"morie_k_anon"} containing:
 \describe{
-  \item{\code{satisfies}}{logical, whether the dataset is k-anonymous.}
-  \item{\code{k}}{the threshold used.}
-  \item{\code{min_class_size}}{integer, size of the smallest class.}
-  \item{\code{n_classes}}{integer, total number of equivalence classes.}
-  \item{\code{n_violations}}{integer, number of classes below the threshold.}
-  \item{\code{violating_classes}}{data.frame of class keys plus their
-    \code{.n} sizes (empty data.frame when none).}
-  \item{\code{summary}}{human-readable one-line summary.}
+\item{\code{satisfies}}{logical, whether the dataset is k-anonymous.}
+\item{\code{k}}{the threshold used.}
+\item{\code{min_class_size}}{integer, size of the smallest class.}
+\item{\code{n_classes}}{integer, total number of equivalence classes.}
+\item{\code{n_violations}}{integer, number of classes below the threshold.}
+\item{\code{violating_classes}}{data.frame of class keys plus their
+\code{.n} sizes (empty data.frame when none).}
+\item{\code{summary}}{human-readable one-line summary.}
 }
 }
 \description{
 Checks whether a data.frame satisfies k-anonymity over the supplied
 quasi-identifier columns. A dataset is k-anonymous if every combination
-of quasi-identifier values appears in at least `k` rows.
+of quasi-identifier values appears in at least \code{k} rows.
 }
 \examples{
 df <- data.frame(
@@ -42,16 +42,18 @@ df <- data.frame(
 res <- morie_k_anonymity_verify(df, c("age", "sex"), k = 2)
 res$summary
 res$satisfies
-res$violating_classes        # the offending quasi-identifier combos
+res$violating_classes # the offending quasi-identifier combos
 
 # Loosening to k = 1 always holds; the default k = 5 is stricter.
 morie_k_anonymity_verify(df, c("age", "sex"), k = 1)$satisfies
-morie_k_anonymity_verify(df, c("age", "sex"))$satisfies   # k = 5
+morie_k_anonymity_verify(df, c("age", "sex"))$satisfies # k = 5
 
 # A single quasi-identifier is fine too.
 morie_k_anonymity_verify(df, "sex", k = 3)$min_class_size
 
 # On real bundled data: are (year, arrest) cells 5-anonymous?
 morie_k_anonymity_verify(complaint_sample,
-  c("year", "arrest"), k = 5)$summary
+  c("year", "arrest"),
+  k = 5
+)$summary
 }

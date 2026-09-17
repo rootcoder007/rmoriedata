@@ -12,9 +12,9 @@ morie_dp_laplace_histogram(counts, epsilon)
 \item{epsilon}{Privacy budget (positive scalar).}
 }
 \value{
-A numeric vector of the same length as `counts`. May contain
-  fractional or negative values. Caller is responsible for any post-hoc
-  non-negativity / rounding before display.
+A numeric vector of the same length as \code{counts}. May contain
+fractional or negative values. Caller is responsible for any post-hoc
+non-negativity / rounding before display.
 }
 \description{
 Adds independent Laplace(\code{1/epsilon}) noise to each bin count.

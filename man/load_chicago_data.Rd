@@ -39,7 +39,7 @@ fetches everything.}
 }
 \value{
 A \code{data.frame}/\code{tibble}, or a length-1 character Parquet
-  path when \code{as = "parquet_path"}.
+path when \code{as = "parquet_path"}.
 }
 \description{
 Returns the bundled sample by default, or fetches the full dataset from the
@@ -49,14 +49,15 @@ tibble, or written to a Parquet file whose path is returned -- the last being
 the recommended bridge for Python (\code{pandas.read_parquet}).
 }
 \details{
-Parquet I/O uses \pkg{nanoparquet} (already a hard dependency of this
+Parquet I/O uses this package's own native codec (R/aaa_parquet.R); no
 package), so no \pkg{arrow} install is required.
 }
 \examples{
 # `type` selects the dataset; the bundled sample is returned by default.
-comp <- load_chicago_data("complaints")           # reported incidents
-arr  <- load_chicago_data("arrests")              # arrests
-nrow(comp); nrow(arr)
+comp <- load_chicago_data("complaints") # reported incidents
+arr <- load_chicago_data("arrests") # arrests
+nrow(comp)
+nrow(arr)
 head(sort(table(comp$primary_type), decreasing = TRUE), 5)
 
 # `as = "tibble"` returns a tibble when the package is installed.

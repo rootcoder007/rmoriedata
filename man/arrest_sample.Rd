@@ -7,19 +7,19 @@
 \format{
 A base \code{data.frame} with up to 25,000 rows and 8 columns:
 \describe{
-  \item{case_number}{Chicago PD records-division number (character).}
-  \item{date_iso}{Arrest timestamp as an ISO-8601 string with offset.}
-  \item{date}{Arrest timestamp as \code{POSIXct} (America/Chicago).}
-  \item{race}{Recorded race of the arrestee (character).}
-  \item{charge_type}{Charge type of the primary charge (F/M/etc.).}
-  \item{charge_class}{Charge class of the primary charge.}
-  \item{charge_desc}{Description of the primary charge.}
-  \item{charge_statute}{Statute of the primary charge.}
+\item{case_number}{Chicago PD records-division number (character).}
+\item{date_iso}{Arrest timestamp as an ISO-8601 string with offset.}
+\item{date}{Arrest timestamp as \code{POSIXct} (America/Chicago).}
+\item{race}{Recorded race of the arrestee (character).}
+\item{charge_type}{Charge type of the primary charge (F/M/etc.).}
+\item{charge_class}{Charge class of the primary charge.}
+\item{charge_desc}{Description of the primary charge.}
+\item{charge_statute}{Statute of the primary charge.}
 }
 }
 \source{
 City of Chicago Open Data Portal, "Arrests"
-  (dataset \code{dpt3-jri9}). \url{https://data.cityofchicago.org/}
+(dataset \code{dpt3-jri9}). \url{https://data.cityofchicago.org/}
 }
 \usage{
 arrest_sample

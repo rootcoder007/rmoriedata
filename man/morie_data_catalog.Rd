@@ -7,8 +7,8 @@
 morie_data_catalog()
 }
 \value{
-A `data.frame` with columns `slug`, `source_path`, `kind`,
-  `n_rows`, `n_cols`.
+A \code{data.frame} with columns \code{slug}, \code{source_path}, \code{kind},
+\code{n_rows}, \code{n_cols}.
 }
 \description{
 Lists every dataset in the bundled Parquet store, including row/column
@@ -32,5 +32,5 @@ head(cat$slug, 10)
 head(cat[, c("slug", "source_path")])
 }
 \seealso{
-[morie_data_load()], [morie_data_dictionary()]
+\code{\link[=morie_data_load]{morie_data_load()}}, \code{\link[=morie_data_dictionary]{morie_data_dictionary()}}
 }

@@ -5,9 +5,9 @@
 \title{Load the Ontario SIU director's-report corpus}
 \source{
 Ontario Special Investigations Unit director's reports,
-  \url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
-  and the Ontario Government archive (pre-2018). Parsed with the
-  \pkg{rmorie} SIU subsystem.
+\url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
+and the Ontario Government archive (pre-2018). Parsed with the
+\pkg{rmorie} SIU subsystem.
 }
 \usage{
 load_siu_reports(
@@ -24,7 +24,7 @@ load_siu_reports(
 \code{"tibble"}.}
 
 \item{format}{Bundle to read: \code{"csv"} (default, the gzip CSV) or
-\code{"parquet"} (columnar, via \pkg{nanoparquet}). Both hold the
+\code{"parquet"} (columnar, native codec). Both hold the
 identical corpus.}
 }
 \value{
@@ -43,7 +43,7 @@ flag.
 For every English report (\code{panel_reviewed == "TRUE"}), the 16
 key columns were verified by a multi-agent LLM review panel against
 the full report text and the parser's guess resolved to the correct
-value; the subject-official count is filled for 100\% of English
+value; the subject-official count is filled for 100\\% of English
 reports (witness-officer-only investigations are a genuine 0). French
 reports carry the parser values. See the \code{siu} pipeline repo for
 the audit provenance.
@@ -62,9 +62,10 @@ nrow(all)
 ncol(all)
 
 # `lang` filters the corpus by report language.
-en <- load_siu_reports(lang = "en")   # English director's reports
-fr <- load_siu_reports(lang = "fr")   # French director's reports
-nrow(en); nrow(fr)
+en <- load_siu_reports(lang = "en") # English director's reports
+fr <- load_siu_reports(lang = "fr") # French director's reports
+nrow(en)
+nrow(fr)
 
 # `as = "tibble"` returns a tibble when the tibble package is present.
 if (requireNamespace("tibble", quietly = TRUE)) {
