@@ -2,7 +2,7 @@
 
 Checks whether a data.frame satisfies l-diversity: within each
 equivalence class defined by the quasi-identifiers, the sensitive
-attribute must take at least \`l\` distinct values.
+attribute must take at least `l` distinct values.
 
 ## Usage
 

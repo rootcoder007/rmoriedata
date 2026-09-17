@@ -63,17 +63,18 @@ A `data.frame`/`tibble`, or a length-1 character Parquet path when
 
 ## Details
 
-Parquet I/O uses nanoparquet (already a hard dependency of this
+Parquet I/O uses this package's own native codec (R/aaa_parquet.R); no
 package), so no arrow install is required.
 
 ## Examples
 
 ``` r
 # `type` selects the dataset; the bundled sample is returned by default.
-comp <- load_chicago_data("complaints")           # reported incidents
-arr  <- load_chicago_data("arrests")              # arrests
-nrow(comp); nrow(arr)
+comp <- load_chicago_data("complaints") # reported incidents
+arr <- load_chicago_data("arrests") # arrests
+nrow(comp)
 #> [1] 25000
+nrow(arr)
 #> [1] 25000
 head(sort(table(comp$primary_type), decreasing = TRUE), 5)
 #> 

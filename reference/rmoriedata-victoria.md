@@ -6,6 +6,12 @@ data" release, bundled in the Parquet store and reached by slug through
 Each is Table 01 – the headline series – of the corresponding published
 workbook, for the year ending March 2026.
 
+## Source
+
+Crime Statistics Agency Victoria, "Latest Victorian crime data".
+<https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data>
+Released under CC BY 4.0.
+
 ## Details
 
 - `vic_criminal_incidents`:
@@ -49,12 +55,6 @@ figures for a given year change between releases as incidents are
 reclassified, so a table bundled here is a snapshot of the March 2026
 release, not a permanent record of that year.
 
-## Source
-
-Crime Statistics Agency Victoria, "Latest Victorian crime data".
-<https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data>
-Released under CC BY 4.0.
-
 ## See also
 
 [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md),
@@ -92,7 +92,7 @@ str(ci)
 
 # Incidents by offence division for the most recent year.
 latest <- ci[ci$Year == max(ci$Year), ]
-tapply(latest[["Incidents Recorded"]], latest[["Offence Division"]], sum)
+tapply(latest$`Incidents Recorded`, latest$`Offence Division`, sum)
 #>          A Crimes against the person    B Property and deception offences 
 #>                                75713                               296561 
 #>                      C Drug offences D Public order and security offences 

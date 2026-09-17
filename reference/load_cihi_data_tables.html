@@ -19,7 +19,7 @@ stays retrievable even if CIHI rotates or removes the live file."><meta name="go
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,9 +65,9 @@ stays retrievable even if CIHI rotates or removes the live file.</p>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
     <p>Canadian Institute for Health Information, Data tables
-  (<a href="https://www.cihi.ca/en/access-data-and-reports/data-tables" class="external-link">https://www.cihi.ca/en/access-data-and-reports/data-tables</a>).
-  Snapshotted to the Internet Archive (<a href="https://web.archive.org" class="external-link">https://web.archive.org</a>).
-  Catalogue current as of 2026-07.</p>
+(<a href="https://www.cihi.ca/en/access-data-and-reports/data-tables" class="external-link">https://www.cihi.ca/en/access-data-and-reports/data-tables</a>).
+Snapshotted to the Internet Archive (<a href="https://web.archive.org" class="external-link">https://web.archive.org</a>).
+Catalogue current as of 2026-07.</p>
     </div>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
@@ -81,7 +81,7 @@ snapshot. Default <code>FALSE</code> (return the full catalogue).</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>data.frame</code> with columns <code>title</code>, <code>url</code>,
-  <code>wayback_url</code>.</p>
+<code>wayback_url</code>.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
@@ -108,9 +108,9 @@ any row (that helper tries <code>url</code> first and falls back to
 <span class="r-in"><span><span class="co"># `archived_only = TRUE` keeps only rows that have a Wayback snapshot,</span></span></span>
 <span class="r-in"><span><span class="co"># i.e. tables still retrievable if CIHI rotates the live file.</span></span></span>
 <span class="r-in"><span><span class="va">arch</span> <span class="op">&lt;-</span> <span class="fu">load_cihi_data_tables</span><span class="op">(</span>archived_only <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">arch</span><span class="op">)</span>                       <span class="co"># &lt;= nrow(cat)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">arch</span><span class="op">)</span> <span class="co"># &lt;= nrow(cat)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 218</span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">arch</span><span class="op">$</span><span class="va">wayback_url</span><span class="op">)</span><span class="op">)</span>    <span class="co"># TRUE</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="va">arch</span><span class="op">$</span><span class="va">wayback_url</span><span class="op">)</span><span class="op">)</span> <span class="co"># TRUE</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Find a table by keyword before fetching it.</span></span></span>

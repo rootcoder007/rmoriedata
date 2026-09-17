@@ -29,6 +29,8 @@
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.html</loc></url>
+<url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.html</loc></url>
+<url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_write_parquet.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/rmoriedata-package.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/rmoriedata-victoria.html</loc></url>
 </urlset>

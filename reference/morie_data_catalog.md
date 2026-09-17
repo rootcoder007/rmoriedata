@@ -11,12 +11,13 @@ morie_data_catalog()
 
 ## Value
 
-A \`data.frame\` with columns \`slug\`, \`source_path\`, \`kind\`,
-\`n_rows\`, \`n_cols\`.
+A `data.frame` with columns `slug`, `source_path`, `kind`, `n_rows`,
+`n_cols`.
 
 ## See also
 
-\[morie_data_load()\], \[morie_data_dictionary()\]
+[`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md),
+[`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
 
 ## Examples
 

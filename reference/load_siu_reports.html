@@ -19,7 +19,7 @@ flag."><meta name="google-site-verification" content="8ORzeHrfoPIOrujfV-km-kXCi9
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -69,9 +69,9 @@ flag.</p>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
     <p>Ontario Special Investigations Unit director's reports,
-  <a href="https://www.siu.on.ca/en/directors_reports.php" class="external-link">https://www.siu.on.ca/en/directors_reports.php</a> (post-2018)
-  and the Ontario Government archive (pre-2018). Parsed with the
-  <span class="pkg">rmorie</span> SIU subsystem.</p>
+<a href="https://www.siu.on.ca/en/directors_reports.php" class="external-link">https://www.siu.on.ca/en/directors_reports.php</a> (post-2018)
+and the Ontario Government archive (pre-2018). Parsed with the
+<span class="pkg">rmorie</span> SIU subsystem.</p>
     </div>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
@@ -89,7 +89,7 @@ flag.</p>
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
 <dd><p>Bundle to read: <code>"csv"</code> (default, the gzip CSV) or
-<code>"parquet"</code> (columnar, via <span class="pkg">nanoparquet</span>). Both hold the
+<code>"parquet"</code> (columnar, native codec). Both hold the
 identical corpus.</p></dd>
 
 </dl></div>
@@ -102,7 +102,7 @@ identical corpus.</p></dd>
     <p>For every English report (<code>panel_reviewed == "TRUE"</code>), the 16
 key columns were verified by a multi-agent LLM review panel against
 the full report text and the parser's guess resolved to the correct
-value; the subject-official count is filled for 100% of English
+value; the subject-official count is filled for 100\<!-- % of English -->
 reports (witness-officer-only investigations are a genuine 0). French
 reports carry the parser values. See the <code>siu</code> pipeline repo for
 the audit provenance.</p>
@@ -124,10 +124,11 @@ see <code>rmorie::morie_fetch_siu()</code> to rebuild it live.</p>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 65</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># `lang` filters the corpus by report language.</span></span></span>
-<span class="r-in"><span><span class="va">en</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"en"</span><span class="op">)</span>   <span class="co"># English director's reports</span></span></span>
-<span class="r-in"><span><span class="va">fr</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"fr"</span><span class="op">)</span>   <span class="co"># French director's reports</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">en</span><span class="op">)</span>; <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fr</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">en</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"en"</span><span class="op">)</span> <span class="co"># English director's reports</span></span></span>
+<span class="r-in"><span><span class="va">fr</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"fr"</span><span class="op">)</span> <span class="co"># French director's reports</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">en</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2182</span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fr</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2191</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># `as = "tibble"` returns a tibble when the tibble package is present.</span></span></span>

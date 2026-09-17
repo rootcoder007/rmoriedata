@@ -2,8 +2,8 @@
 
 This package ships fixtures consumed by the rmorie package
 (https://github.com/rootcoder007/rmorie). It has no exported functions;
-access the data via \`system.file("extdata", "\<file\>", package =
-"rmoriedata")\`.
+access the data via
+`system.file("extdata", "<file>", package = "rmoriedata")`.
 
 ## See also
 

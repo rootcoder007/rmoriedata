@@ -116,7 +116,8 @@ table(complaint_sample$year)
 
 # Domestic-violence-flagged incidents by type.
 head(sort(table(complaint_sample$primary_type[complaint_sample$domestic]),
-          decreasing = TRUE), 3)
+  decreasing = TRUE
+), 3)
 #> 
 #>       BATTERY OTHER OFFENSE       ASSAULT 
 #>          2785           608           590 

@@ -12,22 +12,23 @@ morie_data_dictionary(slug)
 
 - slug:
 
-  Dictionary slug; see \[morie_data_catalog()\] rows where \`kind ==
-  "dictionary"\`.
+  Dictionary slug; see
+  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
+  rows where `kind == "dictionary"`.
 
 ## Value
 
-A character scalar of JSON, or \`NULL\` if no dictionary exists.
+A character scalar of JSON, or `NULL` if no dictionary exists.
 
 ## See also
 
-\[morie_data_catalog()\]
+[`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
 
 ## Examples
 
 ``` r
 # Which dictionaries are bundled?
-cat  <- morie_data_catalog()
+cat <- morie_data_catalog()
 dict_slugs <- cat$slug[cat$kind == "dictionary"]
 dict_slugs
 #> [1] "arsau_2020_2022_dictionary" "arsau_2023_dictionary"     
@@ -40,8 +41,9 @@ if (length(dict_slugs)) {
   js <- morie_data_dictionary(dict_slugs[1])
   substr(js, 1, 200)
   # Parse it if you have jsonlite:
-  if (requireNamespace("jsonlite", quietly = TRUE))
+  if (requireNamespace("jsonlite", quietly = TRUE)) {
     str(jsonlite::fromJSON(js), max.level = 1)
+  }
 }
 #> List of 2
 #>  $ UseOfForce_DetailedDataset_2020-2022.csv       :'data.frame': 168 obs. of  5 variables:

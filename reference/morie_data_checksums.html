@@ -15,7 +15,7 @@ rmoriedata's integration with the bricklayer provenance layer."><meta name="goog
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -59,7 +59,7 @@ rmoriedata's integration with the bricklayer provenance layer.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data frame with one row per bundled file and columns
-  <code>file</code>, <code>bytes</code>, and <code>sha256</code>.</p>
+<code>file</code>, <code>bytes</code>, and <code>sha256</code>.</p>
     </div>
 
     <div class="section level2">
@@ -100,7 +100,7 @@ rmoriedata's integration with the bricklayer provenance layer.</p>
 <span class="r-in"><span><span class="co"># assert it hasn't changed under you in a later session / reinstall.</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ck</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">pinned</span> <span class="op">&lt;-</span> <span class="va">ck</span><span class="op">$</span><span class="va">sha256</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span></span></span>
-<span class="r-in"><span>  <span class="va">again</span>  <span class="op">&lt;-</span> <span class="fu">morie_data_checksums</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">again</span> <span class="op">&lt;-</span> <span class="fu">morie_data_checksums</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="va">again</span><span class="op">$</span><span class="va">sha256</span><span class="op">[</span><span class="va">again</span><span class="op">$</span><span class="va">file</span> <span class="op">==</span> <span class="va">ck</span><span class="op">$</span><span class="va">file</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span> <span class="op">==</span> <span class="va">pinned</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>
 </code></pre></div>

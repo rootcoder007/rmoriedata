@@ -41,9 +41,9 @@ morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
 #> [1] 41.36704
 
 # Smaller epsilon = stronger privacy = more noise.
-morie_dp_laplace_count(42, epsilon = 0.1)   # noisier
+morie_dp_laplace_count(42, epsilon = 0.1) # noisier
 #> [1] 39.04619
-morie_dp_laplace_count(42, epsilon = 5.0)   # closer to 42
+morie_dp_laplace_count(42, epsilon = 5.0) # closer to 42
 #> [1] 42.0315
 
 # The mechanism is unbiased: averaging many releases returns ~the truth.

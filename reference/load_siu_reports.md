@@ -38,7 +38,7 @@ subsystem.
 - format:
 
   Bundle to read: `"csv"` (default, the gzip CSV) or `"parquet"`
-  (columnar, via nanoparquet). Both hold the identical corpus.
+  (columnar, native codec). Both hold the identical corpus.
 
 ## Value
 
@@ -49,10 +49,9 @@ A `data.frame` (or tibble) of SIU director's-report rows.
 For every English report (`panel_reviewed == "TRUE"`), the 16 key
 columns were verified by a multi-agent LLM review panel against the full
 report text and the parser's guess resolved to the correct value; the
-subject-official count is filled for 100% of English reports
-(witness-officer-only investigations are a genuine 0). French reports
-carry the parser values. See the `siu` pipeline repo for the audit
-provenance.
+subject-official count is filled for 100\\ reports (witness-officer-only
+investigations are a genuine 0). French reports carry the parser values.
+See the `siu` pipeline repo for the audit provenance.
 
 This is the machine-readable companion to the SIU parser and data-mining
 subsystem in rmorie / morie – the first open-source pipeline for the SIU
@@ -71,10 +70,11 @@ ncol(all)
 #> [1] 65
 
 # `lang` filters the corpus by report language.
-en <- load_siu_reports(lang = "en")   # English director's reports
-fr <- load_siu_reports(lang = "fr")   # French director's reports
-nrow(en); nrow(fr)
+en <- load_siu_reports(lang = "en") # English director's reports
+fr <- load_siu_reports(lang = "fr") # French director's reports
+nrow(en)
 #> [1] 2182
+nrow(fr)
 #> [1] 2191
 
 # `as = "tibble"` returns a tibble when the tibble package is present.

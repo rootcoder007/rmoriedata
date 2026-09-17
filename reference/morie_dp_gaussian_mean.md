@@ -20,7 +20,7 @@ morie_dp_gaussian_mean(x, lower, upper, epsilon, delta = 1e-06)
 
 - lower, upper:
 
-  Hard bounds on \`x\`. Caller must guarantee
+  Hard bounds on `x`. Caller must guarantee
   `all(x >= lower & x <= upper)`; the function clips defensively but
   emits a warning if clipping was necessary.
 
@@ -48,7 +48,7 @@ x <- runif(1000, 0, 1)
 # A private mean of bounded data (bounds asserted by the caller).
 morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
 #> [1] 0.5001013
-mean(x)                                  # the true mean, for comparison
+mean(x) # the true mean, for comparison
 #> [1] 0.4996917
 
 # `delta` controls the (epsilon, delta) guarantee; smaller = stronger.

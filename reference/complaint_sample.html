@@ -11,7 +11,7 @@ full dataset use load_chicago_data("complaints", full = TRUE).'><meta name="goog
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,38 +55,38 @@ full dataset use <code>load_chicago_data("complaints", full = TRUE)</code>.</p>
     <p>A base <code>data.frame</code> with up to 25,000 rows and 16 columns:</p><dl><dt>case_number</dt>
 <dd><p>Chicago PD records-division number (character).</p></dd>
 
-  <dt>date_iso</dt>
+<dt>date_iso</dt>
 <dd><p>Incident timestamp as an ISO-8601 string with offset
-    (lossless across R/Python).</p></dd>
+(lossless across R/Python).</p></dd>
 
-  <dt>date</dt>
+<dt>date</dt>
 <dd><p>Incident timestamp as <code>POSIXct</code> (America/Chicago).</p></dd>
 
-  <dt>iucr</dt>
+<dt>iucr</dt>
 <dd><p>Illinois Uniform Crime Reporting code (character).</p></dd>
 
-  <dt>primary_type</dt>
+<dt>primary_type</dt>
 <dd><p>Primary FBI crime classification.</p></dd>
 
-  <dt>description</dt>
+<dt>description</dt>
 <dd><p>Secondary description of the offense.</p></dd>
 
-  <dt>arrest</dt>
+<dt>arrest</dt>
 <dd><p>Whether an arrest was made (logical).</p></dd>
 
-  <dt>domestic</dt>
+<dt>domestic</dt>
 <dd><p>Whether domestic-violence related (logical).</p></dd>
 
-  <dt>beat,district,ward,community_area</dt>
+<dt>beat,district,ward,community_area</dt>
 <dd><p>Geographic area codes (integer).</p></dd>
 
-  <dt>fbi_code</dt>
+<dt>fbi_code</dt>
 <dd><p>FBI crime code (character).</p></dd>
 
-  <dt>year</dt>
+<dt>year</dt>
 <dd><p>Year of the incident (integer).</p></dd>
 
-  <dt>latitude,longitude</dt>
+<dt>latitude,longitude</dt>
 <dd><p>WGS84 coordinates (numeric).</p></dd>
 
 
@@ -94,7 +94,7 @@ full dataset use <code>load_chicago_data("complaints", full = TRUE)</code>.</p>
     <div class="section level2">
     <h2 id="source">Source<a class="anchor" aria-label="anchor" href="#source"></a></h2>
     <p>City of Chicago Open Data Portal, "Crimes - 2001 to present"
-  (dataset <code>ijzp-q8t2</code>). <a href="https://data.cityofchicago.org/" class="external-link">https://data.cityofchicago.org/</a></p>
+(dataset <code>ijzp-q8t2</code>). <a href="https://data.cityofchicago.org/" class="external-link">https://data.cityofchicago.org/</a></p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
@@ -143,7 +143,8 @@ full dataset use <code>load_chicago_data("complaints", full = TRUE)</code>.</p>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Domestic-violence-flagged incidents by type.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">complaint_sample</span><span class="op">$</span><span class="va">primary_type</span><span class="op">[</span><span class="va">complaint_sample</span><span class="op">$</span><span class="va">domestic</span><span class="op">]</span><span class="op">)</span>,</span></span>
-<span class="r-in"><span>          decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  decreasing <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>       BATTERY OTHER OFFENSE       ASSAULT </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          2785           608           590 </span>

@@ -15,7 +15,7 @@ upper - lower, so the mean's sensitivity is
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.2.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,7 @@ bounds: changing one record can shift the sum by at most
 
 
 <dt id="arg-lower-upper">lower, upper<a class="anchor" aria-label="anchor" href="#arg-lower-upper"></a></dt>
-<dd><p>Hard bounds on `x`. Caller must guarantee
+<dd><p>Hard bounds on <code>x</code>. Caller must guarantee
 <code>all(x &gt;= lower &amp; x &lt;= upper)</code>; the function clips defensively
 but emits a warning if clipping was necessary.</p></dd>
 
@@ -94,7 +94,7 @@ $$\sigma = \frac{\Delta \cdot \sqrt{2 \ln(1.25/\delta)}}{\epsilon}.$$</p>
 <span class="r-in"><span><span class="co"># A private mean of bounded data (bounds asserted by the caller).</span></span></span>
 <span class="r-in"><span><span class="fu">morie_dp_gaussian_mean</span><span class="op">(</span><span class="va">x</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5001013</span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span>                                  <span class="co"># the true mean, for comparison</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="co"># the true mean, for comparison</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.4996917</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># `delta` controls the (epsilon, delta) guarantee; smaller = stronger.</span></span></span>

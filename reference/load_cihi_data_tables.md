@@ -57,9 +57,9 @@ head(cat$title, 3)
 # `archived_only = TRUE` keeps only rows that have a Wayback snapshot,
 # i.e. tables still retrievable if CIHI rotates the live file.
 arch <- load_cihi_data_tables(archived_only = TRUE)
-nrow(arch)                       # <= nrow(cat)
+nrow(arch) # <= nrow(cat)
 #> [1] 218
-all(nzchar(arch$wayback_url))    # TRUE
+all(nzchar(arch$wayback_url)) # TRUE
 #> [1] TRUE
 
 # Find a table by keyword before fetching it.

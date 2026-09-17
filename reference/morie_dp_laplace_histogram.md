@@ -23,8 +23,8 @@ morie_dp_laplace_histogram(counts, epsilon)
 
 ## Value
 
-A numeric vector of the same length as \`counts\`. May contain
-fractional or negative values. Caller is responsible for any post-hoc
+A numeric vector of the same length as `counts`. May contain fractional
+or negative values. Caller is responsible for any post-hoc
 non-negativity / rounding before display.
 
 ## Examples

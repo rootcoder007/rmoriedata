@@ -2,7 +2,7 @@
 
 Checks whether a data.frame satisfies k-anonymity over the supplied
 quasi-identifier columns. A dataset is k-anonymous if every combination
-of quasi-identifier values appears in at least \`k\` rows.
+of quasi-identifier values appears in at least `k` rows.
 
 ## Usage
 
@@ -72,14 +72,14 @@ res$summary
 #> [1] "k=2: VIOLATED (min class size=1; 1/3 classes below threshold)"
 res$satisfies
 #> [1] FALSE
-res$violating_classes        # the offending quasi-identifier combos
+res$violating_classes # the offending quasi-identifier combos
 #>   age sex .n
 #> 1  40   M  1
 
 # Loosening to k = 1 always holds; the default k = 5 is stricter.
 morie_k_anonymity_verify(df, c("age", "sex"), k = 1)$satisfies
 #> [1] TRUE
-morie_k_anonymity_verify(df, c("age", "sex"))$satisfies   # k = 5
+morie_k_anonymity_verify(df, c("age", "sex"))$satisfies # k = 5
 #> [1] FALSE
 
 # A single quasi-identifier is fine too.
@@ -88,6 +88,8 @@ morie_k_anonymity_verify(df, "sex", k = 3)$min_class_size
 
 # On real bundled data: are (year, arrest) cells 5-anonymous?
 morie_k_anonymity_verify(complaint_sample,
-  c("year", "arrest"), k = 5)$summary
+  c("year", "arrest"),
+  k = 5
+)$summary
 #> [1] "k=5: VIOLATED (min class size=1; 1/3 classes below threshold)"
 ```

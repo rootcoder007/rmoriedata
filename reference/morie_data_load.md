@@ -12,15 +12,16 @@ morie_data_load(slug)
 
 - slug:
 
-  Dataset slug; see the \`slug\` column of \[morie_data_catalog()\].
+  Dataset slug; see the `slug` column of
+  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md).
 
 ## Value
 
-A \`data.frame\`.
+A `data.frame`.
 
 ## See also
 
-\[morie_data_catalog()\]
+[`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
 
 ## Examples
 
@@ -44,10 +45,11 @@ head(iucr)
 #> 6 041B             BATTERY    AGGRAVATED - OTHER FIREARM          I   True
 
 # Any slug from the catalogue works the same way.
-hoods   <- morie_data_load("chicago_neighborhoods")
+hoods <- morie_data_load("chicago_neighborhoods")
 offense <- morie_data_load("nyc_nypd_offense_codes")
-nrow(hoods); nrow(offense)
+nrow(hoods)
 #> [1] 98
+nrow(offense)
 #> [1] 246
 
 # Slugs are validated: an unknown one errors with guidance.
@@ -55,7 +57,7 @@ try(morie_data_load("no_such_dataset"))
 #> Error : No dataset 'no_such_dataset'. See morie_data_catalog() for valid slugs.
 
 # Pattern: pick a slug programmatically from the catalogue, then load it.
-cat  <- morie_data_catalog()
+cat <- morie_data_catalog()
 slug <- cat$slug[cat$kind == "table"][1]
 head(morie_data_load(slug))
 #>     SECTION         CATEGORY UNITS.OF.MEASURE YEAR_2020 YEAR_2021 YEAR_2022
