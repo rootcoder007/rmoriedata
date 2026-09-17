@@ -110,7 +110,7 @@ morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6) {
   }
   if (length(lower) != 1L || length(upper) != 1L ||
     !is.numeric(lower) || !is.numeric(upper) ||
-    is.na(lower) || is.na(upper) || lower >= upper) {
+    !is.finite(lower) || !is.finite(upper) || lower >= upper) {
     stop("`lower` and `upper` must be finite scalars with lower < upper.",
       call. = FALSE
     )
