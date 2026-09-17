@@ -4,37 +4,24 @@
 \alias{morie_data_load}
 \title{Load a bundled dataset by slug}
 \usage{
-morie_data_load(slug)
+morie_data_load(slug, refresh = FALSE)
 }
 \arguments{
 \item{slug}{Dataset slug; see the \code{slug} column of \code{\link[=morie_data_catalog]{morie_data_catalog()}}.}
+
+\item{refresh}{Re-read the file even if a cached copy exists.}
 }
 \value{
-A \code{data.frame}.
+A data frame.
 }
 \description{
-Load a bundled dataset by slug
+Reads the table's CSV and applies the column names and classes from
+the bundled schema, so the result is the same typed data frame on
+every platform regardless of how \code{read.csv()} would have guessed.
+The first load of a table is cached for the session; later calls
+return the cached copy unless \code{refresh = TRUE}.
 }
 \examples{
-# Load a bundled lookup table by its slug.
-iucr <- morie_data_load("chicago_iucr_codes")
-str(iucr)
-head(iucr)
-
-# Any slug from the catalogue works the same way.
-hoods <- morie_data_load("chicago_neighborhoods")
-offense <- morie_data_load("nyc_nypd_offense_codes")
-nrow(hoods)
-nrow(offense)
-
-# Slugs are validated: an unknown one errors with guidance.
-try(morie_data_load("no_such_dataset"))
-
-# Pattern: pick a slug programmatically from the catalogue, then load it.
-cat <- morie_data_catalog()
-slug <- cat$slug[cat$kind == "table"][1]
-head(morie_data_load(slug))
-}
-\seealso{
-\code{\link[=morie_data_catalog]{morie_data_catalog()}}
+d <- morie_data_load("arsau_2023_uof_main_records")
+str(d[, 1:4])
 }
