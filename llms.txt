@@ -142,11 +142,11 @@ Discover, load, and inspect the packaged Canadian public-data tables
 analysis functions consume.
 
 - [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
-  : Catalogue of bundled datasets
+  : Catalog of the bundled datasets
 - [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
   : Load a bundled dataset by slug
 - [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
-  : Data dictionary (JSON) for a dataset, if one is bundled
+  : Data dictionary for a bundled dataset
 - [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
   : SHA256 checksums of bundled rmoriedata files
 - [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
