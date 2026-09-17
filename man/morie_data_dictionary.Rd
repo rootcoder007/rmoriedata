@@ -2,39 +2,22 @@
 % Please edit documentation in R/data_store.R
 \name{morie_data_dictionary}
 \alias{morie_data_dictionary}
-\title{Data dictionary (JSON) for a dataset, if one is bundled}
+\title{Data dictionary for a bundled dataset}
 \usage{
 morie_data_dictionary(slug)
 }
 \arguments{
-\item{slug}{Dictionary slug; see \code{\link[=morie_data_catalog]{morie_data_catalog()}} rows where
-\code{kind == "dictionary"}.}
+\item{slug}{Dictionary slug; rows with \code{kind == "dictionary"} in
+\code{\link[=morie_data_catalog]{morie_data_catalog()}} list them.}
 }
 \value{
-A character scalar of JSON, or \code{NULL} if no dictionary exists.
+The dictionary as JSON text (a length-one character vector),
+or \code{NULL} invisibly with a message when none is bundled.
 }
 \description{
-Data dictionary (JSON) for a dataset, if one is bundled
+Data dictionary for a bundled dataset
 }
 \examples{
-# Which dictionaries are bundled?
-cat <- morie_data_catalog()
-dict_slugs <- cat$slug[cat$kind == "dictionary"]
-dict_slugs
-
-# Fetch one dictionary's JSON (returns a character scalar of JSON).
-if (length(dict_slugs)) {
-  js <- morie_data_dictionary(dict_slugs[1])
-  substr(js, 1, 200)
-  # Parse it if you have jsonlite:
-  if (requireNamespace("jsonlite", quietly = TRUE)) {
-    str(jsonlite::fromJSON(js), max.level = 1)
-  }
-}
-
-# Unknown / non-dictionary slug: informative message, returns NULL.
-morie_data_dictionary("no_such_dictionary")
-}
-\seealso{
-\code{\link[=morie_data_catalog]{morie_data_catalog()}}
+d <- morie_data_dictionary("arsau_2023_dictionary")
+substr(d, 1, 60)
 }
