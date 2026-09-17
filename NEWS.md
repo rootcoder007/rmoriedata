@@ -1,5 +1,9 @@
 # rmoriedata 0.3.3
 
+* `morie_dp_gaussian_mean()` now rejects infinite `lower` or `upper` with
+  the error its message already promised, instead of returning `NaN` with
+  a warning from `rnorm()`.
+
 * The data store ships every table once. `morie_data_load()` reads the
   table's CSV (the file rmorie reads by name) and applies a bundled column
   schema, so each table comes back with exactly the names and classes the

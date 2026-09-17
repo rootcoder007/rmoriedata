@@ -122,3 +122,8 @@ test_that("morie_dp_laplace_histogram validates inputs", {
     "positive number"
   )
 })
+
+test_that("morie_dp_gaussian_mean rejects infinite bounds", {
+  expect_error(morie_dp_gaussian_mean(1:5, -Inf, Inf, epsilon = 1), "finite")
+  expect_error(morie_dp_gaussian_mean(1:5, 0, Inf, epsilon = 1), "finite")
+})
