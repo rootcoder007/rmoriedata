@@ -2,7 +2,7 @@
 
 Computes the SHA256 digest of every file rmoriedata bundles in
 `inst/extdata`, using the shared provenance layer
-([`sha256_file`](https://rdrr.io/pkg/rmoriebricklayer/man/sha256_file.html)).
+([`sha256_file`](https://rootcoder007.github.io/rmorie-bricklayer/reference/sha256_file.html)).
 This lets an analysis verify it used the exact data slice rmoriedata
 shipped, and is rmoriedata's integration with the bricklayer provenance
 layer.
