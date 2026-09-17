@@ -1,7 +1,21 @@
 # Changelog
 
-## rmoriedata 0.3.2.9000 (development)
+## rmoriedata 0.3.3
 
+- The data store ships every table once.
+  [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+  reads the table’s CSV (the file rmorie reads by name) and applies a
+  bundled column schema, so each table comes back with exactly the names
+  and classes the retired parquet copies had (verified identical for all
+  99 tables), and keeps it in a session cache: repeated loads are
+  instant. The parquet directory, a duplicate `samples/` directory and a
+  second copy of the SIU reports are gone, which takes the source
+  tarball from 6.8 MB to under the 5 MB CRAN cap. The ten Victoria
+  tables that existed only as parquet now ship as CSV under `vic/`.
+  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
+  has `n_rows` and `n_cols` for every table;
+  [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
+  returns the shipped JSON.
 - Documentation is generated with markdown roxygen; backticks in the
   help pages are now `\code{}` (they rendered as stray opening quotes in
   the PDF manual).
