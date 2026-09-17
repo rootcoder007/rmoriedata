@@ -2,6 +2,11 @@
 
 ## rmoriedata 0.3.3
 
+- `load_siu_reports(format = "parquet")` pointed at the parquet copy
+  this release removed; the option now errors with a note that the gzip
+  CSV is the same corpus. rmorie reads the corpus through the default
+  `"csv"`.
+
 - [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md)
   now rejects infinite `lower` or `upper` with the error its message
   already promised, instead of returning `NaN` with a warning from
@@ -27,6 +32,8 @@
   the PDF manual).
 
 ## rmoriedata 0.3.2 - 2026-09-08
+
+CRAN release: 2026-09-17
 
 ### describe_corpus.Rds ships here again
 
