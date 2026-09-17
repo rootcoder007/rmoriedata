@@ -80,6 +80,7 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
       call. = FALSE
     )
   }
+  .rmoriedata_check_file("siu_directors_reports.csv.gz")
   df <- utils::read.csv(gzfile(path),
     stringsAsFactors = FALSE,
     colClasses = "character", check.names = FALSE

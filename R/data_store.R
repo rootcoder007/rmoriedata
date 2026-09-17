@@ -11,7 +11,8 @@
 .rmoriedata_cache <- new.env(parent = emptyenv())
 
 .rmoriedata_extdata <- function() {
-  p <- system.file("extdata", package = "rmoriedata")
+  p <- getOption("rmoriedata.store", NULL)
+  if (is.null(p)) p <- system.file("extdata", package = "rmoriedata")
   if (!nzchar(p) || !dir.exists(p)) {
     stop("rmoriedata data store not found; reinstall rmoriedata.",
          call. = FALSE)
@@ -22,6 +23,7 @@
 .rmoriedata_csv <- function(name) {
   f <- file.path(.rmoriedata_extdata(), name)
   if (!file.exists(f)) return(NULL)
+  .rmoriedata_check_file(name)
   utils::read.csv(f, check.names = FALSE, stringsAsFactors = FALSE,
                   fileEncoding = "UTF-8-BOM")
 }
@@ -160,6 +162,109 @@ morie_data_dictionary <- function(slug) {
     message("No data dictionaries are bundled in this installation.")
     return(invisible(NULL))
   }
+  .rmoriedata_check_file(row$source_path[1L])
   txt <- readLines(f, warn = FALSE, encoding = "UTF-8")
   paste(txt, collapse = "\n")
+}
+
+# Integrity. Every shipped file is listed with its SHA-256 in
+# `_checksums.csv`; the SHA-256 of that manifest is signed with an XMSS
+# (RFC 8391, SHA-256) key whose public half ships as `_signing_key.json`.
+# The signature is checked once per session and each file when it is
+# first read, so a modified or corrupted install fails loudly instead of
+# returning altered data. data-raw/sign_store.R produces the three files.
+
+.rmoriedata_json <- function(name, class) {
+  f <- file.path(.rmoriedata_extdata(), name)
+  if (!file.exists(f)) {
+    stop("rmoriedata's ", name, " is missing; reinstall rmoriedata.",
+         call. = FALSE)
+  }
+  txt <- paste(readLines(f, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  out <- rmoriebricklayer::bricklayer_json_from_json(txt)
+  class(out) <- c(class, "list")
+  out
+}
+
+.rmoriedata_manifest <- function() {
+  m <- .rmoriedata_cache[["_manifest"]]
+  if (!is.null(m)) {
+    return(m)
+  }
+  f <- file.path(.rmoriedata_extdata(), "_checksums.csv")
+  if (!file.exists(f)) {
+    stop("rmoriedata's checksum manifest is missing; reinstall rmoriedata.",
+         call. = FALSE)
+  }
+  bytes <- readBin(f, "raw", n = file.size(f))
+  sig <- .rmoriedata_json("_checksums.sig", "bricklayer_signature")
+  pub <- .rmoriedata_json("_signing_key.json", "bricklayer_public_key")
+  ok <- rmoriebricklayer::capsule_verify(rmoriebricklayer::core_sha256(bytes),
+                                         sig, pub)
+  if (!isTRUE(ok)) {
+    stop("rmoriedata's checksum manifest does not verify against the ",
+         "package's signing key: the installed data store has been ",
+         "modified. Reinstall rmoriedata.", call. = FALSE)
+  }
+  m <- utils::read.csv(f, stringsAsFactors = FALSE,
+                       colClasses = c("character", "numeric", "character"))
+  assign("_manifest", m, envir = .rmoriedata_cache)
+  assign("_verified", character(0), envir = .rmoriedata_cache)
+  m
+}
+
+.rmoriedata_check_file <- function(rel) {
+  if (rel %in% .rmoriedata_cache[["_verified"]]) {
+    return(invisible(TRUE))
+  }
+  m <- .rmoriedata_manifest()
+  row <- m[m$path == rel, , drop = FALSE]
+  if (!nrow(row)) {
+    stop(sprintf("'%s' is not in rmoriedata's signed manifest.", rel),
+         call. = FALSE)
+  }
+  got <- rmoriebricklayer::sha256_file(file.path(.rmoriedata_extdata(), rel))
+  if (!identical(got, row$sha256[1L])) {
+    stop(sprintf(paste0("rmoriedata's bundled file '%s' does not match the ",
+                        "signed manifest (expected sha256 %s, got %s): the ",
+                        "installed copy has been modified or corrupted. ",
+                        "Reinstall rmoriedata."),
+                 rel, row$sha256[1L], got), call. = FALSE)
+  }
+  assign("_verified", c(.rmoriedata_cache[["_verified"]], rel),
+         envir = .rmoriedata_cache)
+  invisible(TRUE)
+}
+
+.rmoriedata_reset_cache <- function() {
+  rm(list = ls(.rmoriedata_cache, all.names = TRUE), envir = .rmoriedata_cache)
+  invisible(NULL)
+}
+
+#' Verify the bundled data store against its signed manifest
+#'
+#' Every file rmoriedata ships is listed with its SHA-256 in a manifest,
+#' and the manifest is signed with an XMSS (RFC 8391, SHA-256) key whose
+#' public half ships with the package. Loading a table checks its file
+#' against the manifest; this function checks all of them at once.
+#'
+#' @return A data frame with one row per manifest entry: `path`, `bytes`,
+#'   `sha256`, `ok` (the file on disk matches). The attribute
+#'   `"signature"` is `TRUE` when the manifest's signature verified, and
+#'   the function errors if it did not.
+#' @examples
+#' v <- morie_data_verify()
+#' all(v$ok)
+#' attr(v, "signature")
+#' @export
+morie_data_verify <- function() {
+  m <- .rmoriedata_manifest()
+  ed <- .rmoriedata_extdata()
+  m$ok <- vapply(seq_len(nrow(m)), function(i) {
+    f <- file.path(ed, m$path[i])
+    file.exists(f) &&
+      identical(rmoriebricklayer::sha256_file(f), m$sha256[i])
+  }, TRUE)
+  attr(m, "signature") <- TRUE
+  m
 }
