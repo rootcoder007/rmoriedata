@@ -29,7 +29,7 @@ The package has four surfaces:
 
 ## 1. Browsing the bundled store
 
-Every bundled table lives in a Parquet store. `morie_data_catalog()` lists
+Every bundled table ships as a CSV with a bundled column schema, listed in a SHA-256 manifest that is signed with the package's XMSS key and verified on load (see ). `morie_data_catalog()` lists
 what's there, with row/column counts and the original source path.
 
 ```{r catalog}
