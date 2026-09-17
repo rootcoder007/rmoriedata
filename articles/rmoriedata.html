@@ -89,9 +89,10 @@ catalogue.</li>
 <div class="section level2">
 <h2 id="browsing-the-bundled-store">1. Browsing the bundled store<a class="anchor" aria-label="anchor" href="#browsing-the-bundled-store"></a>
 </h2>
-<p>Every bundled table lives in a Parquet store.
-<code><a href="../reference/morie_data_catalog.html">morie_data_catalog()</a></code> lists what’s there, with row/column
-counts and the original source path.</p>
+<p>Every bundled table ships as a CSV with a bundled column schema,
+listed in a SHA-256 manifest that is signed with the package’s XMSS key
+and verified on load (see ). <code><a href="../reference/morie_data_catalog.html">morie_data_catalog()</a></code> lists
+what’s there, with row/column counts and the original source path.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span>
@@ -200,9 +201,9 @@ download and is a network call, so it isn’t run here.)</p>
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                        file    bytes</span></span>
-<span><span class="co">#&gt; 78        rmoriedata.sqlite 14835712</span></span>
-<span><span class="co">#&gt; 30      describe_corpus.Rds  1712072</span></span>
-<span><span class="co">#&gt; 29 cpads_pumf_synthetic.csv   893252</span></span>
+<span><span class="co">#&gt; 81        rmoriedata.sqlite 14835712</span></span>
+<span><span class="co">#&gt; 33      describe_corpus.Rds  1712072</span></span>
+<span><span class="co">#&gt; 32 cpads_pumf_synthetic.csv   893252</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
 <span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>

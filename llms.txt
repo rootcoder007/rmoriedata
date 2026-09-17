@@ -149,6 +149,8 @@ analysis functions consume.
   : Data dictionary for a bundled dataset
 - [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
   : SHA256 checksums of bundled rmoriedata files
+- [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+  : Verify the bundled data store against its signed manifest
 - [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
   : Load Chicago crime or arrest data
 - [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)

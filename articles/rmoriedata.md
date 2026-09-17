@@ -17,7 +17,9 @@ The package has four surfaces:
 
 ## 1. Browsing the bundled store
 
-Every bundled table lives in a Parquet store.
+Every bundled table ships as a CSV with a bundled column schema, listed
+in a SHA-256 manifest that is signed with the package’s XMSS key and
+verified on load (see ).
 [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
 lists what’s there, with row/column counts and the original source path.
 
@@ -150,9 +152,9 @@ Verify you’re using the exact data slice the package shipped:
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                        file    bytes
-#> 78        rmoriedata.sqlite 14835712
-#> 30      describe_corpus.Rds  1712072
-#> 29 cpads_pumf_synthetic.csv   893252
+#> 81        rmoriedata.sqlite 14835712
+#> 33      describe_corpus.Rds  1712072
+#> 32 cpads_pumf_synthetic.csv   893252
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 morie_core_sha256("abc")

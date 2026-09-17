@@ -2,6 +2,16 @@
 
 ## rmoriedata 0.3.3
 
+- The data store is signed. `_checksums.csv` lists every shipped file
+  with its SHA-256, and the manifest’s own SHA-256 carries an XMSS (RFC
+  8391, SHA-256) signature whose public key ships as
+  `_signing_key.json`. The signature is checked once per session and
+  each file when first read, so a modified or corrupted install errors
+  instead of returning altered data;
+  [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+  checks the whole store at once. Needs rmoriebricklayer 0.4.0 or newer
+  for the verification.
+
 - `load_siu_reports(format = "parquet")` pointed at the parquet copy
   this release removed; the option now errors with a note that the gzip
   CSV is the same corpus. rmorie reads the corpus through the default
