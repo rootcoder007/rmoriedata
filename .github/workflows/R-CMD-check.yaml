@@ -45,7 +45,12 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
 
-      - name: Install rmoriebricklayer (GitHub HEAD preferred; r-universe fallback)
+      - uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399 # v2.13.0
+        with:
+          extra-packages: any::rcmdcheck
+          cache-version: 4
+          needs: check
+      - name: Install rmoriebricklayer after the dependency cache is restored (GitHub HEAD preferred; r-universe fallback)
         # Not on CRAN. Prefer the GitHub HEAD (always the latest -- new exports
         # like bricklayer_fetch present immediately); fall back to the
         # r-universe binary if GitHub is unavailable. Runs before dependency
@@ -67,11 +72,6 @@ jobs:
           cat("rmoriebricklayer", as.character(packageVersion("rmoriebricklayer")), "\n")
         shell: Rscript {0}
 
-      - uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399 # v2.13.0
-        with:
-          extra-packages: any::rcmdcheck
-          cache-version: 3
-          needs: check
       - uses: r-lib/actions/check-r-package@465b7d8e732ca3921382b1674c59bada9cbf3399 # v2.13.0
         with:
           upload-snapshots: true

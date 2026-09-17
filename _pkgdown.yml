@@ -34,6 +34,7 @@ reference:
       - morie_data_load
       - morie_data_dictionary
       - morie_data_checksums
+      - morie_data_verify
       - load_chicago_data
       - load_cihi_data_tables
       - fetch_cihi_table

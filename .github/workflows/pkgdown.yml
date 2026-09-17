@@ -21,7 +21,12 @@ jobs:
           use-public-rspm: true
       - name: Install libcurl (bricklayer's C++ SystemRequirement)
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
-      - name: Install rmoriebricklayer (GitHub HEAD preferred; r-universe fallback)
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::pkgdown, local::.
+          needs: website
+          cache-version: 3
+      - name: Install rmoriebricklayer after the dependency cache is restored (GitHub HEAD preferred; r-universe fallback)
         run: |
           install.packages("remotes", repos = "https://cloud.r-project.org")
           ok <- tryCatch({ remotes::install_github("rootcoder007/rmorie-bricklayer", upgrade = "never", force = TRUE); TRUE },
@@ -30,11 +35,6 @@ jobs:
             install.packages("rmoriebricklayer", repos = c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"))
           if (!requireNamespace("rmoriebricklayer", quietly = TRUE)) stop("rmoriebricklayer unavailable")
         shell: Rscript {0}
-      - uses: r-lib/actions/setup-r-dependencies@v2
-        with:
-          extra-packages: any::pkgdown, local::.
-          needs: website
-          cache-version: 2
       - name: Build site
         run: pkgdown::build_site_github_pages(new_process = FALSE, install = TRUE)
         shell: Rscript {0}
