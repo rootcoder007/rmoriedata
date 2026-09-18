@@ -6,7 +6,7 @@
 #' Victorian crime statistics (Crime Statistics Agency Victoria)
 #'
 #' Ten tables from the Crime Statistics Agency's "Latest Victorian crime
-#' data" release, bundled in the Parquet store and reached by slug through
+#' data" release, bundled in the CSV store and reached by slug through
 #' [morie_data_load()]. Each is Table 01 -- the headline series -- of the
 #' corresponding published workbook, for the year ending March 2026.
 #'
