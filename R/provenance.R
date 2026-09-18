@@ -9,7 +9,10 @@
 #' rmoriedata's integration with the bricklayer provenance layer.
 #'
 #' @return A data frame with one row per bundled file and columns
-#'   \code{file}, \code{bytes}, and \code{sha256}.
+#'   \code{path} (relative to the extdata root, forward slashes, unique),
+#'   \code{file} (the bare basename), \code{bytes}, and \code{sha256}.
+#'   Use \code{path} to locate a file; several basenames recur in more
+#'   than one directory.
 #' @examples
 #' # One row per bundled file: name, size in bytes, SHA256 digest.
 #' ck <- morie_data_checksums()
@@ -25,14 +28,14 @@
 #' if (nrow(ck)) {
 #'   pinned <- ck$sha256[1]
 #'   again <- morie_data_checksums()
-#'   stopifnot(again$sha256[again$file == ck$file[1]] == pinned)
+#'   stopifnot(again$sha256[again$path == ck$path[1]] == pinned)
 #' }
 #' @export
 morie_data_checksums <- function() {
   dir <- system.file("extdata", package = "rmoriedata")
   empty <- data.frame(
-    file = character(), bytes = numeric(), sha256 = character(),
-    stringsAsFactors = FALSE
+    path = character(), file = character(), bytes = numeric(),
+    sha256 = character(), stringsAsFactors = FALSE
   )
   if (!nzchar(dir) || !dir.exists(dir)) {
     return(empty)
@@ -42,6 +45,7 @@ morie_data_checksums <- function() {
     return(empty)
   }
   data.frame(
+    path = list.files(dir, recursive = TRUE),
     file = basename(files),
     bytes = file.size(files),
     sha256 = vapply(files, rmoriebricklayer::sha256_file, character(1)),

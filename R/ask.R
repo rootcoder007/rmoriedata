@@ -31,7 +31,8 @@
 #' if (!nzchar(Sys.which("rmorie"))) ask("hello")
 #' @export
 ask <- function(question, model = NULL, backend = "auto") {
-  stopifnot(is.character(question), length(question) == 1L, nzchar(question))
+  stopifnot(is.character(question), length(question) == 1L,
+            !is.na(question), nzchar(question))
   bin <- Sys.which("rmorie")
   if (!nzchar(bin)) {
     return("rmorie CLI not found on PATH. Install rmorie-cli to use ask().")
