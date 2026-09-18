@@ -2,6 +2,16 @@
 
 ## rmoriedata 0.3.3
 
+- The verifier pins the signing key’s XMSS root and public seed in
+  package code. A store re-signed with another key, even with a
+  consistent manifest and shipped public key, no longer verifies; the
+  signature now means more than a checksum against local tampering.
+
+- CSV tables are read with `encoding = "UTF-8"` instead of
+  `fileEncoding = "UTF-8-BOM"`: in a C locale the latter truncated 22 of
+  the 99 tables (5 to zero rows); the bytes are now left alone and
+  marked as UTF-8 in every locale.
+
 - The data store is signed. `_checksums.csv` lists every shipped file
   with its SHA-256, and the manifest’s own SHA-256 carries an XMSS (RFC
   8391, SHA-256) signature whose public key ships as
