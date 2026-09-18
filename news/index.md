@@ -10,7 +10,17 @@
   already returned `path`).
 
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  rejects `NA_character_` like it rejects `""` and `NULL`.
+  quotes every argument it hands to the `rmorie` CLI. The preamble
+  contains a parenthesis, so with the CLI installed every call had died
+  in the shell before the binary ran; a `;` in the question would have
+  run as a command. `model` and `backend` are validated, and a blank or
+  `NA` question is rejected like `""` and `NULL`. A stub binary on
+  `PATH` now exercises the branch the tests never reached.
+
+- [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+  on a dictionary slug says to use
+  [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
+  instead of pointing back at the catalog.
 
 - The verifier pins the signing key’s XMSS root and public seed in
   package code. A store re-signed with another key, even with a
