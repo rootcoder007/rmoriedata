@@ -45,7 +45,7 @@ morie_data_checksums <- function() {
     return(empty)
   }
   data.frame(
-    path = list.files(dir, recursive = TRUE),
+    path = substring(files, nchar(dir) + 2L),
     file = basename(files),
     bytes = file.size(files),
     sha256 = vapply(files, rmoriebricklayer::sha256_file, character(1)),

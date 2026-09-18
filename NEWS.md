@@ -4,7 +4,14 @@
   root; the bare `file` basenames it returned were not unique and 20 of
   them did not resolve from the root (`morie_data_verify()` already
   returned `path`).
-* `ask()` rejects `NA_character_` like it rejects `""` and `NULL`.
+* `ask()` quotes every argument it hands to the `rmorie` CLI. The
+  preamble contains a parenthesis, so with the CLI installed every call
+  had died in the shell before the binary ran; a `;` in the question
+  would have run as a command. `model` and `backend` are validated, and a
+  blank or `NA` question is rejected like `""` and `NULL`. A stub binary
+  on `PATH` now exercises the branch the tests never reached.
+* `morie_data_load()` on a dictionary slug says to use
+  `morie_data_dictionary()` instead of pointing back at the catalog.
 * The verifier pins the signing key's XMSS root and public seed in package
   code. A store re-signed with another key, even with a consistent
   manifest and shipped public key, no longer verifies; the signature now

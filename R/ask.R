@@ -31,8 +31,9 @@
 #' if (!nzchar(Sys.which("rmorie"))) ask("hello")
 #' @export
 ask <- function(question, model = NULL, backend = "auto") {
-  stopifnot(is.character(question), length(question) == 1L,
-            !is.na(question), nzchar(question))
+  .rmoriedata_scalar(question, "question")
+  .rmoriedata_scalar(backend, "backend")
+  if (!is.null(model)) .rmoriedata_scalar(model, "model")
   bin <- Sys.which("rmorie")
   if (!nzchar(bin)) {
     return("rmorie CLI not found on PATH. Install rmorie-cli to use ask().")
@@ -41,10 +42,22 @@ ask <- function(question, model = NULL, backend = "auto") {
     "You are helping explore the datasets bundled in the MORIE packages ",
     "(rmoriedata). Prefer the bundled catalog. Question: ", question
   )
-  args <- c("agent", "--backend", backend)
-  if (!is.null(model)) args <- c(args, "-m", model)
-  args <- c(args, preamble)
+  # system2() hands `args` to a shell: quote every value, or the first
+  # parenthesis in the request is a shell syntax error (and a ";" in the
+  # question would run as a command).
+  args <- c("agent", "--backend", shQuote(backend))
+  if (!is.null(model)) args <- c(args, "-m", shQuote(model))
+  args <- c(args, shQuote(preamble))
   paste(suppressWarnings(
     system2(bin, args = args, stdout = TRUE, stderr = TRUE)
   ), collapse = "\n")
+}
+
+# A non-NA, non-blank character scalar, or an error naming the argument.
+.rmoriedata_scalar <- function(x, what) {
+  if (!is.character(x) || length(x) != 1L || is.na(x) || !nzchar(trimws(x))) {
+    stop(sprintf("`%s` must be a single non-empty string.", what),
+         call. = FALSE)
+  }
+  invisible(TRUE)
 }
