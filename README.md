@@ -1,6 +1,11 @@
 # rmoriedata
 
+<!-- badges: start -->
+[![CRAN status](https://www.r-pkg.org/badges/version/rmoriedata)](https://CRAN.R-project.org/package=rmoriedata)
+[![R-CMD-check](https://github.com/rootcoder007/rmoriedata/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rootcoder007/rmoriedata/actions/workflows/R-CMD-check.yaml)
 [![r-universe](https://rootcoder007.r-universe.dev/badges/rmoriedata)](https://rootcoder007.r-universe.dev/rmoriedata)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://spdx.org/licenses/AGPL-3.0-or-later.html)
+<!-- badges: end -->
 
 Integrated open-data fixtures for [rmorie](https://github.com/rootcoder007/rmorie),
 plus a small set of base-R helpers. Its core job remains the `inst/extdata/`
