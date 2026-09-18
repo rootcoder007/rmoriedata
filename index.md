@@ -1,7 +1,5 @@
 # rmoriedata
 
-[![r-universe](https://rootcoder007.r-universe.dev/badges/rmoriedata)](https://rootcoder007.r-universe.dev/rmoriedata)
-
 Integrated open-data fixtures for
 [rmorie](https://github.com/rootcoder007/rmorie), plus a small set of
 base-R helpers. Its core job remains the `inst/extdata/` files used by
