@@ -2,6 +2,16 @@
 
 ## rmoriedata 0.3.3
 
+- [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
+  gains a `path` column relative to the extdata root; the bare `file`
+  basenames it returned were not unique and 20 of them did not resolve
+  from the root
+  ([`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+  already returned `path`).
+
+- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  rejects `NA_character_` like it rejects `""` and `NULL`.
+
 - The verifier pins the signing key’s XMSS root and public seed in
   package code. A store re-signed with another key, even with a
   consistent manifest and shipped public key, no longer verifies; the

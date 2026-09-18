@@ -15,8 +15,10 @@ morie_data_checksums()
 
 ## Value
 
-A data frame with one row per bundled file and columns `file`, `bytes`,
-and `sha256`.
+A data frame with one row per bundled file and columns `path` (relative
+to the extdata root, forward slashes, unique), `file` (the bare
+basename), `bytes`, and `sha256`. Use `path` to locate a file; several
+basenames recur in more than one directory.
 
 ## Examples
 
@@ -24,18 +26,19 @@ and `sha256`.
 # One row per bundled file: name, size in bytes, SHA256 digest.
 ck <- morie_data_checksums()
 str(ck)
-#> 'data.frame':    110 obs. of  3 variables:
+#> 'data.frame':    110 obs. of  4 variables:
+#>  $ path  : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...
 #>  $ file  : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...
 #>  $ bytes : num  23210 8888 11668 10180 131406 ...
 #>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "073f3cc2abb749f7dc7c541ae3aa81e0af49955eeb12e70165ffa95da3f28c0a" "41e0326ff96ddd942ce0e1dea0a24ca5463d6703a7cfc722798689babb7b9a7d" "313b99ad96aa624a0744347f5d909f5f23eff4dcb660bc7e5f5efa7f2a9a84e2" ...
 head(ck)
-#>                      file  bytes
-#> 1 OTIS_DATA_DICTIONARY.md  23210
-#> 2            _catalog.csv   8888
-#> 3          _checksums.csv  11668
-#> 4          _checksums.sig  10180
-#> 5             _schema.csv 131406
-#> 6       _signing_key.json    197
+#>                      path                    file  bytes
+#> 1 OTIS_DATA_DICTIONARY.md OTIS_DATA_DICTIONARY.md  23210
+#> 2            _catalog.csv            _catalog.csv   8888
+#> 3          _checksums.csv          _checksums.csv  11668
+#> 4          _checksums.sig          _checksums.sig  10180
+#> 5             _schema.csv             _schema.csv 131406
+#> 6       _signing_key.json       _signing_key.json    197
 #>                                                             sha256
 #> 1 bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00
 #> 2 073f3cc2abb749f7dc7c541ae3aa81e0af49955eeb12e70165ffa95da3f28c0a
@@ -58,6 +61,6 @@ head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 if (nrow(ck)) {
   pinned <- ck$sha256[1]
   again <- morie_data_checksums()
-  stopifnot(again$sha256[again$file == ck$file[1]] == pinned)
+  stopifnot(again$sha256[again$path == ck$path[1]] == pinned)
 }
 ```
