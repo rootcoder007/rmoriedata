@@ -235,5 +235,9 @@ res$suppressed
 
 `load_chicago_data(..., as = "parquet_path")` writes a Parquet file and
 returns its path – the recommended hand-off to `pandas.read_parquet()`.
-Because the store is Parquet throughout, the same tables load natively
-in R, Python, DuckDB, and Arrow.
+The file comes from the package’s own Parquet writer, so it loads
+natively in pandas, polars, DuckDB and Arrow with no R runtime. The
+bundled store itself is one CSV per table plus a column schema; read it
+with
+[`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+in R or with any CSV reader elsewhere.
