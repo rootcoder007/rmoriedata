@@ -100,6 +100,11 @@ morie_data_load <- function(slug, refresh = FALSE) {
   cat <- morie_data_catalog()
   row <- cat[cat$slug == slug & cat$kind == "table", , drop = FALSE]
   if (!nrow(row)) {
+    if (any(cat$slug == slug & cat$kind == "dictionary")) {
+      stop(sprintf(paste0("'%s' is a data dictionary, not a table: load it ",
+                          "with morie_data_dictionary(\"%s\")."), slug, slug),
+           call. = FALSE)
+    }
     stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
                  slug), call. = FALSE)
   }
