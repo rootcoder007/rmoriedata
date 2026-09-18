@@ -24,8 +24,12 @@
   f <- file.path(.rmoriedata_extdata(), name)
   if (!file.exists(f)) return(NULL)
   .rmoriedata_check_file(name)
+  # encoding =, not fileEncoding =: fileEncoding re-encodes through the
+  # session locale, and in a C locale every non-ASCII byte truncates the
+  # field (22 of 99 tables short, 5 empty, 2026-09-18). encoding = marks
+  # the strings as UTF-8 and leaves the bytes alone. The store has no BOM.
   utils::read.csv(f, check.names = FALSE, stringsAsFactors = FALSE,
-                  fileEncoding = "UTF-8-BOM")
+                  encoding = "UTF-8")
 }
 
 .rmoriedata_schema <- function() {
@@ -199,6 +203,17 @@ morie_data_dictionary <- function(slug) {
   bytes <- readBin(f, "raw", n = file.size(f))
   sig <- .rmoriedata_json("_checksums.sig", "bricklayer_signature")
   pub <- .rmoriedata_json("_signing_key.json", "bricklayer_public_key")
+  # The trust root is pinned here, not read from the same directory the
+  # signature protects: a consistent re-sign of extdata with another key
+  # would otherwise verify. Changing the signing key means changing this
+  # constant in package code, which is the visible change it should be.
+  root_ok <- identical(as.character(pub$root), .rmoriedata_signing_root)
+  seed_ok <- identical(as.character(pub$pub_seed), .rmoriedata_signing_seed)
+  if (!root_ok || !seed_ok) {
+    stop("rmoriedata's shipped signing key does not match the root pinned ",
+         "in the package: the installed data store has been re-signed. ",
+         "Reinstall rmoriedata.", call. = FALSE)
+  }
   ok <- rmoriebricklayer::capsule_verify(rmoriebricklayer::core_sha256(bytes),
                                          sig, pub)
   if (!isTRUE(ok)) {
@@ -268,3 +283,11 @@ morie_data_verify <- function() {
   attr(m, "signature") <- TRUE
   m
 }
+
+# XMSS public root and public seed of the store's signing key (RFC 8391,
+# SHA-256). Pinned in code so the verifier's trust anchor does not travel
+# with the data it verifies.
+.rmoriedata_signing_root <- paste0("bee8b88de2e19b5bafa398f1ccc0d48d",
+                                   "a5ee75e561e6b39d06f5e8b2421bd23d")
+.rmoriedata_signing_seed <- paste0("9e5d6ac1acea1d247139755cd3956889",
+                                   "0c894c113b095b285be7a8b12ad9a539")
