@@ -22,7 +22,41 @@ test_that("the writer keeps UTF-8 bytes whether or not the string is marked", {
 test_that("the SIU corpus carries the same bytes from CSV and Parquet", {
   a <- load_siu_reports()
   b <- load_siu_reports(format = "parquet")
-  i <- which(vapply(a[[1]], function(z) any(charToRaw(z) > 0x7f), TRUE))[1]
-  skip_if(is.na(i))
-  expect_identical(charToRaw(a[[1]][i]), charToRaw(b[[1]][i]))
+  hit <- NULL
+  for (col in names(a)) {
+    i <- which(vapply(a[[col]], function(z) any(charToRaw(z) > 0x7f), TRUE))
+    if (length(i)) {
+      hit <- c(col, i[1])
+      break
+    }
+  }
+  expect_false(is.null(hit)) # the corpus has non-ASCII cells; the scan must find one
+  expect_identical(charToRaw(a[[hit[1]]][as.integer(hit[2])]),
+                   charToRaw(b[[hit[1]]][as.integer(hit[2])]))
+})
+
+test_that("unmarked non-UTF-8 bytes pass through the writer unchanged", {
+  latin1 <- rawToChar(as.raw(c(0x63, 0x61, 0x66, 0xe9))) # "caf\xe9", Encoding unknown
+  f <- tempfile(fileext = ".parquet")
+  rmoriedata:::morie_write_parquet(data.frame(a = latin1, stringsAsFactors = FALSE), f)
+  expect_identical(charToRaw(rmoriedata:::morie_read_parquet(f)$a),
+                   as.raw(c(0x63, 0x61, 0x66, 0xe9)))
+  marked <- latin1
+  Encoding(marked) <- "latin1"
+  rmoriedata:::morie_write_parquet(data.frame(a = marked, stringsAsFactors = FALSE), f)
+  expect_identical(charToRaw(rmoriedata:::morie_read_parquet(f)$a), utf8_bytes[1:5])
+})
+
+test_that("a data page v2 is reported as such before any decompression", {
+  f <- tempfile(fileext = ".parquet")
+  rmoriedata:::morie_write_parquet(data.frame(a = c("x", "y", "z"),
+                                              stringsAsFactors = FALSE), f)
+  raw <- readBin(f, "raw", file.size(f))
+  # the first page header follows the 4-byte magic: field 1 (i32, page
+  # type) is 0x15 then the zigzag value; DATA_PAGE = 0, DATA_PAGE_V2 = 3
+  skip_if_not(identical(raw[5:6], as.raw(c(0x15, 0x00))),
+              "writer page-header layout changed; fixture needs updating")
+  raw[6] <- as.raw(0x06)
+  writeBin(raw, f)
+  expect_error(rmoriedata:::morie_read_parquet(f), "data page v2")
 })

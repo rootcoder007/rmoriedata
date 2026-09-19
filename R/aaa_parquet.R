@@ -210,15 +210,18 @@
   .pq_wvarint(e, if (n < 0) -2 * n - 1 else 2 * n)
 }
 
-# The bytes of a string as UTF-8. enc2utf8() translates from the native
-# encoding, and in a C locale that turns every non-ASCII byte of an
-# unmarked string into its "<c3><a9>" display form; bytes that already
-# are valid UTF-8 are marked as such and left alone.
+# The bytes of a string as UTF-8. A string marked latin1 (or UTF-8) is
+# transcoded by enc2utf8(); an unmarked string is written byte for byte,
+# because enc2utf8() would translate it from the native encoding, and in
+# a C locale that turns every non-ASCII byte into its "<c3><a9>" display
+# form. Unmarked bytes that are valid UTF-8 (what read.csv() and the
+# store give) come out as UTF-8; anything else passes through unchanged,
+# which is reversible where an escape is not.
 .pq_utf8 <- function(s) {
   s <- as.character(s)
-  u <- !is.na(s) & Encoding(s) == "unknown" & validUTF8(s)
-  if (any(u)) Encoding(s)[u] <- "UTF-8"
-  enc2utf8(s)
+  marked <- !is.na(s) & Encoding(s) != "unknown"
+  if (any(marked)) s[marked] <- enc2utf8(s[marked])
+  s
 }
 
 .pq_wbinary <- function(e, b) {
