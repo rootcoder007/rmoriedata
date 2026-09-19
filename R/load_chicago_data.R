@@ -185,7 +185,8 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
       if (grepl("\\.parquet$", u)) {
         morie_read_parquet(u)
       } else {
-        utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE)
+        utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE,
+                        encoding = "UTF-8")
       },
       error = function(e) NULL
     )
