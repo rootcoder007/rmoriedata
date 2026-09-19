@@ -52,7 +52,9 @@ OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.</p>
 
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
-<dd><p>A <code>data.frame</code>.</p></dd>
+<dd><p>A <code>data.frame</code>. Factor columns are written as character;
+every string must be valid UTF-8 (marked, or unmarked in UTF-8 bytes),
+and column names must be unique.</p></dd>
 
 
 <dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>

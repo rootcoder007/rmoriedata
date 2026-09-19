@@ -23,8 +23,15 @@
   decompression; and CI runs the check in a C locale. Every CSV reader
   in the package now declares UTF-8, so a live Chicago fetch and its
   cached copy are [`identical()`](https://rdrr.io/r/base/identical.html)
-  in any locale, and unmarked bytes that are not UTF-8 are written
-  through unchanged rather than as an escape.
+  in any locale. A string that is not valid UTF-8 and carries no
+  encoding mark is refused by column name (a Parquet string is UTF-8;
+  escaping lost the data, passing the bytes through made a file no other
+  reader opens), and duplicate column names are refused on write and
+  kept apart on read. The cross-session Chicago cache carries a SHA-256
+  sidecar checked on every read.
+  [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
+  rejects an `archived_only` that is not TRUE or FALSE instead of
+  ignoring it.
 
 - [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
   gains a `path` column relative to the extdata root; the bare `file`

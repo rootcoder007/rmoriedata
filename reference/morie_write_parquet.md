@@ -13,7 +13,9 @@ morie_write_parquet(df, path, compression = "snappy")
 
 - df:
 
-  A `data.frame`.
+  A `data.frame`. Factor columns are written as character; every string
+  must be valid UTF-8 (marked, or unmarked in UTF-8 bytes), and column
+  names must be unique.
 
 - path:
 
