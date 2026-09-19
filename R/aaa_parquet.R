@@ -210,17 +210,24 @@
   .pq_wvarint(e, if (n < 0) -2 * n - 1 else 2 * n)
 }
 
-# The bytes of a string as UTF-8. A string marked latin1 (or UTF-8) is
-# transcoded by enc2utf8(); an unmarked string is written byte for byte,
-# because enc2utf8() would translate it from the native encoding, and in
-# a C locale that turns every non-ASCII byte into its "<c3><a9>" display
-# form. Unmarked bytes that are valid UTF-8 (what read.csv() and the
-# store give) come out as UTF-8; anything else passes through unchanged,
-# which is reversible where an escape is not.
-.pq_utf8 <- function(s) {
+# The bytes of a string as UTF-8, which is what a Parquet string is by
+# definition. A string marked latin1 (or UTF-8) is transcoded by
+# enc2utf8(); an unmarked string is written byte for byte when it already
+# is valid UTF-8 (what read.csv() and the store give), because enc2utf8()
+# would translate it from the native encoding, and in a C locale that
+# turns every non-ASCII byte into its "<c3><a9>" display form. Unmarked
+# bytes that are not UTF-8 are refused: written through they make a file
+# no conforming reader opens, escaped they lose the data.
+.pq_utf8 <- function(s, what = "a column") {
   s <- as.character(s)
   marked <- !is.na(s) & Encoding(s) != "unknown"
   if (any(marked)) s[marked] <- enc2utf8(s[marked])
+  bad <- !is.na(s) & !validUTF8(s)
+  if (any(bad)) {
+    stop(what, " holds a string that is not valid UTF-8 (Parquet strings ",
+         "are UTF-8): set its encoding with Encoding()<- or convert it ",
+         "with iconv() before writing.", call. = FALSE)
+  }
   s
 }
 
@@ -830,6 +837,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   }
 
   out <- list()
+  out_names <- character()
   for (i in wanted) {
     leaf <- leaves[[i]]
     col <- list()
@@ -854,8 +862,17 @@ morie_read_parquet <- function(path, columns = NULL) {
       }
       v <- .pq_apply_logical(v, leaf$type, leaf$converted)
     }
-    out[[leaf$name]] <- v
+    out[[length(out) + 1L]] <- v
+    out_names <- c(out_names, leaf$name)
   }
+  if (anyDuplicated(out_names)) {
+    warning("duplicate column names in ", basename(path), ": ",
+            paste(sQuote(unique(out_names[duplicated(out_names)])),
+                  collapse = ", "), "; made unique with make.unique()",
+            call. = FALSE)
+    out_names <- make.unique(out_names)
+  }
+  names(out) <- out_names
 
   df <- as.data.frame(out,
     stringsAsFactors = FALSE,
@@ -917,7 +934,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   writeBin(out, raw(), size = 4L, endian = "little")
 }
 
-.pq_encode_plain <- function(values, ptype) {
+.pq_encode_plain <- function(values, ptype, name = "a column") {
   if (length(values) == 0L) {
     return(raw(0))
   }
@@ -945,7 +962,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   if (ptype == .pqByteArray) {
     parts <- vector("list", length(values) * 2L)
     for (i in seq_along(values)) {
-      b <- charToRaw(.pq_utf8(values[[i]]))
+      b <- charToRaw(.pq_utf8(values[[i]], paste0("column ", sQuote(name))))
       parts[[2L * i - 1L]] <- writeBin(length(b), raw(),
         size = 4L,
         endian = "little"
@@ -987,7 +1004,9 @@ morie_read_parquet <- function(path, columns = NULL) {
 #' Native Parquet writer: single row group, PLAIN encoding, all columns
 #' OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.
 #'
-#' @param df A `data.frame`.
+#' @param df A `data.frame`. Factor columns are written as character;
+#'   every string must be valid UTF-8 (marked, or unmarked in UTF-8 bytes),
+#'   and column names must be unique.
 #' @param path Destination path.
 #' @param compression `"snappy"` (default) or `NULL` for uncompressed.
 #' @return `path`, invisibly.
@@ -1003,6 +1022,12 @@ morie_write_parquet <- function(df, path, compression = "snappy") {
 
   nrows <- nrow(df)
   names_ <- names(df)
+  if (anyDuplicated(names_)) {
+    stop("duplicate column names: ",
+         paste(sQuote(unique(names_[duplicated(names_)])), collapse = ", "),
+         "; a Parquet reader cannot address them, and this one would ",
+         "keep only the last.", call. = FALSE)
+  }
   con <- file(path, "wb")
   on.exit(close(con), add = TRUE)
   writeBin(charToRaw("PAR1"), con)
@@ -1017,7 +1042,7 @@ morie_write_parquet <- function(df, path, compression = "snappy") {
 
     body <- c(
       .pq_encode_levels(defs, 1L),
-      .pq_encode_plain(present, inf$type)
+      .pq_encode_plain(present, inf$type, names_[k])
     )
     payload <- if (codec == .pqCSnappy) .pq_snappy_compress(body) else body
 

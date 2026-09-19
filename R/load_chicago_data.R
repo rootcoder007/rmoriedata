@@ -163,9 +163,9 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   bounded <- !is.null(limit)
   cache <- file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))
   if (!bounded && !isTRUE(refresh) && file.exists(cache)) {
-    df <- tryCatch(morie_read_parquet(cache), error = function(e) NULL)
+    df <- .rmd_cache_read(cache)
     if (!is.null(df)) return(df)
-    unlink(cache) # damaged (interrupted write, full disk): fetch again
+    unlink(c(cache, paste0(cache, ".sha256"))) # damaged or unverified: fetch again
   }
   # The service's own row count decides whether a response is the complete
   # dataset; without it (count endpoint down) only the shape checks apply
@@ -237,12 +237,29 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
 
 # Write next to the destination and rename, so a concurrent reader sees
 # either the previous file or the complete new one, never a partial write.
+# A `<path>.sha256` sidecar records the digest; Parquet pages carry no
+# mandatory checksum, so without it a flipped byte reads back as
+# plausible different numbers.
 .rmd_cache_write <- function(df, path) {
   tmp <- tempfile("write-", tmpdir = dirname(path), fileext = ".parquet")
-  on.exit(unlink(tmp), add = TRUE)
+  tmp2 <- paste0(tmp, ".sha256")
+  on.exit(unlink(c(tmp, tmp2)), add = TRUE)
   morie_write_parquet(as.data.frame(df), tmp)
-  if (!file.rename(tmp, path)) stop("could not replace ", path, call. = FALSE)
+  writeLines(rmoriebricklayer::sha256_file(tmp), tmp2)
+  if (!file.rename(tmp2, paste0(path, ".sha256")) || !file.rename(tmp, path)) {
+    stop("could not replace ", path, call. = FALSE)
+  }
   invisible(path)
+}
+
+# The cached frame, or NULL when the file is unreadable, has no sidecar,
+# or no longer matches it.
+.rmd_cache_read <- function(path) {
+  side <- paste0(path, ".sha256")
+  if (!file.exists(side)) return(NULL)
+  want <- readLines(side, n = 1L, warn = FALSE)
+  if (!identical(rmoriebricklayer::sha256_file(path), want)) return(NULL)
+  tryCatch(morie_read_parquet(path), error = function(e) NULL)
 }
 
 .rmd_write_parquet <- function(df, type, full) {

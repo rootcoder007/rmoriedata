@@ -101,7 +101,7 @@ test_that("a write that dies midway leaves the previous cache intact", {
   expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL,
                                                  refresh = TRUE)), 600L)
   expect_equal(nrow(morie_read_parquet(cache)), 500L)
-  expect_identical(list.files(d), "arrests_full.parquet")
+  expect_setequal(list.files(d), c("arrests_full.parquet", "arrests_full.parquet.sha256"))
 })
 
 test_that("the cache write is atomic: no partial file is ever left in place", {
@@ -109,7 +109,7 @@ test_that("the cache write is atomic: no partial file is ever left in place", {
   dir.create(d)
   path <- file.path(d, "x.parquet")
   rmoriedata:::.rmd_cache_write(data.frame(a = 1:3), path)
-  expect_identical(list.files(d), "x.parquet")
+  expect_setequal(list.files(d), c("x.parquet", "x.parquet.sha256"))
   expect_equal(morie_read_parquet(path)$a, 1:3)
 })
 
@@ -176,4 +176,41 @@ test_that("fetch_cihi_table validates its arguments before any network call", {
   expect_error(fetch_cihi_table(1, timeout = "60"), "timeout")
   expect_error(fetch_cihi_table(1, timeout = c(1, 2)), "timeout")
   expect_error(fetch_cihi_table(1, timeout = Inf), "timeout")
+})
+
+test_that("a live fetch returns UTF-8-marked strings, like the cache does", {
+  local_chicago_cache()
+  f <- tempfile(fileext = ".csv")
+  writeBin(c(charToRaw("id,name\n1,"), as.raw(c(0x63, 0x61, 0x66, 0xc3, 0xa9)),
+             charToRaw("\n")), f)
+  point_at(paste0("file://", f), count = 1)
+  d <- rmoriedata:::.rmd_fetch_full("arrests", NULL)
+  expect_identical(Encoding(d$name), "UTF-8")
+  expect_identical(charToRaw(d$name), as.raw(c(0x63, 0x61, 0x66, 0xc3, 0xa9)))
+  expect_identical(nchar(d$name), 4L)
+})
+
+test_that("a cache whose bytes changed is not served: the sidecar catches it", {
+  d <- local_chicago_cache()
+  cache <- file.path(d, "arrests_full.parquet")
+  point_at(good_csv(500), count = 500)
+  rmoriedata:::.rmd_fetch_full("arrests", NULL)
+  expect_true(file.exists(paste0(cache, ".sha256")))
+  raw <- readBin(cache, "raw", file.size(cache))
+  raw[length(raw) %/% 2] <- xor(raw[length(raw) %/% 2], as.raw(0xff))
+  writeBin(raw, cache)
+  point_at(good_csv(600), count = 600)
+  expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 600L)
+  expect_equal(nrow(morie_read_parquet(cache)), 600L)
+  unlink(paste0(cache, ".sha256"))
+  point_at(good_csv(700), count = 700)
+  expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 700L)
+})
+
+test_that("load_cihi_data_tables rejects anything but TRUE or FALSE", {
+  for (bad in list(1, "yes", NA, c(TRUE, FALSE), NULL)) {
+    expect_error(load_cihi_data_tables(archived_only = bad), "TRUE or FALSE")
+  }
+  expect_lt(nrow(load_cihi_data_tables(archived_only = TRUE)),
+            nrow(load_cihi_data_tables()))
 })

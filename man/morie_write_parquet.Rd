@@ -7,7 +7,9 @@
 morie_write_parquet(df, path, compression = "snappy")
 }
 \arguments{
-\item{df}{A \code{data.frame}.}
+\item{df}{A \code{data.frame}. Factor columns are written as character;
+every string must be valid UTF-8 (marked, or unmarked in UTF-8 bytes),
+and column names must be unique.}
 
 \item{path}{Destination path.}
 

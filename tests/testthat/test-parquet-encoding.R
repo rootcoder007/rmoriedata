@@ -17,6 +17,10 @@ test_that("the writer keeps UTF-8 bytes whether or not the string is marked", {
   expect_identical(charToRaw(back[2]), utf8_bytes)
   expect_true(is.na(back[3]))
   expect_identical(Encoding(back[1:2]), c("UTF-8", "UTF-8"))
+  expect_true(all(validUTF8(back[1:2])))
+  expect_identical(nchar(back[1]), 7L)
+  expect_true(all(validUTF8(back[1:2])))
+  expect_identical(nchar(back[1]), 7L)
 })
 
 test_that("the SIU corpus carries the same bytes from CSV and Parquet", {
@@ -35,12 +39,12 @@ test_that("the SIU corpus carries the same bytes from CSV and Parquet", {
                    charToRaw(b[[hit[1]]][as.integer(hit[2])]))
 })
 
-test_that("unmarked non-UTF-8 bytes pass through the writer unchanged", {
+test_that("unmarked non-UTF-8 bytes are refused by name; marked latin1 is transcoded", {
   latin1 <- rawToChar(as.raw(c(0x63, 0x61, 0x66, 0xe9))) # "caf\xe9", Encoding unknown
   f <- tempfile(fileext = ".parquet")
-  rmoriedata:::morie_write_parquet(data.frame(a = latin1, stringsAsFactors = FALSE), f)
-  expect_identical(charToRaw(rmoriedata:::morie_read_parquet(f)$a),
-                   as.raw(c(0x63, 0x61, 0x66, 0xe9)))
+  expect_error(
+    rmoriedata:::morie_write_parquet(data.frame(a = latin1, stringsAsFactors = FALSE), f),
+    "column .a. holds a string that is not valid UTF-8")
   marked <- latin1
   Encoding(marked) <- "latin1"
   rmoriedata:::morie_write_parquet(data.frame(a = marked, stringsAsFactors = FALSE), f)
@@ -59,4 +63,22 @@ test_that("a data page v2 is reported as such before any decompression", {
   raw[6] <- as.raw(0x06)
   writeBin(raw, f)
   expect_error(rmoriedata:::morie_read_parquet(f), "data page v2")
+})
+
+test_that("duplicate column names are refused on write and kept apart on read", {
+  f <- tempfile(fileext = ".parquet")
+  dup <- setNames(data.frame(1:3, 4:6), c("x", "x"))
+  expect_error(rmoriedata:::morie_write_parquet(dup, f), "duplicate column names: .x.")
+  # a file that really holds two columns named x: write x and y
+  # uncompressed, then rename y to x in the footer (the only 0x79 bytes)
+  rmoriedata:::morie_write_parquet(data.frame(x = 1:3, y = 4:6), f,
+                                   compression = NULL)
+  raw <- readBin(f, "raw", file.size(f))
+  skip_if_not(sum(raw == as.raw(0x79)) == 2L, "fixture layout changed")
+  raw[raw == as.raw(0x79)] <- as.raw(0x78)
+  writeBin(raw, f)
+  expect_warning(d <- rmoriedata:::morie_read_parquet(f), "duplicate column names")
+  expect_identical(names(d), c("x", "x.1"))
+  expect_identical(d$x, 1:3)
+  expect_identical(d$x.1, 4:6)
 })
