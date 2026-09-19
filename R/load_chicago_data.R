@@ -246,7 +246,10 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   on.exit(unlink(c(tmp, tmp2)), add = TRUE)
   morie_write_parquet(as.data.frame(df), tmp)
   writeLines(rmoriebricklayer::sha256_file(tmp), tmp2)
-  if (!file.rename(tmp2, paste0(path, ".sha256")) || !file.rename(tmp, path)) {
+  # data first, then its digest: a reader between the two renames sees
+  # the new file against the old sidecar and refetches (a wasted fetch),
+  # never the new digest against the old file
+  if (!file.rename(tmp, path) || !file.rename(tmp2, paste0(path, ".sha256"))) {
     stop("could not replace ", path, call. = FALSE)
   }
   invisible(path)
