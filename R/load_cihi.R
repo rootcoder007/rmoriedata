@@ -41,6 +41,9 @@
 #' cat$title[grepl("hospital", cat$title, ignore.case = TRUE)][1:3]
 #' @export
 load_cihi_data_tables <- function(archived_only = FALSE) {
+  if (!isTRUE(archived_only) && !isFALSE(archived_only)) {
+    stop("`archived_only` must be TRUE or FALSE.", call. = FALSE)
+  }
   path <- system.file("extdata", "cihi_data_tables.csv",
     package = "rmoriedata"
   )
