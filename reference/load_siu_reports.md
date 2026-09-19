@@ -13,7 +13,7 @@ news-release linkage), plus a `panel_reviewed` flag.
 load_siu_reports(
   lang = c("all", "en", "fr"),
   as = c("data.frame", "tibble"),
-  format = "csv"
+  format = c("csv", "parquet")
 )
 ```
 
@@ -37,9 +37,8 @@ subsystem.
 
 - format:
 
-  Kept for compatibility; only `"csv"` (the gzip CSV) is bundled. The
-  parquet copy of the corpus was retired in 0.3.3, and asking for it is
-  an error.
+  `"csv"` (the gzip CSV, default) or `"parquet"` (the same rows and
+  columns, native codec).
 
 ## Value
 

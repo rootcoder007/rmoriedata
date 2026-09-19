@@ -70,35 +70,35 @@ than one directory.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># One row per bundled file: name, size in bytes, SHA256 digest.</span></span></span>
 <span class="r-in"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu">morie_data_checksums</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">ck</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	110 obs. of  4 variables:</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 'data.frame':	211 obs. of  4 variables:</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ path  : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>  $ file  : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ bytes : num  23210 8888 11668 10180 131406 ...</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "073f3cc2abb749f7dc7c541ae3aa81e0af49955eeb12e70165ffa95da3f28c0a" "41e0326ff96ddd942ce0e1dea0a24ca5463d6703a7cfc722798689babb7b9a7d" "313b99ad96aa624a0744347f5d909f5f23eff4dcb660bc7e5f5efa7f2a9a84e2" ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ bytes : num  23210 13782 23929 10180 131406 ...</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "292c93ddd946fa8a0352b8d511c5efa8ea8d8a73b6d3856184c5b12097ed560e" "2546b8be5ebab964860775dd36128b4e7b194cdd0f4e5a3ee5685a85f864d16e" "82e90983f23914651095762b63f10eb8edd691785251795bbf2b92bd8eabdecd" ...</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                      path                    file  bytes</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 OTIS_DATA_DICTIONARY.md OTIS_DATA_DICTIONARY.md  23210</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2            _catalog.csv            _catalog.csv   8888</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          _checksums.csv          _checksums.csv  11668</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2            _catalog.csv            _catalog.csv  13782</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          _checksums.csv          _checksums.csv  23929</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 4          _checksums.sig          _checksums.sig  10180</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5             _schema.csv             _schema.csv 131406</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6       _signing_key.json       _signing_key.json    197</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                                                             sha256</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1 bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2 073f3cc2abb749f7dc7c541ae3aa81e0af49955eeb12e70165ffa95da3f28c0a</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3 41e0326ff96ddd942ce0e1dea0a24ca5463d6703a7cfc722798689babb7b9a7d</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4 313b99ad96aa624a0744347f5d909f5f23eff4dcb660bc7e5f5efa7f2a9a84e2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2 292c93ddd946fa8a0352b8d511c5efa8ea8d8a73b6d3856184c5b12097ed560e</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3 2546b8be5ebab964860775dd36128b4e7b194cdd0f4e5a3ee5685a85f864d16e</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4 82e90983f23914651095762b63f10eb8edd691785251795bbf2b92bd8eabdecd</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 5 cea0953e0eec6816fd4d383843c0ef5636c2b4534443998e9eceacc4f4d33f14</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 6 f97d3e9ae0c1ed10264961b396b5fabd019a179fa3123e9267b12ec6b2797a9a</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Total bundled payload and the largest few files.</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 8344063</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 30056551</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             file   bytes</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 34           describe_corpus.Rds 1712072</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 33      cpads_pumf_synthetic.csv  893252</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 44 nyc_opendata_bulk_catalog.csv  781038</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                                     file   bytes</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 154 siu_directors_reports_corpus.parquet 8097910</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 153        siu_directors_reports.parquet 7445079</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 34                   describe_corpus.Rds 1712072</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Provenance workflow: pin the digest of a file you depend on, then</span></span></span>
 <span class="r-in"><span><span class="co"># assert it hasn't changed under you in a later session / reinstall.</span></span></span>

@@ -116,6 +116,7 @@
 <span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a><span class="co"># since POSIXct does not roundtrip cleanly through pyreadr:</span></span>
 <span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a><span class="im">import</span> pyreadr</span>
 <span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>complaints <span class="op">=</span> pyreadr.read_r(<span class="st">"rmoriedata/data/complaint_sample.rda"</span>)[<span class="st">"complaint_sample"</span>]</span></code></pre></div>
+<p>Every bundled table also ships as Parquet: <code>morie_data_path("&lt;slug&gt;")</code> gives the verified path, <code>pd.read_parquet()</code> reads it.</p>
 <p><strong>Recommended Python bridge:</strong> the Parquet path (<code>as = "parquet_path"</code>) — typed, columnar, read natively by pandas/polars/duckdb with correct timestamps and no R runtime. <code>pyreadr</code> on the <code>.rda</code> works for quick read-only access but is slower and mangles <code>POSIXct</code> (use <code>date_iso</code>).</p>
 </div>
 <div class="section level2">

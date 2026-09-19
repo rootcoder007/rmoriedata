@@ -1,8 +1,9 @@
 # Catalog of the bundled datasets
 
 One row per bundled table or dictionary: `slug`, `source_path` (relative
-to the package's `extdata` directory), `kind`, and for tables `n_rows`
-and `n_cols`.
+to the package's `extdata` directory), `kind`, and for tables `n_rows`,
+`n_cols` and `parquet_path` (the same table as a Parquet file, see
+[`morie_data_path()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_path.md)).
 
 ## Usage
 

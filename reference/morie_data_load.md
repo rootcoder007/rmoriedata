@@ -4,13 +4,15 @@ Reads the table's CSV and applies the column names and classes from the
 bundled schema, so the result is the same typed data frame on every
 platform regardless of how
 [`read.csv()`](https://rdrr.io/r/utils/read.table.html) would have
-guessed. The first load of a table is cached for the session; later
-calls return the cached copy unless `refresh = TRUE`.
+guessed. Every table also ships as a Parquet file holding the same typed
+frame; `format = "parquet"` reads that copy instead. The first load of a
+table is cached for the session; later calls return the cached copy
+unless `refresh = TRUE`.
 
 ## Usage
 
 ``` r
-morie_data_load(slug, refresh = FALSE)
+morie_data_load(slug, refresh = FALSE, format = c("csv", "parquet"))
 ```
 
 ## Arguments
@@ -23,6 +25,11 @@ morie_data_load(slug, refresh = FALSE)
 - refresh:
 
   Re-read the file even if a cached copy exists.
+
+- format:
+
+  `"csv"` (default) or `"parquet"`: which shipped copy to read. Both
+  give the same data frame.
 
 ## Value
 
