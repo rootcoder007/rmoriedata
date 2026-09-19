@@ -214,3 +214,13 @@ test_that("load_cihi_data_tables rejects anything but TRUE or FALSE", {
   expect_lt(nrow(load_cihi_data_tables(archived_only = TRUE)),
             nrow(load_cihi_data_tables()))
 })
+
+test_that("a cache that hashes correctly but is not Parquet is refetched, not an error", {
+  d <- local_chicago_cache()
+  cache <- file.path(d, "arrests_full.parquet")
+  writeLines("not parquet at all", cache)
+  writeLines(rmoriebricklayer::sha256_file(cache), paste0(cache, ".sha256"))
+  point_at(good_csv(500), count = 500)
+  expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 500L)
+  expect_equal(nrow(morie_read_parquet(cache)), 500L)
+})
