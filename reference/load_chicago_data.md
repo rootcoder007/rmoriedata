@@ -16,7 +16,8 @@ load_chicago_data(
   full = FALSE,
   mirror = getOption("rmoriedata.mirror", NULL),
   limit = NULL,
-  fraction = NULL
+  fraction = NULL,
+  refresh = FALSE
 )
 ```
 
@@ -55,6 +56,12 @@ load_chicago_data(
   the live row count is looked up and `limit` is set to
   `ceiling(total * fraction)`. Give either `fraction` or `limit`, not
   both.
+
+- refresh:
+
+  If `TRUE`, ignore the cross-session cache of the complete dataset and
+  fetch it again (the cache is rewritten). A cache file that cannot be
+  read is discarded and refetched regardless.
 
 ## Value
 
@@ -110,7 +117,9 @@ if (!inherits(big, "try-error")) nrow(big)
 # `fraction` takes a share of the dataset instead of a row count:
 # 0.001 = 0.1% of all rows (the live total is looked up first).
 tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
+#> Warning: cannot open URL 'https://data.cityofchicago.org/resource/dpt3-jri9.csv?$limit=75': HTTP status was '500 Internal Server Error'
+#> Error : could not fetch full Chicago 'arrests' data from mirror or Socrata:
+#>   https://data.cityofchicago.org/resource/dpt3-jri9.csv?$limit=75: no response
 if (!inherits(tiny, "try-error")) nrow(tiny)
-#> [1] 75
 # }
 ```
