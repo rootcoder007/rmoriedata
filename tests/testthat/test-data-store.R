@@ -56,13 +56,15 @@ test_that("dictionaries are the shipped JSON, parseable, one per catalog row", {
   expect_null(out)
 })
 
-test_that("no table is shipped twice", {
+test_that("each table ships once as CSV and once as Parquet, nothing else twice", {
   ed <- system.file("extdata", package = "rmoriedata")
-  expect_false(dir.exists(file.path(ed, "parquet")))
   expect_false(dir.exists(file.path(ed, "samples")))
   files <- list.files(ed, recursive = TRUE)
-  tabular <- files[grepl("\\.(csv|csv\\.gz|parquet)$", files)]
-  key <- sub("\\.(csv|csv\\.gz|parquet)$", "", tabular)
-  expect_false(anyDuplicated(key) > 0,
-               info = paste(key[duplicated(key)], collapse = ", "))
+  csv <- files[grepl("\\.(csv|csv\\.gz)$", files) & !startsWith(files, "parquet/")]
+  expect_false(anyDuplicated(sub("\\.(csv|csv\\.gz)$", "", csv)) > 0)
+  cat <- morie_data_catalog()
+  t <- cat[cat$kind == "table", ]
+  expect_setequal(list.files(file.path(ed, "parquet")),
+                  c(basename(t$parquet_path), "_catalog.parquet",
+                    "siu_directors_reports_corpus.parquet"))
 })

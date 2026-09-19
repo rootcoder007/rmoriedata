@@ -48,7 +48,8 @@
 #'
 #' One row per bundled table or dictionary: `slug`, `source_path`
 #' (relative to the package's `extdata` directory), `kind`, and for
-#' tables `n_rows` and `n_cols`.
+#' tables `n_rows`, `n_cols` and `parquet_path` (the same table as a
+#' Parquet file, see [morie_data_path()]).
 #'
 #' @return A data frame.
 #' @examples
@@ -76,23 +77,29 @@ morie_data_catalog <- function() {
 #' Reads the table's CSV and applies the column names and classes from
 #' the bundled schema, so the result is the same typed data frame on
 #' every platform regardless of how `read.csv()` would have guessed.
-#' The first load of a table is cached for the session; later calls
-#' return the cached copy unless `refresh = TRUE`.
+#' Every table also ships as a Parquet file holding the same typed
+#' frame; `format = "parquet"` reads that copy instead. The first load
+#' of a table is cached for the session; later calls return the cached
+#' copy unless `refresh = TRUE`.
 #'
 #' @param slug Dataset slug; see the `slug` column of [morie_data_catalog()].
 #' @param refresh Re-read the file even if a cached copy exists.
+#' @param format `"csv"` (default) or `"parquet"`: which shipped copy to
+#'   read. Both give the same data frame.
 #' @return A data frame.
 #' @examples
 #' d <- morie_data_load("arsau_2023_uof_main_records")
 #' str(d[, 1:4])
 #' @export
-morie_data_load <- function(slug, refresh = FALSE) {
+morie_data_load <- function(slug, refresh = FALSE,
+                            format = c("csv", "parquet")) {
   if (is.null(slug) || length(slug) != 1L || is.na(slug) ||
       !is.character(slug)) {
     stop("`slug` must be a single dataset slug (character). ",
          "See morie_data_catalog() for valid slugs.", call. = FALSE)
   }
-  key <- paste0("table:", slug)
+  format <- match.arg(format)
+  key <- paste0("table:", format, ":", slug)
   if (!isTRUE(refresh)) {
     hit <- .rmoriedata_cache[[key]]
     if (!is.null(hit)) return(hit)
@@ -108,14 +115,63 @@ morie_data_load <- function(slug, refresh = FALSE) {
     stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
                  slug), call. = FALSE)
   }
-  d <- .rmoriedata_csv(row$source_path[1L])
-  if (is.null(d)) {
-    stop(sprintf("The file for '%s' (%s) is missing; reinstall rmoriedata.",
-                 slug, row$source_path[1L]), call. = FALSE)
+  if (format == "parquet") {
+    rel <- row$parquet_path[1L]
+    f <- file.path(.rmoriedata_extdata(), rel)
+    if (is.na(rel) || !nzchar(rel) || !file.exists(f)) {
+      stop(sprintf("The Parquet file for '%s' is missing; reinstall rmoriedata.",
+                   slug), call. = FALSE)
+    }
+    .rmoriedata_check_file(rel)
+    d <- as.data.frame(morie_read_parquet(f), stringsAsFactors = FALSE)
+  } else {
+    d <- .rmoriedata_csv(row$source_path[1L])
+    if (is.null(d)) {
+      stop(sprintf("The file for '%s' (%s) is missing; reinstall rmoriedata.",
+                   slug, row$source_path[1L]), call. = FALSE)
+    }
+    d <- .rmoriedata_apply_schema(d, slug)
   }
-  d <- .rmoriedata_apply_schema(d, slug)
   assign(key, d, envir = .rmoriedata_cache)
   d
+}
+
+#' Path of a bundled table's shipped file
+#'
+#' The absolute path of the CSV or Parquet copy of a table, verified
+#' against the signed manifest first. The Parquet path is the bridge to
+#' Python: `pandas.read_parquet(path)` gives the same typed table
+#' [morie_data_load()] returns.
+#'
+#' @param slug Dataset slug; see the `slug` column of [morie_data_catalog()].
+#' @param format `"parquet"` (default) or `"csv"`.
+#' @return A length-1 character path.
+#' @examples
+#' p <- morie_data_path("arsau_2023_uof_main_records")
+#' file.exists(p)
+#' basename(morie_data_path("arsau_2023_uof_main_records", "csv"))
+#' @export
+morie_data_path <- function(slug, format = c("parquet", "csv")) {
+  format <- match.arg(format)
+  if (is.null(slug) || length(slug) != 1L || is.na(slug) ||
+      !is.character(slug)) {
+    stop("`slug` must be a single dataset slug (character). ",
+         "See morie_data_catalog() for valid slugs.", call. = FALSE)
+  }
+  cat <- morie_data_catalog()
+  row <- cat[cat$slug == slug & cat$kind == "table", , drop = FALSE]
+  if (!nrow(row)) {
+    stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
+                 slug), call. = FALSE)
+  }
+  rel <- if (format == "parquet") row$parquet_path[1L] else row$source_path[1L]
+  f <- file.path(.rmoriedata_extdata(), rel)
+  if (is.na(rel) || !nzchar(rel) || !file.exists(f)) {
+    stop(sprintf("The %s file for '%s' is missing; reinstall rmoriedata.",
+                 format, slug), call. = FALSE)
+  }
+  .rmoriedata_check_file(rel)
+  normalizePath(f, winslash = "/")
 }
 
 # Column names and classes come from the schema, by position: the CSV

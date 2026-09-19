@@ -78,6 +78,9 @@ import pyreadr
 complaints = pyreadr.read_r("rmoriedata/data/complaint_sample.rda")["complaint_sample"]
 ```
 
+Every bundled table also ships as Parquet: `morie_data_path("<slug>")` gives
+the verified path, `pd.read_parquet()` reads it.
+
 **Recommended Python bridge:** the Parquet path (`as = "parquet_path"`) — typed,
 columnar, read natively by pandas/polars/duckdb with correct timestamps and no R
 runtime. `pyreadr` on the `.rda` works for quick read-only access but is slower
