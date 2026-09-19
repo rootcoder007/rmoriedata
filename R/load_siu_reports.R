@@ -89,7 +89,7 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
     d
   } else {
     utils::read.csv(gzfile(path),
-      stringsAsFactors = FALSE,
+      stringsAsFactors = FALSE, encoding = "UTF-8",
       colClasses = "character", check.names = FALSE
     )
   }

@@ -210,8 +210,19 @@
   .pq_wvarint(e, if (n < 0) -2 * n - 1 else 2 * n)
 }
 
+# The bytes of a string as UTF-8. enc2utf8() translates from the native
+# encoding, and in a C locale that turns every non-ASCII byte of an
+# unmarked string into its "<c3><a9>" display form; bytes that already
+# are valid UTF-8 are marked as such and left alone.
+.pq_utf8 <- function(s) {
+  s <- as.character(s)
+  u <- !is.na(s) & Encoding(s) == "unknown" & validUTF8(s)
+  if (any(u)) Encoding(s)[u] <- "UTF-8"
+  enc2utf8(s)
+}
+
 .pq_wbinary <- function(e, b) {
-  if (is.character(b)) b <- charToRaw(enc2utf8(b))
+  if (is.character(b)) b <- charToRaw(.pq_utf8(b))
   .pq_wvarint(e, length(b))
   .pq_emit(e, b)
 }
@@ -662,6 +673,13 @@
     csize <- .pq_f(head, 3)
     raw_page <- blob[seq.int(pos, length.out = csize)]
     pos <- pos + csize
+    ptype_page <- as.integer(.pq_f(head, 1))
+    if (ptype_page == .pqPDataV2) {
+      # v2 keeps its levels uncompressed ahead of the values, so
+      # decompressing the whole page would fail with a snappy error
+      # before this message could fire
+      stop("data page v2 not implemented (store is v1)", call. = FALSE)
+    }
     if (codec == .pqCSnappy) {
       page <- .pq_snappy_decompress(raw_page)
     } else if (codec == .pqCUncompressed) {
@@ -673,7 +691,6 @@
       )
     }
 
-    ptype_page <- as.integer(.pq_f(head, 1))
     if (ptype_page == .pqPDict) {
       dh <- .pq_f(head, 7)
       dictionary <- .pq_decode_plain(
@@ -681,9 +698,6 @@
         as.integer(.pq_f(dh, 1))
       )$values
       next
-    }
-    if (ptype_page == .pqPDataV2) {
-      stop("data page v2 not implemented (store is v1)", call. = FALSE)
     }
     if (ptype_page != .pqPData) next
 
@@ -928,7 +942,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   if (ptype == .pqByteArray) {
     parts <- vector("list", length(values) * 2L)
     for (i in seq_along(values)) {
-      b <- charToRaw(enc2utf8(as.character(values[[i]])))
+      b <- charToRaw(.pq_utf8(values[[i]]))
       parts[[2L * i - 1L]] <- writeBin(length(b), raw(),
         size = 4L,
         endian = "little"

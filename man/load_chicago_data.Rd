@@ -26,7 +26,9 @@ large) instead of the bundled sample; cached across sessions as Parquet.}
 
 \item{mirror}{Optional base URL of an r-universe/drat mirror to try before
 Socrata (offline-friendly fallback). Defaults to
-\code{getOption("rmoriedata.mirror")}.}
+\code{getOption("rmoriedata.mirror")}. The mirror's
+\code{<type>_full.parquet} must use snappy or no compression and
+data pages v1: the package's own reader supports nothing else.}
 
 \item{limit}{Optional row cap for a \code{full = TRUE} fetch (passed to
 the Socrata \code{$limit} parameter). A bounded fetch skips the mirror
