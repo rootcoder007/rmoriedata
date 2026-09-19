@@ -19,11 +19,14 @@
   every later session read the empty frame back. The cache is written to
   a temporary file and renamed, so a concurrent reader never sees a
   half-written file; a cache that cannot be read is discarded and
-  refetched; and a new `refresh = TRUE` argument refetches on demand.
+  refetched; and a new `refresh = TRUE` argument refetches on demand. When
+  the service's count endpoint is down the data is returned but not
+  cached across sessions.
 * `fetch_cihi_table()` checks the downloaded file's size and signature
   against the catalogue's declared format and validates `which` (a whole
   number within the catalogue, or a non-empty title substring) and
-  `timeout` before any request.
+  `timeout` before any request. A live URL that answers 200 with an
+  outage page now falls through to the Wayback copy.
 * The verifier pins the signing key's XMSS root and public seed in package
   code. A store re-signed with another key, even with a consistent
   manifest and shipped public key, no longer verifies; the signature now

@@ -166,8 +166,8 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
     unlink(cache) # damaged (interrupted write, full disk): fetch again
   }
   # The service's own row count decides whether a response is the complete
-  # dataset; without it (offline mirror, count endpoint down) only the
-  # shape checks apply.
+  # dataset; without it (count endpoint down) only the shape checks apply
+  # and the result is not cached.
   expected <- if (bounded) NA_real_ else .rmd_full_count_or_na(type)
   # Try the optional mirror first (offline-friendly), then Socrata.
   n <- if (bounded) as.integer(limit) else max(5000000, expected, na.rm = TRUE)
@@ -196,7 +196,10 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
       why <- c(why, paste0(u, ": ", bad))
       next
     }
-    if (!bounded) try(.rmd_cache_write(df, cache), silent = TRUE)
+    # Without the service's count a short export cannot be told from a
+    # complete one, so the data is returned but not written across
+    # sessions: a bad day stays confined to this session.
+    if (!bounded && !is.na(expected)) try(.rmd_cache_write(df, cache), silent = TRUE)
     return(df)
   }
   stop("could not fetch full Chicago '", type,

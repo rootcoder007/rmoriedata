@@ -104,7 +104,7 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
     )
   }
   cat_df <- load_cihi_data_tables()
-  if (!is.numeric(timeout) || length(timeout) != 1L || is.na(timeout) ||
+  if (!is.numeric(timeout) || length(timeout) != 1L || !is.finite(timeout) ||
         timeout <= 0) {
     stop("`timeout` must be a single positive number of seconds.",
          call. = FALSE)
@@ -135,11 +135,23 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
     dest <- tempfile(fileext = paste0(".", ext))
   }
   wb <- if ("wayback_url" %in% names(row)) row[["wayback_url"]] else ""
-  rmoriebricklayer::bricklayer_fetch(row[["url"]], dest,
-    wayback = wb, timeout = timeout
-  )
-  .rmd_check_download(dest, if ("format" %in% names(row)) row[["format"]] else "xlsx")
+  fmt <- if ("format" %in% names(row)) row[["format"]] else "xlsx"
+  .rmd_fetch_file(row[["url"]], dest, wb, timeout)
+  live <- tryCatch(.rmd_check_download(dest, fmt), error = function(e) e)
+  if (inherits(live, "error")) {
+    # A 200 carrying an outage page satisfied the fetch engine, so its
+    # Wayback fallback never ran; try the archived copy before giving up.
+    if (!nzchar(wb)) stop(live)
+    .rmd_fetch_file(wb, dest, "", timeout)
+    .rmd_check_download(dest, fmt)
+  }
   invisible(dest)
+}
+
+# The shared fetch-with-fallback engine; one seam for the tests.
+.rmd_fetch_file <- function(url, dest, wayback, timeout) {
+  rmoriebricklayer::bricklayer_fetch(url, dest, wayback = wayback,
+                                     timeout = timeout)
 }
 
 # A 200 is not a table: an outage page or an empty body arrives with the
@@ -156,7 +168,9 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
   ok <- switch(tolower(format),
     xlsx = , zip = identical(magic, as.raw(c(0x50, 0x4b, 0x03, 0x04))),
     xls = identical(magic, as.raw(c(0xd0, 0xcf, 0x11, 0xe0))),
-    !identical(magic[1L], as.raw(0x3c))
+    # a text table: not an HTML page, and more than a header line
+    !identical(magic[1L], as.raw(0x3c)) &&
+      length(readLines(dest, n = 2L, warn = FALSE)) >= 2L
   )
   if (!isTRUE(ok)) {
     head <- rawToChar(magic[magic != as.raw(0)])
