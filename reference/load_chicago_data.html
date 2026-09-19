@@ -163,10 +163,8 @@ package), so no <span class="pkg">arrow</span> install is required.</p>
 <span class="r-in"><span><span class="co"># `fraction` takes a share of the dataset instead of a row count:</span></span></span>
 <span class="r-in"><span><span class="co"># 0.001 = 0.1% of all rows (the live total is looked up first).</span></span></span>
 <span class="r-in"><span><span class="va">tiny</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">load_chicago_data</span><span class="op">(</span><span class="st">"arrests"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, fraction <span class="op">=</span> <span class="fl">0.0001</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-wrn co"><span class="r-pr">#&gt;</span> <span class="warning">Warning: </span>cannot open URL 'https://data.cityofchicago.org/resource/dpt3-jri9.csv?$limit=75': HTTP status was '500 Internal Server Error'</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : could not fetch full Chicago 'arrests' data from mirror or Socrata:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   https://data.cityofchicago.org/resource/dpt3-jri9.csv?$limit=75: no response</span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">tiny</span>, <span class="st">"try-error"</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">tiny</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 75</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
