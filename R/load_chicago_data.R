@@ -28,7 +28,9 @@
 #'   \code{fraction} or \code{limit}, not both.
 #' @param mirror Optional base URL of an r-universe/drat mirror to try before
 #'   Socrata (offline-friendly fallback). Defaults to
-#'   \code{getOption("rmoriedata.mirror")}.
+#'   \code{getOption("rmoriedata.mirror")}. The mirror's
+#'   \code{<type>_full.parquet} must use snappy or no compression and
+#'   data pages v1: the package's own reader supports nothing else.
 #' @param refresh If \code{TRUE}, ignore the cross-session cache of the
 #'   complete dataset and fetch it again (the cache is rewritten). A cache
 #'   file that cannot be read is discarded and refetched regardless.
