@@ -12,6 +12,16 @@
   gains a `parquet_path` column and the signed manifest covers the new
   files.
 
+- The Parquet writer no longer mangles non-ASCII text in a C locale
+  ([`enc2utf8()`](https://rdrr.io/r/base/Encoding.html) on an unmarked
+  string turned each byte into its `<c3><a9>` display form, and
+  `load_chicago_data(full = TRUE)` wrote that into the cross-session
+  cache).
+  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  reads its CSV as UTF-8 like the store does, so both copies agree in
+  every locale; a data page v2 file is reported as such before any
+  decompression; and CI runs the check in a C locale.
+
 - [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
   gains a `path` column relative to the extdata root; the bare `file`
   basenames it returned were not unique and 20 of them did not resolve

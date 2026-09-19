@@ -86,7 +86,9 @@ large) instead of the bundled sample; cached across sessions as Parquet.</p></dd
 <dt id="arg-mirror">mirror<a class="anchor" aria-label="anchor" href="#arg-mirror"></a></dt>
 <dd><p>Optional base URL of an r-universe/drat mirror to try before
 Socrata (offline-friendly fallback). Defaults to
-<code>getOption("rmoriedata.mirror")</code>.</p></dd>
+<code>getOption("rmoriedata.mirror")</code>. The mirror's
+<code>&lt;type&gt;_full.parquet</code> must use snappy or no compression and
+data pages v1: the package's own reader supports nothing else.</p></dd>
 
 
 <dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>

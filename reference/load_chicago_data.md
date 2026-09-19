@@ -42,7 +42,9 @@ load_chicago_data(
 
   Optional base URL of an r-universe/drat mirror to try before Socrata
   (offline-friendly fallback). Defaults to
-  `getOption("rmoriedata.mirror")`.
+  `getOption("rmoriedata.mirror")`. The mirror's `<type>_full.parquet`
+  must use snappy or no compression and data pages v1: the package's own
+  reader supports nothing else.
 
 - limit:
 
