@@ -10,7 +10,8 @@ load_chicago_data(
   full = FALSE,
   mirror = getOption("rmoriedata.mirror", NULL),
   limit = NULL,
-  fraction = NULL
+  fraction = NULL,
+  refresh = FALSE
 )
 }
 \arguments{
@@ -36,6 +37,10 @@ fetches everything.}
 \code{full = TRUE} fetch: the live row count is looked up and
 \code{limit} is set to \code{ceiling(total * fraction)}. Give either
 \code{fraction} or \code{limit}, not both.}
+
+\item{refresh}{If \code{TRUE}, ignore the cross-session cache of the
+complete dataset and fetch it again (the cache is rewritten). A cache
+file that cannot be read is discarded and refetched regardless.}
 }
 \value{
 A \code{data.frame}/\code{tibble}, or a length-1 character Parquet

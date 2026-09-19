@@ -97,7 +97,7 @@ test_that("fraction resolves to a row cap from the live total (mocked)", {
   seen_limit <- NULL
   testthat::local_mocked_bindings(
     .rmd_full_count = function(type) 1000,
-    .rmd_fetch_full = function(type, mirror, limit = NULL) {
+    .rmd_fetch_full = function(type, mirror, limit = NULL, ...) {
       seen_limit <<- limit
       data.frame(case_number = as.character(seq_len(limit)))
     },
@@ -111,7 +111,7 @@ test_that("fraction resolves to a row cap from the live total (mocked)", {
 test_that("limit is passed through verbatim (mocked)", {
   seen_limit <- NULL
   testthat::local_mocked_bindings(
-    .rmd_fetch_full = function(type, mirror, limit = NULL) {
+    .rmd_fetch_full = function(type, mirror, limit = NULL, ...) {
       seen_limit <<- limit
       data.frame(case_number = "x")
     },

@@ -29,6 +29,9 @@
 #' @param mirror Optional base URL of an r-universe/drat mirror to try before
 #'   Socrata (offline-friendly fallback). Defaults to
 #'   \code{getOption("rmoriedata.mirror")}.
+#' @param refresh If \code{TRUE}, ignore the cross-session cache of the
+#'   complete dataset and fetch it again (the cache is rewritten). A cache
+#'   file that cannot be read is discarded and refetched regardless.
 #' @return A \code{data.frame}/\code{tibble}, or a length-1 character Parquet
 #'   path when \code{as = "parquet_path"}.
 #' @examples
@@ -73,7 +76,8 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
                               full = FALSE,
                               mirror = getOption("rmoriedata.mirror", NULL),
                               limit = NULL,
-                              fraction = NULL) {
+                              fraction = NULL,
+                              refresh = FALSE) {
   type <- match.arg(type)
   as <- match.arg(as)
   if (!is.null(limit) && !is.null(fraction)) {
@@ -95,7 +99,7 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   }
 
   df <- if (isTRUE(full)) {
-    .rmd_fetch_full(type, mirror, limit)
+    .rmd_fetch_full(type, mirror, limit, refresh = isTRUE(refresh))
   } else {
     .rmd_sample(type)
   }
@@ -151,22 +155,29 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   n
 }
 
-.rmd_fetch_full <- function(type, mirror, limit = NULL) {
+.rmd_fetch_full <- function(type, mirror, limit = NULL, refresh = FALSE) {
   # A bounded fetch is never cached and never reads the full cache: the
   # `<type>_full.parquet` cache must only ever hold the complete dataset.
   bounded <- !is.null(limit)
   cache <- file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))
-  if (!bounded && file.exists(cache)) {
-    return(morie_read_parquet(cache))
+  if (!bounded && !isTRUE(refresh) && file.exists(cache)) {
+    df <- tryCatch(morie_read_parquet(cache), error = function(e) NULL)
+    if (!is.null(df)) return(df)
+    unlink(cache) # damaged (interrupted write, full disk): fetch again
   }
+  # The service's own row count decides whether a response is the complete
+  # dataset; without it (offline mirror, count endpoint down) only the
+  # shape checks apply.
+  expected <- if (bounded) NA_real_ else .rmd_full_count_or_na(type)
   # Try the optional mirror first (offline-friendly), then Socrata.
-  n <- if (bounded) as.integer(limit) else 5000000L
+  n <- if (bounded) as.integer(limit) else max(5000000, expected, na.rm = TRUE)
   urls <- c(
     if (!bounded && !is.null(mirror)) {
       file.path(mirror, paste0(type, "_full.parquet"))
     },
-    paste0(.rmd_endpoint(type), "?$limit=", n)
+    .rmd_full_url(type, n)
   )
+  why <- character()
   for (u in urls) {
     df <- tryCatch(
       if (grepl("\\.parquet$", u)) {
@@ -176,15 +187,56 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
       },
       error = function(e) NULL
     )
-    if (!is.null(df)) {
-      if (!bounded) try(morie_write_parquet(df, cache), silent = TRUE)
-      return(df)
+    if (is.null(df)) {
+      why <- c(why, paste0(u, ": no response"))
+      next
     }
+    bad <- .rmd_full_reject(df, if (bounded) NA_real_ else expected)
+    if (!is.null(bad)) {
+      why <- c(why, paste0(u, ": ", bad))
+      next
+    }
+    if (!bounded) try(.rmd_cache_write(df, cache), silent = TRUE)
+    return(df)
   }
   stop("could not fetch full Chicago '", type,
-    "' data from mirror or Socrata; check your connection.",
+    "' data from mirror or Socrata:\n  ", paste(why, collapse = "\n  "),
     call. = FALSE
   )
+}
+
+.rmd_full_url <- function(type, n) {
+  paste0(.rmd_endpoint(type), "?$limit=", format(n, scientific = FALSE))
+}
+
+.rmd_full_count_or_na <- function(type) {
+  tryCatch(.rmd_full_count(type), error = function(e) NA_real_)
+}
+
+# Why a response is not the dataset, or NULL when it passes. A 200 carrying
+# an HTML outage page reads as a one-column frame; a header-only body as
+# zero rows; a silently short export as fewer rows than the service
+# reports. None of these may reach the cross-session cache.
+.rmd_full_reject <- function(df, expected = NA_real_) {
+  if (ncol(df) < 2L) {
+    return("a single column, which is an HTML page, not the dataset")
+  }
+  if (nrow(df) == 0L) return("no rows")
+  if (!is.na(expected) && nrow(df) < 0.99 * expected) {
+    return(sprintf("%d rows where the service reports %d",
+                   nrow(df), as.integer(expected)))
+  }
+  NULL
+}
+
+# Write next to the destination and rename, so a concurrent reader sees
+# either the previous file or the complete new one, never a partial write.
+.rmd_cache_write <- function(df, path) {
+  tmp <- tempfile("write-", tmpdir = dirname(path), fileext = ".parquet")
+  on.exit(unlink(tmp), add = TRUE)
+  morie_write_parquet(as.data.frame(df), tmp)
+  if (!file.rename(tmp, path)) stop("could not replace ", path, call. = FALSE)
+  invisible(path)
 }
 
 .rmd_write_parquet <- function(df, type, full) {
@@ -193,6 +245,6 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   # for readers that don't map the timestamp logical type.
   suffix <- if (isTRUE(full)) "full" else "sample"
   path <- file.path(.rmd_cache_dir(), paste0(type, "_", suffix, ".parquet"))
-  morie_write_parquet(as.data.frame(df), path)
+  .rmd_cache_write(df, path)
   path
 }
