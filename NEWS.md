@@ -1,5 +1,12 @@
 # rmoriedata 0.3.3
 
+* Every bundled table ships as Parquet again, next to its CSV
+  (`inst/extdata/parquet/<slug>.parquet`, plus `_catalog.parquet` and
+  `siu_directors_reports_corpus.parquet`). `morie_data_load(format = "parquet")` and
+  `load_siu_reports(format = "parquet")` read those copies; the new
+  `morie_data_path(slug, format)` returns the verified path of either
+  copy, which is the bridge to `pandas.read_parquet()`. The catalog gains
+  a `parquet_path` column and the signed manifest covers the new files.
 * `morie_data_checksums()` gains a `path` column relative to the extdata
   root; the bare `file` basenames it returned were not unique and 20 of
   them did not resolve from the root (`morie_data_verify()` already

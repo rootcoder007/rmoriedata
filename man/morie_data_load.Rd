@@ -4,12 +4,15 @@
 \alias{morie_data_load}
 \title{Load a bundled dataset by slug}
 \usage{
-morie_data_load(slug, refresh = FALSE)
+morie_data_load(slug, refresh = FALSE, format = c("csv", "parquet"))
 }
 \arguments{
 \item{slug}{Dataset slug; see the \code{slug} column of \code{\link[=morie_data_catalog]{morie_data_catalog()}}.}
 
 \item{refresh}{Re-read the file even if a cached copy exists.}
+
+\item{format}{\code{"csv"} (default) or \code{"parquet"}: which shipped copy to
+read. Both give the same data frame.}
 }
 \value{
 A data frame.
@@ -18,8 +21,10 @@ A data frame.
 Reads the table's CSV and applies the column names and classes from
 the bundled schema, so the result is the same typed data frame on
 every platform regardless of how \code{read.csv()} would have guessed.
-The first load of a table is cached for the session; later calls
-return the cached copy unless \code{refresh = TRUE}.
+Every table also ships as a Parquet file holding the same typed
+frame; \code{format = "parquet"} reads that copy instead. The first load
+of a table is cached for the session; later calls return the cached
+copy unless \code{refresh = TRUE}.
 }
 \examples{
 d <- morie_data_load("arsau_2023_uof_main_records")

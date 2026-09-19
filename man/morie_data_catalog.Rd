@@ -12,7 +12,8 @@ A data frame.
 \description{
 One row per bundled table or dictionary: \code{slug}, \code{source_path}
 (relative to the package's \code{extdata} directory), \code{kind}, and for
-tables \code{n_rows} and \code{n_cols}.
+tables \code{n_rows}, \code{n_cols} and \code{parquet_path} (the same table as a
+Parquet file, see \code{\link[=morie_data_path]{morie_data_path()}}).
 }
 \examples{
 cat <- morie_data_catalog()

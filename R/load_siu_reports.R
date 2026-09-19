@@ -30,9 +30,8 @@
 #'   \code{"fr"}: filter to the English-only, French-only, or all rows.
 #' @param as Return format: \code{"data.frame"} (default) or
 #'   \code{"tibble"}.
-#' @param format Kept for compatibility; only \code{"csv"} (the gzip
-#'   CSV) is bundled. The parquet copy of the corpus was retired in 0.3.3,
-#'   and asking for it is an error.
+#' @param format \code{"csv"} (the gzip CSV, default) or \code{"parquet"}
+#'   (the same rows and columns, native codec).
 #' @return A \code{data.frame} (or tibble) of SIU director's-report rows.
 #' @source Ontario Special Investigations Unit director's reports,
 #'   \url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
@@ -64,27 +63,36 @@
 #' @export
 load_siu_reports <- function(lang = c("all", "en", "fr"),
                              as = c("data.frame", "tibble"),
-                             format = "csv") {
+                             format = c("csv", "parquet")) {
   lang <- match.arg(lang)
   as <- match.arg(as)
-  if (!identical(format, "csv")) {
-    stop("only the gzip CSV bundle ships; the parquet copy of the SIU ",
-         "corpus was retired in rmoriedata 0.3.3 (same rows, same columns).",
-         call. = FALSE)
+  format <- match.arg(format)
+  rel <- if (format == "parquet") {
+    "parquet/siu_directors_reports_corpus.parquet"
+  } else {
+    "siu_directors_reports.csv.gz"
   }
-  path <- system.file("extdata", "siu_directors_reports.csv.gz",
-    package = "rmoriedata"
-  )
+  path <- system.file("extdata", rel, package = "rmoriedata")
   if (!nzchar(path)) {
     stop("bundled SIU director's-report corpus not found in rmoriedata",
       call. = FALSE
     )
   }
-  .rmoriedata_check_file("siu_directors_reports.csv.gz")
-  df <- utils::read.csv(gzfile(path),
-    stringsAsFactors = FALSE,
-    colClasses = "character", check.names = FALSE
-  )
+  .rmoriedata_check_file(rel)
+  df <- if (format == "parquet") {
+    d <- as.data.frame(morie_read_parquet(path), stringsAsFactors = FALSE)
+    d[] <- lapply(d, function(z) {
+      z <- as.character(z)
+      z[is.na(z)] <- ""
+      z
+    })
+    d
+  } else {
+    utils::read.csv(gzfile(path),
+      stringsAsFactors = FALSE,
+      colClasses = "character", check.names = FALSE
+    )
+  }
   if (lang != "all" && "X_language" %in% names(df)) {
     df <- df[df[["X_language"]] == lang, , drop = FALSE]
   } else if (lang != "all" && "_language" %in% names(df)) {
