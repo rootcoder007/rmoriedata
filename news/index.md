@@ -20,7 +20,11 @@
   [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
   reads its CSV as UTF-8 like the store does, so both copies agree in
   every locale; a data page v2 file is reported as such before any
-  decompression; and CI runs the check in a C locale.
+  decompression; and CI runs the check in a C locale. Every CSV reader
+  in the package now declares UTF-8, so a live Chicago fetch and its
+  cached copy are [`identical()`](https://rdrr.io/r/base/identical.html)
+  in any locale, and unmarked bytes that are not UTF-8 are written
+  through unchanged rather than as an escape.
 
 - [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
   gains a `path` column relative to the extdata root; the bare `file`
