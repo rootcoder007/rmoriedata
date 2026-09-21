@@ -56,7 +56,8 @@ cached as Parquet under \code{tempdir()} for the session; to keep it
 across sessions name a directory first, for example
 \code{options(rmoriedata.cache_dir = tools::R_user_dir("rmoriedata", "cache"))},
 and drop it with \code{\link{clear_chicago_cache}()}. Nothing is written
-outside \code{tempdir()} unless you set that option. The result can be returned as a base data frame, a
+outside \code{tempdir()} unless you set that option. The result can be
+returned as a base data frame, a
 tibble, or written to a Parquet file whose path is returned -- the last being
 the recommended bridge for Python (\code{pandas.read_parquet}).
 }

@@ -7,7 +7,10 @@
   `load_chicago_data(as = "parquet_path")` also writes under `tempdir()`:
   it wrote the bundled sample into the user's `R_user_dir()` cache, and a
   bounded `full = TRUE` fetch could land on the full-dataset cache path.
-  `load_siu_reports()` documents
+  The schema names the language column of `siu_directors_reports` and
+  `siu_drid_manifest` `_language`, as the files do; it carried the
+  `X_language` that `check.names` had made of it, so the typed store and
+  `load_siu_reports()` disagreed on the name. `load_siu_reports()` documents
   that it returns the corpus as text (`""` for empty cells) while
   `morie_data_load("siu_directors_reports")` returns the typed frame.
 * Every bundled table ships as Parquet again, next to its CSV

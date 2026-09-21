@@ -37,6 +37,7 @@ reference:
       - morie_data_checksums
       - morie_data_verify
       - load_chicago_data
+      - clear_chicago_cache
       - load_cihi_data_tables
       - fetch_cihi_table
       - load_siu_reports

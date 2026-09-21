@@ -59,9 +59,8 @@ an empty cell is \code{""}, which is the form the SIU parser writes and
 \pkg{rmorie} reads back. The same table is also in the typed data
 store: \code{morie_data_load("siu_directors_reports")} applies the
 bundled schema (integer \code{drid} and counts, \code{NA} for empty
-cells, and the language column under its schema name \code{X_language}
-where this loader keeps the file's \code{_language}), so counts of
-missing values differ between the two entry points by construction; pick the typed store for analysis and this
+cells), so counts of missing values differ between the two entry
+points by construction; pick the typed store for analysis and this
 loader for the parser round trip.
 }
 \examples{
