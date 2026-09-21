@@ -18,3 +18,4 @@ src/symbols.rds
 # local Serena scope — never commit
 .serena/
 inst/extdata/rmoriedata.sqlite
+cran-comments.md
