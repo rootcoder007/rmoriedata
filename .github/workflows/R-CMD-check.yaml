@@ -51,11 +51,29 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
 
+      # CRAN now ships macOS binaries zstd-compressed (R 4.6 NEWS: "binary
+      # packages can have the extensions .tar.bz2, .tar.xz, .tar.zst and
+      # .tar.zstd"). pak's installer only unpacks gzip, so on macOS the
+      # dependency install dies with "Cannot extract ... knitr_1.52.tgz,
+      # unknown archive type". Base R reads these archives natively, so
+      # macOS installs dependencies with base R and leaves pak to the
+      # platforms where it works (same fix as rmorie and morie).
       - uses: r-lib/actions/setup-r-dependencies@465b7d8e732ca3921382b1674c59bada9cbf3399 # v2.13.0
+        if: runner.os != 'macOS'
         with:
           extra-packages: any::rcmdcheck
           cache-version: 4
           needs: check
+      - name: Install dependencies with base R (macOS, zstd-capable)
+        if: runner.os == 'macOS'
+        shell: Rscript {0}
+        env:
+          GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          options(repos = c(runiverse = "https://rootcoder007.r-universe.dev",
+                            CRAN = "https://cloud.r-project.org"))
+          install.packages(c("remotes", "rcmdcheck"))
+          remotes::install_deps(dependencies = TRUE, upgrade = "never")
       - name: Install rmoriebricklayer after the dependency cache is restored (GitHub HEAD preferred; r-universe fallback)
         # Not on CRAN. Prefer the GitHub HEAD (always the latest -- new exports
         # like bricklayer_fetch present immediately); fall back to the
