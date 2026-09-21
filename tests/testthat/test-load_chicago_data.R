@@ -13,6 +13,7 @@ test_that("load_chicago_data returns correct type per `as`", {
 test_that("parquet_path writes a file the native codec reads back", {
   p <- load_chicago_data("complaints", as = "parquet_path")
   expect_true(file.exists(p))
+  expect_true(startsWith(normalizePath(p), normalizePath(tempdir())))
   expect_identical(readBin(p, "raw", 4L), charToRaw("PAR1"))
   back <- morie_read_parquet(p)
   expect_gt(nrow(back), 0L)
@@ -122,7 +123,7 @@ test_that("limit is passed through verbatim (mocked)", {
 })
 
 test_that("a bounded fetch never reads or writes the full-dataset cache", {
-  cache_dir <- rmoriedata:::.rmd_cache_dir()
+  cache_dir <- local_chicago_cache()
   cache <- file.path(cache_dir, "arrests_full.parquet")
   # Plant a poisoned cache; a bounded fetch must ignore it and, on its own
   # network failure, error rather than silently serving the cache.
@@ -148,4 +149,18 @@ test_that("a bounded fetch never reads or writes the full-dataset cache", {
       as.character(morie_read_parquet(cache)$case_number), "cached"
     )
   }
+})
+
+test_that("the cache directory is tempdir() unless the user names one", {
+  old <- options(rmoriedata.cache_dir = NULL)
+  on.exit(options(old), add = TRUE)
+  d <- rmoriedata:::.rmd_cache_dir()
+  expect_true(startsWith(normalizePath(d), normalizePath(tempdir())))
+  mine <- file.path(tempfile("opt"), "chicago")
+  options(rmoriedata.cache_dir = mine)
+  expect_identical(normalizePath(rmoriedata:::.rmd_cache_dir()),
+                   normalizePath(mine))
+  writeLines("x", file.path(mine, "arrests_full.parquet"))
+  expect_identical(normalizePath(clear_chicago_cache()), normalizePath(mine))
+  expect_length(list.files(mine), 0L)
 })

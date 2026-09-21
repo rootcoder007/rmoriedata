@@ -1,13 +1,6 @@
 # The live-network branches, driven by local files instead of a server:
 # `.rmd_full_url()` is pointed at file:// URLs and the row count is mocked.
 
-local_chicago_cache <- function(env = parent.frame()) {
-  d <- file.path(tempfile("cache"), "rmoriedata")
-  dir.create(d, recursive = TRUE)
-  testthat::local_mocked_bindings(.rmd_cache_dir = function() d,
-                                  .package = "rmoriedata", .env = env)
-  d
-}
 csv_file <- function(text) {
   f <- tempfile(fileext = ".csv")
   writeLines(text, f)

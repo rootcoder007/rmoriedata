@@ -18,11 +18,12 @@ load_chicago_data(
 \item{type}{One of \code{"arrests"} or \code{"complaints"}.}
 
 \item{as}{Return format: \code{"data.frame"} (default), \code{"tibble"}, or
-\code{"parquet_path"} (writes a Parquet file to the session cache and
-returns its path).}
+\code{"parquet_path"} (writes a Parquet file under \code{tempdir()}
+and returns its path; nothing is written to the user's home).}
 
 \item{full}{If \code{TRUE}, fetch the complete dataset from Socrata (network,
-large) instead of the bundled sample; cached across sessions as Parquet.}
+large) instead of the bundled sample; a complete fetch is cached as
+Parquet (see Description).}
 
 \item{mirror}{Optional base URL of an r-universe/drat mirror to try before
 Socrata (offline-friendly fallback). Defaults to
@@ -40,7 +41,7 @@ fetches everything.}
 \code{limit} is set to \code{ceiling(total * fraction)}. Give either
 \code{fraction} or \code{limit}, not both.}
 
-\item{refresh}{If \code{TRUE}, ignore the cross-session cache of the
+\item{refresh}{If \code{TRUE}, ignore the cache of the
 complete dataset and fetch it again (the cache is rewritten). A cache
 file that cannot be read is discarded and refetched regardless.}
 }
@@ -50,8 +51,12 @@ path when \code{as = "parquet_path"}.
 }
 \description{
 Returns the bundled sample by default, or fetches the full dataset from the
-City of Chicago SODA API (cached under \code{\link[tools]{R_user_dir}}) when
-\code{full = TRUE}. The result can be returned as a base data frame, a
+City of Chicago SODA API when \code{full = TRUE}. A complete fetch is
+cached as Parquet under \code{tempdir()} for the session; to keep it
+across sessions name a directory first, for example
+\code{options(rmoriedata.cache_dir = tools::R_user_dir("rmoriedata", "cache"))},
+and drop it with \code{\link{clear_chicago_cache}()}. Nothing is written
+outside \code{tempdir()} unless you set that option. The result can be returned as a base data frame, a
 tibble, or written to a Parquet file whose path is returned -- the last being
 the recommended bridge for Python (\code{pandas.read_parquet}).
 }
@@ -85,14 +90,11 @@ file.exists(pq)
 # `full = TRUE` fetches from the live Chicago SODA API; `limit` bounds
 # the request (seconds, not minutes) and try() keeps the example
 # graceful when the service is unreachable. Omit `limit` for the
-# complete multi-million-row dataset (cached across sessions); `mirror`
+# complete multi-million-row dataset (cached, see Description); `mirror`
 # tries an offline-friendly Parquet mirror first when set.
-big <- try(load_chicago_data("complaints", full = TRUE, limit = 1000))
+# `fraction = 0.001` takes a share of the dataset (0.1\% of all rows)
+# instead of a row count; the live total is looked up first.
+big <- try(load_chicago_data("complaints", full = TRUE, limit = 200))
 if (!inherits(big, "try-error")) nrow(big)
-
-# `fraction` takes a share of the dataset instead of a row count:
-# 0.001 = 0.1\% of all rows (the live total is looked up first).
-tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
-if (!inherits(tiny, "try-error")) nrow(tiny)
 }
 }

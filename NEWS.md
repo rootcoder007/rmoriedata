@@ -1,5 +1,15 @@
 # rmoriedata 0.3.3
 
+* Nothing is written outside `tempdir()` unless the user asks. The
+  Chicago full-dataset cache lives under `tempdir()` by default and moves
+  to a persistent directory only through
+  `options(rmoriedata.cache_dir = )`; `clear_chicago_cache()` empties it.
+  `load_chicago_data(as = "parquet_path")` also writes under `tempdir()`:
+  it wrote the bundled sample into the user's `R_user_dir()` cache, and a
+  bounded `full = TRUE` fetch could land on the full-dataset cache path.
+  `load_siu_reports()` documents
+  that it returns the corpus as text (`""` for empty cells) while
+  `morie_data_load("siu_directors_reports")` returns the typed frame.
 * Every bundled table ships as Parquet again, next to its CSV
   (`inst/extdata/parquet/<slug>.parquet`, plus `_catalog.parquet` and
   `siu_directors_reports_corpus.parquet`). `morie_data_load(format = "parquet")` and

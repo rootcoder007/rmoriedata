@@ -4,8 +4,12 @@
 #' Load Chicago crime or arrest data
 #'
 #' Returns the bundled sample by default, or fetches the full dataset from the
-#' City of Chicago SODA API (cached under \code{\link[tools]{R_user_dir}}) when
-#' \code{full = TRUE}. The result can be returned as a base data frame, a
+#' City of Chicago SODA API when \code{full = TRUE}. A complete fetch is
+#' cached as Parquet under \code{tempdir()} for the session; to keep it
+#' across sessions name a directory first, for example
+#' \code{options(rmoriedata.cache_dir = tools::R_user_dir("rmoriedata", "cache"))},
+#' and drop it with \code{\link{clear_chicago_cache}()}. Nothing is written
+#' outside \code{tempdir()} unless you set that option. The result can be returned as a base data frame, a
 #' tibble, or written to a Parquet file whose path is returned -- the last being
 #' the recommended bridge for Python (\code{pandas.read_parquet}).
 #'
@@ -14,10 +18,11 @@
 #'
 #' @param type One of \code{"arrests"} or \code{"complaints"}.
 #' @param as Return format: \code{"data.frame"} (default), \code{"tibble"}, or
-#'   \code{"parquet_path"} (writes a Parquet file to the session cache and
-#'   returns its path).
+#'   \code{"parquet_path"} (writes a Parquet file under \code{tempdir()}
+#'   and returns its path; nothing is written to the user's home).
 #' @param full If \code{TRUE}, fetch the complete dataset from Socrata (network,
-#'   large) instead of the bundled sample; cached across sessions as Parquet.
+#'   large) instead of the bundled sample; a complete fetch is cached as
+#'   Parquet (see Description).
 #' @param limit Optional row cap for a \code{full = TRUE} fetch (passed to
 #'   the Socrata \code{$limit} parameter). A bounded fetch skips the mirror
 #'   and is never written to the full-dataset cache. Default \code{NULL}
@@ -31,7 +36,7 @@
 #'   \code{getOption("rmoriedata.mirror")}. The mirror's
 #'   \code{<type>_full.parquet} must use snappy or no compression and
 #'   data pages v1: the package's own reader supports nothing else.
-#' @param refresh If \code{TRUE}, ignore the cross-session cache of the
+#' @param refresh If \code{TRUE}, ignore the cache of the
 #'   complete dataset and fetch it again (the cache is rewritten). A cache
 #'   file that cannot be read is discarded and refetched regardless.
 #' @return A \code{data.frame}/\code{tibble}, or a length-1 character Parquet
@@ -62,15 +67,12 @@
 #' # `full = TRUE` fetches from the live Chicago SODA API; `limit` bounds
 #' # the request (seconds, not minutes) and try() keeps the example
 #' # graceful when the service is unreachable. Omit `limit` for the
-#' # complete multi-million-row dataset (cached across sessions); `mirror`
+#' # complete multi-million-row dataset (cached, see Description); `mirror`
 #' # tries an offline-friendly Parquet mirror first when set.
-#' big <- try(load_chicago_data("complaints", full = TRUE, limit = 1000))
+#' # `fraction = 0.001` takes a share of the dataset (0.1% of all rows)
+#' # instead of a row count; the live total is looked up first.
+#' big <- try(load_chicago_data("complaints", full = TRUE, limit = 200))
 #' if (!inherits(big, "try-error")) nrow(big)
-#'
-#' # `fraction` takes a share of the dataset instead of a row count:
-#' # 0.001 = 0.1% of all rows (the live total is looked up first).
-#' tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
-#' if (!inherits(tiny, "try-error")) nrow(tiny)
 #' }
 #' @export
 load_chicago_data <- function(type = c("arrests", "complaints"),
@@ -128,9 +130,30 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
 }
 
 .rmd_cache_dir <- function() {
-  d <- tools::R_user_dir("rmoriedata", "cache")
+  # tempdir() unless the user names a directory: CRAN policy allows a
+  # package to write outside the session's temporary directory only when
+  # the user asks for it.
+  d <- getOption("rmoriedata.cache_dir", NULL)
+  if (is.null(d) || !nzchar(d)) d <- file.path(tempdir(), "rmoriedata-cache")
   dir.create(d, recursive = TRUE, showWarnings = FALSE)
   d
+}
+
+#' Clear the cache of full Chicago datasets
+#'
+#' Deletes the Parquet files that \code{load_chicago_data(full = TRUE)}
+#' wrote to the cache directory: \code{tempdir()} by default, or the
+#' directory named in \code{options(rmoriedata.cache_dir = )}.
+#'
+#' @return The cache directory, invisibly.
+#' @examples
+#' clear_chicago_cache()
+#' @export
+clear_chicago_cache <- function() {
+  d <- .rmd_cache_dir()
+  unlink(list.files(d, full.names = TRUE, all.files = TRUE, no.. = TRUE),
+         recursive = TRUE)
+  invisible(d)
 }
 
 .rmd_endpoint <- function(type) {
@@ -269,8 +292,11 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
   # The native writer maps POSIXct to a parquet TIMESTAMP, which reads back
   # in pandas/polars; the `date_iso` string column is the lossless fallback
   # for readers that don't map the timestamp logical type.
+  # Written under tempdir(), never under the user's cache: the sample is
+  # bundled and a bounded fetch must not land on the `<type>_full.parquet`
+  # cache path. The full-dataset cache is written by .rmd_fetch_full() alone.
   suffix <- if (isTRUE(full)) "full" else "sample"
-  path <- file.path(.rmd_cache_dir(), paste0(type, "_", suffix, ".parquet"))
+  path <- file.path(tempdir(), paste0("rmoriedata_", type, "_", suffix, ".parquet"))
   .rmd_cache_write(df, path)
   path
 }
