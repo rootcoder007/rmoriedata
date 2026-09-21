@@ -156,6 +156,8 @@ analysis functions consume.
   : Verify the bundled data store against its signed manifest
 - [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
   : Load Chicago crime or arrest data
+- [`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md)
+  : Clear the cache of full Chicago datasets
 - [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
   : Catalogue of CIHI open data-table workbooks (with Wayback fallbacks)
 - [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)

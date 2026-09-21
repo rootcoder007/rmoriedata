@@ -59,6 +59,14 @@ director's-report corpus, created by Vansh Singh Ruhela as part of the
 MORIE / MRM framework. The table is regenerated from the parser over the
 full public corpus; see `rmorie::morie_fetch_siu()` to rebuild it live.
 
+This loader returns the corpus as text: every column is character and an
+empty cell is `""`, which is the form the SIU parser writes and rmorie
+reads back. The same table is also in the typed data store:
+`morie_data_load("siu_directors_reports")` applies the bundled schema
+(integer `drid` and counts, `NA` for empty cells), so counts of missing
+values differ between the two entry points by construction; pick the
+typed store for analysis and this loader for the parser round trip.
+
 ## Examples
 
 ``` r

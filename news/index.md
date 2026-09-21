@@ -2,6 +2,27 @@
 
 ## rmoriedata 0.3.3
 
+- Nothing is written outside
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html) unless the user
+  asks. The Chicago full-dataset cache lives under
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html) by default and
+  moves to a persistent directory only through
+  `options(rmoriedata.cache_dir = )`;
+  [`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md)
+  empties it. `load_chicago_data(as = "parquet_path")` also writes under
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html): it wrote the
+  bundled sample into the user’s `R_user_dir()` cache, and a bounded
+  `full = TRUE` fetch could land on the full-dataset cache path. The
+  schema names the language column of `siu_directors_reports` and
+  `siu_drid_manifest` `_language`, as the files do; it carried the
+  `X_language` that `check.names` had made of it, so the typed store and
+  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  disagreed on the name.
+  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  documents that it returns the corpus as text (`""` for empty cells)
+  while `morie_data_load("siu_directors_reports")` returns the typed
+  frame.
+
 - Every bundled table ships as Parquet again, next to its CSV
   (`inst/extdata/parquet/<slug>.parquet`, plus `_catalog.parquet` and
   `siu_directors_reports_corpus.parquet`).

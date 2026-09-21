@@ -1,11 +1,18 @@
 # Load Chicago crime or arrest data
 
 Returns the bundled sample by default, or fetches the full dataset from
-the City of Chicago SODA API (cached under
-[`R_user_dir`](https://rdrr.io/r/tools/userdir.html)) when
-`full = TRUE`. The result can be returned as a base data frame, a
-tibble, or written to a Parquet file whose path is returned – the last
-being the recommended bridge for Python (`pandas.read_parquet`).
+the City of Chicago SODA API when `full = TRUE`. A complete fetch is
+cached as Parquet under
+[`tempdir()`](https://rdrr.io/r/base/tempfile.html) for the session; to
+keep it across sessions name a directory first, for example
+`options(rmoriedata.cache_dir = tools::R_user_dir("rmoriedata", "cache"))`,
+and drop it with
+[`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md).
+Nothing is written outside
+[`tempdir()`](https://rdrr.io/r/base/tempfile.html) unless you set that
+option. The result can be returned as a base data frame, a tibble, or
+written to a Parquet file whose path is returned – the last being the
+recommended bridge for Python (`pandas.read_parquet`).
 
 ## Usage
 
@@ -30,13 +37,15 @@ load_chicago_data(
 - as:
 
   Return format: `"data.frame"` (default), `"tibble"`, or
-  `"parquet_path"` (writes a Parquet file to the session cache and
-  returns its path).
+  `"parquet_path"` (writes a Parquet file under
+  [`tempdir()`](https://rdrr.io/r/base/tempfile.html) and returns its
+  path; nothing is written to the user's home).
 
 - full:
 
   If `TRUE`, fetch the complete dataset from Socrata (network, large)
-  instead of the bundled sample; cached across sessions as Parquet.
+  instead of the bundled sample; a complete fetch is cached as Parquet
+  (see Description).
 
 - mirror:
 
@@ -61,9 +70,9 @@ load_chicago_data(
 
 - refresh:
 
-  If `TRUE`, ignore the cross-session cache of the complete dataset and
-  fetch it again (the cache is rewritten). A cache file that cannot be
-  read is discarded and refetched regardless.
+  If `TRUE`, ignore the cache of the complete dataset and fetch it again
+  (the cache is rewritten). A cache file that cannot be read is
+  discarded and refetched regardless.
 
 ## Value
 
@@ -110,16 +119,12 @@ file.exists(pq)
 # `full = TRUE` fetches from the live Chicago SODA API; `limit` bounds
 # the request (seconds, not minutes) and try() keeps the example
 # graceful when the service is unreachable. Omit `limit` for the
-# complete multi-million-row dataset (cached across sessions); `mirror`
+# complete multi-million-row dataset (cached, see Description); `mirror`
 # tries an offline-friendly Parquet mirror first when set.
-big <- try(load_chicago_data("complaints", full = TRUE, limit = 1000))
+# `fraction = 0.001` takes a share of the dataset (0.1% of all rows)
+# instead of a row count; the live total is looked up first.
+big <- try(load_chicago_data("complaints", full = TRUE, limit = 200))
 if (!inherits(big, "try-error")) nrow(big)
-#> [1] 1000
-
-# `fraction` takes a share of the dataset instead of a row count:
-# 0.001 = 0.1% of all rows (the live total is looked up first).
-tiny <- try(load_chicago_data("arrests", full = TRUE, fraction = 0.0001))
-if (!inherits(tiny, "try-error")) nrow(tiny)
-#> [1] 75
+#> [1] 200
 # }
 ```
