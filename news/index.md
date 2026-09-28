@@ -2,6 +2,8 @@
 
 ## rmoriedata 0.3.3
 
+CRAN release: 2026-09-24
+
 - Nothing is written outside
   [`tempdir()`](https://rdrr.io/r/base/tempfile.html) unless the user
   asks. The Chicago full-dataset cache lives under
