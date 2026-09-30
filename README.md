@@ -3,7 +3,6 @@
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/rmoriedata)](https://CRAN.R-project.org/package=rmoriedata)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/rmoriedata)](https://cran.r-project.org/package=rmoriedata)
-[![CRAN downloads last month](https://cranlogs.r-pkg.org/badges/last-month/rmoriedata)](https://cran.r-project.org/package=rmoriedata)
 [![R-CMD-check](https://github.com/rootcoder007/rmoriedata/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/rootcoder007/rmoriedata/actions/workflows/R-CMD-check.yaml)
 [![r-universe](https://rootcoder007.r-universe.dev/badges/rmoriedata)](https://rootcoder007.r-universe.dev/rmoriedata)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://spdx.org/licenses/AGPL-3.0-or-later.html)
