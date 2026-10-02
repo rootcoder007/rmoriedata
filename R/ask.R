@@ -52,8 +52,18 @@ ask <- function(question, model = NULL, backend = "auto") {
   if (backend %in% c("auto", "hosted")) {
     st <- rmoriebricklayer::bricklayer_llm_status()
     if (identical(st$status[1L], "key stored")) {
-      return(rmoriebricklayer::bricklayer_llm_ask(
-        question, model = model, system_prompt = system_prompt
+      # a rejected key, a model nobody serves or no network must read as a
+      # sentence, never as an error: an example or a script keeps going
+      return(tryCatch(
+        rmoriebricklayer::bricklayer_llm_ask(
+          question, model = model, system_prompt = system_prompt
+        ),
+        error = function(e) {
+          paste0(
+            "The hosted MORIE tier could not answer (", conditionMessage(e),
+            "). If the key was rejected, run morie_data_hosted_login() again."
+          )
+        }
       ))
     }
     if (identical(backend, "hosted")) {

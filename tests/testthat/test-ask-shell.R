@@ -96,3 +96,23 @@ test_that("ask() says how to sign in when neither a key nor the rmorie binary is
   withr::local_envvar(MORIE_HOSTED_BASE_URL = "off", PATH = tempdir())
   expect_match(ask("hello"), "morie_data_hosted_login", fixed = TRUE)
 })
+
+test_that("ask() turns a hosted-tier failure into a sentence, not an error", {
+  testthat::local_mocked_bindings(
+    bricklayer_llm_status = function() {
+      data.frame(
+        route = "hosted MORIE tier", status = "key stored", detail = "",
+        stringsAsFactors = FALSE
+      )
+    },
+    bricklayer_llm_ask = function(prompt, model = NULL, timeout = 120,
+                                  system_prompt = NULL) {
+      stop("the hosted MORIE LLM tier answered 401: Authentication Error")
+    },
+    .package = "rmoriebricklayer"
+  )
+  out <- ask("hello")
+  expect_match(out, "could not answer", fixed = TRUE)
+  expect_match(out, "401", fixed = TRUE)
+  expect_match(out, "morie_data_hosted_login", fixed = TRUE)
+})
