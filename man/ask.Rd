@@ -25,9 +25,12 @@ Sends a dataset-focused question to the hosted MORIE language-model tier
 at \url{https://llm.rmorie.com} through \pkg{rmoriebricklayer}, using the
 key that \code{\link{morie_data_hosted_login}()} stores (the same key
 opens data.rmorie.com). The tier serves ollama.com cloud models and
-Cloudflare Workers AI models (\code{gpt-oss-120b:cf},
-\code{gpt-oss-20b:cf}, \code{llama-4-scout:cf}, \code{qwen3.8-27b:cf},
-\code{nemotron-3-120b:cf}, \code{gemma-4-26b:cf});
+Cloudflare Workers AI models (\code{kimi-k2.6:cf},
+\code{kimi-k2.7-code:cf}, \code{deepseek-v4-pro:cf},
+\code{deepseek-v4-flash:cf}, \code{glm-5.2:cf}, \code{glm-5.3:cf},
+\code{glm-5.3-flash:cf}, \code{gpt-oss-120b:cf}, \code{gpt-oss-20b:cf},
+\code{llama-4-scout:cf}, \code{qwen3.8-27b:cf}, \code{nemotron-3-120b:cf},
+\code{gemma-4-26b:cf});
 \code{rmoriebricklayer::bricklayer_llm_models()} lists what your key may
 use. With \code{backend = "ollama"} (or any value other than
 \code{"auto"} and \code{"hosted"}) the question goes to the optional

@@ -2,7 +2,7 @@
 
 * `ask()` answers through the hosted MORIE tier with the key
   `morie_data_hosted_login()` stores (ollama.com cloud models and Cloudflare
-  Workers AI models such as `gpt-oss-120b:cf`), and only falls back to the
+  Workers AI models such as `kimi-k2.6:cf` or `gpt-oss-120b:cf`), and only falls back to the
   optional `rmorie` command-line agent when no key is stored.
 
 * Hosted tables download with a live progress bar (percent, size, rate) in

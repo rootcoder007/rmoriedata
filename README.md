@@ -37,7 +37,7 @@ self-sufficient: sign in once, then load any `db/table` key.
 morie_data_hosted_login()                      # GitHub device flow; or login(email = ), login(token = )
 cat_ <- morie_data_hosted_catalog()            # key, rows, columns, source dataset
 df <- morie_data_hosted_load("fec_cm_2020/fec_cm_2020")
-ask("which tables cover police stops?", model = "gpt-oss-120b:cf")   # the hosted MORIE tier, same key
+ask("which tables cover police stops?", model = "kimi-k2.6:cf")   # the hosted MORIE tier, same key
 ```
 
 The key lands in the credentials file that rmorie, morie and
