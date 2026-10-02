@@ -124,9 +124,7 @@ file.exists(pq)
 # `fraction = 0.001` takes a share of the dataset (0.1% of all rows)
 # instead of a row count; the live total is looked up first.
 big <- try(load_chicago_data("complaints", full = TRUE, limit = 200))
-#> Warning: cannot open URL 'https://data.cityofchicago.org/resource/ijzp-q8t2.csv?$limit=200': HTTP status was '503 Service Unavailable'
-#> Error : could not fetch full Chicago 'complaints' data from mirror or Socrata:
-#>   https://data.cityofchicago.org/resource/ijzp-q8t2.csv?$limit=200: no response
 if (!inherits(big, "try-error")) nrow(big)
+#> [1] 200
 # }
 ```

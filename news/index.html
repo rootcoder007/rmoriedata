@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,12 @@
       <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.4" id="rmoriedata-034">rmoriedata 0.3.4<a class="anchor" aria-label="anchor" href="#rmoriedata-034"></a></h2>
+<ul><li><p>Hosted tables download with a live progress bar (percent, size, rate) in an interactive session; <code>options(morie.quiet = TRUE)</code> silences it.</p></li>
+<li><p><code><a href="../reference/morie_data_hosted_catalog.html">morie_data_hosted_login()</a></code> signs in to the hosted MORIE tier (GitHub device flow, email code, or a key you hold) and stores the key in the credentials file every MORIE package reads, so rmoriedata alone is enough to use data.rmorie.com.</p></li>
+<li><p><code><a href="../reference/morie_data_hosted_catalog.html">morie_data_hosted_catalog()</a></code> and <code>morie_data_hosted_load("db/table")</code>: the 160 databases the MORIE project materialises from BigQuery public datasets, served from the edge at data.rmorie.com and opened by the MORIE key that rmorie, morie or rmoriebricklayer store. Cached under the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> unless <code>options(rmoriedata.cache_dir = )</code>).</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.3" id="rmoriedata-033">rmoriedata 0.3.3<a class="anchor" aria-label="anchor" href="#rmoriedata-033"></a></h2><p class="text-muted">CRAN release: 2026-09-24</p>
 <ul><li><p>Nothing is written outside <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> unless the user asks. The Chicago full-dataset cache lives under <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code> by default and moves to a persistent directory only through <code>options(rmoriedata.cache_dir = )</code>; <code><a href="../reference/clear_chicago_cache.html">clear_chicago_cache()</a></code> empties it. <code>load_chicago_data(as = "parquet_path")</code> also writes under <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>: it wrote the bundled sample into the user’s <code>R_user_dir()</code> cache, and a bounded <code>full = TRUE</code> fetch could land on the full-dataset cache path. The schema names the language column of <code>siu_directors_reports</code> and <code>siu_drid_manifest</code> <code>_language</code>, as the files do; it carried the <code>X_language</code> that <code>check.names</code> had made of it, so the typed store and <code><a href="../reference/load_siu_reports.html">load_siu_reports()</a></code> disagreed on the name. <code><a href="../reference/load_siu_reports.html">load_siu_reports()</a></code> documents that it returns the corpus as text (<code>""</code> for empty cells) while <code>morie_data_load("siu_directors_reports")</code> returns the typed frame.</p></li>

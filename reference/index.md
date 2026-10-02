@@ -10,6 +10,10 @@ analysis functions consume.
   : Catalog of the bundled datasets
 - [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
   : Load a bundled dataset by slug
+- [`morie_data_hosted_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+  [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+  [`morie_data_hosted_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+  : Curated datasets at data.rmorie.com
 - [`morie_data_path()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_path.md)
   : Path of a bundled table's shipped file
 - [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
