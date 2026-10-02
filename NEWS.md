@@ -3,6 +3,7 @@
 * Hosted tables download with a live progress bar (percent, size, rate) in
   an interactive session; `options(morie.quiet = TRUE)` silences it.
 
+* Requires rmoriebricklayer 0.5.2 or newer (the login flow).
 * `morie_data_hosted_login()` signs in to the hosted MORIE tier (GitHub device
   flow, email code, or a key you hold) and stores the key in the credentials
   file every MORIE package reads, so rmoriedata alone is enough to use

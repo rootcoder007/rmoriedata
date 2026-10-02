@@ -5,7 +5,9 @@ linters: linters_with_defaults(
     # disagrees with indentation_linter on multi-line `if` conditions.
     # Satisfying the linter by hand would be undone by the next
     # styler run, so the formatter wins. morie does the same.
-    indentation_linter = NULL
+    indentation_linter = NULL,
+    # same-package calls resolve at load time; the linter cannot see them file by file
+    object_usage_linter = NULL
   )
 exclusions: list(
     # Developer scripts: not shipped (.Rbuildignore'd), not user-facing.
