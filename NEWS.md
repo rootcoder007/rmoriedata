@@ -1,5 +1,10 @@
 # rmoriedata 0.3.4
 
+* `ask()` answers through the hosted MORIE tier with the key
+  `morie_data_hosted_login()` stores (ollama.com cloud models and Cloudflare
+  Workers AI models such as `gpt-oss-120b:cf`), and only falls back to the
+  optional `rmorie` command-line agent when no key is stored.
+
 * Hosted tables download with a live progress bar (percent, size, rate) in
   an interactive session; `options(morie.quiet = TRUE)` silences it.
 

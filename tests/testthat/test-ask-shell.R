@@ -14,6 +14,7 @@ with_stub_bin <- function(f) {
   old <- Sys.getenv("PATH")
   on.exit(Sys.setenv(PATH = old), add = TRUE)
   Sys.setenv(PATH = paste(dir, old, sep = .Platform$path.sep))
+  withr::local_envvar(MORIE_HOSTED_BASE_URL = "off")
   f(log)
 }
 
@@ -27,6 +28,7 @@ test_that("ask() delivers the whole question as one argument, parentheses and al
     expect_length(argv, 4L)
     expect_match(argv[4], "(rmoriedata)", fixed = TRUE)
     expect_match(argv[4], q, fixed = TRUE)
+    expect_match(argv[4], "Question: ", fixed = TRUE)
     expect_false(file.exists(marker))
   })
 })
@@ -53,4 +55,42 @@ test_that("a dictionary slug is redirected to morie_data_dictionary()", {
   skip_if(length(d) == 0L)
   expect_error(morie_data_load(d[1]), "morie_data_dictionary", fixed = TRUE)
   expect_error(morie_data_load("no-such-slug-xyz"), "valid slugs", fixed = TRUE)
+})
+
+test_that("ask() uses the hosted MORIE tier when a key is stored, and names the model", {
+  seen <- NULL
+  testthat::local_mocked_bindings(
+    bricklayer_llm_status = function() {
+      data.frame(
+        route = c("hosted MORIE tier", "rmorie-cli agent"),
+        status = c("key stored", "absent"), detail = c("", ""),
+        stringsAsFactors = FALSE
+      )
+    },
+    bricklayer_llm_ask = function(prompt, model = NULL, timeout = 120, system_prompt = NULL) {
+      seen <<- list(prompt = prompt, model = model, system_prompt = system_prompt)
+      "pong"
+    },
+    .package = "rmoriebricklayer"
+  )
+  expect_identical(ask("which datasets cover Toronto?", model = "gpt-oss-120b:cf"), "pong")
+  expect_identical(seen$model, "gpt-oss-120b:cf")
+  expect_identical(seen$prompt, "which datasets cover Toronto?")
+  expect_match(seen$system_prompt, "rmoriedata", fixed = TRUE)
+  # backend = "hosted" with no key says how to sign in; "ollama" never touches the tier
+  testthat::local_mocked_bindings(
+    bricklayer_llm_status = function() {
+      data.frame(
+        route = "hosted MORIE tier", status = "not logged in", detail = "",
+        stringsAsFactors = FALSE
+      )
+    },
+    .package = "rmoriebricklayer"
+  )
+  expect_match(ask("hello", backend = "hosted"), "morie_data_hosted_login", fixed = TRUE)
+})
+
+test_that("ask() says how to sign in when neither a key nor the rmorie binary is there", {
+  withr::local_envvar(MORIE_HOSTED_BASE_URL = "off", PATH = tempdir())
+  expect_match(ask("hello"), "morie_data_hosted_login", fixed = TRUE)
 })

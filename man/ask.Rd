@@ -2,42 +2,50 @@
 % Please edit documentation in R/ask.R
 \name{ask}
 \alias{ask}
-\title{Ask the rmorie agent about the bundled datasets}
+\title{Ask the hosted MORIE tier about the bundled datasets}
 \usage{
 ask(question, model = NULL, backend = "auto")
 }
 \arguments{
 \item{question}{Character scalar.}
 
-\item{model}{Optional model id (see \code{rmorie::agent}).}
+\item{model}{Optional model id, e.g. \code{"gpt-oss-120b:cf"}; the tier's
+default when \code{NULL}.}
 
-\item{backend}{Optional backend override (see \code{rmorie::agent}).}
+\item{backend}{\code{"auto"} (the hosted tier when a key is stored, else
+the \code{rmorie} binary), \code{"hosted"}, or a backend name for the
+\code{rmorie} agent such as \code{"ollama"}.}
 }
 \value{
-Character scalar: the agent's output, or a message if the
-\code{rmorie} binary is not installed.
+Character scalar: the answer, or a sentence saying how to sign in
+when neither a key nor the \code{rmorie} binary is available.
 }
 \description{
-Convenience wrapper that forwards a dataset-focused question to the
-\code{rmorie} command-line agent (optional binary from rmorie-cli). See
-\code{rmorie::agent} for the full interface and requirements.
+Sends a dataset-focused question to the hosted MORIE language-model tier
+at \url{https://llm.rmorie.com} through \pkg{rmoriebricklayer}, using the
+key that \code{\link{morie_data_hosted_login}()} stores (the same key
+opens data.rmorie.com). The tier serves ollama.com cloud models and
+Cloudflare Workers AI models (\code{gpt-oss-120b:cf},
+\code{gpt-oss-20b:cf}, \code{llama-4-scout:cf}, \code{qwen3.8-27b:cf},
+\code{nemotron-3-120b:cf}, \code{gemma-4-26b:cf});
+\code{rmoriebricklayer::bricklayer_llm_models()} lists what your key may
+use. With \code{backend = "ollama"} (or any value other than
+\code{"auto"} and \code{"hosted"}) the question goes to the optional
+\code{rmorie} command-line agent instead, as before.
 }
 \examples{
 \donttest{
-# Routed to the optional rmorie CLI agent when it is installed; with no
-# binary on PATH each call returns an install hint instantly (no error,
-# no network), so this is safe to execute anywhere.
-# Plain question -> routed to the rmorie CLI agent (auto backend).
+# After morie_data_hosted_login(): the hosted tier answers.
 ask("which bundled datasets cover Toronto police use-of-force?")
 
-# Pin a specific model.
-ask("summarise the SIU director's-report corpus", model = "gpt-4o-mini")
+# Pin a Workers AI model.
+ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 
-# Force a backend (see rmorie::agent for the available values).
+# Force the rmorie command-line agent with a local Ollama.
 ask("list the Chicago datasets", backend = "ollama")
 }
 
-# With no rmorie binary on PATH the call returns an install hint, not an
-# error -- safe to run anywhere:
+# With no key stored and no rmorie binary on PATH the call returns a
+# sign-in hint, not an error -- safe to run anywhere:
 if (!nzchar(Sys.which("rmorie"))) ask("hello")
 }
