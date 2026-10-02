@@ -15,7 +15,10 @@ test_that(".rmd_dl copies a local file with milestone progress and honours quiet
   expect_true(any(grepl("three-mb: 3.0 MB in", msgs, fixed = TRUE)))
 
   withr::local_options(morie.quiet = TRUE)
-  quiet <- utils::capture.output(.rmd_dl(paste0("file://", src), dest, label = "q"), type = "message")
+  quiet <- utils::capture.output(
+    .rmd_dl(paste0("file://", src), dest, label = "q"),
+    type = "message"
+  )
   expect_identical(quiet, character())
   expect_identical(file.size(dest), file.size(src))
 })
@@ -35,6 +38,7 @@ test_that(".rmd_fmt_bytes and the line renderer", {
   expect_identical(.rmd_fmt_bytes(583 * 1048576), "583.0 MB")
   line <- .rmd_dl_line("x", 50, 100, proc.time()[["elapsed"]] - 1, 0L)
   expect_match(line, "\\[############\\.{13}\\]  50%  50 B / 100 B")
-  rows <- .rmd_dl_line("ckan", 32000, 40931, proc.time()[["elapsed"]] - 1, 0L, unit = "rows")
+  rows <- .rmd_dl_line("ckan", 32000, 40931, proc.time()[["elapsed"]] - 1, 0L,
+                       unit = "rows")
   expect_match(rows, " 78%  32,000 rows / 40,931 rows", fixed = TRUE)
 })

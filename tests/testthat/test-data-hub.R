@@ -46,15 +46,17 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
   expect_error(morie_data_hosted_load("nokey"), "db/table")
 })
 
-test_that("morie_data_hosted_login stores a key through rmoriebricklayer and the hub reads it", {
+test_that("morie_data_hosted_login stores a key via rmoriebricklayer; the hub reads it", {
   cfg <- withr::local_tempdir()
   withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA)
   seen <- NULL
   local_mocked_bindings(
-    bricklayer_llm_login = function(token = NULL, email = NULL, code = NULL, open_browser = FALSE, ...) {
+    bricklayer_llm_login = function(token = NULL, email = NULL, code = NULL,
+                                    open_browser = FALSE, ...) {
       seen <<- list(token = token, email = email, code = code)
       dir.create(file.path(cfg, "morie"), recursive = TRUE, showWarnings = FALSE)
-      writeLines('{"hosted_key": "sk-from-login"}', file.path(cfg, "morie", "credentials.json"))
+      writeLines('{"hosted_key": "sk-from-login"}',
+                 file.path(cfg, "morie", "credentials.json"))
       invisible("sk-from-login")
     },
     .package = "rmoriebricklayer"
@@ -62,7 +64,8 @@ test_that("morie_data_hosted_login stores a key through rmoriebricklayer and the
   expect_identical(morie_data_hosted_login(token = "sk-from-login"), "sk-from-login")
   expect_identical(seen$token, "sk-from-login")
   expect_identical(.rmd_hosted_key(), "sk-from-login")
-  morie_data_hosted_login(email = "someone@example.org", code = "123456", open_browser = FALSE)
+  morie_data_hosted_login(email = "someone@example.org", code = "123456",
+                          open_browser = FALSE)
   expect_identical(seen$email, "someone@example.org")
   expect_identical(seen$code, "123456")
 })
