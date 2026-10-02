@@ -73,7 +73,7 @@
     if (quiet) next
     if (tty) {
       now <- proc.time()[["elapsed"]]
-      if (now - last < 0.1) next
+      if (spin > 0L && now - last < 0.1) next  # the first chunk draws at once, then ten frames a second
       last <- now
       spin <- spin + 1L
       line <- .rmd_dl_line(label, got, size, t0, spin)
