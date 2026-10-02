@@ -66,7 +66,7 @@ Shared primitives used across the package.
   [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   : Shared C-core helpers (rmorie ecosystem backend)
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  : Ask the rmorie agent about the bundled datasets
+  : Ask the hosted MORIE tier about the bundled datasets
 
 ## Sample data objects
 
