@@ -67,13 +67,15 @@ test_that("ask() uses the hosted MORIE tier when a key is stored, and names the 
         stringsAsFactors = FALSE
       )
     },
-    bricklayer_llm_ask = function(prompt, model = NULL, timeout = 120, system_prompt = NULL) {
+    bricklayer_llm_ask = function(prompt, model = NULL, timeout = 120,
+                                  system_prompt = NULL) {
       seen <<- list(prompt = prompt, model = model, system_prompt = system_prompt)
       "pong"
     },
     .package = "rmoriebricklayer"
   )
-  expect_identical(ask("which datasets cover Toronto?", model = "gpt-oss-120b:cf"), "pong")
+  a <- ask("which datasets cover Toronto?", model = "gpt-oss-120b:cf")
+  expect_identical(a, "pong")
   expect_identical(seen$model, "gpt-oss-120b:cf")
   expect_identical(seen$prompt, "which datasets cover Toronto?")
   expect_match(seen$system_prompt, "rmoriedata", fixed = TRUE)
