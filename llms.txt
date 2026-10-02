@@ -151,14 +151,6 @@ AGPL-3.0-or-later. The fixtures themselves are public-domain or under
 permissive open-data licenses from their source portals; see the
 per-file headers in `inst/extdata/` for attribution.
 
-## Smoke suite
-
-Every release is gated on a clean-user smoke suite that installs the
-built package into an empty home directory on Linux, macOS and Windows
-and runs every command for real, with live downloads and assertions, no
-mocks (`Rscript inst/smoke/smoke.R`; `.github/workflows/smoke.yml`). A
-verb without a smoke case fails the suite.
-
 # Package index
 
 ## Bundled datasets
