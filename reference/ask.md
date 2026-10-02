@@ -4,7 +4,9 @@ Sends a dataset-focused question to the hosted MORIE language-model tier
 at <https://llm.rmorie.com> through rmoriebricklayer, using the key that
 [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
 stores (the same key opens data.rmorie.com). The tier serves ollama.com
-cloud models and Cloudflare Workers AI models (`gpt-oss-120b:cf`,
+cloud models and Cloudflare Workers AI models (`kimi-k2.6:cf`,
+`kimi-k2.7-code:cf`, `deepseek-v4-pro:cf`, `deepseek-v4-flash:cf`,
+`glm-5.2:cf`, `glm-5.3:cf`, `glm-5.3-flash:cf`, `gpt-oss-120b:cf`,
 `gpt-oss-20b:cf`, `llama-4-scout:cf`, `qwen3.8-27b:cf`,
 `nemotron-3-120b:cf`, `gemma-4-26b:cf`);
 [`rmoriebricklayer::bricklayer_llm_models()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_models.html)
