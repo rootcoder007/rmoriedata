@@ -1,3 +1,18 @@
+# rmoriedata 0.3.4
+
+* Hosted tables download with a live progress bar (percent, size, rate) in
+  an interactive session; `options(morie.quiet = TRUE)` silences it.
+
+* `morie_data_hosted_login()` signs in to the hosted MORIE tier (GitHub device
+  flow, email code, or a key you hold) and stores the key in the credentials
+  file every MORIE package reads, so rmoriedata alone is enough to use
+  data.rmorie.com.
+* `morie_data_hosted_catalog()` and `morie_data_hosted_load("db/table")`: the
+  160 databases the MORIE project materialises from BigQuery public datasets,
+  served from the edge at data.rmorie.com and opened by the MORIE key that
+  rmorie, morie or rmoriebricklayer store. Cached under the package cache
+  directory (`tempdir()` unless `options(rmoriedata.cache_dir = )`).
+
 # rmoriedata 0.3.3
 
 * Nothing is written outside `tempdir()` unless the user asks. The

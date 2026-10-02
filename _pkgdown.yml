@@ -32,6 +32,8 @@ reference:
     contents:
       - morie_data_catalog
       - morie_data_load
+      - morie_data_hosted_catalog
+      - morie_data_hosted_login
       - morie_data_path
       - morie_data_dictionary
       - morie_data_checksums

@@ -27,6 +27,21 @@ install.packages(
 # remotes::install_github("rootcoder007/rmoriedata")
 ```
 
+## Curated tables at data.rmorie.com
+
+The 160 databases the MORIE project materialises from BigQuery public
+datasets are served from the edge and opened by the MORIE key. rmoriedata is
+self-sufficient: sign in once, then load any `db/table` key.
+
+```r
+morie_data_hosted_login()                      # GitHub device flow; or login(email = ), login(token = )
+cat_ <- morie_data_hosted_catalog()            # key, rows, columns, source dataset
+df <- morie_data_hosted_load("fec_cm_2020/fec_cm_2020")
+```
+
+The key lands in the credentials file that rmorie, morie and
+rmoriebricklayer read too, so one login serves every MORIE package.
+
 ## Quick start
 
 ```r
@@ -120,3 +135,7 @@ machine-readable metadata GitHub's "Cite this repository" button uses.
 AGPL-3.0-or-later. The fixtures themselves are public-domain or
 under permissive open-data licenses from their source portals; see
 the per-file headers in `inst/extdata/` for attribution.
+
+## Smoke suite
+
+Every release is gated on a clean-user smoke suite that installs the built package into an empty home directory on Linux, macOS and Windows and runs every command for real, with live downloads and assertions, no mocks (`Rscript inst/smoke/smoke.R`; `.github/workflows/smoke.yml`). A verb without a smoke case fails the suite.
