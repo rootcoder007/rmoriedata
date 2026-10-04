@@ -108,8 +108,6 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
     df <- df[df[["_language"]] == lang, , drop = FALSE]
   }
   rownames(df) <- NULL
-  if (as == "tibble" && requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(df))
-  }
+  if (as == "tibble") return(.rmd_as_tibble(df))
   df
 }

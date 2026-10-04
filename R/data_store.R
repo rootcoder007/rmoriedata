@@ -51,9 +51,13 @@
 #' tables `n_rows`, `n_cols` and `parquet_path` (the same table as a
 #' Parquet file, see [morie_data_path()]).
 #'
-#' @return A data frame.
+#' @return A data frame: `slug`, `source_path`, `kind` (table, dictionary, ...),
+#'   `n_rows`, `n_cols`, `parquet_path`, and `synthetic`, TRUE for the tables that are
+#'   generated stand-ins with the published schema rather than published data (the
+#'   ARSAU use-of-force tables and the `*_synthetic` ones).
 #' @examples
 #' cat <- morie_data_catalog()
+#' cat$slug[cat$synthetic]
 #' tbls <- cat[cat$kind == "table", c("slug", "n_rows", "n_cols")]
 #' head(tbls[order(-tbls$n_rows), ])
 #' @export
@@ -67,6 +71,7 @@ morie_data_catalog <- function() {
     }
     cat$n_rows <- as.integer(cat$n_rows)
     cat$n_cols <- as.integer(cat$n_cols)
+    if (!is.null(cat$synthetic)) cat$synthetic <- as.logical(cat$synthetic)
     assign("_catalog", cat, envir = .rmoriedata_cache)
   }
   cat
@@ -144,7 +149,8 @@ morie_data_load <- function(slug, refresh = FALSE,
 #' [morie_data_load()] returns.
 #'
 #' @param slug Dataset slug; see the `slug` column of [morie_data_catalog()].
-#' @param format `"parquet"` (default) or `"csv"`.
+#' @param format `"parquet"` (default) or `"csv"`. A dictionary or other non-table
+#'   slug has one file, which is returned either way.
 #' @return A length-1 character path.
 #' @examples
 #' p <- morie_data_path("arsau_2023_uof_main_records")
@@ -159,12 +165,14 @@ morie_data_path <- function(slug, format = c("parquet", "csv")) {
          "See morie_data_catalog() for valid slugs.", call. = FALSE)
   }
   cat <- morie_data_catalog()
-  row <- cat[cat$slug == slug & cat$kind == "table", , drop = FALSE]
+  row <- cat[cat$slug == slug, , drop = FALSE]
   if (!nrow(row)) {
     stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
                  slug), call. = FALSE)
   }
-  rel <- if (format == "parquet") row$parquet_path[1L] else row$source_path[1L]
+  # a dictionary or document is its one file; only a table has a parquet copy
+  table <- row$kind[1L] == "table"
+  rel <- if (format == "parquet" && table) row$parquet_path[1L] else row$source_path[1L]
   f <- file.path(.rmoriedata_extdata(), rel)
   if (is.na(rel) || !nzchar(rel) || !file.exists(f)) {
     stop(sprintf("The %s file for '%s' is missing; reinstall rmoriedata.",

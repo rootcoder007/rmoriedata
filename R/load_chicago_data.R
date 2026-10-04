@@ -24,13 +24,15 @@
 #' @param full If \code{TRUE}, fetch the complete dataset from Socrata (network,
 #'   large) instead of the bundled sample; a complete fetch is cached as
 #'   Parquet (see Description).
-#' @param limit Optional row cap for a \code{full = TRUE} fetch (passed to
-#'   the Socrata \code{$limit} parameter). A bounded fetch skips the mirror
-#'   and is never written to the full-dataset cache. Default \code{NULL}
+#' @param limit Optional row cap. For a \code{full = TRUE} fetch it is passed to
+#'   the Socrata \code{$limit} parameter (a bounded fetch skips the mirror
+#'   and is never written to the full-dataset cache); otherwise it keeps the
+#'   first \code{limit} rows of the bundled sample. Default \code{NULL}
 #'   fetches everything.
 #' @param fraction Optional share of the dataset, in \code{(0, 1]}, for a
 #'   \code{full = TRUE} fetch: the live row count is looked up and
-#'   \code{limit} is set to \code{ceiling(total * fraction)}. Give either
+#'   \code{limit} is set to \code{ceiling(total * fraction)} (of the bundled
+#'   sample's rows otherwise). Give either
 #'   \code{fraction} or \code{limit}, not both.
 #' @param mirror Optional base URL of an r-universe/drat mirror to try before
 #'   Socrata (offline-friendly fallback). Defaults to
@@ -99,24 +101,24 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
       is.numeric(fraction), length(fraction) == 1L,
       fraction > 0, fraction <= 1
     )
-    total <- .rmd_full_count(type)
-    limit <- max(1L, as.integer(ceiling(total * fraction)))
   }
 
   df <- if (isTRUE(full)) {
+    if (!is.null(fraction)) {
+      limit <- max(1L, as.integer(ceiling(.rmd_full_count(type) * fraction)))
+    }
     .rmd_fetch_full(type, mirror, limit, refresh = isTRUE(refresh))
   } else {
-    .rmd_sample(type)
+    # the bundled sample takes the same row cap (it was ignored without full = TRUE)
+    s <- .rmd_sample(type)
+    if (!is.null(fraction)) limit <- max(1L, as.integer(ceiling(nrow(s) * fraction)))
+    if (!is.null(limit)) s <- s[seq_len(min(nrow(s), as.integer(limit))), , drop = FALSE]
+    s
   }
 
   switch(as,
     "data.frame" = as.data.frame(df, stringsAsFactors = FALSE),
-    "tibble" = {
-      if (!requireNamespace("tibble", quietly = TRUE)) {
-        return(as.data.frame(df, stringsAsFactors = FALSE))
-      }
-      tibble::as_tibble(df)
-    },
+    "tibble" = .rmd_as_tibble(df),
     "parquet_path" = .rmd_write_parquet(df, type, full)
   )
 }
@@ -300,4 +302,14 @@ clear_chicago_cache <- function() {
   path <- file.path(tempdir(), paste0("rmoriedata_", type, "_", suffix, ".parquet"))
   .rmd_cache_write(df, path)
   path
+}
+
+# a tibble when tibble is installed; otherwise the data.frame, saying so (it was silent)
+.rmd_as_tibble <- function(df) {
+  if (!requireNamespace("tibble", quietly = TRUE)) {
+    message("rmoriedata: the tibble package is not installed, so this is a data.frame ",
+            "(install.packages(\"tibble\") for a tibble)")
+    return(as.data.frame(df, stringsAsFactors = FALSE))
+  }
+  tibble::as_tibble(df)
 }

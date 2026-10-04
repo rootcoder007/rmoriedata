@@ -86,7 +86,7 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 #' # Downloads a table from the live CIHI web service; try() keeps the
 #' # example graceful when the service is unreachable.
 #' # `which` by title substring (case-insensitive; must match exactly one).
-#' f1 <- try(fetch_cihi_table("Hospital Beds")) # -> tempfile path
+#' f1 <- try(fetch_cihi_table("Hospital Beds, 2024")) # -> tempfile path
 #'
 #' # `which` by row index into load_cihi_data_tables(); `dest` chooses the
 #' # output path and `timeout` bounds each request (seconds).
