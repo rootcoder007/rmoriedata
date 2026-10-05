@@ -89,7 +89,8 @@ and the Ontario Government archive (pre-2018). Parsed with the
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
 <dd><p><code>"csv"</code> (the gzip CSV, default) or <code>"parquet"</code>
-(the same rows and columns, native codec).</p></dd>
+(the same rows and columns, read from the typed store's Parquet copy and
+returned as text).</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -98,13 +99,25 @@ and the Ontario Government archive (pre-2018). Parsed with the
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>For every English report (<code>panel_reviewed == "TRUE"</code>), the 16
+    <p>For the English reports marked <code>panel_reviewed == "TRUE"</code>, the 16
 key columns were verified by a multi-agent LLM review panel against
 the full report text and the parser's guess resolved to the correct
-value; the subject-official count is filled for 100\<!-- % of English -->
-reports (witness-officer-only investigations are a genuine 0). French
-reports carry the parser values. See the <code>siu</code> pipeline repo for
-the audit provenance.</p>
+value; the subject-official count is filled for 100\<!-- % of them -->
+(witness-officer-only investigations are a genuine 0). French reports
+carry the parser values and <code>panel_reviewed == "FALSE"</code>, except
+<code>police_service</code>, which is their English report's.</p>
+<p><code>police_service</code> is the service of the subject officials – not the
+force that notified the SIU, which is often a custody, requesting or
+neighbouring service. Each correction to it is listed with the reason
+read from the report in <code>data-raw/siu_police_service_review.csv</code>
+of the source repository.</p>
+<p>One row is one published report, keyed by <code>drid</code> and
+<code>_language</code>. A case number can appear on more than one row: the SIU
+publishes a further report when a case is reconsidered or reported again,
+each with its own <code>drid</code>. Some schema columns (for example the raw
+times of injury and notification, evidence types, and weapons used) are
+not stated in the published reports and are empty throughout; they are
+kept so the table's shape matches the parser's schema.</p>
 <p>This is the machine-readable companion to the SIU parser and
 data-mining subsystem in <span class="pkg">rmorie</span> / <span class="pkg">morie</span> – the first
 open-source pipeline for the SIU director's-report corpus, created
@@ -126,7 +139,7 @@ loader for the parser round trip.</p>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Default: every parsed report, as a base data.frame.</span></span></span>
 <span class="r-in"><span><span class="va">all</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">all</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5157</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4623</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">all</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 65</span>
 <span class="r-in"><span></span></span>
@@ -134,9 +147,9 @@ loader for the parser round trip.</p>
 <span class="r-in"><span><span class="va">en</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"en"</span><span class="op">)</span> <span class="co"># English director's reports</span></span></span>
 <span class="r-in"><span><span class="va">fr</span> <span class="op">&lt;-</span> <span class="fu">load_siu_reports</span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"fr"</span><span class="op">)</span> <span class="co"># French director's reports</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">en</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2182</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2319</span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">fr</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2191</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2304</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># `as = "tibble"` returns a tibble when the tibble package is present.</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"tibble"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span></span>
@@ -152,11 +165,11 @@ loader for the parser round trip.</p>
 <span class="r-in"><span><span class="op">}</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>          Toronto Police Service       Ontario Provincial Police </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             467                             404 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                             504                             450 </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>            Peel Regional Police Niagara Regional Police Service </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                             188                              95 </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>         Hamilton Police Service </span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>                              91 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                             203                             102 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>           Ottawa Police Service </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>                              99 </span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

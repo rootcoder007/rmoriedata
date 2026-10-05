@@ -166,15 +166,15 @@ structured columns.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">en</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_siu_reports.html">load_siu_reports</a></span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"en"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">en</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2182</span></span>
+<span><span class="co">#&gt; [1] 2319</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">en</span><span class="op">$</span><span class="va">police_service</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;          Toronto Police Service       Ontario Provincial Police </span></span>
-<span><span class="co">#&gt;                             467                             404 </span></span>
+<span><span class="co">#&gt;                             504                             450 </span></span>
 <span><span class="co">#&gt;            Peel Regional Police Niagara Regional Police Service </span></span>
-<span><span class="co">#&gt;                             188                              95 </span></span>
-<span><span class="co">#&gt;         Hamilton Police Service </span></span>
-<span><span class="co">#&gt;                              91</span></span></code></pre></div>
+<span><span class="co">#&gt;                             203                             102 </span></span>
+<span><span class="co">#&gt;           Ottawa Police Service </span></span>
+<span><span class="co">#&gt;                              99</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="cihi-data-table-catalogue">CIHI data-table catalogue<a class="anchor" aria-label="anchor" href="#cihi-data-table-catalogue"></a>
@@ -200,10 +200,10 @@ download and is a network call, so it isn’t run here.)</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
-<span><span class="co">#&gt;                                     file   bytes</span></span>
-<span><span class="co">#&gt; 153 siu_directors_reports_corpus.parquet 8097910</span></span>
-<span><span class="co">#&gt; 154        siu_directors_reports.parquet 7445077</span></span>
-<span><span class="co">#&gt; 33                   describe_corpus.Rds 1712072</span></span>
+<span><span class="co">#&gt;                              file   bytes</span></span>
+<span><span class="co">#&gt; 153 siu_directors_reports.parquet 6525285</span></span>
+<span><span class="co">#&gt; 33            describe_corpus.Rds 1712072</span></span>
+<span><span class="co">#&gt; 32       cpads_pumf_synthetic.csv  893252</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
 <span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>

@@ -55,17 +55,36 @@ Parquet file, see <code><a href="morie_data_path.html">morie_data_path()</a></co
 
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame.</p>
+    <p>A data frame: <code>slug</code>, <code>source_path</code>, <code>kind</code> (table, dictionary, ...),
+<code>n_rows</code>, <code>n_cols</code>, <code>parquet_path</code>, and <code>synthetic</code>, TRUE for the tables that are
+generated stand-ins with the published schema rather than published data (the
+ARSAU use-of-force tables and the <code>*_synthetic</code> ones).</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu">morie_data_catalog</span><span class="op">(</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">cat</span><span class="op">$</span><span class="va">slug</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">synthetic</span><span class="op">]</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [1] "arsau_2020_2022_useofforce_agrregatesummarybyyear_2020_2022"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [2] "arsau_2020_2022_useofforce_detaileddataset_2020_2022"       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [3] "arsau_2023_uof_individual_records"                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [4] "arsau_2023_uof_main_records"                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [5] "arsau_2023_uof_probe_cycle_records"                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [6] "arsau_2023_uof_weapon_records_invaliddata"                  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [7] "arsau_2024_uof_individual_records"                          </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [8] "arsau_2024_uof_main_records"                                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>  [9] "arsau_2024_uof_probe_cycle_records"                         </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [10] "arsau_2024_uof_weapon_records"                              </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [11] "arsau_uof_detailed_dataset_2020_2022_sample"                </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [12] "arsau_uof_individual_records_sample"                        </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [13] "cpads_pumf_synthetic"                                       </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [14] "nibrs_synthetic"                                            </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [15] "nist_rds_synthetic"                                         </span>
 <span class="r-in"><span><span class="va">tbls</span> <span class="op">&lt;-</span> <span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tbls</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">tbls</span><span class="op">$</span><span class="va">n_rows</span><span class="op">)</span>, <span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>                               slug n_rows n_cols</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 78           siu_directors_reports   5157     65</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 79               siu_drid_manifest   4749      9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 78           siu_directors_reports   4623     65</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 37       nyc_opendata_bulk_catalog   2851      7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 28  edmonton_opendata_bulk_catalog   2027      7</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 23   chicago_opendata_bulk_catalog   1856      7</span>

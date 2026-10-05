@@ -108,16 +108,18 @@ data pages v1: the package's own reader supports nothing else.</p></dd>
 
 
 <dt id="arg-limit">limit<a class="anchor" aria-label="anchor" href="#arg-limit"></a></dt>
-<dd><p>Optional row cap for a <code>full = TRUE</code> fetch (passed to
-the Socrata <code>$limit</code> parameter). A bounded fetch skips the mirror
-and is never written to the full-dataset cache. Default <code>NULL</code>
+<dd><p>Optional row cap. For a <code>full = TRUE</code> fetch it is passed to
+the Socrata <code>$limit</code> parameter (a bounded fetch skips the mirror
+and is never written to the full-dataset cache); otherwise it keeps the
+first <code>limit</code> rows of the bundled sample. Default <code>NULL</code>
 fetches everything.</p></dd>
 
 
 <dt id="arg-fraction">fraction<a class="anchor" aria-label="anchor" href="#arg-fraction"></a></dt>
 <dd><p>Optional share of the dataset, in <code>(0, 1]</code>, for a
 <code>full = TRUE</code> fetch: the live row count is looked up and
-<code>limit</code> is set to <code>ceiling(total * fraction)</code>. Give either
+<code>limit</code> is set to <code>ceiling(total * fraction)</code> (of the bundled
+sample's rows otherwise). Give either
 <code>fraction</code> or <code>limit</code>, not both.</p></dd>
 
 

@@ -113,15 +113,15 @@ structured columns.
 
 en <- load_siu_reports(lang = "en")
 nrow(en)
-#> [1] 2182
+#> [1] 2319
 head(sort(table(en$police_service), decreasing = TRUE), 5)
 #> 
 #>          Toronto Police Service       Ontario Provincial Police 
-#>                             467                             404 
+#>                             504                             450 
 #>            Peel Regional Police Niagara Regional Police Service 
-#>                             188                              95 
-#>         Hamilton Police Service 
-#>                              91
+#>                             203                             102 
+#>           Ottawa Police Service 
+#>                              99
 ```
 
 ### CIHI data-table catalogue
@@ -151,10 +151,10 @@ Verify you’re using the exact data slice the package shipped:
 
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
-#>                                     file   bytes
-#> 153 siu_directors_reports_corpus.parquet 8097910
-#> 154        siu_directors_reports.parquet 7445077
-#> 33                   describe_corpus.Rds 1712072
+#>                              file   bytes
+#> 153 siu_directors_reports.parquet 6525285
+#> 33            describe_corpus.Rds 1712072
+#> 32       cpads_pumf_synthetic.csv  893252
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 morie_core_sha256("abc")

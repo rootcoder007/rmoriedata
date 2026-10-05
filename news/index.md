@@ -2,11 +2,20 @@
 
 ## rmoriedata 0.3.4
 
+- The SIU director’s-report corpus: `police_service` is the service of
+  the subject officials on every row (it was the notifying force on many
+  French rows, and on 24 English rows a custody, requesting or
+  neighbouring service – each corrected after reading the report); one
+  spelling per service; 59 English reports published since the last
+  build, reviewed by the same model panel, and their 60 French reports
+  added; 54 French reports filed under /en/ relabelled; 29 rows that
+  held no director’s report removed. 4,623 rows.
+
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   answers through the hosted MORIE tier with the key
   [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  stores (ollama.com cloud models and Cloudflare Workers AI models such
-  as `kimi-k2.6:cf` or `gpt-oss-120b:cf`), and only falls back to the
+  stores (ollama.com cloud models and additional AI models such as
+  `kimi-k2.6:cf` or `gpt-oss-120b:cf`), and only falls back to the
   optional `rmorie` command-line agent when no key is stored.
 
 - Hosted tables download with a live progress bar (percent, size, rate)

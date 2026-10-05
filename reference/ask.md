@@ -4,7 +4,7 @@ Sends a dataset-focused question to the hosted MORIE language-model tier
 at <https://llm.rmorie.com> through rmoriebricklayer, using the key that
 [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
 stores (the same key opens data.rmorie.com). The tier serves ollama.com
-cloud models and Cloudflare Workers AI models (`kimi-k2.6:cf`,
+cloud models and additional AI models (`kimi-k2.6:cf`,
 `kimi-k2.7-code:cf`, `deepseek-v4-pro:cf`, `deepseek-v4-flash:cf`,
 `glm-5.2:cf`, `glm-5.3:cf`, `glm-5.3-flash:cf`, `gpt-oss-120b:cf`,
 `gpt-oss-20b:cf`, `llama-4-scout:cf`, `qwen3.8-27b:cf`,
@@ -50,7 +50,7 @@ neither a key nor the `rmorie` binary is available.
 ask("which bundled datasets cover Toronto police use-of-force?")
 #> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
 
-# Pin a Workers AI model.
+# Pin one of the additional AI models.
 ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 #> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
 

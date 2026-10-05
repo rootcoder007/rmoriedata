@@ -50,14 +50,7 @@ head(cat$title, 3)
 # Downloads a table from the live CIHI web service; try() keeps the
 # example graceful when the service is unreachable.
 # `which` by title substring (case-insensitive; must match exactly one).
-f1 <- try(fetch_cihi_table("Hospital Beds")) # -> tempfile path
-#> Error : 'Hospital Beds' matches 7 tables; be more specific:
-#>   Hospital Beds, 2024–2025
-#>   Hospital Beds Staffed and In Operation, 2023–2024
-#>   Hospital Beds Staffed and In Operation, 2022–2023
-#>   Hospital Beds Staffed and In Operation, 2021–2022
-#>   Hospital Beds Staffed and In Operation, 2020–2021
-#>   Hospital Beds Staffed and In Operation, 2019–2020
+f1 <- try(fetch_cihi_table("Hospital Beds, 2024")) # -> tempfile path
 
 # `which` by row index into load_cihi_data_tables(); `dest` chooses the
 # output path and `timeout` bounds each request (seconds).

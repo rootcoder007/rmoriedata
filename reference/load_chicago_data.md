@@ -57,16 +57,17 @@ load_chicago_data(
 
 - limit:
 
-  Optional row cap for a `full = TRUE` fetch (passed to the Socrata
-  `$limit` parameter). A bounded fetch skips the mirror and is never
-  written to the full-dataset cache. Default `NULL` fetches everything.
+  Optional row cap. For a `full = TRUE` fetch it is passed to the
+  Socrata `$limit` parameter (a bounded fetch skips the mirror and is
+  never written to the full-dataset cache); otherwise it keeps the first
+  `limit` rows of the bundled sample. Default `NULL` fetches everything.
 
 - fraction:
 
   Optional share of the dataset, in `(0, 1]`, for a `full = TRUE` fetch:
   the live row count is looked up and `limit` is set to
-  `ceiling(total * fraction)`. Give either `fraction` or `limit`, not
-  both.
+  `ceiling(total * fraction)` (of the bundled sample's rows otherwise).
+  Give either `fraction` or `limit`, not both.
 
 - refresh:
 

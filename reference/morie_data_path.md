@@ -21,7 +21,8 @@ morie_data_path(slug, format = c("parquet", "csv"))
 
 - format:
 
-  `"parquet"` (default) or `"csv"`.
+  `"parquet"` (default) or `"csv"`. A dictionary or other non-table slug
+  has one file, which is returned either way.
 
 ## Value
 

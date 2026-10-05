@@ -3,7 +3,7 @@
 at https://llm.rmorie.com through rmoriebricklayer, using the
 key that morie_data_hosted_login() stores (the same key
 opens data.rmorie.com). The tier serves ollama.com cloud models and
-Cloudflare Workers AI models (kimi-k2.6:cf,
+additional AI models (kimi-k2.6:cf,
 kimi-k2.7-code:cf, deepseek-v4-pro:cf,
 deepseek-v4-flash:cf, glm-5.2:cf, glm-5.3:cf,
 glm-5.3-flash:cf, gpt-oss-120b:cf, gpt-oss-20b:cf,
@@ -16,7 +16,7 @@ rmorie command-line agent instead, as before.'><meta property="og:description" c
 at https://llm.rmorie.com through rmoriebricklayer, using the
 key that morie_data_hosted_login() stores (the same key
 opens data.rmorie.com). The tier serves ollama.com cloud models and
-Cloudflare Workers AI models (kimi-k2.6:cf,
+additional AI models (kimi-k2.6:cf,
 kimi-k2.7-code:cf, deepseek-v4-pro:cf,
 deepseek-v4-flash:cf, glm-5.2:cf, glm-5.3:cf,
 glm-5.3-flash:cf, gpt-oss-120b:cf, gpt-oss-20b:cf,
@@ -66,7 +66,7 @@ rmorie command-line agent instead, as before.'><meta name="google-site-verificat
 at <a href="https://llm.rmorie.com" class="external-link">https://llm.rmorie.com</a> through <span class="pkg">rmoriebricklayer</span>, using the
 key that <code><a href="morie_data_hosted_catalog.html">morie_data_hosted_login()</a></code> stores (the same key
 opens data.rmorie.com). The tier serves ollama.com cloud models and
-Cloudflare Workers AI models (<code>kimi-k2.6:cf</code>,
+additional AI models (<code>kimi-k2.6:cf</code>,
 <code>kimi-k2.7-code:cf</code>, <code>deepseek-v4-pro:cf</code>,
 <code>deepseek-v4-flash:cf</code>, <code>glm-5.2:cf</code>, <code>glm-5.3:cf</code>,
 <code>glm-5.3-flash:cf</code>, <code>gpt-oss-120b:cf</code>, <code>gpt-oss-20b:cf</code>,
@@ -115,7 +115,7 @@ when neither a key nor the <code>rmorie</code> binary is available.</p>
 <span class="r-in"><span><span class="fu">ask</span><span class="op">(</span><span class="st">"which bundled datasets cover Toronto police use-of-force?"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co"># Pin a Workers AI model.</span></span></span>
+<span class="r-in"><span><span class="co"># Pin one of the additional AI models.</span></span></span>
 <span class="r-in"><span><span class="fu">ask</span><span class="op">(</span><span class="st">"summarise the SIU director's-report corpus"</span>, model <span class="op">=</span> <span class="st">"gpt-oss-120b:cf"</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."</span>
 <span class="r-in"><span></span></span>
