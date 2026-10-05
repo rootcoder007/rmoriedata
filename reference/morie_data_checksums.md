@@ -29,30 +29,30 @@ str(ck)
 #> 'data.frame':    210 obs. of  4 variables:
 #>  $ path  : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...
 #>  $ file  : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...
-#>  $ bytes : num  23210 14421 23807 10180 131404 ...
-#>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "c64da89ac8a4811bfcdf3adeb50f6933211696fbf54282e4b3a9105b4ffac2b3" "80660009f0311a8830da9ae3a1a31d8c42558e20317040cf25fdb70da41868bf" "c72fe9930729dac1def8861fd68bdff6d061b73f97ae7bee31dd50cff012d832" ...
+#>  $ bytes : num  23210 14421 23807 10181 131454 ...
+#>  $ sha256: chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "7dea162bf542aab8f646ad54900e18332c4de1424787afc4cd93a05405d4caf2" "84a1e31c285e30788946073e8ea6eb1a92ffda9700344c911eac716750bca374" "9bec54ff084fb082a09b0417b0ec738c0d6c99058feb2dc73759667d67510841" ...
 head(ck)
 #>                      path                    file  bytes
 #> 1 OTIS_DATA_DICTIONARY.md OTIS_DATA_DICTIONARY.md  23210
 #> 2            _catalog.csv            _catalog.csv  14421
 #> 3          _checksums.csv          _checksums.csv  23807
-#> 4          _checksums.sig          _checksums.sig  10180
-#> 5             _schema.csv             _schema.csv 131404
+#> 4          _checksums.sig          _checksums.sig  10181
+#> 5             _schema.csv             _schema.csv 131454
 #> 6       _signing_key.json       _signing_key.json    197
 #>                                                             sha256
 #> 1 bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00
-#> 2 c64da89ac8a4811bfcdf3adeb50f6933211696fbf54282e4b3a9105b4ffac2b3
-#> 3 80660009f0311a8830da9ae3a1a31d8c42558e20317040cf25fdb70da41868bf
-#> 4 c72fe9930729dac1def8861fd68bdff6d061b73f97ae7bee31dd50cff012d832
-#> 5 5939e9531af213f77251d20fdaf9d13debf7d26d556505d266c99f48bba980d2
+#> 2 7dea162bf542aab8f646ad54900e18332c4de1424787afc4cd93a05405d4caf2
+#> 3 84a1e31c285e30788946073e8ea6eb1a92ffda9700344c911eac716750bca374
+#> 4 9bec54ff084fb082a09b0417b0ec738c0d6c99058feb2dc73759667d67510841
+#> 5 24c14b6b500947d424f98a8a1479cf250ca1a694e440cc17788d20755d7dae0b
 #> 6 f97d3e9ae0c1ed10264961b396b5fabd019a179fa3123e9267b12ec6b2797a9a
 
 # Total bundled payload and the largest few files.
 sum(ck$bytes)
-#> [1] 21039798
+#> [1] 19064678
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
-#> 153 siu_directors_reports.parquet 6525285
+#> 153 siu_directors_reports.parquet 4563499
 #> 34            describe_corpus.Rds 1712072
 #> 33       cpads_pumf_synthetic.csv  893252
 

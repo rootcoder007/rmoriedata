@@ -43,7 +43,7 @@ tbls <- cat[cat$kind == "table", c("slug", "n_rows", "n_cols")]
 head(tbls[order(-tbls$n_rows), ])
 #>                               slug n_rows n_cols
 #> 79               siu_drid_manifest   4749      9
-#> 78           siu_directors_reports   4623     65
+#> 78           siu_directors_reports   4613     66
 #> 37       nyc_opendata_bulk_catalog   2851      7
 #> 28  edmonton_opendata_bulk_catalog   2027      7
 #> 23   chicago_opendata_bulk_catalog   1856      7

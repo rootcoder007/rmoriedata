@@ -1,7 +1,7 @@
 # Load the Ontario SIU director's-report corpus
 
 Returns the bundled Ontario Special Investigations Unit (SIU)
-director's-report table: one row per report drid, 65 structured columns
+director's-report table: one row per report drid, 66 structured columns
 (police service, incident / notification / decision dates, investigator
 and witness / subject-official counts, affected-person demographics,
 injuries, legislation, charges verdict, director's decision, and
@@ -50,10 +50,23 @@ A `data.frame` (or tibble) of SIU director's-report rows.
 For the English reports marked `panel_reviewed == "TRUE"`, the 16 key
 columns were verified by a multi-agent LLM review panel against the full
 report text and the parser's guess resolved to the correct value; the
-subject-official count is filled for 100\\ (witness-officer-only
-investigations are a genuine 0). French reports carry the parser values
-and `panel_reviewed == "FALSE"`, except `police_service`, which is their
-English report's.
+subject-official count is filled for every one of them
+(witness-officer-only investigations are a genuine 0). A French report
+carries its English report's reviewed case facts (the dates, the team,
+the counts, the affected person's age and sex, the charges and the
+director's view) and `panel_reviewed == "FALSE"`; its text fields stay
+French, and its `police_service` is its English report's service under
+the name the SIU's French pages use.
+
+`charges_recommended` is `"FALSE"`, `"TRUE"` or empty here (every column
+is text); in the typed table,
+`morie_data_load("siu_directors_reports")`, it is logical (`FALSE`,
+`TRUE`, or `NA` when the report does not say). `corrigenda` holds the
+SIU's correction notice of a report (a corrigendum is applied to the
+report it corrects, not counted as a report). `narrative_summary` is
+empty except where the scrape held report text (it held the SIU's
+mandate paragraph or the page title), and `supplemental_materials` lists
+the legislation and case-law links a report cites.
 
 `police_service` is the service of the subject officials – not the force
 that notified the SIU, which is often a custody, requesting or
@@ -89,15 +102,15 @@ typed store for analysis and this loader for the parser round trip.
 # Default: every parsed report, as a base data.frame.
 all <- load_siu_reports()
 nrow(all)
-#> [1] 4623
+#> [1] 4613
 ncol(all)
-#> [1] 65
+#> [1] 66
 
 # `lang` filters the corpus by report language.
 en <- load_siu_reports(lang = "en") # English director's reports
 fr <- load_siu_reports(lang = "fr") # French director's reports
 nrow(en)
-#> [1] 2319
+#> [1] 2309
 nrow(fr)
 #> [1] 2304
 
@@ -115,9 +128,9 @@ if (nrow(en)) {
 }
 #> 
 #>          Toronto Police Service       Ontario Provincial Police 
-#>                             504                             450 
+#>                             503                             450 
 #>            Peel Regional Police Niagara Regional Police Service 
-#>                             203                             102 
+#>                             200                             102 
 #>           Ottawa Police Service 
 #>                              99 
 ```

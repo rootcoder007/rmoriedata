@@ -82,8 +82,8 @@ A `data.frame`/`tibble`, or a length-1 character Parquet path when
 
 ## Details
 
-Parquet I/O uses this package's own native codec (R/aaa_parquet.R); no
-package), so no arrow install is required.
+Parquet I/O uses this package's own native codec (R/aaa_parquet.R), so
+no arrow install is required.
 
 ## Examples
 

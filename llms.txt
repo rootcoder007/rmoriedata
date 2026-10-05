@@ -23,10 +23,10 @@ install.packages(
 
 ## Curated tables at data.rmorie.com
 
-The 160 databases the MORIE project materialises from BigQuery public
-datasets are served from the edge and opened by the MORIE key.
-rmoriedata is self-sufficient: sign in once, then load any `db/table`
-key.
+The 161 databases (203 tables on 2026-10-05) the MORIE project
+materialises from BigQuery public datasets are served from the edge and
+opened by the MORIE key. rmoriedata is self-sufficient: sign in once,
+then load any `db/table` key.
 
 ``` r
 
@@ -69,7 +69,23 @@ still data):
   [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md),
   [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md),
   [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md),
-  [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md).
+  [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md);
+  [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+  checks every bundled file against the signed manifest.
+- **Ontario SIU director’s reports** —
+  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  returns the reviewed corpus (one row per report, French and English,
+  with corrigenda applied).
+- **CIHI data tables** —
+  [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
+  lists the open workbooks and
+  [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
+  downloads one (live, with a Wayback fallback).
+- **Chicago** —
+  [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+  (below) and
+  [`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md)
+  for the cached full datasets.
 - **Differential privacy + re-identification risk** —
   [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md),
   [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md),
@@ -93,7 +109,8 @@ Chicago open data; the full datasets are fetched on demand and cached.
 
 library(rmoriedata)
 data(complaint_sample)                       # bundled sample, offline
-crimes <- load_chicago_data("complaints", full = TRUE)   # full data (Socrata)
+crimes <- load_chicago_data("complaints", full = TRUE, limit = 200)  # the full data, first 200 rows
+# omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)
 pq <- load_chicago_data("arrests", as = "parquet_path")  # Parquet for Python
 ```
 

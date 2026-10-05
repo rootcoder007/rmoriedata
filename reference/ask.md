@@ -34,8 +34,9 @@ ask(question, model = NULL, backend = "auto")
 - backend:
 
   `"auto"` (the hosted tier when a key is stored, else the `rmorie`
-  binary), `"hosted"`, or a backend name for the `rmorie` agent such as
-  `"ollama"`.
+  binary), `"hosted"` (the hosted tier only), or `"cli"` (the `rmorie`
+  binary's agent, with its own fallback chain: the hosted tier, then a
+  local Ollama).
 
 ## Value
 
@@ -45,22 +46,24 @@ neither a key nor the `rmorie` binary is available.
 ## Examples
 
 ``` r
-# \donttest{
+if (FALSE) { # \dontrun{
+# These need a stored key (morie_data_hosted_login()) or the rmorie binary.
 # After morie_data_hosted_login(): the hosted tier answers.
 ask("which bundled datasets cover Toronto police use-of-force?")
-#> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
 
 # Pin one of the additional AI models.
 ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
-#> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
 
-# Force the rmorie command-line agent with a local Ollama.
-ask("list the Chicago datasets", backend = "ollama")
-#> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
-# }
+# Ask through the rmorie command-line agent.
+ask("list the Chicago datasets", backend = "cli")
+} # }
 
 # With no key stored and no rmorie binary on PATH the call returns a
-# sign-in hint, not an error -- safe to run anywhere:
+# sign-in hint, not an error (no network); an empty config directory
+# stands in for a machine that has never signed in:
+old <- Sys.getenv(c("XDG_CONFIG_HOME", "MORIE_HOSTED_KEY"))
+Sys.setenv(XDG_CONFIG_HOME = tempfile(), MORIE_HOSTED_KEY = "")
 if (!nzchar(Sys.which("rmorie"))) ask("hello")
 #> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
+do.call(Sys.setenv, as.list(old))
 ```

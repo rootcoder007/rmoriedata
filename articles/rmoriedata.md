@@ -113,13 +113,13 @@ structured columns.
 
 en <- load_siu_reports(lang = "en")
 nrow(en)
-#> [1] 2319
+#> [1] 2309
 head(sort(table(en$police_service), decreasing = TRUE), 5)
 #> 
 #>          Toronto Police Service       Ontario Provincial Police 
-#>                             504                             450 
+#>                             503                             450 
 #>            Peel Regional Police Niagara Regional Police Service 
-#>                             203                             102 
+#>                             200                             102 
 #>           Ottawa Police Service 
 #>                              99
 ```
@@ -152,7 +152,7 @@ Verify you’re using the exact data slice the package shipped:
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
-#> 153 siu_directors_reports.parquet 6525285
+#> 153 siu_directors_reports.parquet 4563499
 #> 33            describe_corpus.Rds 1712072
 #> 32       cpads_pumf_synthetic.csv  893252
 

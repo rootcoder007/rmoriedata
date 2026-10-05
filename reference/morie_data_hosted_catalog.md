@@ -1,11 +1,11 @@
 # Curated datasets at data.rmorie.com
 
-Beyond the open data this package ships, the MORIE project keeps 160
-databases materialised from Google BigQuery public datasets (Chicago
-crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
-Ethereum, World Bank, ...) and serves their tables from the edge. They
-open with the MORIE key that rmorie, morie or rmoriebricklayer store
-(`rmorie login`, `rmorie::morie_llm_login()`,
+Beyond the open data this package ships, the MORIE project keeps more
+than 160 databases materialised from Google BigQuery public datasets
+(Chicago crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA,
+Hacker News, Ethereum, World Bank, ...) and serves their tables from the
+edge. They open with the MORIE key that rmorie, morie or
+rmoriebricklayer store (`rmorie login`, `rmorie::morie_llm_login()`,
 [`rmoriebricklayer::bricklayer_llm_login()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html)).
 `morie_data_hosted_catalog()` returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
