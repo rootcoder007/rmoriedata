@@ -1,0 +1,697 @@
+drid,language,case_number,field,old_value,new_value,reason
+361,en,,_drop,,,page drid 361 has no report text (title 'AR2018')
+362,en,,_drop,,,page drid 362 has no report text (title 'AR2018')
+386,en,18-OFD-283,_drop,,,"French copy of 18-OFD-283, which already has its French row"
+974,en,19-OCD-095,_drop,,,page drid 974 has no report text (title '19-OCD-095')
+1330,en,20-OCI-323,_drop,,,page drid 1330 has no report text (title '20-OCI-323')
+1485,en,21-TSA-111,_drop,,,page drid 1485 has no report text (title '21-TSA-111')
+1490,en,21-OFI-102,_drop,,,page drid 1490 has no report text (title '21-OFI-102')
+1503,en,20-OCI-011,_drop,,,page drid 1503 has no report text (title '20-OCI-011')
+1532,en,21-OVI-170,_drop,,,page drid 1532 has no report text (title '21-OVI-170')
+1539,en,21-OVI-170,_drop,,,page drid 1539 has no report text (title '21-OVI-170')
+1579,en,21-TSA-180,_drop,,,page drid 1579 has no report text (title '21-TSA-180')
+1590,en,21-TSA-180,_drop,,,page drid 1590 has no report text (title '21-TSA-180')
+1637,en,21-PSA-212,_drop,,,page drid 1637 has no report text (title '21-PSA-212')
+1651,en,21-PSA-212,_drop,,,page drid 1651 has no report text (title '21-PSA-212')
+1679,en,21-PSA-235,_drop,,,page drid 1679 has no report text (title '21-PSA-235')
+1692,en,21-PSA-235,_drop,,,page drid 1692 has no report text (title '21-PSA-235')
+1709,en,21-OSA-250,_drop,,,page drid 1709 has no report text (title '21-OSA-250')
+1712,en,21-PVI-399,_drop,,,page drid 1712 has no report text (title '21-PVI-399')
+1732,en,21-OSA-195,_drop,,,page drid 1732 has no report text (title '21-OSA-195')
+1745,en,21-OSA-195,_drop,,,page drid 1745 has no report text (title '21-OSA-195')
+2855,en,18-PVI-175,_drop,,,page drid 2855 has no report text (title '18-PVI-175')
+2998,en,17-OCD-262,_drop,,,page drid 2998 has no report text (title '17-OCD-262')
+3552,en,09-OFD-090,_language,en,fr,page drid 3552 is the French report of 09-OFD-090
+3553,en,05-TFD-080,_language,en,fr,page drid 3553 is the French report of 05-TFD-080
+3554,en,05-OFD-162,_language,en,fr,page drid 3554 is the French report of 05-OFD-162
+3555,en,06-OFD-062,_language,en,fr,page drid 3555 is the French report of 06-OFD-062
+3557,en,08-TFD-026,_language,en,fr,page drid 3557 is the French report of 08-TFD-026
+3558,en,09-OFD-052,_language,en,fr,page drid 3558 is the French report of 09-OFD-052
+3560,en,07-OFD-063,_language,en,fr,page drid 3560 is the French report of 07-OFD-063
+3562,en,10-OFD-278,_language,en,fr,page drid 3562 is the French report of 10-OFD-278
+3565,en,10-PFD-079,_language,en,fr,page drid 3565 is the French report of 10-PFD-079
+3566,en,05-OFD-068,_language,en,fr,page drid 3566 is the French report of 05-OFD-068
+3567,en,06-TFD-101,_language,en,fr,page drid 3567 is the French report of 06-TFD-101
+3568,en,06-OFD-154,_language,en,fr,page drid 3568 is the French report of 06-OFD-154
+3569,en,07-OFD-049,_language,en,fr,page drid 3569 is the French report of 07-OFD-049
+3570,en,07-OFD-240,_language,en,fr,page drid 3570 is the French report of 07-OFD-240
+3591,en,07-OFD-245,_language,en,fr,page drid 3591 is the French report of 07-OFD-245
+3592,en,07-OFD-245,_drop,,,same French page as drid 3591
+3593,en,08-TFD-036,_language,en,fr,page drid 3593 is the French report of 08-TFD-036
+3594,en,09-PFD-149,_language,en,fr,page drid 3594 is the French report of 09-PFD-149
+3595,en,09-PFD-160,_language,en,fr,page drid 3595 is the French report of 09-PFD-160
+3596,en,10-OFD-178,_language,en,fr,page drid 3596 is the French report of 10-OFD-178
+3597,en,05-OFD-024,_language,en,fr,page drid 3597 is the French report of 05-OFD-024
+3598,en,05-PFD-154,_language,en,fr,page drid 3598 is the French report of 05-PFD-154
+3599,en,05-OFD-169,_language,en,fr,page drid 3599 is the French report of 05-OFD-169
+3600,en,10-TFD-061,_language,en,fr,page drid 3600 is the French report of 10-TFD-061
+3601,en,10-TFD-182,_language,en,fr,page drid 3601 is the French report of 10-TFD-182
+3602,en,11-OFD-042,_language,en,fr,page drid 3602 is the French report of 11-OFD-042
+3604,en,11-OFD-156,_language,en,fr,page drid 3604 is the French report of 11-OFD-156
+3605,en,11-TFD-150,_language,en,fr,page drid 3605 is the French report of 11-TFD-150
+3606,en,07-PFD-066,_language,en,fr,page drid 3606 is the French report of 07-PFD-066
+3607,en,12-PFD-116,_language,en,fr,page drid 3607 is the French report of 12-PFD-116
+3608,en,13-TFD-108,_language,en,fr,page drid 3608 is the French report of 13-TFD-108
+3609,en,13-PFD-178,_language,en,fr,page drid 3609 is the French report of 13-PFD-178
+3654,en,12-TFD-104,_language,en,fr,page drid 3654 is the French report of 12-TFD-104
+3655,en,12-PFD-123,_language,en,fr,page drid 3655 is the French report of 12-PFD-123
+3656,en,13-TFD-130,_language,en,fr,page drid 3656 is the French report of 13-TFD-130
+3657,en,09-TFD-310,_language,en,fr,page drid 3657 is the French report of 09-TFD-310
+3659,en,05-OCD-041,_language,en,fr,page drid 3659 is the French report of 05-OCD-041
+3661,en,05-TCD-052,_language,en,fr,page drid 3661 is the French report of 05-TCD-052
+3662,en,05-OCD-085,_language,en,fr,page drid 3662 is the French report of 05-OCD-085
+3663,en,05-OCD-098,_language,en,fr,page drid 3663 is the French report of 05-OCD-098
+3664,en,06-OCD-025,_language,en,fr,page drid 3664 is the French report of 06-OCD-025
+3665,en,06-TCD-093,_language,en,fr,page drid 3665 is the French report of 06-TCD-093
+3666,en,08-PCD-115,_language,en,fr,page drid 3666 is the French report of 08-PCD-115
+3671,en,10-PCD-111,_language,en,fr,page drid 3671 is the French report of 10-PCD-111
+3675,en,11-TCD-155,_language,en,fr,page drid 3675 is the French report of 11-TCD-155
+3676,en,13-OCD-141,_language,en,fr,page drid 3676 is the French report of 13-OCD-141
+3681,en,07-OCD-088,_language,en,fr,page drid 3681 is the French report of 07-OCD-088
+3683,en,10-OCD-242,_language,en,fr,page drid 3683 is the French report of 10-OCD-242
+3684,en,13-TCD-069,_language,en,fr,page drid 3684 is the French report of 13-TCD-069
+3685,en,13-OCD-077,_language,en,fr,page drid 3685 is the French report of 13-OCD-077
+3688,en,08-OOD-230,_language,en,fr,page drid 3688 is the French report of 08-OOD-230
+3689,en,11-OCD-015,_language,en,fr,page drid 3689 is the French report of 11-OCD-015
+3764,en,23-OCI-001,_drop,,,page drid 3764 has no report text (title '23-OCI-001')
+3803,en,,_language,en,fr,page drid 3803 is the French report of 
+3935,en,24-TVD-119,_drop,,,page drid 3935 has no report text (title '24-TVD-119')
+4156,en,08-OFD-255,_language,en,fr,page drid 4156 is the French report of 08-OFD-255
+4647,en,25-OCI-173,_drop,,,page drid 4647 has no report text (title '25-OCI-173')
+4840,en,25-OCI-314,_drop,,,page drid 4840 has no report text (title '25-OCI-314')
+4870,en,25-OCI-330,_drop,,,page drid 4870 has no report text (title '25-OCI-330')
+5068,en,23-OOD-536,_drop,,,"French copy of 23-OOD-536, which already has its French row"
+144,en,18-PCI-003,police_service,OPP,Ontario Provincial Police,one spelling per service
+186,en,18-OCI-032,police_service,Ontario Provincial Police,Dryden Police Service,the SO was a Dryden Police Service officer at the OPP detachment
+242,en,18-PCD-322,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+305,en,18-PCI-133,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+383,en,18-PCD-251,police_service,West Nipissing Police Service,Ontario Provincial Police,OPP personnel acted under the command of the SO; the WNPS had contained the scene
+385,en,18-OFD-283,police_service,,Halton Regional Police Service,"another report of the same case, panel-reviewed"
+443,en,18-OCD-273,police_service,Greater Sudbury Police Service,Barrie Police Service,"the report names the SO of the BPS (Barrie), who commanded the operation after the GSPS"
+457,en,18-TCI-315,police_service,Toronto Police Services,Toronto Police Service,one spelling per service
+463,en,18-PCI-294,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+620,en,18-OCI-342,police_service,,Peterborough Police Service,"another report of the same case, panel-reviewed"
+646,en,19-PVI-129,police_service,Thunder Bay Police Service,Ontario Provincial Police,the OPP reported the collision of its unmarked cruiser; the TBPS only reconstructed it (P file)
+668,en,19-OVD-161,police_service,Ontario Provincial Police,Ottawa Police Service,"the decision names the SO of the OPS, who pursued the vehicle"
+689,en,19-OCI-048,police_service,Niagara Regional Police Services,Niagara Regional Police Service,one spelling per service
+828,en,19-OCI-221,police_service,Ontario Provincial Police,Windsor Police Service,"the report does not give the subject officials' services; an O file, notified by the WPS in Windsor"
+1029,en,20-PVI-270,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1069,en,20-PCI-186,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1126,en,20-PCI-139,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1193,en,20-PCI-266,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1325,en,21-PFP-012,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1482,en,21-PFP-112,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1522,en,20-PFD-225,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+1658,en,21-TCI-230,police_service,Toronto Police Service (TPS),Toronto Police Service,one spelling per service
+1662,en,21-TCI-268,police_service,Hamilton Police Service,Toronto Police Service,the SO was an off-duty TPS officer; the HPS only held the Complainant in custody
+1940,en,22-PCD-004,police_service,Durham Regional Police Service,Ontario Provincial Police,no subject official was designated; the OPP led the pursuit (P file)
+1961,en,22-PCD-018,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+2110,en,22-PCD-124,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+2230,en,22-OFD-233,police_service,Hamilton Police Service and Halton Regional Police Service,Hamilton Police Service,"SO #1 and SO #2 were HPS and SO #3 and SO #4 HRPS; the first-named, notifying service in Hamilton"
+2251,en,22-PVI-227,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+2298,en,22-TVI-271,police_service,Halton Regional Police Service,Toronto Police Service,the SO was a TPS officer seconded to the ROPE squad; the HRPS only reconstructed the collision
+2577,en,23-TCI-189,police_service,"Joint Forces Operation (TPS, OPP, NRPS, YRP, HRPS)",Toronto Police Service,"the report names the SO of the TPS, who led the joint-forces entry"
+2718,en,23-PVI-296,police_service,"Ontario Provincial Police (OPP), Kawartha Lakes Detachment",Ontario Provincial Police,one spelling per service
+2785,en,23-PCD-357,police_service,Halton Regional Police Service,Ontario Provincial Police,the SO was the OPP officer in charge of the TRU operation; the HRPS held the warrant
+2934,en,17-PCI-315,police_service,Durham Regional Police Service,Ontario Provincial Police,the SO responded to the OPP call and made the arrest; DRPS officers assisted after
+2940,en,17-PVI-331,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+3008,en,17-OCI-148,police_service,Ontario Provincial Police,Durham Regional Police Service,the SO was a DRPS canine officer; the OPP took custody afterwards
+3037,en,17-OCI-219,police_service,Kingston Police Service,Kingston Police,one spelling per service
+3049,en,17-OCI-143,police_service,Toronto Police Service,London Police Service,"LPS Emergency Response Unit officers, including the SO, executed the warrant for the TPS"
+3051,en,17-PVI-105,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+3145,en,17-OCI-017,police_service,"London Police Service (LPS), Ontario Provincial Police (OPP), and Windsor Police Service (WPS)",London Police Service,SO #1 and SO #2 were the uniformed LPS officers who took custody
+3197,en,17-OCD-067,police_service,Kingston Police Service,Kingston Police,one spelling per service
+3329,en,16-OCI-241,police_service,Niagara Regional Police Services,Niagara Regional Police Service,one spelling per service
+3534,en,05-OFD-162,police_service,Ontario Provincial Police,York Regional Police,the report's header and narrative: York Regional Police officers shot the man
+3550,en,07-OFD-240,police_service,,Waterloo Regional Police Service,the report's header: Waterloo Regional Police
+3583,en,11-OFD-114,police_service,Kawartha Lakes Police Service,Peterborough-Lakefield Community Police Service,the officers were the Peterborough-Lakefield ERT assisting the Kawartha Lakes service (report header)
+3644,en,10-OCD-242,police_service,Ontario Provincial Police,Orangeville Police Service,"the report's header: Orangeville Police Service, in whose cells the man died"
+3646,en,13-OCD-077,police_service,Waterloo Regional Police Service,Guelph Police Service,the report's header names the Guelph Police Service
+3649,en,08-OOD-230,police_service,Kingston Police Service,Kingston Police,one spelling per service
+3781,en,23-PFP-492,police_service,OPP,Ontario Provincial Police,one spelling per service
+4125,en,24-PCI-286,police_service,OPP,Ontario Provincial Police,one spelling per service
+4176,en,24-OCI-333,police_service,PRP,Peel Regional Police,one spelling per service
+4179,en,24-OVI-321,police_service,Waterloo Regional Police,Waterloo Regional Police Service,one spelling per service
+4322,en,24-OCI-466,police_service,Niagara Regional Police Services,Niagara Regional Police Service,one spelling per service
+4437,en,25-OCI-008,police_service,HRPS,Halton Regional Police Service,one spelling per service
+4444,en,25-ICI-014,police_service,Nishnawbe Aski Police Service,Nishnawbe-Aski Police Service,one spelling per service
+4481,en,25-ICI-047,police_service,Nishnawbe-Aski Police Service (NAPS),Nishnawbe-Aski Police Service,one spelling per service
+4496,en,25-PCI-090,police_service,OPP,Ontario Provincial Police,one spelling per service
+4505,en,25-ICI-060,police_service,Nishnawbe Aski Police Service,Nishnawbe-Aski Police Service,one spelling per service
+4550,en,25-PFP-084,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+4564,en,25-OCI-107,police_service,Hamilton Police Service,Niagara Regional Police Service,the Complainant was arrested by NRPS officers assisting the HPS
+4599,en,25-OCD-144,police_service,Niagara Parks Police Service (NPPS),Niagara Parks Police Service,one spelling per service
+4656,en,25-OCI-189,police_service,Ontario Provincial Police,London Police Service,SO #1 and SO #2 were LPS Emergency Response Unit officers
+4712,en,24-OCI-551,police_service,Ontario Provincial Police,London Police Service,the SO was the LPS officer who arrested the Complainant; the OPP held the warrant
+4781,en,25-ICI-338,police_service,Nishnawbe-Aski Police Service ( NAPS ),Nishnawbe-Aski Police Service,one spelling per service
+4850,en,25-IFD-288,police_service,Nishnawbe Aski Police Service,Nishnawbe-Aski Police Service,one spelling per service
+4923,en,25-PFI-401,police_service,Ontario Provincial Police (OPP),Ontario Provincial Police,one spelling per service
+4985,en,25-OCI-460,police_service,Cornwall Police Service (CPS),Cornwall Police Service,one spelling per service
+5008,en,25-IVI-482,police_service,Nishnawbe Aski Police Service,Nishnawbe-Aski Police Service,one spelling per service
+5017,en,25-OCI-494,police_service,PRP,Peel Regional Police,one spelling per service
+69,fr,17-OCI-220,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OCI-220"
+97,fr,17-OCI-292,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-292"
+105,fr,17-OCD-317,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCD-317"
+115,fr,18-OCD-051,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OCD-051"
+120,fr,17-OVI-273,police_service,Service de police de Toronto,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OVI-273"
+126,fr,17-OCI-377,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-377"
+187,fr,18-OCI-032,police_service,Police provinciale de l'Ontario,Service de police de Dryden,"service of the subject officials, from the reviewed English report of 18-OCI-032"
+215,fr,18-OCI-124,police_service,,Service communautaire de la police de Cornwall,"service of the subject officials, from the reviewed English report of 18-OCI-124"
+221,fr,18-OFI-295,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OFI-295"
+258,fr,18-OVI-182,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OVI-182"
+260,fr,18-OFD-102,police_service,Service de police d'Hamilton,Service de police de Hamilton,"service of the subject officials, from the reviewed English report of 18-OFD-102"
+308,fr,18-OCI-160,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OCI-160"
+333,fr,18-OVD-062,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OVD-062"
+366,fr,19-OVI-010,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OVI-010"
+368,fr,18-OVI-336,police_service,Service de police de Chatham Kent,Service de police de Chatham-Kent,"service of the subject officials, from the reviewed English report of 18-OVI-336"
+380,fr,19-OVI-100,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OVI-100"
+396,fr,18-OCI-228,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OCI-228"
+404,fr,18-OVI-231,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OVI-231"
+408,fr,18-OCI-178,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OCI-178"
+416,fr,18-OCI-256,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 18-OCI-256"
+422,fr,18-OCI-203,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OCI-203"
+426,fr,18-OVI-224,police_service,Service de police de Simcoe Sud,Service de police de South Simcoe,"service of the subject officials, from the reviewed English report of 18-OVI-224"
+434,fr,18-OCI-265,police_service,Service de police régional du Niagara,Service de police régional de Niagara,"service of the subject officials, from the reviewed English report of 18-OCI-265"
+438,fr,18-OCI-282,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OCI-282"
+440,fr,18-OCI-240,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OCI-240"
+464,fr,18-PCI-294,police_service,Service de police de Nipissing Ouest,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 18-PCI-294"
+472,fr,18-OCI-326,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OCI-326"
+478,fr,18-OCI-314,police_service,Service de police de Chatham Kent,Service de police de Chatham-Kent,"service of the subject officials, from the reviewed English report of 18-OCI-314"
+480,fr,18-OCD-278,police_service,Service de police de Kawartha Lakes à Lindsay,Service de police de Kawartha Lakes,"service of the subject officials, from the reviewed English report of 18-OCD-278"
+496,fr,18-OCI-361,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 18-OCI-361"
+502,fr,18-OCI-376,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OCI-376"
+536,fr,19-OCI-009,police_service,Service de police de Toronto,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OCI-009"
+544,fr,19-OCI-059,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-059"
+548,fr,19-OCI-006,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OCI-006"
+554,fr,19-OCI-004,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-004"
+563,fr,18-OCI-323,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 18-OCI-323"
+577,fr,19-OCI-046,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-046"
+579,fr,19-OVI-081,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OVI-081"
+593,fr,19-OCI-084,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-084"
+595,fr,19-OCI-110,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OCI-110"
+611,fr,19-OFI-193,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OFI-193"
+625,fr,19-OCI-149,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 19-OCI-149"
+649,fr,19-OCI-223,police_service,Service de police de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-223"
+669,fr,19-OVD-161,police_service,Police provinciale de l'Ontario,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 19-OVD-161"
+688,fr,19-OCI-195,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OCI-195"
+710,fr,19-OCI-171,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-171"
+732,fr,19-OCD-213,police_service,Police provinciale de l'Ontario,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCD-213"
+738,fr,19-OCI-292,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-292"
+740,fr,19-OCI-248,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-248"
+750,fr,19-OCI-230,police_service,Service de police de Smiths Falls,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 19-OCI-230"
+756,fr,19-OCI-305,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OCI-305"
+766,fr,19-OCI-282,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 19-OCI-282"
+770,fr,19-OVI-250,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OVI-250"
+778,fr,19-OCI-146,police_service,Police provinciale de l'Ontario,Service de police de Windsor,"service of the subject officials, from the reviewed English report of 19-OCI-146"
+780,fr,19-OVD-314,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 19-OVD-314"
+784,fr,19-OCD-206,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCD-206"
+798,fr,19-OCI-294,police_service,Police provinciale de l'Ontario,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-294"
+800,fr,20-OCI-022,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-022"
+825,fr,20-TCI-021,police_service,Service de police de London,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 20-TCI-021"
+834,fr,19-OCI-273,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-273"
+836,fr,19-OCI-235,police_service,Service de police d’Ottawa,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 19-OCI-235"
+866,fr,19-OCI-265,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-265"
+868,fr,20-OCI-079,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-079"
+882,fr,20-OCI-038,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-038"
+888,fr,20-OCI-094,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OCI-094"
+890,fr,19-OCI-278,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCI-278"
+905,fr,20-OCI-093,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 20-OCI-093"
+922,fr,20-OCI-045,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-045"
+938,fr,20-OCI-110,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-110"
+951,fr,20-OCI-059,police_service,Service de police de Chatham Kent,Service de police de Chatham-Kent,"service of the subject officials, from the reviewed English report of 20-OCI-059"
+955,fr,20-OCI-135,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-135"
+959,fr,20-OCI-170,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 20-OCI-170"
+965,fr,20-OVD-142,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OVD-142"
+995,fr,19-OCD-219,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCD-219"
+999,fr,20-OCI-114,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-114"
+1011,fr,20-OFD-075,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OFD-075"
+1016,fr,20-OCI-122,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 20-OCI-122"
+1026,fr,20-OFD-005,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OFD-005"
+1038,fr,20-OCI-160,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-160"
+1058,fr,20-OCI-176,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-176"
+1064,fr,20-OCI-209,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-209"
+1070,fr,20-PCI-186,police_service,Service de police de Chatham Kent,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 20-PCI-186"
+1082,fr,20-OVD-181,police_service,Un Ford Police,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OVD-181"
+1092,fr,20-OVI-146,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OVI-146"
+1104,fr,20-OFI-100,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OFI-100"
+1131,fr,19-OFI-286,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OFI-286"
+1133,fr,20-OCD-183,police_service,Police provinciale de l'Ontario,Service de police de Brockville,"service of the subject officials, from the reviewed English report of 20-OCD-183"
+1135,fr,20-OCI-296,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-296"
+1139,fr,20-OFI-158,police_service,Service de police régional de Halton,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OFI-158"
+1143,fr,20-OCD-133,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OCD-133"
+1179,fr,20-PFD-314,police_service,Service de police de Nipissing Ouest,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 20-PFD-314"
+1181,fr,19-OCD-277,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 19-OCD-277"
+1185,fr,20-OCI-350,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 20-OCI-350"
+1199,fr,20-OCI-335,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 20-OCI-335"
+1202,fr,20-OFD-144,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OFD-144"
+1222,fr,20-OCI-299,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCI-299"
+1253,fr,20-OVI-352,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OVI-352"
+1255,fr,20-OCD-216,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OCD-216"
+1308,fr,20-OFP-348,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OFP-348"
+1319,fr,21-OVI-008,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OVI-008"
+1339,fr,20-OCI-309,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OCI-309"
+1353,fr,20-OVI-096,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OVI-096"
+1359,fr,21-OVI-038,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OVI-038"
+1362,fr,20-OVI-260,police_service,Police provinciale de l'Ontario,Service de police de London,"service of the subject officials, from the reviewed English report of 20-OVI-260"
+1389,fr,21-OFP-039,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OFP-039"
+1397,fr,20-OFI-202,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OFI-202"
+1399,fr,21-OFD-040,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OFD-040"
+1403,fr,21-OCD-044,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCD-044"
+1408,fr,21-OCI-135,police_service,,Service de police de Smiths Falls,"service of the subject officials, from the reviewed English report of 21-OCI-135"
+1443,fr,21-OCI-062,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-062"
+1456,fr,21-OCI-085,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-085"
+1466,fr,21-OFI-092,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OFI-092"
+1484,fr,21-OFP-096,police_service,Service de police de Toronto,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OFP-096"
+1493,fr,21-OFP-113,police_service,Service de police de Brantford,Service de police de Guelph,"service of the subject officials, from the reviewed English report of 21-OFP-113"
+1495,fr,21-OSA-088,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OSA-088"
+1519,fr,21-OFP-120,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OFP-120"
+1525,fr,21-OCI-134,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-134"
+1528,fr,20-OCD-268,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 20-OCD-268"
+1533,fr,21-OVI-136,police_service,Service de police de Toronto,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OVI-136"
+1552,fr,21-OCI-148,police_service,Police provinciale de l'Ontario,Service de police de Dryden,"service of the subject officials, from the reviewed English report of 21-OCI-148"
+1553,fr,21-OVI-146,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 21-OVI-146"
+1571,fr,20-OFI-322,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 20-OFI-322"
+1583,fr,21-TFI-168,police_service,Service de police de Hamilton,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 21-TFI-168"
+1586,fr,21-OCI-184,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-184"
+1606,fr,21-OCD-188,police_service,Service de police régional de Niagara,Service de police des parcs du Niagara,"service of the subject officials, from the reviewed English report of 21-OCD-188"
+1618,fr,21-OCI-190,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-190"
+1629,fr,21-OCD-204,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCD-204"
+1646,fr,21-OCD-216,police_service,Police provinciale de l'Ontario,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 21-OCD-216"
+1650,fr,21-OCD-221,police_service,Service de police d’Ottawa,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 21-OCD-221"
+1687,fr,21-OCI-238,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-238"
+1691,fr,21-OCI-278,police_service,Police provinciale de l'Ontario,Service de police de Hanover,"service of the subject officials, from the reviewed English report of 21-OCI-278"
+1703,fr,21-OCI-240,police_service,Service de police de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OCI-240"
+1737,fr,21-OVI-295,police_service,Service de police d’Ottawa,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 21-OVI-295"
+1741,fr,21-OVI-274,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OVI-274"
+1760,fr,21-OCI-262,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-262"
+1773,fr,21-OFI-308,police_service,Service de police de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OFI-308"
+1782,fr,21-OFD-311,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 21-OFD-311"
+1792,fr,21-PCI-322,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 21-PCI-322"
+1798,fr,21-OCI-320,police_service,Police provinciale de l'Ontario,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OCI-320"
+1806,fr,21-OCI-331,police_service,Service de police d’Ottawa,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 21-OCI-331"
+1810,fr,21-TCI-329,police_service,Police provinciale de l’Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 21-TCI-329"
+1838,fr,21-OCI-349,police_service,Service de police Guelph,Service de police de Guelph,"service of the subject officials, from the reviewed English report of 21-OCI-349"
+1855,fr,21-OCI-368,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OCI-368"
+1860,fr,21-TFD-373,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 21-TFD-373"
+1891,fr,21-OFI-400,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OFI-400"
+1907,fr,21-OCI-414,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 21-OCI-414"
+1913,fr,21-OFP-416,police_service,Service de police de Waterloo,Service de police régional de Waterloo,"service of the subject officials, from the reviewed English report of 21-OFP-416"
+1919,fr,21-OCI-418,police_service,Service de police régional du Niagara,Service de police régional de Niagara,"service of the subject officials, from the reviewed English report of 21-OCI-418"
+1923,fr,21-OFI-419,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 21-OFI-419"
+1934,fr,21-OVI-430,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OVI-430"
+1955,fr,22-OCI-008,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-008"
+1957,fr,22-PFP-016,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PFP-016"
+1960,fr,22-TCI-011,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 22-TCI-011"
+1971,fr,21-OCD-027,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 21-OCD-027"
+1979,fr,22-OCI-025,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-025"
+1982,fr,22-OFI-027,police_service,Police provinciale de l'Ontario,Service de police de North Bay,"service of the subject officials, from the reviewed English report of 22-OFI-027"
+1987,fr,22-PCI-034,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PCI-034"
+1993,fr,22-OVI-033,police_service,Service de police de Peel à Brampton,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OVI-033"
+1998,fr,22-OCI-042,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-042"
+2001,fr,22-OCI-039,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-039"
+2017,fr,22-OCI-051,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-051"
+2029,fr,22-OCI-070,police_service,Service de police de Kawartha Lakes,Service de police de la ville de Kawartha Lakes,"service of the subject officials, from the reviewed English report of 22-OCI-070"
+2044,fr,21-OCI-421,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 21-OCI-421"
+2046,fr,22-OVI-073,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OVI-073"
+2048,fr,22-PCI-083,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PCI-083"
+2049,fr,22-OFP-068,police_service,Service de police de Peel à Mississauga,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OFP-068"
+2051,fr,22-PCD-079,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PCD-079"
+2052,fr,22-OCI-077,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-077"
+2074,fr,22-OVI-097,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OVI-097"
+2089,fr,22-OCI-115,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-115"
+2093,fr,22-OVI-116,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OVI-116"
+2094,fr,22-OCI-117,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-117"
+2100,fr,22-PVD-114,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PVD-114"
+2140,fr,22-PFP-138,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PFP-138"
+2157,fr,22-OCI-153,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OCI-153"
+2197,fr,22-OCI-190,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OCI-190"
+2209,fr,21-OCI-191,police_service,Police provinciale de l'Ontario,Service de police de Windsor,"service of the subject officials, from the reviewed English report of 21-OCI-191"
+2214,fr,22-POD-197,police_service,Service de police régional de Halton,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-POD-197"
+2217,fr,22-OFP-201,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OFP-201"
+2227,fr,22-PVD-208,police_service,Service de police d'Ottawa,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PVD-208"
+2238,fr,22-OVI-214,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OVI-214"
+2256,fr,22-PVI-227,police_service,Service de police régional de Durham,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PVI-227"
+2263,fr,22-OFD-020,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OFD-020"
+2267,fr,22-OCI-232,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OCI-232"
+2276,fr,22-OOD-243,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 22-OOD-243"
+2300,fr,22-OCD-267,police_service,Police provinciale de l'Ontario,Service de police de South Simcoe,"service of the subject officials, from the reviewed English report of 22-OCD-267"
+2302,fr,22-TVI-271,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 22-TVI-271"
+2330,fr,22-OFI-290,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OFI-290"
+2340,fr,22-OCI-300,police_service,Service de police de Barrie,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OCI-300"
+2350,fr,22-OFD-301,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OFD-301"
+2355,fr,22-OCI-308,police_service,Police provinciale de l'Ontario,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 22-OCI-308"
+2367,fr,22-OCI-323,police_service,Police provinciale de l'Ontario,Service de police de Windsor,"service of the subject officials, from the reviewed English report of 22-OCI-323"
+2368,fr,22-OFD-319,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OFD-319"
+2382,fr,22-OCI-329,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 22-OCI-329"
+2400,fr,23-OCI-014,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-014"
+2402,fr,23-OCI-010,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-010"
+2430,fr,23-OCI-037,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-037"
+2438,fr,23-OCI-042,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-042"
+2450,fr,23-OSA-032,police_service,Police provinciale de l'Ontario,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 23-OSA-032"
+2458,fr,23-OCI-055,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-055"
+2477,fr,23-OFI-071,police_service,Service de police d’Ottawa à Nepean,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 23-OFI-071"
+2500,fr,23-OVI-078,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OVI-078"
+2505,fr,23-OCI-011,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-011"
+2507,fr,23-PFP-082,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PFP-082"
+2512,fr,22-OFD-264,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 22-OFD-264"
+2525,fr,23-OCI-103,police_service,Service de police régional du Niagara,Service de police régional de Niagara,"service of the subject officials, from the reviewed English report of 23-OCI-103"
+2537,fr,23-OCI-116,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-116"
+2538,fr,23-OVI-109,police_service,Service de police de Toronto,Service de police régional de Durham,"service of the subject officials, from the reviewed English report of 23-OVI-109"
+2553,fr,23-OCI-124,police_service,Police provinciale de l'Ontario,Service de police de Kingston,"service of the subject officials, from the reviewed English report of 23-OCI-124"
+2557,fr,23-PFP-160,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PFP-160"
+2591,fr,23-TCI-189,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 23-TCI-189"
+2592,fr,23-PFP-181,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PFP-181"
+2600,fr,23-OCI-191,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-191"
+2611,fr,23-OFI-205,police_service,Police provinciale de l'Ontario,Service de police de Brantford,"service of the subject officials, from the reviewed English report of 23-OFI-205"
+2622,fr,23-OCD-210,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCD-210"
+2638,fr,23-OVI-232,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OVI-232"
+2645,fr,23-OCI-234,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-234"
+2657,fr,23-OFP-240,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OFP-240"
+2674,fr,23-OVI-262,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OVI-262"
+2683,fr,23-OCD-264,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCD-264"
+2686,fr,23-OCI-267,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-267"
+2700,fr,23-PVI-276,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PVI-276"
+2711,fr,23-PVI-095,police_service,Service de police régional de Halton,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PVI-095"
+2722,fr,23-OCI-286,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-286"
+2723,fr,23-TCI-293,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 23-TCI-293"
+2725,fr,23-OCI-299,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-299"
+2749,fr,23-PCI-313,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PCI-313"
+2756,fr,23-PFP-319,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PFP-319"
+2784,fr,23-OVD-343,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OVD-343"
+2787,fr,23-OCI-346,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-346"
+2790,fr,23-OCI-257,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-257"
+2793,fr,23-PCD-357,police_service,Service de police régional de Halton,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PCD-357"
+2801,fr,23-OCI-366,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-366"
+2804,fr,23-OCD-370,police_service,Service de police régional du Niagara,Service de police des parcs du Niagara,"service of the subject officials, from the reviewed English report of 23-OCD-370"
+2817,fr,23-OCI-391,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-391"
+2818,fr,23-PCI-380,police_service,Ontario Provincial Police,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 23-PCI-380"
+2819,fr,23-OCI-383,police_service,Police provinciale de l'Ontario,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 23-OCI-383"
+2820,fr,23-OCI-385,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-385"
+2822,fr,23-OCI-396,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-396"
+2830,fr,23-OCD-394,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCD-394"
+2831,fr,23-OCI-400,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-400"
+2835,fr,23-OCI-395,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 23-OCI-395"
+2838,fr,23-OFP-412,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OFP-412"
+2876,fr,23-OVI-403,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OVI-403"
+2919,fr,23-OCI-413,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-413"
+2960,fr,17-OFD-379,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OFD-379"
+2965,fr,17-OFD-363,police_service,Police provinciale de l'Ontario,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OFD-363"
+2969,fr,17-OCI-282,police_service,Service de police régional de Waterloo,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OCI-282"
+2975,fr,17-OCI-270,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-270"
+2994,fr,17-OCI-253,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-253"
+2996,fr,17-OFD-193,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OFD-193"
+3067,fr,17-OCI-107,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 17-OCI-107"
+3072,fr,17-OCI-144,police_service,Service de police de Toronto,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-144"
+3079,fr,17-OCI-204,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-204"
+3086,fr,17-OCI-221,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-221"
+3089,fr,17-OCI-165,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-165"
+3096,fr,17-OCI-173,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OCI-173"
+3099,fr,17-PCI-092,police_service,Service de police de l'Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 17-PCI-092"
+3102,fr,17-PCI-149,police_service,Service de police de West Grey,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 17-PCI-149"
+3106,fr,17-PCD-333,police_service,Service de police de Strathroy-Caradoc,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 17-PCD-333"
+3109,fr,17-OCI-143,police_service,Service de police de Toronto,Service de police de London,"service of the subject officials, from the reviewed English report of 17-OCI-143"
+3160,fr,17-OCI-064,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-064"
+3173,fr,17-PCI-101,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 17-PCI-101"
+3174,fr,17-OCI-022,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 17-OCI-022"
+3175,fr,17-OVI-114,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OVI-114"
+3179,fr,17-OCI-017,police_service,Police provinciale de l'Ontario,Service de police de London,"service of the subject officials, from the reviewed English report of 17-OCI-017"
+3183,fr,17-OCI-036,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-036"
+3189,fr,17-OCI-016,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OCI-016"
+3193,fr,16-OVI-292,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 16-OVI-292"
+3195,fr,16-OCI-188,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-188"
+3227,fr,16-OVI-326,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OVI-326"
+3235,fr,17-OCI-049,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 17-OCI-049"
+3284,fr,17-OCI-025,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-025"
+3285,fr,16-OCI-190,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 16-OCI-190"
+3289,fr,16-OCI-310,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-310"
+3293,fr,17-OCI-003,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 17-OCI-003"
+3294,fr,16-OVD-278,police_service,Police provinciale de l'Ontario,Service de police de Brantford,"service of the subject officials, from the reviewed English report of 16-OVD-278"
+3295,fr,16-OCD-238,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCD-238"
+3298,fr,16-OCI-186,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-186"
+3304,fr,16-OVI-293,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 16-OVI-293"
+3306,fr,16-OCI-317,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-317"
+3310,fr,16-OCI-257,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-257"
+3315,fr,16-PCI-299,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 16-PCI-299"
+3316,fr,16-OCI-264,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-264"
+3320,fr,16-OCI-289,police_service,Service de police de Simcoe-Sud,Service de police de South Simcoe,"service of the subject officials, from the reviewed English report of 16-OCI-289"
+3321,fr,16-OCI-288,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-288"
+3367,fr,16-OFI-234,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OFI-234"
+3385,fr,16-OVI-130,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OVI-130"
+3395,fr,16-OCI-151,police_service,Service de police de St,Service de police de St. Thomas,"service of the subject officials, from the reviewed English report of 16-OCI-151"
+3396,fr,16-OCD-135,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 16-OCD-135"
+3397,fr,16-OCI-122,police_service,La Police,Police régionale de York,"service of the subject officials, from the reviewed English report of 16-OCI-122"
+3398,fr,16-OCI-047,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 16-OCI-047"
+3469,fr,17-PVI-024,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 17-PVI-024"
+3477,fr,16-OVD-093,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OVD-093"
+3493,fr,16-OCI-098,police_service,Service de police du grand Sudbury,Service de police du Grand Sudbury,"service of the subject officials, from the reviewed English report of 16-OCI-098"
+3497,fr,16-OCD-212,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 16-OCD-212"
+3502,fr,16-TCD-224,police_service,Service de police de Toronto étaient,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 16-TCD-224"
+3506,fr,16-OCI-084,police_service,Service de police régional du Niagara,Service de police régional de Niagara,"service of the subject officials, from the reviewed English report of 16-OCI-084"
+3514,fr,16-OCI-065,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 16-OCI-065"
+3518,fr,16-OCI-056,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 16-OCI-056"
+3525,fr,23-OVD-418,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OVD-418"
+3552,fr,09-OFD-090,police_service,,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 09-OFD-090"
+3553,fr,05-TFD-080,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 05-TFD-080"
+3554,fr,05-OFD-162,police_service,,Police régionale de York,"service of the subject officials, from the reviewed English report of 05-OFD-162"
+3555,fr,06-OFD-062,police_service,,Police régionale de York,"service of the subject officials, from the reviewed English report of 06-OFD-062"
+3557,fr,08-TFD-026,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 08-TFD-026"
+3558,fr,09-OFD-052,police_service,,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 09-OFD-052"
+3560,fr,07-OFD-063,police_service,,Service de police de Hamilton,"service of the subject officials, from the reviewed English report of 07-OFD-063"
+3562,fr,10-OFD-278,police_service,,Service de police du Grand Sudbury,"service of the subject officials, from the reviewed English report of 10-OFD-278"
+3565,fr,10-PFD-079,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 10-PFD-079"
+3566,fr,05-OFD-068,police_service,,Service de police régional de Durham,"service of the subject officials, from the reviewed English report of 05-OFD-068"
+3567,fr,06-TFD-101,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 06-TFD-101"
+3568,fr,06-OFD-154,police_service,,Police régionale de York,"service of the subject officials, from the reviewed English report of 06-OFD-154"
+3569,fr,07-OFD-049,police_service,,Service de police de Sarnia,"service of the subject officials, from the reviewed English report of 07-OFD-049"
+3570,fr,07-OFD-240,police_service,,Service de police régional de Waterloo,"service of the subject officials, from the reviewed English report of 07-OFD-240"
+3591,fr,07-OFD-245,police_service,,Service de police régional de Halton,"service of the subject officials, from the reviewed English report of 07-OFD-245"
+3593,fr,08-TFD-036,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 08-TFD-036"
+3594,fr,09-PFD-149,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 09-PFD-149"
+3595,fr,09-PFD-160,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 09-PFD-160"
+3596,fr,10-OFD-178,police_service,,Service de police de Brantford,"service of the subject officials, from the reviewed English report of 10-OFD-178"
+3597,fr,05-OFD-024,police_service,,Service de police régional de Durham,"service of the subject officials, from the reviewed English report of 05-OFD-024"
+3598,fr,05-PFD-154,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 05-PFD-154"
+3599,fr,05-OFD-169,police_service,,Service de police de Thunder Bay,"service of the subject officials, from the reviewed English report of 05-OFD-169"
+3600,fr,10-TFD-061,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 10-TFD-061"
+3601,fr,10-TFD-182,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 10-TFD-182"
+3602,fr,11-OFD-042,police_service,,Service de police régional de Halton,"service of the subject officials, from the reviewed English report of 11-OFD-042"
+3603,fr,11-OFD-114,police_service,Service de police de Kawartha Lakes,Service de police communautaire de Peterborough-Lakefield,"service of the subject officials, from the reviewed English report of 11-OFD-114"
+3604,fr,11-OFD-156,police_service,,Police régionale de York,"service of the subject officials, from the reviewed English report of 11-OFD-156"
+3605,fr,11-TFD-150,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 11-TFD-150"
+3606,fr,07-PFD-066,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 07-PFD-066"
+3607,fr,12-PFD-116,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 12-PFD-116"
+3608,fr,13-TFD-108,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 13-TFD-108"
+3609,fr,13-PFD-178,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 13-PFD-178"
+3610,fr,14-OFD-077,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 14-OFD-077"
+3650,fr,14-OFD-086,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 14-OFD-086"
+3654,fr,12-TFD-104,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 12-TFD-104"
+3655,fr,12-PFD-123,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 12-PFD-123"
+3656,fr,13-TFD-130,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 13-TFD-130"
+3657,fr,09-TFD-310,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 09-TFD-310"
+3659,fr,05-OCD-041,police_service,,Service de police d'Owen Sound,"service of the subject officials, from the reviewed English report of 05-OCD-041"
+3661,fr,05-TCD-052,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 05-TCD-052"
+3662,fr,05-OCD-085,police_service,,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 05-OCD-085"
+3663,fr,05-OCD-098,police_service,,Service de police régional de Niagara,"service of the subject officials, from the reviewed English report of 05-OCD-098"
+3664,fr,06-OCD-025,police_service,,Service de police de Hamilton,"service of the subject officials, from the reviewed English report of 06-OCD-025"
+3665,fr,06-TCD-093,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 06-TCD-093"
+3666,fr,08-PCD-115,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 08-PCD-115"
+3670,fr,15-OFD-046,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 15-OFD-046"
+3671,fr,10-PCD-111,police_service,,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 10-PCD-111"
+3675,fr,11-TCD-155,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 11-TCD-155"
+3676,fr,13-OCD-141,police_service,,Service de police de Saugeen Shores,"service of the subject officials, from the reviewed English report of 13-OCD-141"
+3681,fr,07-OCD-088,police_service,,Service de police du Grand Sudbury,"service of the subject officials, from the reviewed English report of 07-OCD-088"
+3683,fr,10-OCD-242,police_service,,Service de police d'Orangeville,"service of the subject officials, from the reviewed English report of 10-OCD-242"
+3684,fr,13-TCD-069,police_service,,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 13-TCD-069"
+3685,fr,13-OCD-077,police_service,,Service de police de Guelph,"service of the subject officials, from the reviewed English report of 13-OCD-077"
+3688,fr,08-OOD-230,police_service,,Service de police de Kingston,"service of the subject officials, from the reviewed English report of 08-OOD-230"
+3689,fr,11-OCD-015,police_service,,Service de police de Hamilton,"service of the subject officials, from the reviewed English report of 11-OCD-015"
+3722,fr,23-OCI-441,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-441"
+3724,fr,23-OCI-450,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-450"
+3738,fr,23-OCI-463,police_service,Service de police de Toronto,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCI-463"
+3745,fr,23-OVI-455,police_service,Police provinciale de l'Ontario,Service de police de Saugeen Shores,"service of the subject officials, from the reviewed English report of 23-OVI-455"
+3784,fr,23-OCI-495,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-495"
+3793,fr,23-OFD-500,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OFD-500"
+3803,fr,,police_service,,Gendarmerie royale du Canada,"service of the subject officials, from the reviewed English report of "
+3806,fr,23-OFP-517,police_service,Service de police d’Ottawa,Service de police d'Ottawa,"service of the subject officials, from the reviewed English report of 23-OFP-517"
+3822,fr,23-OFP-529,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OFP-529"
+3826,fr,23-OCI-535,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 23-OCI-535"
+3842,fr,24-OVI-014,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OVI-014"
+3843,fr,24-OCI-016,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-016"
+3850,fr,24-OVI-019,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OVI-019"
+3851,fr,24-OCI-020,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 24-OCI-020"
+3862,fr,24-PVI-043,police_service,Service de police régional de York était,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PVI-043"
+3863,fr,24-OVI-046,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OVI-046"
+3864,fr,24-OCI-036,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OCI-036"
+3867,fr,24-OFP-045,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OFP-045"
+3886,fr,24-OCI-055,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OCI-055"
+3887,fr,24-PFI-059,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PFI-059"
+3893,fr,24-TCI-069,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 24-TCI-069"
+3915,fr,24-PCI-089,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PCI-089"
+3921,fr,24-OCI-097,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 24-OCI-097"
+3933,fr,24-OCI-118,police_service,Service de police de Toronto,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-118"
+3960,fr,22-PCI-178,police_service,Service de police régional de York,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 22-PCI-178"
+3970,fr,24-PFP-143,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PFP-143"
+3975,fr,24-OCI-149,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OCI-149"
+3996,fr,24-OCI-175,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-175"
+4000,fr,23-OCD-100,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 23-OCD-100"
+4045,fr,24-TVI-207,police_service,Toronto Police Service,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 24-TVI-207"
+4072,fr,24-OCI-008,police_service,Service de police de Toronto,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-008"
+4100,fr,24-OCI-259,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-259"
+4109,fr,24-OVI-252,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OVI-252"
+4115,fr,24-OVI-262,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OVI-262"
+4123,fr,24-OFP-273,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OFP-273"
+4156,fr,08-OFD-255,police_service,,Service de police régional de Durham,"service of the subject officials, from the reviewed English report of 08-OFD-255"
+4162,fr,24-PFP-248,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PFP-248"
+4166,fr,24-OCI-251,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-251"
+4172,fr,24-OVI-303,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OVI-303"
+4175,fr,24-OCI-333,police_service,,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-333"
+4184,fr,24-OVI-336,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OVI-336"
+4188,fr,24-TVI-311,police_service,Police provinciale de l'Ontario,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 24-TVI-311"
+4190,fr,24-OVI-321,police_service,,Service de police régional de Waterloo,"service of the subject officials, from the reviewed English report of 24-OVI-321"
+4208,fr,24-OCI-335,police_service,Service de police de London,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-335"
+4218,fr,24-PCI-341,police_service,Service de police de Belleville,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PCI-341"
+4221,fr,24-OFD-344,police_service,Service de police de Simcoe Sud,Service de police de South Simcoe,"service of the subject officials, from the reviewed English report of 24-OFD-344"
+4225,fr,24-OVI-350,police_service,Service de police régional de Hamilton,Service de police de Hamilton,"service of the subject officials, from the reviewed English report of 24-OVI-350"
+4238,fr,24-OCI-368,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OCI-368"
+4239,fr,24-OOD-364,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OOD-364"
+4241,fr,24-OCI-369,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-369"
+4252,fr,24-OCD-389,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OCD-389"
+4263,fr,24-PFP-402,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PFP-402"
+4294,fr,24-OCI-426,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-426"
+4302,fr,24-OCI-438,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 24-OCI-438"
+4309,fr,24-OCI-447,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-447"
+4314,fr,24-OCI-448,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-448"
+4315,fr,24-OVI-440,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OVI-440"
+4328,fr,24-OFD-463,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 24-OFD-463"
+4330,fr,24-OCI-481,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-481"
+4332,fr,24-OCI-470,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-470"
+4335,fr,24-OCI-480,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-480"
+4366,fr,24-TVI-507,police_service,Service de police régional de Peel,Service de police de Toronto,"service of the subject officials, from the reviewed English report of 24-TVI-507"
+4369,fr,24-PCD-298,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PCD-298"
+4385,fr,24-PCI-534,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PCI-534"
+4389,fr,24-OCI-529,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 24-OCI-529"
+4412,fr,24-OCD-190,police_service,Service de police de Toronto,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCD-190"
+4423,fr,24-OCI-554,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-554"
+4447,fr,25-ICI-014,police_service,,Service de police Nishnawbe-Aski,"service of the subject officials, from the reviewed English report of 25-ICI-014"
+4454,fr,24-OFD-202,police_service,Service de police de Sault Ste,Service de police de Sault Ste. Marie,"service of the subject officials, from the reviewed English report of 24-OFD-202"
+4485,fr,25-ICI-047,police_service,Service de police de Nishnawbe-Aski,Service de police Nishnawbe-Aski,"service of the subject officials, from the reviewed English report of 25-ICI-047"
+4488,fr,25-OCD-056,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OCD-056"
+4492,fr,25-OCI-034,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OCI-034"
+4503,fr,25-OFP-053,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OFP-053"
+4512,fr,25-ICI-060,police_service,Service de police Nishnawbe Aski,Service de police Nishnawbe-Aski,"service of the subject officials, from the reviewed English report of 25-ICI-060"
+4514,fr,24-OCI-219,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 24-OCI-219"
+4559,fr,25-PFP-084,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PFP-084"
+4563,fr,25-PVI-098,police_service,Service de police régional de Halton,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PVI-098"
+4565,fr,25-PVI-101,police_service,Service de police de la Première Nation,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PVI-101"
+4578,fr,25-OVI-116,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OVI-116"
+4579,fr,25-OVI-122,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OVI-122"
+4588,fr,25-PFP-128,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PFP-128"
+4591,fr,25-OCI-124,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OCI-124"
+4604,fr,25-OCI-129,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-129"
+4621,fr,25-OCI-145,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OCI-145"
+4643,fr,24-PVI-456,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PVI-456"
+4645,fr,25-OFD-161,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OFD-161"
+4646,fr,25-OCI-177,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-177"
+4648,fr,25-PCD-175,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PCD-175"
+4652,fr,25-OCI-173,police_service,Service de police régional de Durham,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-173"
+4668,fr,25-OCI-189,police_service,Police provinciale de l'Ontario,Service de police de London,"service of the subject officials, from the reviewed English report of 25-OCI-189"
+4675,fr,25-OCI-204,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-204"
+4688,fr,25-OCI-213,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-213"
+4691,fr,25-PFI-209,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PFI-209"
+4725,fr,24-OCI-551,police_service,Police provinciale de l'Ontario,Service de police de London,"service of the subject officials, from the reviewed English report of 24-OCI-551"
+4726,fr,25-PFP-232,police_service,Service de police du traité n o 3,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PFP-232"
+4727,fr,25-OVI-240,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OVI-240"
+4729,fr,25-OFD-237,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OFD-237"
+4735,fr,25-OCI-241,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OCI-241"
+4753,fr,25-OFI-252,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OFI-252"
+4754,fr,24-PFD-476,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 24-PFD-476"
+4766,fr,25-PVI-263,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PVI-263"
+4770,fr,25-OCI-270,police_service,Police provinciale de l'Ontario,Service de police de Kawartha Lakes,"service of the subject officials, from the reviewed English report of 25-OCI-270"
+4774,fr,25-OCI-285,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-285"
+4790,fr,25-OFI-282,police_service,Service de police de Toronto était,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OFI-282"
+4791,fr,25-PFP-315,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PFP-315"
+4852,fr,25-OCI-310,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-310"
+4858,fr,25-IFD-288,police_service,,Service de police Nishnawbe-Aski,"service of the subject officials, from the reviewed English report of 25-IFD-288"
+4869,fr,25-OCI-333,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OCI-333"
+4882,fr,25-OCD-339,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCD-339"
+4949,fr,25-OCI-413,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-413"
+4951,fr,25-OCI-410,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-410"
+4976,fr,25-OCI-437,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-437"
+4986,fr,25-PFP-448,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PFP-448"
+4998,fr,25-OSA-418,police_service,Service de police régional de York et l',Police régionale de York,"service of the subject officials, from the reviewed English report of 25-OSA-418"
+5007,fr,25-OFD-424,police_service,Service de police régional de Peel,Service de police régional de Niagara,"service of the subject officials, from the reviewed English report of 25-OFD-424"
+5016,fr,25-IVI-482,police_service,Service de police Nishnawbe Aski,Service de police Nishnawbe-Aski,"service of the subject officials, from the reviewed English report of 25-IVI-482"
+5030,fr,25-OCI-494,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OCI-494"
+5031,fr,25-PCI-496,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PCI-496"
+5042,fr,25-OFD-512,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 25-OFD-512"
+5060,fr,25-PCI-533,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 25-PCI-533"
+5067,fr,26-OCI-001,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 26-OCI-001"
+5103,fr,26-OCI-039,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 26-OCI-039"
+5116,fr,26-OCI-061,police_service,Service de police de Toronto,Police régionale de York,"service of the subject officials, from the reviewed English report of 26-OCI-061"
+5133,fr,26-PCI-060,police_service,Police provinciale de l’Ontario,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-060"
+5150,fr,26-OFD-094,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 26-OFD-094"
+5163,fr,26-PCI-153,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-153"
+5164,fr,26-PCI-131,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-131"
+5168,fr,26-PCI-103,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-103"
+5196,fr,26-PCI-167,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-167"
+5202,fr,26-PCI-152,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-152"
+5213,fr,26-PVI-159,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PVI-159"
+5214,fr,26-PCI-172,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-172"
+5215,fr,26-PCI-177,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-177"
+5218,fr,26-OVI-186,police_service,Service de police régional de York,Police régionale de York,"service of the subject officials, from the reviewed English report of 26-OVI-186"
+5219,fr,26-OCI-190,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 26-OCI-190"
+5220,fr,26-PCI-200,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-200"
+5230,fr,26-PVD-187,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PVD-187"
+5238,fr,26-OCI-215,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 26-OCI-215"
+5241,fr,26-OCI-207,police_service,Service de police régional de Peel,Police régionale de Peel,"service of the subject officials, from the reviewed English report of 26-OCI-207"
+5278,fr,26-PCD-238,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCD-238"
+5279,fr,26-PCI-239,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-239"
+5286,fr,26-PCI-261,police_service,Police provinciale,Police provinciale de l'Ontario,"service of the subject officials, from the reviewed English report of 26-PCI-261"
+3552,fr,09-OFD-090,directors_name,,Ian Scott,parsed from the report page drid 3552
+3553,fr,05-TFD-080,directors_name,,James L. Cornish,parsed from the report page drid 3553
+3554,fr,05-OFD-162,directors_name,,James L. Cornish,parsed from the report page drid 3554
+3557,fr,08-TFD-026,directors_name,,James L. Cornish,parsed from the report page drid 3557
+3558,fr,09-OFD-052,directors_name,,Ian Scott,parsed from the report page drid 3558
+3560,fr,07-OFD-063,directors_name,,James L. Cornish,parsed from the report page drid 3560
+3562,fr,10-OFD-278,directors_name,,Ian Scott,parsed from the report page drid 3562
+3565,fr,10-PFD-079,directors_name,,Ian Scott,parsed from the report page drid 3565
+3566,fr,05-OFD-068,directors_name,,James L. Cornish,parsed from the report page drid 3566
+3568,fr,06-OFD-154,directors_name,,James L. Cornish,parsed from the report page drid 3568
+3569,fr,07-OFD-049,directors_name,,James L. Cornish,parsed from the report page drid 3569
+3570,fr,07-OFD-240,directors_name,,James L. Cornish,parsed from the report page drid 3570
+3591,fr,07-OFD-245,directors_name,,James L. Cornish,parsed from the report page drid 3591
+3593,fr,08-TFD-036,directors_name,,Ian Scott,parsed from the report page drid 3593
+3594,fr,09-PFD-149,directors_name,,Ian Scott,parsed from the report page drid 3594
+3595,fr,09-PFD-160,directors_name,,Ian Scott,parsed from the report page drid 3595
+3596,fr,10-OFD-178,directors_name,,Ian Scott,parsed from the report page drid 3596
+3597,fr,05-OFD-024,directors_name,,James L. Cornish,parsed from the report page drid 3597
+3599,fr,05-OFD-169,directors_name,,James L. Cornish,parsed from the report page drid 3599
+3600,fr,10-TFD-061,directors_name,,Ian Scott,parsed from the report page drid 3600
+3601,fr,10-TFD-182,directors_name,,Ian Scott,parsed from the report page drid 3601
+3602,fr,11-OFD-042,directors_name,,Ian Scott,parsed from the report page drid 3602
+3604,fr,11-OFD-156,directors_name,,Ian Scott,parsed from the report page drid 3604
+3605,fr,11-TFD-150,directors_name,,Ian Scott,parsed from the report page drid 3605
+3606,fr,07-PFD-066,directors_name,,James L. Cornish,parsed from the report page drid 3606
+3607,fr,12-PFD-116,directors_name,,Ian Scott,parsed from the report page drid 3607
+3608,fr,13-TFD-108,directors_name,,Ian Scott,parsed from the report page drid 3608
+3609,fr,13-PFD-178,directors_name,,Tony Loparco,parsed from the report page drid 3609
+3654,fr,12-TFD-104,directors_name,,Ian Scott,parsed from the report page drid 3654
+3655,fr,12-PFD-123,directors_name,,Ian Scott,parsed from the report page drid 3655
+3656,fr,13-TFD-130,directors_name,,Ian Scott,parsed from the report page drid 3656
+3657,fr,09-TFD-310,directors_name,,Ian Scott,parsed from the report page drid 3657
+3659,fr,05-OCD-041,directors_name,,James L. Cornish,parsed from the report page drid 3659
+3661,fr,05-TCD-052,directors_name,,James L. Cornish,parsed from the report page drid 3661
+3662,fr,05-OCD-085,directors_name,,James L. Cornish,parsed from the report page drid 3662
+3663,fr,05-OCD-098,directors_name,,James L. Cornish,parsed from the report page drid 3663
+3664,fr,06-OCD-025,directors_name,,James L. Cornish,parsed from the report page drid 3664
+3665,fr,06-TCD-093,directors_name,,James L. Cornish,parsed from the report page drid 3665
+3666,fr,08-PCD-115,directors_name,,Ian Scott,parsed from the report page drid 3666
+3671,fr,10-PCD-111,directors_name,,Ian Scott,parsed from the report page drid 3671
+3675,fr,11-TCD-155,directors_name,,Ian Scott,parsed from the report page drid 3675
+3676,fr,13-OCD-141,directors_name,,Tony Loparco,parsed from the report page drid 3676
+3681,fr,07-OCD-088,directors_name,,James L. Cornish,parsed from the report page drid 3681
+3683,fr,10-OCD-242,directors_name,,Ian Scott,parsed from the report page drid 3683
+3684,fr,13-TCD-069,directors_name,,Ian Scott,parsed from the report page drid 3684
+3685,fr,13-OCD-077,directors_name,,Ian Scott,parsed from the report page drid 3685
+3688,fr,08-OOD-230,directors_name,,Ian Scott,parsed from the report page drid 3688
+3689,fr,11-OCD-015,directors_name,,Joseph Martino,parsed from the report page drid 3689

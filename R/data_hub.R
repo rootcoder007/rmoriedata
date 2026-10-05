@@ -100,6 +100,9 @@
 #' }
 #' @export
 morie_data_hosted_catalog <- function(refresh = FALSE) {
+  if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
+    stop("`refresh` must be TRUE or FALSE", call. = FALSE)
+  }
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
   age <- if (file.exists(p)) {
     as.numeric(difftime(Sys.time(), file.mtime(p), units = "secs"))

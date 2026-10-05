@@ -25,7 +25,7 @@ Sends a dataset-focused question to the hosted MORIE language-model tier
 at \url{https://llm.rmorie.com} through \pkg{rmoriebricklayer}, using the
 key that \code{\link{morie_data_hosted_login}()} stores (the same key
 opens data.rmorie.com). The tier serves ollama.com cloud models and
-Cloudflare Workers AI models (\code{kimi-k2.6:cf},
+additional AI models (\code{kimi-k2.6:cf},
 \code{kimi-k2.7-code:cf}, \code{deepseek-v4-pro:cf},
 \code{deepseek-v4-flash:cf}, \code{glm-5.2:cf}, \code{glm-5.3:cf},
 \code{glm-5.3-flash:cf}, \code{gpt-oss-120b:cf}, \code{gpt-oss-20b:cf},
@@ -41,7 +41,7 @@ use. With \code{backend = "ollama"} (or any value other than
 # After morie_data_hosted_login(): the hosted tier answers.
 ask("which bundled datasets cover Toronto police use-of-force?")
 
-# Pin a Workers AI model.
+# Pin one of the additional AI models.
 ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 
 # Force the rmorie command-line agent with a local Ollama.

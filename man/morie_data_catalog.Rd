@@ -7,7 +7,10 @@
 morie_data_catalog()
 }
 \value{
-A data frame.
+A data frame: \code{slug}, \code{source_path}, \code{kind} (table, dictionary, ...),
+\code{n_rows}, \code{n_cols}, \code{parquet_path}, and \code{synthetic}, TRUE for the tables that are
+generated stand-ins with the published schema rather than published data (the
+ARSAU use-of-force tables and the \verb{*_synthetic} ones).
 }
 \description{
 One row per bundled table or dictionary: \code{slug}, \code{source_path}
@@ -17,6 +20,7 @@ Parquet file, see \code{\link[=morie_data_path]{morie_data_path()}}).
 }
 \examples{
 cat <- morie_data_catalog()
+cat$slug[cat$synthetic]
 tbls <- cat[cat$kind == "table", c("slug", "n_rows", "n_cols")]
 head(tbls[order(-tbls$n_rows), ])
 }

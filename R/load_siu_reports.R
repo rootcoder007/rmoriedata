@@ -11,13 +11,27 @@
 #' decision, and news-release linkage), plus a \code{panel_reviewed}
 #' flag.
 #'
-#' For every English report (\code{panel_reviewed == "TRUE"}), the 16
+#' For the English reports marked \code{panel_reviewed == "TRUE"}, the 16
 #' key columns were verified by a multi-agent LLM review panel against
 #' the full report text and the parser's guess resolved to the correct
-#' value; the subject-official count is filled for 100\% of English
-#' reports (witness-officer-only investigations are a genuine 0). French
-#' reports carry the parser values. See the \code{siu} pipeline repo for
-#' the audit provenance.
+#' value; the subject-official count is filled for 100\% of them
+#' (witness-officer-only investigations are a genuine 0). French reports
+#' carry the parser values and \code{panel_reviewed == "FALSE"}, except
+#' \code{police_service}, which is their English report's.
+#'
+#' \code{police_service} is the service of the subject officials -- not the
+#' force that notified the SIU, which is often a custody, requesting or
+#' neighbouring service. Each correction to it is listed with the reason
+#' read from the report in \code{data-raw/siu_police_service_review.csv}
+#' of the source repository.
+#'
+#' One row is one published report, keyed by \code{drid} and
+#' \code{_language}. A case number can appear on more than one row: the SIU
+#' publishes a further report when a case is reconsidered or reported again,
+#' each with its own \code{drid}. Some schema columns (for example the raw
+#' times of injury and notification, evidence types, and weapons used) are
+#' not stated in the published reports and are empty throughout; they are
+#' kept so the table's shape matches the parser's schema.
 #'
 #' This is the machine-readable companion to the SIU parser and
 #' data-mining subsystem in \pkg{rmorie} / \pkg{morie} -- the first
@@ -40,7 +54,8 @@
 #' @param as Return format: \code{"data.frame"} (default) or
 #'   \code{"tibble"}.
 #' @param format \code{"csv"} (the gzip CSV, default) or \code{"parquet"}
-#'   (the same rows and columns, native codec).
+#'   (the same rows and columns, read from the typed store's Parquet copy and
+#'   returned as text).
 #' @return A \code{data.frame} (or tibble) of SIU director's-report rows.
 #' @source Ontario Special Investigations Unit director's reports,
 #'   \url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
@@ -76,20 +91,16 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
   lang <- match.arg(lang)
   as <- match.arg(as)
   format <- match.arg(format)
-  rel <- if (format == "parquet") {
-    "parquet/siu_directors_reports_corpus.parquet"
-  } else {
-    "siu_directors_reports.csv.gz"
-  }
+  rel <- "siu_directors_reports.csv.gz"
   path <- system.file("extdata", rel, package = "rmoriedata")
   if (!nzchar(path)) {
     stop("bundled SIU director's-report corpus not found in rmoriedata",
       call. = FALSE
     )
   }
-  .rmoriedata_check_file(rel)
   df <- if (format == "parquet") {
-    d <- as.data.frame(morie_read_parquet(path), stringsAsFactors = FALSE)
+    # the typed table's Parquet copy as text: the corpus ships one Parquet copy, not two
+    d <- morie_data_load("siu_directors_reports", format = "parquet")
     d[] <- lapply(d, function(z) {
       z <- as.character(z)
       z[is.na(z)] <- ""
@@ -97,6 +108,7 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
     })
     d
   } else {
+    .rmoriedata_check_file(rel)
     utils::read.csv(gzfile(path),
       stringsAsFactors = FALSE, encoding = "UTF-8",
       colClasses = "character", check.names = FALSE
@@ -108,8 +120,6 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
     df <- df[df[["_language"]] == lang, , drop = FALSE]
   }
   rownames(df) <- NULL
-  if (as == "tibble" && requireNamespace("tibble", quietly = TRUE)) {
-    return(tibble::as_tibble(df))
-  }
+  if (as == "tibble") return(.rmd_as_tibble(df))
   df
 }

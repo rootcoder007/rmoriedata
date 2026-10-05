@@ -9,7 +9,8 @@ morie_data_path(slug, format = c("parquet", "csv"))
 \arguments{
 \item{slug}{Dataset slug; see the \code{slug} column of \code{\link[=morie_data_catalog]{morie_data_catalog()}}.}
 
-\item{format}{\code{"parquet"} (default) or \code{"csv"}.}
+\item{format}{\code{"parquet"} (default) or \code{"csv"}. A dictionary or other non-table
+slug has one file, which is returned either way.}
 }
 \value{
 A length-1 character path.

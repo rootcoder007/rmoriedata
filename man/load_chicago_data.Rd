@@ -31,14 +31,16 @@ Socrata (offline-friendly fallback). Defaults to
 \code{<type>_full.parquet} must use snappy or no compression and
 data pages v1: the package's own reader supports nothing else.}
 
-\item{limit}{Optional row cap for a \code{full = TRUE} fetch (passed to
-the Socrata \code{$limit} parameter). A bounded fetch skips the mirror
-and is never written to the full-dataset cache. Default \code{NULL}
+\item{limit}{Optional row cap. For a \code{full = TRUE} fetch it is passed to
+the Socrata \code{$limit} parameter (a bounded fetch skips the mirror
+and is never written to the full-dataset cache); otherwise it keeps the
+first \code{limit} rows of the bundled sample. Default \code{NULL}
 fetches everything.}
 
 \item{fraction}{Optional share of the dataset, in \code{(0, 1]}, for a
 \code{full = TRUE} fetch: the live row count is looked up and
-\code{limit} is set to \code{ceiling(total * fraction)}. Give either
+\code{limit} is set to \code{ceiling(total * fraction)} (of the bundled
+sample's rows otherwise). Give either
 \code{fraction} or \code{limit}, not both.}
 
 \item{refresh}{If \code{TRUE}, ignore the cache of the
