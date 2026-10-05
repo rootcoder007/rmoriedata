@@ -27,3 +27,8 @@ test_that("rmoriedata uses the SAME shared core as rmoriebricklayer (not a copy)
 test_that("morie_core_mean matches base R", {
   expect_equal(morie_core_mean(1:10), mean(1:10))
 })
+
+test_that("morie_core_mean refuses text instead of averaging NA", {
+  expect_no_warning(expect_error(morie_core_mean("abc"), "numeric vector"))
+  expect_equal(morie_core_mean(c(TRUE, FALSE)), 0.5)
+})

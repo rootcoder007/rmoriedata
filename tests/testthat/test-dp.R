@@ -127,3 +127,13 @@ test_that("morie_dp_gaussian_mean rejects infinite bounds", {
   expect_error(morie_dp_gaussian_mean(1:5, -Inf, Inf, epsilon = 1), "finite")
   expect_error(morie_dp_gaussian_mean(1:5, 0, Inf, epsilon = 1), "finite")
 })
+
+test_that("a non-finite count is refused in words, with no coercion warning", {
+  expect_no_warning(expect_error(morie_dp_laplace_count(Inf, 1),
+                                 "single non-negative integer"))
+  expect_no_warning(expect_error(morie_dp_laplace_histogram(c(1, Inf), 1),
+                                 "non-negative integers"))
+  # a whole count beyond the integer range is still a count
+  set.seed(1)
+  expect_true(is.finite(morie_dp_laplace_count(1e300, 1)))
+})

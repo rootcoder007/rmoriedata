@@ -49,4 +49,9 @@ morie_core_sha256 <- function(x) {
 
 #' @rdname morie_core
 #' @export
-morie_core_mean <- function(x) .Call(C_morie_core_mean, as.numeric(x))
+morie_core_mean <- function(x) {
+  if (!is.numeric(x) && !is.logical(x)) {
+    stop("`x` must be a numeric vector", call. = FALSE)
+  }
+  .Call(C_morie_core_mean, as.numeric(x))
+}

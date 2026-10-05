@@ -73,7 +73,7 @@
 
 #' Curated datasets at data.rmorie.com
 #'
-#' Beyond the open data this package ships, the MORIE project keeps 160
+#' Beyond the open data this package ships, the MORIE project keeps more than 160
 #' databases materialised from Google BigQuery public datasets (Chicago
 #' crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 #' Ethereum, World Bank, ...) and serves their tables from the edge. They

@@ -64,8 +64,8 @@ tibble, or written to a Parquet file whose path is returned -- the last being
 the recommended bridge for Python (\code{pandas.read_parquet}).
 }
 \details{
-Parquet I/O uses this package's own native codec (R/aaa_parquet.R); no
-package), so no \pkg{arrow} install is required.
+Parquet I/O uses this package's own native codec (R/aaa_parquet.R), so
+no \pkg{arrow} install is required.
 }
 \examples{
 # `type` selects the dataset; the bundled sample is returned by default.

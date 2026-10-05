@@ -21,33 +21,54 @@
 #' @param model Optional model id, e.g. \code{"gpt-oss-120b:cf"}; the tier's
 #'   default when \code{NULL}.
 #' @param backend \code{"auto"} (the hosted tier when a key is stored, else
-#'   the \code{rmorie} binary), \code{"hosted"}, or a backend name for the
-#'   \code{rmorie} agent such as \code{"ollama"}.
+#'   the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
+#'   \code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
+#'   chain: the hosted tier, then a local Ollama).
 #' @return Character scalar: the answer, or a sentence saying how to sign in
 #'   when neither a key nor the \code{rmorie} binary is available.
 #' @examples
-#' \donttest{
+#' \dontrun{
+#' # These need a stored key (morie_data_hosted_login()) or the rmorie binary.
 #' # After morie_data_hosted_login(): the hosted tier answers.
 #' ask("which bundled datasets cover Toronto police use-of-force?")
 #'
 #' # Pin one of the additional AI models.
 #' ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 #'
-#' # Force the rmorie command-line agent with a local Ollama.
-#' ask("list the Chicago datasets", backend = "ollama")
+#' # Ask through the rmorie command-line agent.
+#' ask("list the Chicago datasets", backend = "cli")
 #' }
 #'
 #' # With no key stored and no rmorie binary on PATH the call returns a
-#' # sign-in hint, not an error -- safe to run anywhere:
+#' # sign-in hint, not an error (no network); an empty config directory
+#' # stands in for a machine that has never signed in:
+#' old <- Sys.getenv(c("XDG_CONFIG_HOME", "MORIE_HOSTED_KEY"))
+#' Sys.setenv(XDG_CONFIG_HOME = tempfile(), MORIE_HOSTED_KEY = "")
 #' if (!nzchar(Sys.which("rmorie"))) ask("hello")
+#' do.call(Sys.setenv, as.list(old))
 #' @export
 ask <- function(question, model = NULL, backend = "auto") {
   .rmoriedata_scalar(question, "question")
   .rmoriedata_scalar(backend, "backend")
+  if (!backend %in% c("auto", "hosted", "cli")) {
+    stop("`backend` must be one of \"auto\", \"hosted\" or \"cli\"", call. = FALSE)
+  }
   if (!is.null(model)) .rmoriedata_scalar(model, "model")
+  # the catalogue itself, so the model can name tables rather than guess
+  cat_tbl <- tryCatch(morie_data_catalog(), error = function(e) NULL)
+  # one line: the shell route hands the prompt to the rmorie binary as one argument
+  rows <- if (is.null(cat_tbl)) character() else
+    ifelse(is.na(cat_tbl$n_rows), "-",
+           format(cat_tbl$n_rows, big.mark = ",", trim = TRUE))
+  listing <- if (is.null(cat_tbl) || !nrow(cat_tbl)) "" else paste0(
+    " The bundled catalogue (slug: kind, rows): ",
+    paste(sprintf("%s: %s, %s", cat_tbl$slug, cat_tbl$kind, rows), collapse = "; "),
+    ". Load one with morie_data_load(\"<slug>\"); morie_data_hosted_catalog() ",
+    "lists the hosted tables at data.rmorie.com.")
   system_prompt <- paste0(
     "You are helping explore the datasets bundled in the MORIE packages ",
-    "(rmoriedata). Prefer the bundled catalog."
+    "(rmoriedata). Name the tables from the catalogue that answer the question.",
+    listing
   )
   if (backend %in% c("auto", "hosted")) {
     st <- rmoriebricklayer::bricklayer_llm_status()
@@ -84,8 +105,9 @@ ask <- function(question, model = NULL, backend = "auto") {
   # system2() hands `args` to a shell: quote every value, or the first
   # parenthesis in the request is a shell syntax error (and a ";" in the
   # question would run as a command).
-  args <- c("agent", "--backend", shQuote(backend))
-  if (!is.null(model)) args <- c(args, "-m", shQuote(model))
+  # the agent picks its own route (hosted tier, then a local Ollama): no backend flag
+  args <- "agent"
+  if (!is.null(model)) args <- c(args, "--model", shQuote(model))
   args <- c(args, shQuote(preamble))
   paste(suppressWarnings(
     system2(bin, args = args, stdout = TRUE, stderr = TRUE)

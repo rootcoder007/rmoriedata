@@ -1,11 +1,42 @@
 # rmoriedata 0.3.4
 
+* SIU corpus, round 8 (4,613 rows; every change is a row of `data-raw/siu_round8_review.csv`, with
+  the reason read from the page, or a rule of `data-raw/siu_round8_rules.R`):
+  - six French reports of 2005-2011 filed under /en/ are labelled French and carry the service their
+    page names; three of them held "Guelph Police Service", which the pages never name (05-TCD-004
+    is Toronto, 10-PFD-078 the OPP, 10-OOD-009 Ottawa);
+  - a corrigendum is applied to the report it corrects, in a new column `corrigenda`, not counted as
+    a report (drids 385, 620/621 and 5065 correct 328, 521/522 and 4561); six second copies of one
+    report (identical page text) are removed;
+  - case numbers the page body gives: drids 925/926 are 19-TCI-073a, and drid 2209 is the French
+    report of 22-PCI-191 (the OPP in Quinte West), not of 21-OCI-191 as the SIU page's header says;
+  - a French report carries its English report's reviewed case facts (dates, team, counts, the
+    affected person's age and sex, the charges, the director's view): they were empty on about
+    2,240 of 2,304 French rows; the French text fields stay French;
+  - `charges_recommended` is `"FALSE"`, `"TRUE"` or empty (it had 39 spellings), and logical in the
+    typed table (`morie_data_load("siu_directors_reports")`, CSV and Parquet), as `panel_reviewed` is;
+    `sex_gender_affected` is `male` or `female`; one name for Kawartha Lakes and for Cornwall (the
+    Cornwall Community Police Service is now the Cornwall Police Service);
+  - `narrative_summary` held the SIU's mandate paragraph or the page title, not a narrative, and is
+    empty except on the three rows that held report text; `supplemental_materials` lists the
+    legislation and case law a report cites (it held the page's share and privacy links).
+* `ask()` sends the bundled catalogue (slug, kind, rows) with the question, so the model names tables
+  (it was told only to "prefer the bundled catalog", which it could not see). Through the rmorie binary it
+  calls `rmorie agent [--model NAME] QUESTION`, the agent's own options: it passed `--backend`, which
+  the agent refuses, and `-m` for the model; `backend` is `"auto"`, `"hosted"` or `"cli"`. The
+  examples that need a stored key or the binary are `\dontrun`; the one that runs signs in nowhere.
+* `morie_dp_laplace_count()` and `morie_dp_laplace_histogram()` refuse `Inf` in words (they warned
+  about integer coercion, then failed in R's internals), and accept a whole count beyond the integer
+  range; `morie_core_mean()` refuses text instead of averaging `NA`.
+* Help: `?rmoriedata` describes the package's functions (it said there were none); `?load_siu_reports`
+  lost "% of them" to an Rd escape; "more than 160" databases at data.rmorie.com; a garbled sentence
+  in `?load_chicago_data`; the README's Chicago example is bounded (`limit = 200`).
 * The SIU director's-report corpus: `police_service` is the service of the subject officials
   on every row (it was the notifying force on many French rows, and on 24 English rows a
   custody, requesting or neighbouring service -- each corrected after reading the report);
   one spelling per service; 59 English reports published since the last build, reviewed by
   the same model panel, and their 60 French reports added; 54 French reports filed under
-  /en/ relabelled; 29 rows that held no director's report removed. 4,623 rows.
+  /en/ relabelled; 29 rows that held no director's report removed.
 
 * `ask()` answers through the hosted MORIE tier with the key
   `morie_data_hosted_login()` stores (ollama.com cloud models and additional AI

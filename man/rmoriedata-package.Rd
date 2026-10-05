@@ -6,10 +6,18 @@
 \alias{rmoriedata-package}
 \title{rmoriedata: Bundled datasets for rmorie}
 \description{
-This package ships fixtures consumed by the rmorie package
-(https://github.com/rootcoder007/rmorie). It has no exported
-functions; access the data via
-\code{system.file("extdata", "<file>", package = "rmoriedata")}.
+Open data fixtures for the rmorie package
+(https://github.com/rootcoder007/rmorie), with the functions that read
+them: \code{\link[=morie_data_catalog]{morie_data_catalog()}} lists the bundled tables and
+\code{\link[=morie_data_load]{morie_data_load()}} loads one; \code{\link[=load_siu_reports]{load_siu_reports()}},
+\code{\link[=load_chicago_data]{load_chicago_data()}}, \code{\link[=load_cihi_data_tables]{load_cihi_data_tables()}} and \code{\link[=fetch_cihi_table]{fetch_cihi_table()}}
+read their datasets, \code{\link[=morie_data_verify]{morie_data_verify()}} checks the bundle's
+checksums; \code{\link[=morie_data_hosted_login]{morie_data_hosted_login()}},
+\code{\link[=morie_data_hosted_catalog]{morie_data_hosted_catalog()}} and \code{\link[=morie_data_hosted_load]{morie_data_hosted_load()}} reach the
+tables served at data.rmorie.com; \code{\link[=ask]{ask()}} asks a language model about
+the catalogue; and the differential-privacy and k-anonymity helpers
+release aggregates safely. The raw files are also at
+\code{system.file("extdata", package = "rmoriedata")}.
 }
 \seealso{
 Useful links:
