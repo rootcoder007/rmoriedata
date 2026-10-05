@@ -76,7 +76,7 @@
 "samples_otis_b09_sample","otis_b09_sample.csv","table",78,4,"parquet/samples_otis_b09_sample.parquet",FALSE
 "samples_otis_c11_sample","otis_c11_sample.csv","table",33,4,"parquet/samples_otis_c11_sample.parquet",FALSE
 "samples_tps_assault_sample","tps_assault_sample.csv","table",1000,31,"parquet/samples_tps_assault_sample.parquet",FALSE
-"siu_directors_reports","siu_directors_reports.csv.gz","table",5157,65,"parquet/siu_directors_reports.parquet",FALSE
+"siu_directors_reports","siu_directors_reports.csv.gz","table",4623,65,"parquet/siu_directors_reports.parquet",FALSE
 "siu_drid_manifest","siu_drid_manifest.csv.gz","table",4749,9,"parquet/siu_drid_manifest.parquet",FALSE
 "to_hood_158_140_crosswalk","to_hood_158_140_crosswalk.csv","table",159,7,"parquet/to_hood_158_140_crosswalk.parquet",FALSE
 "to_neighbourhood_improvement_areas","to_neighbourhood_improvement_areas.csv","table",33,19,"parquet/to_neighbourhood_improvement_areas.parquet",FALSE

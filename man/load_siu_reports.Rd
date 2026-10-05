@@ -24,7 +24,8 @@ load_siu_reports(
 \code{"tibble"}.}
 
 \item{format}{\code{"csv"} (the gzip CSV, default) or \code{"parquet"}
-(the same rows and columns, native codec).}
+(the same rows and columns, read from the typed store's Parquet copy and
+returned as text).}
 }
 \value{
 A \code{data.frame} (or tibble) of SIU director's-report rows.
@@ -39,13 +40,27 @@ decision, and news-release linkage), plus a \code{panel_reviewed}
 flag.
 }
 \details{
-For every English report (\code{panel_reviewed == "TRUE"}), the 16
+For the English reports marked \code{panel_reviewed == "TRUE"}, the 16
 key columns were verified by a multi-agent LLM review panel against
 the full report text and the parser's guess resolved to the correct
-value; the subject-official count is filled for 100\\% of English
-reports (witness-officer-only investigations are a genuine 0). French
-reports carry the parser values. See the \code{siu} pipeline repo for
-the audit provenance.
+value; the subject-official count is filled for 100\\% of them
+(witness-officer-only investigations are a genuine 0). French reports
+carry the parser values and \code{panel_reviewed == "FALSE"}, except
+\code{police_service}, which is their English report's.
+
+\code{police_service} is the service of the subject officials -- not the
+force that notified the SIU, which is often a custody, requesting or
+neighbouring service. Each correction to it is listed with the reason
+read from the report in \code{data-raw/siu_police_service_review.csv}
+of the source repository.
+
+One row is one published report, keyed by \code{drid} and
+\code{_language}. A case number can appear on more than one row: the SIU
+publishes a further report when a case is reconsidered or reported again,
+each with its own \code{drid}. Some schema columns (for example the raw
+times of injury and notification, evidence types, and weapons used) are
+not stated in the published reports and are empty throughout; they are
+kept so the table's shape matches the parser's schema.
 
 This is the machine-readable companion to the SIU parser and
 data-mining subsystem in \pkg{rmorie} / \pkg{morie} -- the first

@@ -6,7 +6,7 @@
 #
 # Writes inst/extdata/parquet/<slug>.parquet for every table (typed
 # exactly as morie_data_load(slug) returns it), parquet/_catalog.parquet,
-# parquet/siu_directors_reports_corpus.parquet, and the `parquet_path` column of
+# and the `parquet_path` column of
 # inst/extdata/_catalog.csv. data-raw is .Rbuildignore'd; the parquet
 # directory ships.
 suppressMessages(library(rmoriedata))
@@ -29,9 +29,6 @@ for (i in seq_len(nrow(cat))) {
 utils::write.csv(cat, file.path(ed, "_catalog.csv"), row.names = FALSE,
                  na = "", fileEncoding = "UTF-8")
 wp(cat, file.path(pq, "_catalog.parquet"))
-# the SIU corpus as load_siu_reports() returns it (all character, the CSV
-# header verbatim); the typed table copy is parquet/siu_directors_reports.parquet
-siu <- load_siu_reports()
-wp(siu, file.path(pq, "siu_directors_reports_corpus.parquet"))
-message(sum(!is.na(cat$parquet_path)), " tables written to ", pq,
-        "; catalog and SIU corpus too")
+# load_siu_reports(format = "parquet") reads the typed table's copy
+# (parquet/siu_directors_reports.parquet) back as text, so the corpus ships once
+message(sum(!is.na(cat$parquet_path)), " tables written to ", pq, "; catalog too")

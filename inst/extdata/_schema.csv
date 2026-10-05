@@ -1582,7 +1582,7 @@
 "siu_directors_reports",62,"news_release_date_raw","character"
 "siu_directors_reports",63,"news_release_summary","character"
 "siu_directors_reports",64,"directors_name","character"
-"siu_directors_reports",65,"panel_reviewed","integer"
+"siu_directors_reports",65,"panel_reviewed","logical"
 "siu_drid_manifest",1,"drid","integer"
 "siu_drid_manifest",2,"http_code","integer"
 "siu_drid_manifest",3,"body_bytes","integer"

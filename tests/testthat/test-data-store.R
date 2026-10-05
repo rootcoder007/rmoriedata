@@ -64,7 +64,7 @@ test_that("each table ships once as CSV and once as Parquet, nothing else twice"
   expect_false(anyDuplicated(sub("\\.(csv|csv\\.gz)$", "", csv)) > 0)
   cat <- morie_data_catalog()
   t <- cat[cat$kind == "table", ]
+  # the SIU corpus ships once: load_siu_reports(format = "parquet") reads the typed table's copy
   expect_setequal(list.files(file.path(ed, "parquet")),
-                  c(basename(t$parquet_path), "_catalog.parquet",
-                    "siu_directors_reports_corpus.parquet"))
+                  c(basename(t$parquet_path), "_catalog.parquet"))
 })
