@@ -71,3 +71,23 @@ test_that("round 8: one coding per column; French rows hold the English case fac
   expect_false(any(grepl("^The Special Investigations Unit is a civilian law enforc",
                          d$narrative_summary)))
 })
+
+test_that("narrative_summary is the report's own account of the incident", {
+  d <- load_siu_reports()
+  n <- d$narrative_summary
+  # every report whose page has an incident account carries it (8 pages have none)
+  expect_gte(sum(nzchar(n)), 4600L)
+  expect_true(all(nchar(n) <= 1500L))
+  # definition notes and the mandate boilerplate are not the account
+  expect_false(any(grepl("A complainant is an individual|Un plaignant est une personne", n)))
+  expect_false(any(grepl("^Note\\s*:", n)))
+  # French reports carry the French account, English reports the English one
+  fr <- n[d$`_language` == "fr" & nzchar(n)]
+  en <- n[d$`_language` == "en" & nzchar(n)]
+  expect_gt(mean(grepl("\\b(le|la|les|du|des)\\b", fr)), 0.95)
+  expect_gt(mean(grepl("\\b(the|and|of)\\b", en)), 0.95)
+  # drid 3422 (2016): its "Incident narrative" section, not the notification above it
+  r <- n[d$drid == "3422" & d$`_language` == "en"]
+  expect_match(r, "^On May 23, 2016, a woman made a 911 call")
+  expect_match(r, "taken to the police station in SO #2's cruiser\\.$")
+})

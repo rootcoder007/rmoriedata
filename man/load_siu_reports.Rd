@@ -57,8 +57,12 @@ service under the name the SIU's French pages use.
 (\code{FALSE}, \code{TRUE}, or \code{NA} when the report does not say).
 \code{corrigenda} holds the SIU's correction notice of a report (a
 corrigendum is applied to the report it corrects, not counted as a
-report). \code{narrative_summary} is empty except where the scrape held
-report text (it held the SIU's mandate paragraph or the page title), and
+report). \code{narrative_summary} is the opening of the report's own
+account of the incident (about 900 characters, at most 1,500, cut at a
+sentence end): its "Incident Narrative" / "Description de l'incident"
+section, or, in reports without one (2005-2016 and re-opened files), the
+"Notification of the SIU" / "Avis a l'UES" section, which holds the
+account there. It is empty on the 8 reports whose page has neither.
 \code{supplemental_materials} lists the legislation and case-law links a
 report cites.
 

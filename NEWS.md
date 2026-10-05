@@ -1,5 +1,11 @@
 # rmoriedata 0.3.4
 
+* SIU corpus: `narrative_summary` holds each report's own account of the incident on 4,605 of 4,613
+  reports (it was empty but for three values that described the SIU's investigation). The text is
+  the opening of the report's "Incident Narrative" / "Description de l'incident" section, or of the
+  "Notification of the SIU" / "Avis à l'UES" section in reports that have no narrative section (2005-2016
+  and re-opened files), about 900 characters cut at a sentence end. It was read from the SIU's pages,
+  re-crawled on 2026-10-05 at one request every 3 seconds; `data-raw/add_siu_narratives.R` rebuilds it.
 * SIU corpus, round 8 (4,613 rows; every change is a row of `data-raw/siu_round8_review.csv`, with
   the reason read from the page, or a rule of `data-raw/siu_round8_rules.R`):
   - six French reports of 2005-2011 filed under /en/ are labelled French and carry the service their
