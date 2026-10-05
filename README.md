@@ -29,7 +29,7 @@ install.packages(
 
 ## Curated tables at data.rmorie.com
 
-The 160 databases the MORIE project materialises from BigQuery public
+The more than 160 databases the MORIE project materialises from BigQuery public
 datasets are served from the edge and opened by the MORIE key. rmoriedata is
 self-sufficient: sign in once, then load any `db/table` key.
 
@@ -81,7 +81,8 @@ open data; the full datasets are fetched on demand and cached.
 ```r
 library(rmoriedata)
 data(complaint_sample)                       # bundled sample, offline
-crimes <- load_chicago_data("complaints", full = TRUE)   # full data (Socrata)
+crimes <- load_chicago_data("complaints", full = TRUE, limit = 200)  # the full data, first 200 rows
+# omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)
 pq <- load_chicago_data("arrests", as = "parquet_path")  # Parquet for Python
 ```
 

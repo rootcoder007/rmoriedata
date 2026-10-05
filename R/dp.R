@@ -50,9 +50,9 @@
 #' # For display, clip to a non-negative integer.
 #' round(pmax(0, morie_dp_laplace_count(3, epsilon = 0.5)))
 morie_dp_laplace_count <- function(true_count, epsilon) {
-  if (length(true_count) != 1L || is.na(true_count) ||
-    !is.numeric(true_count) || true_count < 0 ||
-    true_count != as.integer(true_count)) {
+  if (length(true_count) != 1L || !is.numeric(true_count) ||
+    !is.finite(true_count) || true_count < 0 ||
+    true_count != floor(true_count)) {
     stop("`true_count` must be a single non-negative integer.", call. = FALSE)
   }
   if (length(epsilon) != 1L || is.na(epsilon) ||
@@ -169,8 +169,8 @@ morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6) {
 #' counts <- as.integer(table(complaint_sample$year))
 #' morie_dp_laplace_histogram(counts, epsilon = 1.0)
 morie_dp_laplace_histogram <- function(counts, epsilon) {
-  if (!is.numeric(counts) || length(counts) == 0L || anyNA(counts) ||
-    any(counts < 0) || any(counts != as.integer(counts))) {
+  if (!is.numeric(counts) || length(counts) == 0L || any(!is.finite(counts)) ||
+    any(counts < 0) || any(counts != floor(counts))) {
     stop("`counts` must be a non-empty vector of non-negative integers.",
       call. = FALSE
     )

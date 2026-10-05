@@ -32,7 +32,7 @@ A \code{data.frame} (or tibble) of SIU director's-report rows.
 }
 \description{
 Returns the bundled Ontario Special Investigations Unit (SIU)
-director's-report table: one row per report drid, 65 structured
+director's-report table: one row per report drid, 66 structured
 columns (police service, incident / notification / decision dates,
 investigator and witness / subject-official counts, affected-person
 demographics, injuries, legislation, charges verdict, director's
@@ -43,10 +43,21 @@ flag.
 For the English reports marked \code{panel_reviewed == "TRUE"}, the 16
 key columns were verified by a multi-agent LLM review panel against
 the full report text and the parser's guess resolved to the correct
-value; the subject-official count is filled for 100\\% of them
-(witness-officer-only investigations are a genuine 0). French reports
-carry the parser values and \code{panel_reviewed == "FALSE"}, except
-\code{police_service}, which is their English report's.
+value; the subject-official count is filled for every one of them
+(witness-officer-only investigations are a genuine 0). A French report
+carries its English report's reviewed case facts (the dates, the team,
+the counts, the affected person's age and sex, the charges and the
+director's view) and \code{panel_reviewed == "FALSE"}; its text fields
+stay French, and its \code{police_service} is its English report's
+service under the name the SIU's French pages use.
+
+\code{charges_recommended} is \code{"False"}, \code{"True"} or empty.
+\code{corrigenda} holds the SIU's correction notice of a report (a
+corrigendum is applied to the report it corrects, not counted as a
+report). \code{narrative_summary} is empty except where the scrape held
+report text (it held the SIU's mandate paragraph or the page title), and
+\code{supplemental_materials} lists the legislation and case-law links a
+report cites.
 
 \code{police_service} is the service of the subject officials -- not the
 force that notified the SIU, which is often a custody, requesting or

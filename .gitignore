@@ -19,3 +19,4 @@ src/symbols.rds
 .serena/
 inst/extdata/rmoriedata.sqlite
 cran-comments.md
+tests/testthat/testthat-problems.rds

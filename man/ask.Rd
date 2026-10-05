@@ -13,8 +13,9 @@ ask(question, model = NULL, backend = "auto")
 default when \code{NULL}.}
 
 \item{backend}{\code{"auto"} (the hosted tier when a key is stored, else
-the \code{rmorie} binary), \code{"hosted"}, or a backend name for the
-\code{rmorie} agent such as \code{"ollama"}.}
+the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
+\code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
+chain: the hosted tier, then a local Ollama).}
 }
 \value{
 Character scalar: the answer, or a sentence saying how to sign in
@@ -37,18 +38,23 @@ use. With \code{backend = "ollama"} (or any value other than
 \code{rmorie} command-line agent instead, as before.
 }
 \examples{
-\donttest{
+\dontrun{
+# These need a stored key (morie_data_hosted_login()) or the rmorie binary.
 # After morie_data_hosted_login(): the hosted tier answers.
 ask("which bundled datasets cover Toronto police use-of-force?")
 
 # Pin one of the additional AI models.
 ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 
-# Force the rmorie command-line agent with a local Ollama.
-ask("list the Chicago datasets", backend = "ollama")
+# Ask through the rmorie command-line agent.
+ask("list the Chicago datasets", backend = "cli")
 }
 
 # With no key stored and no rmorie binary on PATH the call returns a
-# sign-in hint, not an error -- safe to run anywhere:
+# sign-in hint, not an error (no network); an empty config directory
+# stands in for a machine that has never signed in:
+old <- Sys.getenv(c("XDG_CONFIG_HOME", "MORIE_HOSTED_KEY"))
+Sys.setenv(XDG_CONFIG_HOME = tempfile(), MORIE_HOSTED_KEY = "")
 if (!nzchar(Sys.which("rmorie"))) ask("hello")
+do.call(Sys.setenv, as.list(old))
 }

@@ -14,8 +14,8 @@
 #' tibble, or written to a Parquet file whose path is returned -- the last being
 #' the recommended bridge for Python (\code{pandas.read_parquet}).
 #'
-#' Parquet I/O uses this package's own native codec (R/aaa_parquet.R); no
-#' package), so no \pkg{arrow} install is required.
+#' Parquet I/O uses this package's own native codec (R/aaa_parquet.R), so
+#' no \pkg{arrow} install is required.
 #'
 #' @param type One of \code{"arrests"} or \code{"complaints"}.
 #' @param as Return format: \code{"data.frame"} (default), \code{"tibble"}, or
@@ -207,17 +207,29 @@ clear_chicago_cache <- function() {
   )
   why <- character()
   for (u in urls) {
+    # the connection's own warning ("Could not connect to server") is the reason this
+    # source failed: it goes into the error below, not out as a stray warning
+    msg <- character()
     df <- tryCatch(
-      if (grepl("\\.parquet$", u)) {
-        morie_read_parquet(u)
-      } else {
-        utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE,
-                        encoding = "UTF-8")
-      },
-      error = function(e) NULL
+      withCallingHandlers(
+        if (grepl("\\.parquet$", u)) {
+          morie_read_parquet(u)
+        } else {
+          utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE,
+                          encoding = "UTF-8")
+        },
+        warning = function(w) {
+          msg <<- c(msg, conditionMessage(w))
+          invokeRestart("muffleWarning")
+        }
+      ),
+      error = function(e) {
+        msg <<- c(msg, conditionMessage(e))
+        NULL
+      }
     )
     if (is.null(df)) {
-      why <- c(why, paste0(u, ": no response"))
+      why <- c(why, paste0(u, ": ", if (length(msg)) msg[[1L]] else "no response"))
       next
     }
     bad <- .rmd_full_reject(df, if (bounded) NA_real_ else expected)

@@ -24,27 +24,29 @@ test_that("ask() delivers the whole question as one argument, parentheses and al
     q <- sprintf("mean of (1:10); touch %s", marker)
     expect_identical(ask(q), "ok")
     argv <- readLines(log)
-    expect_identical(argv[1:3], c("agent", "--backend", "auto"))
-    expect_length(argv, 4L)
-    expect_match(argv[4], "(rmoriedata)", fixed = TRUE)
-    expect_match(argv[4], q, fixed = TRUE)
-    expect_match(argv[4], "Question: ", fixed = TRUE)
+    expect_identical(argv[1], "agent")
+    expect_length(argv, 2L)
+    expect_match(argv[2], "(rmoriedata)", fixed = TRUE)
+    expect_match(argv[2], q, fixed = TRUE)
+    expect_match(argv[2], "Question: ", fixed = TRUE)
     expect_false(file.exists(marker))
   })
 })
 
-test_that("ask() passes model and backend through quoted", {
+test_that("ask() passes the model through quoted, and no backend flag the agent lacks", {
   with_stub_bin(function(log) {
-    ask("hello world", model = "gpt-4o mini", backend = "ollama")
+    ask("hello world", model = "gpt-4o mini", backend = "cli")
     argv <- readLines(log)
-    expect_identical(argv[3:5], c("ollama", "-m", "gpt-4o mini"))
-    expect_length(argv, 6L)
+    expect_identical(argv[1:3], c("agent", "--model", "gpt-4o mini"))
+    expect_length(argv, 4L)
+    expect_false("--backend" %in% argv)
   })
 })
 
 test_that("ask() rejects bad model and backend before touching the shell", {
   expect_error(ask("q", backend = NA_character_), "backend")
   expect_error(ask("q", backend = c("a", "b")), "backend")
+  expect_error(ask("q", backend = "ollama"), "\"auto\", \"hosted\" or \"cli\"")
   expect_error(ask("q", model = ""), "model")
   expect_error(ask("   "), "question")
 })
@@ -79,7 +81,10 @@ test_that("ask() uses the hosted MORIE tier when a key is stored, and names the 
   expect_identical(seen$model, "gpt-oss-120b:cf")
   expect_identical(seen$prompt, "which datasets cover Toronto?")
   expect_match(seen$system_prompt, "rmoriedata", fixed = TRUE)
-  # backend = "hosted" with no key says how to sign in; "ollama" never touches the tier
+  # the catalogue itself goes with the question, so the model can name tables
+  expect_match(seen$system_prompt, "siu_directors_reports: table", fixed = TRUE)
+  expect_match(seen$system_prompt, "morie_data_load(", fixed = TRUE)
+  # backend = "hosted" with no key says how to sign in
   testthat::local_mocked_bindings(
     bricklayer_llm_status = function() {
       data.frame(

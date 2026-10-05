@@ -1,0 +1,172 @@
+drid,language,case_number,field,old_value,new_value,reason
+3556,en,06-OFD-069,_language,en,fr,"page drid 3556 is the French report of its case (legacy layout, filed under /en/)"
+3556,fr,06-OFD-069,police_service,Peel Regional Police,Police régionale de Peel,the page's header names the service: 'Service de police : Police régionale de Peel'
+3559,en,06-OFD-007,_language,en,fr,"page drid 3559 is the French report of its case (legacy layout, filed under /en/)"
+3559,fr,06-OFD-007,police_service,Peel Regional Police,Police régionale de Peel,the page's header names the service: 'Service de police : Police régionale de Peel'
+3674,en,11-OCD-146,_language,en,fr,"page drid 3674 is the French report of its case (legacy layout, filed under /en/)"
+3674,fr,11-OCD-146,police_service,Peel Regional Police,Police régionale de Peel,the page's header names the service: 'Service de police : Police régionale de Peel'
+3561,en,10-PFD-078,_language,en,fr,"page drid 3561 is the French report of its case (legacy layout, filed under /en/)"
+3561,fr,10-PFD-078,police_service,Guelph Police Service,Police provinciale de l'Ontario,the page's header names the service: 'Service de police : Police provinciale de l'Ontatio de Sioux Lookout (the source's typo)' (the row held a service the page never names)
+3658,en,05-TCD-004,_language,en,fr,"page drid 3658 is the French report of its case (legacy layout, filed under /en/)"
+3658,fr,05-TCD-004,police_service,Guelph Police Service,Service de police de Toronto,the page's header names the service: 'Service de police : Service de police de Toronto' (the row held a service the page never names)
+3682,en,10-OOD-009,_language,en,fr,"page drid 3682 is the French report of its case (legacy layout, filed under /en/)"
+3682,fr,10-OOD-009,police_service,Guelph Police Service,Service de police d'Ottawa,the page's header names the service: 'Service de police : Service de police d'Ottawa' (the row held a service the page never names)
+3652,fr,15-TFD-034,_drop,,,page drid 3652 is a second copy of drid 3651 (identical report text)
+3913,fr,24-PCI-094,_drop,,,page drid 3913 is a second copy of drid 3912 (identical report text)
+3924,fr,24-PCI-105,_drop,,,page drid 3924 is a second copy of drid 3923 (identical report text)
+3185,fr,17-TVI-298,_drop,,,page drid 3185 is a second copy of drid 3184 (identical report text)
+3186,fr,17-TVI-298,_drop,,,page drid 3186 is a second copy of drid 3184 (identical report text)
+4580,en,25-TCI-126,_drop,,,page drid 4580 is a second copy of drid 4575 (identical report text)
+328,en,18-OFD-283,corrigenda,,"drid 385, 2019-07-15: in the Incident Narrative, 'Regrettably, the officers were unable to exit because the front door had been locked and could only be unlocked using a button accessible by the attendant, who had taken cover underneath a counter' is replaced with 'Regrettably, the officers were unable to exit because the front door had been locked'","the SIU's corrigendum of this report, carried on the report it corrects"
+521,en,18-OCI-342,corrigenda,,"drid 620, 2019-12-03: the report said in error that the subject officer had not provided his notes; he had, and having read them the Director remains of the view that there are no reasonable grounds","the SIU's corrigendum of this report, carried on the report it corrects"
+522,fr,18-OCI-342,corrigenda,,"drid 621, 2019-12-03 : le rapport indiquait par erreur que l'agent impliqué n'avait pas fourni ses notes; il l'avait fait, et après les avoir examinées le directeur reste d'avis qu'il n'y a aucun motif raisonnable","the SIU's corrigendum of this report, carried on the report it corrects"
+4561,en,23-OOD-536,corrigenda,,"drid 5065, 2026-04-29: a re-examination of the Complainant's phone put her last activity at 05:17, not 02:42, December 30, 2023; the Director re-evaluated the subject official's liability and remains of the view that there are no reasonable grounds","the SIU's corrigendum of this report, carried on the report it corrects"
+329,fr,18-OFD-283,corrigenda,,"(English corrigendum) drid 385, 2019-07-15: in the Incident Narrative, 'Regrettably, the officers were unable to exit because the front door had been locked and could only be unlocked using a button accessible by the attendant, who had taken cover underneath a counter' is replaced with 'Regrettably, the officers were unable to exit because the front door had been locked'","the SIU's corrigendum of this report, carried on the report it corrects"
+4572,fr,23-OOD-536,corrigenda,,"(English corrigendum) drid 5065, 2026-04-29: a re-examination of the Complainant's phone put her last activity at 05:17, not 02:42, December 30, 2023; the Director re-evaluated the subject official's liability and remains of the view that there are no reasonable grounds","the SIU's corrigendum of this report, carried on the report it corrects"
+385,en,18-OFD-283,_drop,,,"page drid 385 is a corrigendum of drid 328, applied to it (column corrigenda) rather than counted as a report"
+620,en,18-OCI-342,_drop,,,"page drid 620 is a corrigendum of drid 521, applied to it (column corrigenda) rather than counted as a report"
+621,fr,18-OCI-342,_drop,,,"page drid 621 is a corrigendum of drid 522, applied to it (column corrigenda) rather than counted as a report"
+5065,en,23-OOD-536,_drop,,,"page drid 5065 is a corrigendum of drid 4561, applied to it (column corrigenda) rather than counted as a report"
+925,en,19-TCI-073,case_number,19-TCI-073,19-TCI-073a,"the page is case 19-TCI-073a, a second report distinct from drid 590's 19-TCI-073"
+926,fr,19-TCI-073,case_number,19-TCI-073,19-TCI-073a,"the page is case 19-TCI-073a, a second report distinct from drid 591's 19-TCI-073"
+2209,fr,21-OCI-191,case_number,21-OCI-191,22-PCI-191,"the page's header says 21-OCI-191 (a typo on the SIU site) but its report is 22-PCI-191: the OPP in Quinte West, July 30, 2022, the English drid 2202"
+2209,fr,21-OCI-191,police_service,Service de police de Windsor,Police provinciale de l'Ontario,the report: 'la Police provinciale de l'Ontario de Quinte West a contacté l'UES' about its officer (case 22-PCI-191)
+214,en,18-OCI-124,police_service,Cornwall Community Police Service,Cornwall Police Service,one name per service (the Cornwall Community Police Service is now the Cornwall Police Service)
+215,fr,18-OCI-124,police_service,Service communautaire de la police de Cornwall,Service de police de Cornwall,one name per service (the Cornwall Community Police Service is now the Cornwall Police Service)
+670,en,19-OCI-163,police_service,City of Kawartha Lakes Police Service,Kawartha Lakes Police Service,one name per service
+671,fr,19-OCI-163,police_service,Service de police de la ville de Kawartha Lakes,Service de police de Kawartha Lakes,one name per service
+2028,en,22-OCI-070,police_service,City of Kawartha Lakes Police Service,Kawartha Lakes Police Service,one name per service
+2029,fr,22-OCI-070,police_service,Service de police de la ville de Kawartha Lakes,Service de police de Kawartha Lakes,one name per service
+114,en,18-OCD-051,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+117,en,17-OCI-164,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+119,en,17-OVI-273,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+123,en,17-OCI-338,charges_recommended,No Charges to Issue,False,'No Charges to Issue' says no charges: coded False like the rest of the column
+144,en,18-PCI-003,charges_recommended,No charges,False,'No charges' says no charges: coded False like the rest of the column
+175,en,18-OVI-023,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+251,en,18-OFI-098,charges_recommended,no grounds for proceeding with criminal charges,False,'no grounds for proceeding with criminal charges' says no charges: coded False like the rest of the column
+324,en,18-OCI-081,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+331,en,18-OVD-062,charges_recommended,no charges warranted,False,'no charges warranted' says no charges: coded False like the rest of the column
+367,en,18-OVI-336,charges_recommended,No Charges to Issue,False,'No Charges to Issue' says no charges: coded False like the rest of the column
+413,en,19-OVI-083,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+439,en,18-OCI-240,charges_recommended,no basis for proceeding with criminal charges,False,'no basis for proceeding with criminal charges' says no charges: coded False like the rest of the column
+461,en,18-PCI-337,charges_recommended,No Basis to Lay Charges,False,'No Basis to Lay Charges' says no charges: coded False like the rest of the column
+576,en,19-OCI-046,charges_recommended,no grounds to proceed with criminal charges,False,'no grounds to proceed with criminal charges' says no charges: coded False like the rest of the column
+705,en,19-PCI-174,charges_recommended,there are no grounds to proceed with criminal charges,False,'there are no grounds to proceed with criminal charges' says no charges: coded False like the rest of the column
+816,en,19-OCI-279,charges_recommended,No Charges to Issue,False,'No Charges to Issue' says no charges: coded False like the rest of the column
+826,en,19-OFD-170,charges_recommended,no basis for proceeding with criminal charges,False,'no basis for proceeding with criminal charges' says no charges: coded False like the rest of the column
+1201,en,20-OFD-144,charges_recommended,no basis to proceed with criminal charges,False,'no basis to proceed with criminal charges' says no charges: coded False like the rest of the column
+2185,en,22-OCI-179,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+2268,en,22-TCI-244,charges_recommended,no basis for proceeding with criminal charges,False,'no basis for proceeding with criminal charges' says no charges: coded False like the rest of the column
+2923,en,17-OFD-313,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+2925,en,17-OFD-363,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+2930,en,17-OCI-280,charges_recommended,No charges to issue,False,'No charges to issue' says no charges: coded False like the rest of the column
+2937,en,17-OCI-318,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+2949,en,17-OCI-259,charges_recommended,No (no basis for charges),False,'No (no basis for charges)' says no charges: coded False like the rest of the column
+2957,en,17-PVI-232,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+2958,en,17-OFD-193,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3005,en,17-OCI-257,charges_recommended,Criminal Charges not Warranted,False,'Criminal Charges not Warranted' says no charges: coded False like the rest of the column
+3008,en,17-OCI-148,charges_recommended,none will issue,False,'none will issue' says no charges: coded False like the rest of the column
+3010,en,17-PCI-249,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3012,en,17-OCI-144,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3015,en,17-OCD-190,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3019,en,17-OCI-204,charges_recommended,No criminal charges,False,'No criminal charges' says no charges: coded False like the rest of the column
+3024,en,17-OCI-128,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3026,en,17-OCI-221,charges_recommended,no basis for the laying of criminal charges,False,'no basis for the laying of criminal charges' says no charges: coded False like the rest of the column
+3027,en,17-TVI-288,charges_recommended,no basis for the laying of criminal charges,False,'no basis for the laying of criminal charges' says no charges: coded False like the rest of the column
+3032,en,17-OCI-203,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3036,en,17-OCI-173,charges_recommended,no basis for charges,False,'no basis for charges' says no charges: coded False like the rest of the column
+3040,en,17-PCI-153,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3044,en,17-OCI-222,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3045,en,17-OCD-126,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3051,en,17-PVI-105,charges_recommended,there are no grounds for proceeding with charges,False,'there are no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3053,en,17-OFD-135,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3055,en,17-TCI-106,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3056,en,17-PCI-124,charges_recommended,no charges warranted,False,'no charges warranted' says no charges: coded False like the rest of the column
+3057,en,17-OCI-060,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3059,en,17-TCI-090,charges_recommended,No criminal charges to issue,False,'No criminal charges to issue' says no charges: coded False like the rest of the column
+3123,en,17-TCI-117,charges_recommended,there are no grounds for proceeding with charges in this case,False,'there are no grounds for proceeding with charges in this case' says no charges: coded False like the rest of the column
+3126,en,17-OCI-064,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3127,en,17-TCI-097,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3132,en,17-TCI-038,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3134,en,17-OCI-093,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3135,en,17-TCI-040,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3138,en,17-OCI-103,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3142,en,17-TVI-109,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3144,en,17-TCI-131,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3146,en,17-TVI-029,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3149,en,17-OCI-036,charges_recommended,No Charges Issued,False,'No Charges Issued' says no charges: coded False like the rest of the column
+3151,en,17-OVI-018,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3152,en,17-OOD-267,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3153,en,17-OVD-015,charges_recommended,no basis for the laying of criminal charges,False,'no basis for the laying of criminal charges' says no charges: coded False like the rest of the column
+3154,en,17-TCI-063,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3155,en,16-OCI-188,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3156,en,16-OVD-255,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3200,en,17-TCI-061,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3203,en,17-OCI-065,charges_recommended,No criminal charges,False,'No criminal charges' says no charges: coded False like the rest of the column
+3204,en,16-OVI-318,charges_recommended,No charges issued,False,'No charges issued' says no charges: coded False like the rest of the column
+3205,en,17-TCD-001,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3206,en,17-OCD-045,charges_recommended,no charges warranted,False,'no charges warranted' says no charges: coded False like the rest of the column
+3207,en,17-TCI-012,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3211,en,17-TCD-055,charges_recommended,no charges warranted,False,'no charges warranted' says no charges: coded False like the rest of the column
+3216,en,17-OCI-049,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3218,en,17-TCI-008,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3219,en,16-OCI-313,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3220,en,17-OCI-002,charges_recommended,there are no grounds for proceeding with charges in this case,False,'there are no grounds for proceeding with charges in this case' says no charges: coded False like the rest of the column
+3221,en,16-OCI-172,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3242,en,17-PVI-256,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3243,en,17-OCI-151,charges_recommended,no basis for charges,False,'no basis for charges' says no charges: coded False like the rest of the column
+3245,en,16-OCI-190,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3253,en,17-OCI-003,charges_recommended,no grounds to lay criminal charges,False,'no grounds to lay criminal charges' says no charges: coded False like the rest of the column
+3256,en,16-TCI-199,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3261,en,17-OCI-095,charges_recommended,No charges,False,'No charges' says no charges: coded False like the rest of the column
+3262,en,16-TCI-244,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3263,en,16-OCI-325,charges_recommended,No,False,'No' says no charges: coded False like the rest of the column
+3264,en,16-OVI-293,charges_recommended,no charges warranted,False,'no charges warranted' says no charges: coded False like the rest of the column
+3265,en,16-OCI-297,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3266,en,16-OCI-317,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3270,en,16-OCI-257,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3272,en,16-TVI-300,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3274,en,16-OVI-312,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3280,en,16-OCI-289,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3325,en,16-PVI-256,charges_recommended,no grounds for the laying of criminal charges,False,'no grounds for the laying of criminal charges' says no charges: coded False like the rest of the column
+3327,en,16-OFI-234,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3328,en,16-TFI-205,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3329,en,16-OCI-241,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3332,en,16-TCI-250,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3334,en,16-TCI-226,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3335,en,16-OCI-194,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3339,en,16-OCI-231,charges_recommended,not warranted,False,'not warranted' says no charges: coded False like the rest of the column
+3342,en,16-TVD-258,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3344,en,16-OCI-235,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3350,en,17-TCD-110,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3357,en,16-OCI-122,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3404,en,16-OCI-114,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3405,en,16-OCI-059,charges_recommended,not warranted,False,'not warranted' says no charges: coded False like the rest of the column
+3412,en,16-OCI-158,charges_recommended,no grounds for proceeding with criminal charges,False,'no grounds for proceeding with criminal charges' says no charges: coded False like the rest of the column
+3415,en,16-OCI-169,charges_recommended,no charges warranted,False,'no charges warranted' says no charges: coded False like the rest of the column
+3416,en,16-OVD-093,charges_recommended,no grounds for proceeding with criminal charges,False,'no grounds for proceeding with criminal charges' says no charges: coded False like the rest of the column
+3417,en,16-TCI-314,charges_recommended,there are no grounds for proceeding with charges,False,'there are no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3419,en,16-OCI-128,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3420,en,16-PCI-123,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3421,en,16-PVI-127,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3424,en,16-OOD-118,charges_recommended,no basis for the laying of any criminal charges,False,'no basis for the laying of any criminal charges' says no charges: coded False like the rest of the column
+3425,en,16-OFI-079,charges_recommended,there are no grounds for proceeding with criminal charges in this case,False,'there are no grounds for proceeding with criminal charges in this case' says no charges: coded False like the rest of the column
+3426,en,16-TCI-071,charges_recommended,no grounds for proceeding with charges,False,'no grounds for proceeding with charges' says no charges: coded False like the rest of the column
+3435,en,16-OFD-253,charges_recommended,None,False,'None' says no charges: coded False like the rest of the column
+3437,en,17-TCI-066,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3439,en,16-OCI-227,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3442,en,16-PFI-220,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3448,en,16-PCI-086,charges_recommended,No criminal charges warranted,False,'No criminal charges warranted' says no charges: coded False like the rest of the column
+3450,en,16-OCI-070,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3453,en,16-OCI-065,charges_recommended,no criminal charges warranted,False,'no criminal charges warranted' says no charges: coded False like the rest of the column
+3454,en,16-OCI-066,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3457,en,16-OCI-056,charges_recommended,not warranted,False,'not warranted' says no charges: coded False like the rest of the column
+3458,en,16-TCI-034,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3462,en,16-OCI-050,charges_recommended,No Criminal Charges Warranted,False,'No Criminal Charges Warranted' says no charges: coded False like the rest of the column
+3463,en,16-OCD-055,charges_recommended,no charges,False,'no charges' says no charges: coded False like the rest of the column
+3544,en,15-OFD-059,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3611,en,14-OFD-086,charges_recommended,no,False,'no' says no charges: coded False like the rest of the column
+3612,en,15-TFD-034,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+3631,en,15-OFD-046,charges_recommended,none,False,'none' says no charges: coded False like the rest of the column
+3648,en,14-OCD-178,charges_recommended,no criminal charges,False,'no criminal charges' says no charges: coded False like the rest of the column
+4336,en,24-PCI-485,charges_recommended,no basis for proceeding with criminal charges,False,'no basis for proceeding with criminal charges' says no charges: coded False like the rest of the column
