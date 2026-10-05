@@ -79,7 +79,8 @@ test_that("narrative_summary is the report's own account of the incident", {
   expect_gte(sum(nzchar(n)), 4600L)
   expect_true(all(nchar(n) <= 1500L))
   # definition notes and the mandate boilerplate are not the account
-  expect_false(any(grepl("A complainant is an individual|Un plaignant est une personne", n)))
+  boilerplate <- "A complainant is an individual|Un plaignant est une personne"
+  expect_false(any(grepl(boilerplate, n)))
   expect_false(any(grepl("^Note\\s*:", n)))
   # French reports carry the French account, English reports the English one
   fr <- n[d$`_language` == "fr" & nzchar(n)]
