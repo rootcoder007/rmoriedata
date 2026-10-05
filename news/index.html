@@ -36,7 +36,9 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.4" id="rmoriedata-034">rmoriedata 0.3.4<a class="anchor" aria-label="anchor" href="#rmoriedata-034"></a></h2>
-<ul><li>
+<ul><li><p>The Parquet store is compressed: the writer’s Snappy stream was literal-only (valid, but it compressed nothing), so every table’s Parquet copy was as large as its raw pages. Pages are now written with GZIP (zlib, level 9) by default, and Snappy, still available, has a real match-finder; both codecs and the reader are C (<code>src/gzip.c</code>, <code>src/snappy.c</code>). The Parquet copies shrink from 16.1 MB to 3.3 MB (the SIU corpus from 10.0 MB to 2.1 MB) and the installed package from about 27 MB to 14.5 MB; pandas/pyarrow read them as before.</p></li>
+<li><p>SIU corpus: <code>narrative_summary</code> holds each report’s own account of the incident on 4,605 of 4,613 reports (it was empty but for three values that described the SIU’s investigation). The text is the opening of the report’s “Incident Narrative” / “Description de l’incident” section, or of the “Notification of the SIU” / “Avis à l’UES” section in reports that have no narrative section (2005-2016 and re-opened files), about 900 characters cut at a sentence end. It was read from the SIU’s pages, re-crawled on 2026-10-05 at one request every 3 seconds; <code>data-raw/add_siu_narratives.R</code> rebuilds it.</p></li>
+<li>
 <p>SIU corpus, round 8 (4,613 rows; every change is a row of <code>data-raw/siu_round8_review.csv</code>, with the reason read from the page, or a rule of <code>data-raw/siu_round8_rules.R</code>):</p>
 <ul><li>six French reports of 2005-2011 filed under /en/ are labelled French and carry the service their page names; three of them held “Guelph Police Service”, which the pages never name (05-TCD-004 is Toronto, 10-PFD-078 the OPP, 10-OOD-009 Ottawa);</li>
 <li>a corrigendum is applied to the report it corrects, in a new column <code>corrigenda</code>, not counted as a report (drids 385, 620/621 and 5065 correct 328, 521/522 and 4561); six second copies of one report (identical page text) are removed;</li>

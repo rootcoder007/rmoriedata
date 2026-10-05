@@ -6,7 +6,7 @@ OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.
 ## Usage
 
 ``` r
-morie_write_parquet(df, path, compression = "snappy")
+morie_write_parquet(df, path, compression = "gzip")
 ```
 
 ## Arguments
@@ -23,7 +23,8 @@ morie_write_parquet(df, path, compression = "snappy")
 
 - compression:
 
-  `"snappy"` (default) or `NULL` for uncompressed.
+  `"gzip"` (default; zlib level 9), `"snappy"`, or `NULL` for
+  uncompressed pages.
 
 ## Value
 

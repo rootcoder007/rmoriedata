@@ -63,10 +63,14 @@ is text); in the typed table,
 `morie_data_load("siu_directors_reports")`, it is logical (`FALSE`,
 `TRUE`, or `NA` when the report does not say). `corrigenda` holds the
 SIU's correction notice of a report (a corrigendum is applied to the
-report it corrects, not counted as a report). `narrative_summary` is
-empty except where the scrape held report text (it held the SIU's
-mandate paragraph or the page title), and `supplemental_materials` lists
-the legislation and case-law links a report cites.
+report it corrects, not counted as a report). `narrative_summary` is the
+opening of the report's own account of the incident (about 900
+characters, at most 1,500, cut at a sentence end): its "Incident
+Narrative" / "Description de l'incident" section, or, in reports without
+one (2005-2016 and re-opened files), the "Notification of the SIU" /
+"Avis a l'UES" section, which holds the account there. It is empty on
+the 8 reports whose page has neither. `supplemental_materials` lists the
+legislation and case-law links a report cites.
 
 `police_service` is the service of the subject officials – not the force
 that notified the SIU, which is often a custody, requesting or

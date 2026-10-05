@@ -152,9 +152,9 @@ Verify you’re using the exact data slice the package shipped:
 ck <- morie_data_checksums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
-#> 153 siu_directors_reports.parquet 4563499
+#> 181  siu_directors_reports.csv.gz 2378925
+#> 153 siu_directors_reports.parquet 2053237
 #> 33            describe_corpus.Rds 1712072
-#> 32       cpads_pumf_synthetic.csv  893252
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 morie_core_sha256("abc")
