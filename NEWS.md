@@ -1,5 +1,11 @@
 # rmoriedata 0.3.4
 
+* The Parquet store is compressed: the writer's Snappy stream was literal-only (valid, but it
+  compressed nothing), so every table's Parquet copy was as large as its raw pages. Pages are now
+  written with GZIP (zlib, level 9) by default, and Snappy, still available, has a real
+  match-finder; both codecs and the reader are C (`src/gzip.c`, `src/snappy.c`). The Parquet copies
+  shrink from 16.1 MB to 3.3 MB (the SIU corpus from 10.0 MB to 2.1 MB) and the installed package
+  from about 27 MB to 14.5 MB; pandas/pyarrow read them as before.
 * SIU corpus: `narrative_summary` holds each report's own account of the incident on 4,605 of 4,613
   reports (it was empty but for three values that described the SIU's investigation). The text is
   the opening of the report's "Incident Narrative" / "Description de l'incident" section, or of the

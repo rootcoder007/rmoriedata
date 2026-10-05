@@ -1,0 +1,53 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later
+ *
+ * gzip.c -- the Parquet GZIP page codec (RFC 1952 members) through zlib,
+ * which R itself links. Compression at level 9; decompression accepts a
+ * gzip or zlib stream (windowBits 15 + 32 detects the header).
+ */
+#include <R.h>
+#include <Rinternals.h>
+#include <string.h>
+#include <zlib.h>
+
+SEXP C_rmd_gzip_compress(SEXP x) {
+    if (TYPEOF(x) != RAWSXP) Rf_error("gzip: expected a raw vector");
+    z_stream s;
+    memset(&s, 0, sizeof s);
+    if (deflateInit2(&s, 9, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY) != Z_OK)
+        Rf_error("gzip: deflateInit2 failed");
+    uLong bound = deflateBound(&s, (uLong) XLENGTH(x)) + 32;
+    unsigned char *buf = (unsigned char *) R_alloc(bound, 1);
+    s.next_in = (Bytef *) RAW(x);
+    s.avail_in = (uInt) XLENGTH(x);
+    s.next_out = buf;
+    s.avail_out = (uInt) bound;
+    int rc = deflate(&s, Z_FINISH);
+    if (rc != Z_STREAM_END) { deflateEnd(&s); Rf_error("gzip: deflate failed (%d)", rc); }
+    size_t n = (size_t) s.total_out;
+    deflateEnd(&s);
+    SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) n));
+    memcpy(RAW(out), buf, n);
+    UNPROTECT(1);
+    return out;
+}
+
+SEXP C_rmd_gzip_decompress(SEXP x, SEXP size) {
+    if (TYPEOF(x) != RAWSXP) Rf_error("gzip: expected a raw vector");
+    double want = asReal(size);
+    if (!R_FINITE(want) || want < 0) Rf_error("gzip: bad uncompressed size");
+    SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) want));
+    z_stream s;
+    memset(&s, 0, sizeof s);
+    if (inflateInit2(&s, 15 + 32) != Z_OK) Rf_error("gzip: inflateInit2 failed");
+    s.next_in = (Bytef *) RAW(x);
+    s.avail_in = (uInt) XLENGTH(x);
+    s.next_out = RAW(out);
+    s.avail_out = (uInt) want;
+    int rc = inflate(&s, Z_FINISH);
+    size_t got = (size_t) s.total_out;
+    inflateEnd(&s);
+    if (rc != Z_STREAM_END || got != (size_t) want)
+        Rf_error("gzip: page did not decompress to its stated %.0f bytes", want);
+    UNPROTECT(1);
+    return out;
+}

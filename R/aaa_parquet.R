@@ -310,111 +310,14 @@
 # ---------------------------------------------------------------- snappy
 
 .pq_snappy_decompress <- function(data) {
-  pos <- 1L
-  n <- 0
-  shift <- 0
-  repeat {
-    b <- as.integer(data[pos])
-    pos <- pos + 1L
-    n <- n + bitwAnd(b, 127L) * 2^shift
-    if (bitwAnd(b, 128L) == 0L) break
-    shift <- shift + 7
-  }
-
-  out <- raw(n)
-  o <- 0L
-  total <- length(data)
-  while (pos <= total) {
-    tag <- as.integer(data[pos])
-    pos <- pos + 1L
-    kind <- bitwAnd(tag, 3L)
-    if (kind == 0L) { # literal
-      ln <- bitwShiftR(tag, 2L)
-      if (ln >= 60L) {
-        extra <- ln - 59L
-        ln <- sum(as.integer(data[seq.int(pos, length.out = extra)]) *
-          256^(seq_len(extra) - 1L))
-        pos <- pos + extra
-      }
-      ln <- ln + 1L
-      out[seq.int(o + 1L, length.out = ln)] <-
-        data[seq.int(pos, length.out = ln)]
-      pos <- pos + ln
-      o <- o + ln
-      next
-    }
-    if (kind == 1L) { # 1-byte offset
-      ln <- 4L + bitwAnd(bitwShiftR(tag, 2L), 7L)
-      off <- bitwShiftL(bitwShiftR(tag, 5L), 8L) + as.integer(data[pos])
-      pos <- pos + 1L
-    } else if (kind == 2L) { # 2-byte offset
-      ln <- bitwShiftR(tag, 2L) + 1L
-      off <- as.integer(data[pos]) + 256L * as.integer(data[pos + 1L])
-      pos <- pos + 2L
-    } else { # 4-byte offset
-      ln <- bitwShiftR(tag, 2L) + 1L
-      off <- sum(as.integer(data[seq.int(pos, length.out = 4L)]) *
-        256^(0:3))
-      pos <- pos + 4L
-    }
-    if (off <= 0 || off > o) {
-      stop("snappy: bad copy offset ", off, call. = FALSE)
-    }
-    start <- o - off
-    if (off >= ln) {
-      # Non-overlapping: one vectorised move.
-      out[seq.int(o + 1L, length.out = ln)] <-
-        out[seq.int(start + 1L, length.out = ln)]
-    } else {
-      # Overlapping copies are how snappy encodes runs, so the source
-      # grows as it is read and this has to go a byte at a time.
-      for (i in seq_len(ln)) out[o + i] <- out[start + i]
-    }
-    o <- o + ln
-  }
-  if (o != n) {
-    stop("snappy: expected ", n, " bytes, decoded ", o, call. = FALSE)
-  }
-  out
+  # src/snappy.c: every snappy tag (literals, 1-, 2- and 4-byte-offset copies)
+  .Call(C_rmd_snappy_decompress, data)
 }
 
 .pq_snappy_compress <- function(data) {
-  # Literal-only stream: fully conformant, just does not shrink.
-  # ponytail: no match-finder; add one if written size ever matters.
-  out <- list()
-  k <- 0L
-  n <- length(data)
-  hdr <- raw(0)
-  m <- n
-  repeat {
-    if (m < 128) {
-      hdr <- c(hdr, as.raw(m))
-      break
-    }
-    hdr <- c(hdr, as.raw(bitwOr(as.integer(m %% 128), 128L)))
-    m <- m %/% 128
-  }
-  k <- k + 1L
-  out[[k]] <- hdr
-
-  pos <- 0L
-  while (pos < n) {
-    chunk <- min(n - pos, 65536L)
-    ln <- chunk - 1L
-    if (ln < 60L) {
-      tag <- as.raw(bitwShiftL(ln, 2L))
-    } else if (ln < 256L) {
-      tag <- c(as.raw(240L), as.raw(ln))
-    } else {
-      tag <- c(as.raw(244L), as.raw(ln %% 256L), as.raw(ln %/% 256L))
-    }
-    k <- k + 1L
-    out[[k]] <- tag
-    k <- k + 1L
-    out[[k]] <- data[seq.int(pos + 1L, length.out = chunk)]
-    pos <- pos + chunk
-  }
-  do.call(base::c, out)
+  # src/snappy.c: the reference greedy compressor (4-byte hash per 64 KiB block,
+  # 2-byte-offset copies)
+  .Call(C_rmd_snappy_compress, data)
 }
 
 # ------------------------------------------------------------- constants
@@ -434,6 +337,7 @@
 .pqERleDict <- 8L
 .pqCUncompressed <- 0L
 .pqCSnappy <- 1L
+.pqCGzip <- 2L
 .pqRequired <- 0L
 .pqOptional <- 1L
 .pqRepeated <- 2L
@@ -692,11 +596,13 @@
     }
     if (codec == .pqCSnappy) {
       page <- .pq_snappy_decompress(raw_page)
+    } else if (codec == .pqCGzip) {
+      page <- .Call(C_rmd_gzip_decompress, raw_page, .pq_f(head, 2))
     } else if (codec == .pqCUncompressed) {
       page <- raw_page
     } else {
       stop("compression codec ", codec, " not implemented; the store ",
-        "uses SNAPPY only",
+        "uses GZIP, SNAPPY or none",
         call. = FALSE
       )
     }
@@ -777,7 +683,7 @@
 #' Read a Parquet file
 #'
 #' Native Parquet reader: no nanoparquet, no arrow. Handles the v1
-#' format with PLAIN, RLE and dictionary encodings, Snappy or no
+#' format with PLAIN, RLE and dictionary encodings, GZIP, Snappy or no
 #' compression. Nested and repeated columns are refused.
 #'
 #' @param path Path to a `.parquet` file.
@@ -1008,17 +914,25 @@ morie_read_parquet <- function(path, columns = NULL) {
 #'   every string must be valid UTF-8 (marked, or unmarked in UTF-8 bytes),
 #'   and column names must be unique.
 #' @param path Destination path.
-#' @param compression `"snappy"` (default) or `NULL` for uncompressed.
+#' @param compression `"gzip"` (default; zlib level 9), `"snappy"`, or `NULL`
+#'   for uncompressed pages.
 #' @return `path`, invisibly.
 #' @keywords internal
-morie_write_parquet <- function(df, path, compression = "snappy") {
-  if (!is.null(compression) && !identical(compression, "snappy")) {
-    stop("compression must be \"snappy\" or NULL; got ",
+morie_write_parquet <- function(df, path, compression = "gzip") {
+  if (!is.null(compression) &&
+        !(identical(compression, "gzip") || identical(compression, "snappy"))) {
+    stop("compression must be \"gzip\", \"snappy\" or NULL; got ",
       sQuote(compression),
       call. = FALSE
     )
   }
-  codec <- if (is.null(compression)) .pqCUncompressed else .pqCSnappy
+  codec <- if (is.null(compression)) {
+    .pqCUncompressed
+  } else if (compression == "gzip") {
+    .pqCGzip
+  } else {
+    .pqCSnappy
+  }
 
   nrows <- nrow(df)
   names_ <- names(df)
@@ -1044,7 +958,10 @@ morie_write_parquet <- function(df, path, compression = "snappy") {
       .pq_encode_levels(defs, 1L),
       .pq_encode_plain(present, inf$type, names_[k])
     )
-    payload <- if (codec == .pqCSnappy) .pq_snappy_compress(body) else body
+    payload <- switch(as.character(codec),
+                      "1" = .pq_snappy_compress(body),
+                      "2" = .Call(C_rmd_gzip_compress, body),
+                      body)
 
     dph <- .pq_writer()
     last <- .pq_wi32(dph, 1L, nrows, 0L)

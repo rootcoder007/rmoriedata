@@ -4,7 +4,7 @@
 \alias{morie_write_parquet}
 \title{Write a data frame to Parquet}
 \usage{
-morie_write_parquet(df, path, compression = "snappy")
+morie_write_parquet(df, path, compression = "gzip")
 }
 \arguments{
 \item{df}{A \code{data.frame}. Factor columns are written as character;
@@ -13,7 +13,8 @@ and column names must be unique.}
 
 \item{path}{Destination path.}
 
-\item{compression}{\code{"snappy"} (default) or \code{NULL} for uncompressed.}
+\item{compression}{\code{"gzip"} (default; zlib level 9), \code{"snappy"}, or \code{NULL}
+for uncompressed pages.}
 }
 \value{
 \code{path}, invisibly.
