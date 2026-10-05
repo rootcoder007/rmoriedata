@@ -1,5 +1,17 @@
 # rmoriedata 0.3.4
 
+* The Parquet store is compressed: the writer's Snappy stream was literal-only (valid, but it
+  compressed nothing), so every table's Parquet copy was as large as its raw pages. Pages are now
+  written with GZIP (zlib, level 9) by default, and Snappy, still available, has a real
+  match-finder; both codecs and the reader are C (`src/gzip.c`, `src/snappy.c`). The Parquet copies
+  shrink from 16.1 MB to 3.3 MB (the SIU corpus from 10.0 MB to 2.1 MB) and the installed package
+  from about 27 MB to 14.5 MB; pandas/pyarrow read them as before.
+* SIU corpus: `narrative_summary` holds each report's own account of the incident on 4,605 of 4,613
+  reports (it was empty but for three values that described the SIU's investigation). The text is
+  the opening of the report's "Incident Narrative" / "Description de l'incident" section, or of the
+  "Notification of the SIU" / "Avis à l'UES" section in reports that have no narrative section (2005-2016
+  and re-opened files), about 900 characters cut at a sentence end. It was read from the SIU's pages,
+  re-crawled on 2026-10-05 at one request every 3 seconds; `data-raw/add_siu_narratives.R` rebuilds it.
 * SIU corpus, round 8 (4,613 rows; every change is a row of `data-raw/siu_round8_review.csv`, with
   the reason read from the page, or a rule of `data-raw/siu_round8_rules.R`):
   - six French reports of 2005-2011 filed under /en/ are labelled French and carry the service their

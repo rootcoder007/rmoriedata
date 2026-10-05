@@ -17,7 +17,7 @@ A \code{data.frame}.
 }
 \description{
 Native Parquet reader: no nanoparquet, no arrow. Handles the v1
-format with PLAIN, RLE and dictionary encodings, Snappy or no
+format with PLAIN, RLE and dictionary encodings, GZIP, Snappy or no
 compression. Nested and repeated columns are refused.
 }
 \keyword{internal}
