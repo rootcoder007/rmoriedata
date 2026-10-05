@@ -1,6 +1,7 @@
 # rmoriedata — bundled open-data fixtures for the morie family, installed
-# into a reproducible R environment. Data-only package (no compiled code,
-# only base-R imports), so the build is small and fast.
+# into a reproducible R environment. The package carries a small C layer
+# (the native Parquet reader with its snappy and zlib codecs), so the image
+# needs zlibs headers besides libcurls for rmoriebricklayer.
 FROM rocker/r-ver:4.6.1
 
 WORKDIR /pkg
@@ -8,7 +9,7 @@ WORKDIR /pkg
 # rmoriebricklayer now carries a C++/libcurl fetch core, so the image needs
 # libcurl's dev headers to compile it.
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends libcurl4-openssl-dev libssl-dev \
+    && apt-get install -y --no-install-recommends libcurl4-openssl-dev libssl-dev zlib1g-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies straight from DESCRIPTION (the authoritative list),
