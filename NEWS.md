@@ -13,7 +13,8 @@
   - a French report carries its English report's reviewed case facts (dates, team, counts, the
     affected person's age and sex, the charges, the director's view): they were empty on about
     2,240 of 2,304 French rows; the French text fields stay French;
-  - `charges_recommended` is `"False"`, `"True"` or empty (it had 39 spellings);
+  - `charges_recommended` is `"FALSE"`, `"TRUE"` or empty (it had 39 spellings), and logical in the
+    typed table (`morie_data_load("siu_directors_reports")`, CSV and Parquet), as `panel_reviewed` is;
     `sex_gender_affected` is `male` or `female`; one name for Kawartha Lakes and for Cornwall (the
     Cornwall Community Police Service is now the Cornwall Police Service);
   - `narrative_summary` held the SIU's mandate paragraph or the page title, not a narrative, and is

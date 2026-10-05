@@ -1571,7 +1571,7 @@
 "siu_directors_reports",51,"legislation_other_text","integer"
 "siu_directors_reports",52,"weapons_or_force_used","integer"
 "siu_directors_reports",53,"weapons_other_text","integer"
-"siu_directors_reports",54,"charges_recommended","character"
+"siu_directors_reports",54,"charges_recommended","logical"
 "siu_directors_reports",55,"directors_decision_reasonable","character"
 "siu_directors_reports",56,"supplemental_materials","character"
 "siu_directors_reports",57,"news_links_extra","integer"

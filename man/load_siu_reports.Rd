@@ -51,7 +51,10 @@ director's view) and \code{panel_reviewed == "FALSE"}; its text fields
 stay French, and its \code{police_service} is its English report's
 service under the name the SIU's French pages use.
 
-\code{charges_recommended} is \code{"False"}, \code{"True"} or empty.
+\code{charges_recommended} is \code{"FALSE"}, \code{"TRUE"} or empty here
+(every column is text); in the typed table,
+\code{morie_data_load("siu_directors_reports")}, it is logical
+(\code{FALSE}, \code{TRUE}, or \code{NA} when the report does not say).
 \code{corrigenda} holds the SIU's correction notice of a report (a
 corrigendum is applied to the report it corrects, not counted as a
 report). \code{narrative_summary} is empty except where the scrape held

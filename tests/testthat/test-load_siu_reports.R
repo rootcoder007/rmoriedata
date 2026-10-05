@@ -45,7 +45,12 @@ test_that("round 8: a corrigendum is carried on the report it corrects, not coun
 
 test_that("round 8: one coding per column; French rows hold the English case facts", {
   d <- load_siu_reports()
-  expect_setequal(setdiff(unique(d$charges_recommended), ""), c("False", "True"))
+  expect_setequal(setdiff(unique(d$charges_recommended), ""), c("FALSE", "TRUE"))
+  # the typed table reads it as logical, as panel_reviewed
+  typed <- morie_data_load("siu_directors_reports")
+  expect_type(typed$charges_recommended, "logical")
+  expect_identical(sum(typed$charges_recommended, na.rm = TRUE),
+                   sum(d$charges_recommended == "TRUE"))
   expect_setequal(setdiff(unique(d$sex_gender_affected), ""), c("male", "female"))
   expect_false("City of Kawartha Lakes Police Service" %in% d$police_service)
   expect_false("Cornwall Community Police Service" %in% d$police_service)
