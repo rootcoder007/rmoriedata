@@ -1,3 +1,14 @@
+# rmoriedata (development version)
+
+* `morie_dp_laplace_count()` and `morie_dp_laplace_histogram()` refuse counts
+  above 2^53. A double that large has no room for Laplace noise of scale
+  1/epsilon, so `morie_dp_laplace_count(1e300, 1)` returned exactly 1e300:
+  a "private" release equal to the true count (the round-8 review found it
+  answering an R-internal error on the way there).
+* The `?ask` example switches the hosted tier off for its run
+  (`MORIE_HOSTED_BASE_URL = "off"`), so it reaches no network on a machine
+  with a stored key; the live calls stay under `\dontrun`.
+
 # rmoriedata 0.3.4
 
 * The Parquet store is compressed: the writer's Snappy stream was literal-only (valid, but it

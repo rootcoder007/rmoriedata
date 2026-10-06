@@ -55,6 +55,13 @@ morie_dp_laplace_count <- function(true_count, epsilon) {
     true_count != floor(true_count)) {
     stop("`true_count` must be a single non-negative integer.", call. = FALSE)
   }
+  # Above 2^53 a double has no room for noise of scale 1/epsilon: the
+  # "private" release would be the true count exactly.
+  if (true_count > 2^53) {
+    stop("`true_count` must not exceed 2^53: the Laplace noise would be lost in ",
+         "the representation and the release would equal the true count.",
+         call. = FALSE)
+  }
   if (length(epsilon) != 1L || is.na(epsilon) ||
     !is.numeric(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
@@ -174,6 +181,11 @@ morie_dp_laplace_histogram <- function(counts, epsilon) {
     stop("`counts` must be a non-empty vector of non-negative integers.",
       call. = FALSE
     )
+  }
+  if (any(counts > 2^53)) {
+    stop("`counts` must not exceed 2^53: the Laplace noise would be lost in ",
+         "the representation and the release would equal the true counts.",
+         call. = FALSE)
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||
     is.na(epsilon) || epsilon <= 0) {

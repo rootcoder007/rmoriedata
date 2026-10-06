@@ -45,6 +45,16 @@ test_that("morie_dp_laplace_count edge-case input validation", {
     morie_dp_laplace_count(10, epsilon = NA),
     "positive number"
   )
+  # a count a double cannot hold with room for noise: 1e300 + Laplace(1) is 1e300
+  expect_error(
+    morie_dp_laplace_count(1e300, epsilon = 1.0),
+    "must not exceed 2\\^53"
+  )
+  expect_error(
+    morie_dp_laplace_count(2^53 + 2, epsilon = 1.0),
+    "must not exceed 2\\^53"
+  )
+  expect_type(morie_dp_laplace_count(2^53, epsilon = 1.0), "double")
 })
 
 test_that("morie_dp_gaussian_mean converges to the true mean", {
@@ -121,6 +131,10 @@ test_that("morie_dp_laplace_histogram validates inputs", {
     morie_dp_laplace_histogram(c(1, 2, 3), -1),
     "positive number"
   )
+  expect_error(
+    morie_dp_laplace_histogram(c(1, 1e300), 1),
+    "must not exceed 2\\^53"
+  )
 })
 
 test_that("morie_dp_gaussian_mean rejects infinite bounds", {
@@ -133,7 +147,9 @@ test_that("a non-finite count is refused in words, with no coercion warning", {
                                  "single non-negative integer"))
   expect_no_warning(expect_error(morie_dp_laplace_histogram(c(1, Inf), 1),
                                  "non-negative integers"))
-  # a whole count beyond the integer range is still a count
+  # a whole count beyond R's integer range is still a count; beyond 2^53 the
+  # noise would vanish in the representation, so it is refused
   set.seed(1)
-  expect_true(is.finite(morie_dp_laplace_count(1e300, 1)))
+  expect_true(is.finite(morie_dp_laplace_count(2^40, 1)))
+  expect_error(morie_dp_laplace_count(1e300, 1), "must not exceed 2\\^53")
 })
