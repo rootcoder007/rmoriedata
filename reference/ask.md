@@ -58,12 +58,13 @@ ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 ask("list the Chicago datasets", backend = "cli")
 } # }
 
-# With no key stored and no rmorie binary on PATH the call returns a
-# sign-in hint, not an error (no network); an empty config directory
-# stands in for a machine that has never signed in:
-old <- Sys.getenv(c("XDG_CONFIG_HOME", "MORIE_HOSTED_KEY"))
-Sys.setenv(XDG_CONFIG_HOME = tempfile(), MORIE_HOSTED_KEY = "")
+# With the hosted tier switched off and no rmorie binary on PATH the call
+# returns a sign-in hint, not an error, and reaches no network whatever
+# key this machine has stored:
+old <- Sys.getenv("MORIE_HOSTED_BASE_URL", unset = NA)
+Sys.setenv(MORIE_HOSTED_BASE_URL = "off")
 if (!nzchar(Sys.which("rmorie"))) ask("hello")
 #> [1] "No key for the hosted MORIE tier and no rmorie CLI on PATH: run morie_data_hosted_login() once, or install rmorie-cli."
-do.call(Sys.setenv, as.list(old))
+if (is.na(old)) Sys.unsetenv("MORIE_HOSTED_BASE_URL") else
+  Sys.setenv(MORIE_HOSTED_BASE_URL = old)
 ```

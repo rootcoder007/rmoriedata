@@ -35,6 +35,12 @@
     </div>
 
     <div class="section level2">
+<h2 class="pkg-version" data-toc-text="development version" id="rmoriedata-development-version">rmoriedata (development version)<a class="anchor" aria-label="anchor" href="#rmoriedata-development-version"></a></h2>
+<ul><li>
+<code><a href="../reference/morie_dp_laplace_count.html">morie_dp_laplace_count()</a></code> and <code><a href="../reference/morie_dp_laplace_histogram.html">morie_dp_laplace_histogram()</a></code> refuse counts above 2^53. A double that large has no room for Laplace noise of scale 1/epsilon, so <code>morie_dp_laplace_count(1e300, 1)</code> returned exactly 1e300: a “private” release equal to the true count (the round-8 review found it answering an R-internal error on the way there).</li>
+<li>The <code><a href="../reference/ask.html">?ask</a></code> example switches the hosted tier off for its run (<code>MORIE_HOSTED_BASE_URL = "off"</code>), so it reaches no network on a machine with a stored key; the live calls stay under <code>\dontrun</code>.</li>
+</ul></div>
+    <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.4" id="rmoriedata-034">rmoriedata 0.3.4<a class="anchor" aria-label="anchor" href="#rmoriedata-034"></a></h2>
 <ul><li><p>The Parquet store is compressed: the writer’s Snappy stream was literal-only (valid, but it compressed nothing), so every table’s Parquet copy was as large as its raw pages. Pages are now written with GZIP (zlib, level 9) by default, and Snappy, still available, has a real match-finder; both codecs and the reader are C (<code>src/gzip.c</code>, <code>src/snappy.c</code>). The Parquet copies shrink from 16.1 MB to 3.3 MB (the SIU corpus from 10.0 MB to 2.1 MB) and the installed package from about 27 MB to 14.5 MB; pandas/pyarrow read them as before.</p></li>
 <li><p>SIU corpus: <code>narrative_summary</code> holds each report’s own account of the incident on 4,605 of 4,613 reports (it was empty but for three values that described the SIU’s investigation). The text is the opening of the report’s “Incident Narrative” / “Description de l’incident” section, or of the “Notification of the SIU” / “Avis à l’UES” section in reports that have no narrative section (2005-2016 and re-opened files), about 900 characters cut at a sentence end. It was read from the SIU’s pages, re-crawled on 2026-10-05 at one request every 3 seconds; <code>data-raw/add_siu_narratives.R</code> rebuilds it.</p></li>
