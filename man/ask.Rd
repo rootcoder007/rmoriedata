@@ -2,7 +2,7 @@
 % Please edit documentation in R/ask.R
 \name{ask}
 \alias{ask}
-\title{Ask the hosted MORIE tier about the bundled datasets}
+\title{Ask a language model about the bundled datasets}
 \usage{
 ask(question, model = NULL, backend = "auto")
 }
@@ -12,29 +12,27 @@ ask(question, model = NULL, backend = "auto")
 \item{model}{Optional model id, e.g. \code{"gpt-oss-120b:cf"}; the tier's
 default when \code{NULL}.}
 
-\item{backend}{\code{"auto"} (the hosted tier when a key is stored, else
-the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
+\item{backend}{\code{"auto"} (the first route \pkg{rmoriebricklayer} finds,
+else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
 \code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
-chain: the hosted tier, then a local Ollama).}
+chain).}
 }
 \value{
-Character scalar: the answer, or a sentence saying how to sign in
-when neither a key nor the \code{rmorie} binary is available.
+Character scalar: the answer, or a sentence saying what to set up
+when no route answers and the \code{rmorie} binary is not available.
 }
 \description{
-Sends a dataset-focused question to the hosted MORIE language-model tier
-at \url{https://llm.rmorie.com} through \pkg{rmoriebricklayer}, using the
-key that \code{\link{morie_data_hosted_login}()} stores (the same key
-opens data.rmorie.com). The tier serves ollama.com cloud models and
-additional AI models (\code{kimi-k2.6:cf},
-\code{kimi-k2.7-code:cf}, \code{deepseek-v4-pro:cf},
-\code{deepseek-v4-flash:cf}, \code{glm-5.2:cf}, \code{glm-5.3:cf},
-\code{glm-5.3-flash:cf}, \code{gpt-oss-120b:cf}, \code{gpt-oss-20b:cf},
-\code{llama-4-scout:cf}, \code{qwen3.8-27b:cf}, \code{nemotron-3-120b:cf},
-\code{gemma-4-26b:cf});
-\code{rmoriebricklayer::bricklayer_llm_models()} lists what your key may
-use. With \code{backend = "ollama"} (or any value other than
-\code{"auto"} and \code{"hosted"}) the question goes to the optional
+Sends a dataset-focused question through
+\code{rmoriebricklayer::bricklayer_llm_ask()}, which takes the first
+language-model route that answers: an OpenAI-compatible endpoint of your
+own (\code{MORIE_LLM_BASE_URL}), a local Ollama server, then the hosted
+MORIE tier as a last resort, with the key that
+\code{\link{morie_data_hosted_login}()} stores (the same key opens the
+curated tables; keys are issued on request at
+\url{https://rmorie.com/access}).
+\code{rmoriebricklayer::bricklayer_llm_status()} shows which route would
+answer and \code{rmoriebricklayer::bricklayer_llm_models()} what the hosted
+key may use. With \code{backend = "cli"} the question goes to the optional
 \code{rmorie} command-line agent instead, as before.
 }
 \examples{
@@ -50,12 +48,15 @@ ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
 ask("list the Chicago datasets", backend = "cli")
 }
 
-# With the hosted tier switched off and no rmorie binary on PATH the call
-# returns a sign-in hint, not an error, and reaches no network whatever
+# With every route switched off and no rmorie binary on PATH the call
+# returns a setup hint, not an error, and reaches no network whatever
 # key this machine has stored:
-old <- Sys.getenv("MORIE_HOSTED_BASE_URL", unset = NA)
-Sys.setenv(MORIE_HOSTED_BASE_URL = "off")
+routes <- c("MORIE_HOSTED_BASE_URL", "OLLAMA_HOST", "MORIE_LLM_BASE_URL")
+old <- Sys.getenv(routes, unset = NA)
+Sys.setenv(MORIE_HOSTED_BASE_URL = "off", OLLAMA_HOST = "off",
+           MORIE_LLM_BASE_URL = "off")
 if (!nzchar(Sys.which("rmorie"))) ask("hello")
-if (is.na(old)) Sys.unsetenv("MORIE_HOSTED_BASE_URL") else
-  Sys.setenv(MORIE_HOSTED_BASE_URL = old)
+for (v in routes) {
+  if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
+}
 }

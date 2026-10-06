@@ -1,31 +1,29 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-#' Ask the hosted MORIE tier about the bundled datasets
+#' Ask a language model about the bundled datasets
 #'
-#' Sends a dataset-focused question to the hosted MORIE language-model tier
-#' at \url{https://llm.rmorie.com} through \pkg{rmoriebricklayer}, using the
-#' key that \code{\link{morie_data_hosted_login}()} stores (the same key
-#' opens data.rmorie.com). The tier serves ollama.com cloud models and
-#' additional AI models (\code{kimi-k2.6:cf},
-#' \code{kimi-k2.7-code:cf}, \code{deepseek-v4-pro:cf},
-#' \code{deepseek-v4-flash:cf}, \code{glm-5.2:cf}, \code{glm-5.3:cf},
-#' \code{glm-5.3-flash:cf}, \code{gpt-oss-120b:cf}, \code{gpt-oss-20b:cf},
-#' \code{llama-4-scout:cf}, \code{qwen3.8-27b:cf}, \code{nemotron-3-120b:cf},
-#' \code{gemma-4-26b:cf});
-#' \code{rmoriebricklayer::bricklayer_llm_models()} lists what your key may
-#' use. With \code{backend = "ollama"} (or any value other than
-#' \code{"auto"} and \code{"hosted"}) the question goes to the optional
+#' Sends a dataset-focused question through
+#' \code{rmoriebricklayer::bricklayer_llm_ask()}, which takes the first
+#' language-model route that answers: an OpenAI-compatible endpoint of your
+#' own (\code{MORIE_LLM_BASE_URL}), a local Ollama server, then the hosted
+#' MORIE tier as a last resort, with the key that
+#' \code{\link{morie_data_hosted_login}()} stores (the same key opens the
+#' curated tables; keys are issued on request at
+#' \url{https://rmorie.com/access}).
+#' \code{rmoriebricklayer::bricklayer_llm_status()} shows which route would
+#' answer and \code{rmoriebricklayer::bricklayer_llm_models()} what the hosted
+#' key may use. With \code{backend = "cli"} the question goes to the optional
 #' \code{rmorie} command-line agent instead, as before.
 #'
 #' @param question Character scalar.
 #' @param model Optional model id, e.g. \code{"gpt-oss-120b:cf"}; the tier's
 #'   default when \code{NULL}.
-#' @param backend \code{"auto"} (the hosted tier when a key is stored, else
-#'   the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
+#' @param backend \code{"auto"} (the first route \pkg{rmoriebricklayer} finds,
+#'   else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
 #'   \code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
-#'   chain: the hosted tier, then a local Ollama).
-#' @return Character scalar: the answer, or a sentence saying how to sign in
-#'   when neither a key nor the \code{rmorie} binary is available.
+#'   chain).
+#' @return Character scalar: the answer, or a sentence saying what to set up
+#'   when no route answers and the \code{rmorie} binary is not available.
 #' @examples
 #' \dontrun{
 #' # These need a stored key (morie_data_hosted_login()) or the rmorie binary.
@@ -39,14 +37,17 @@
 #' ask("list the Chicago datasets", backend = "cli")
 #' }
 #'
-#' # With the hosted tier switched off and no rmorie binary on PATH the call
-#' # returns a sign-in hint, not an error, and reaches no network whatever
+#' # With every route switched off and no rmorie binary on PATH the call
+#' # returns a setup hint, not an error, and reaches no network whatever
 #' # key this machine has stored:
-#' old <- Sys.getenv("MORIE_HOSTED_BASE_URL", unset = NA)
-#' Sys.setenv(MORIE_HOSTED_BASE_URL = "off")
+#' routes <- c("MORIE_HOSTED_BASE_URL", "OLLAMA_HOST", "MORIE_LLM_BASE_URL")
+#' old <- Sys.getenv(routes, unset = NA)
+#' Sys.setenv(MORIE_HOSTED_BASE_URL = "off", OLLAMA_HOST = "off",
+#'            MORIE_LLM_BASE_URL = "off")
 #' if (!nzchar(Sys.which("rmorie"))) ask("hello")
-#' if (is.na(old)) Sys.unsetenv("MORIE_HOSTED_BASE_URL") else
-#'   Sys.setenv(MORIE_HOSTED_BASE_URL = old)
+#' for (v in routes) {
+#'   if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
+#' }
 #' @export
 ask <- function(question, model = NULL, backend = "auto") {
   .rmoriedata_scalar(question, "question")
@@ -73,33 +74,43 @@ ask <- function(question, model = NULL, backend = "auto") {
   )
   if (backend %in% c("auto", "hosted")) {
     st <- rmoriebricklayer::bricklayer_llm_status()
-    if (identical(st$status[1L], "key stored")) {
+    # one row per route; an older bricklayer has the hosted row alone
+    hosted_ok <- any(st$status[grepl("hosted", st$route)] == "key stored")
+    any_ok <- hosted_ok || any(st$status %in% c("configured", "available"))
+    if (if (identical(backend, "hosted")) hosted_ok else any_ok) {
       # a rejected key, a model nobody serves or no network must read as a
       # sentence, never as an error: an example or a script keeps going
+      args <- list(question, model = model, system_prompt = system_prompt)
+      # an older bricklayer has no `route`: there "hosted" is a wish, not a constraint
+      has_route <- "route" %in% names(formals(rmoriebricklayer::bricklayer_llm_ask))
+      if (identical(backend, "hosted") && has_route) {
+        args$route <- "hosted"
+      }
       return(tryCatch(
-        rmoriebricklayer::bricklayer_llm_ask(
-          question, model = model, system_prompt = system_prompt
-        ),
+        do.call(rmoriebricklayer::bricklayer_llm_ask, args),
         error = function(e) {
           paste0(
-            "The hosted MORIE tier could not answer (", conditionMessage(e),
-            "). If the key was rejected, run morie_data_hosted_login() again."
+            "The language model could not answer (", conditionMessage(e),
+            "). If the hosted key was rejected, run ",
+            "morie_data_hosted_login(token = ) again."
           )
         }
       ))
     }
     if (identical(backend, "hosted")) {
       return(paste0(
-        "No key for the hosted MORIE tier: run morie_data_hosted_login() ",
-        "once (GitHub, email, or token)."
+        "No key for the hosted MORIE tier: run morie_data_hosted_login(token = ) ",
+        "once; ", .rmd_access_hint(), "."
       ))
     }
   }
   bin <- Sys.which("rmorie")
   if (!nzchar(bin)) {
     return(paste0(
-      "No key for the hosted MORIE tier and no rmorie CLI on PATH: run ",
-      "morie_data_hosted_login() once, or install rmorie-cli."
+      "No language-model route is set up (no endpoint of your own, no local Ollama, ",
+      "no hosted key) and no rmorie CLI on PATH: start a local model, ",
+      "set MORIE_LLM_BASE_URL, ",
+      "or run morie_data_hosted_login(token = ) once; ", .rmd_access_hint(), "."
     ))
   }
   preamble <- paste0(system_prompt, " Question: ", question)

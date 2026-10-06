@@ -21,8 +21,33 @@
   if (is.character(key) && length(key) == 1L && nzchar(key)) key else NULL
 }
 
+# The data service, as the signed services document at rmorie.com describes it
+# (read through rmoriebricklayer when it has bricklayer_services(); an older
+# bricklayer leaves the address at its default). NULL when the document says
+# the service is off.
+.rmd_services_data <- function() {
+  ns <- asNamespace("rmoriebricklayer")
+  if (!exists("bricklayer_services", envir = ns, inherits = FALSE)) return(NULL)
+  tryCatch(get("bricklayer_services", envir = ns)(offline = TRUE)$data,
+           error = function(e) NULL)
+}
+
+.rmd_access_hint <- function() {
+  svc <- .rmd_services_data()
+  sprintf("keys are personal and issued on request at %s",
+          svc$request_access %||% "https://rmorie.com/access")
+}
+
 .rmd_data_url <- function() {
-  sub("/+$", "", Sys.getenv("MORIE_DATA_URL", "https://data.rmorie.com"))
+  env <- sub("/+$", "", trimws(Sys.getenv("MORIE_DATA_URL", unset = "")))
+  if (nzchar(env)) return(env)
+  svc <- .rmd_services_data()
+  if (is.null(svc)) return("https://data.rmorie.com")
+  if (!identical(svc$mode, "key") || !nzchar(svc$base_url %||% "")) {
+    stop("the curated-data service is not available right now (see ",
+         svc$request_access %||% "https://rmorie.com/access", ")", call. = FALSE)
+  }
+  svc$base_url
 }
 
 .rmd_data_cache_dir <- function() {
@@ -47,8 +72,9 @@
 .rmd_data_get <- function(path, dest, timeout = 600) {
   key <- .rmd_hosted_key()
   if (is.null(key)) {
-    stop("data.rmorie.com needs your MORIE key: run ",
-         "morie_data_hosted_login() once (or `rmorie login`).",
+    stop("the curated tables need your MORIE key: run ",
+         "morie_data_hosted_login(token = ) once (or `rmorie login --token`); ",
+         .rmd_access_hint(), ".",
          call. = FALSE)
   }
   old <- options(timeout = max(getOption("timeout", 60), timeout))
@@ -64,7 +90,8 @@
   if (inherits(rc, "condition")) {
     msg <- conditionMessage(rc)
     if (grepl("401|403|Unauthorized|Forbidden", msg)) {
-      stop("data.rmorie.com rejected the stored key; sign in again.", call. = FALSE)
+      stop("the curated-data service rejected the stored key; store a valid one with ",
+           "morie_data_hosted_login(token = ) or sign in again.", call. = FALSE)
     }
     stop("data.rmorie.com: ", msg, call. = FALSE)
   }
@@ -137,9 +164,12 @@ morie_data_hosted_catalog <- function(refresh = FALSE) {
 
 #' @rdname morie_data_hosted_catalog
 #' @param token,email,code,open_browser Passed to
-#'   \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold,
-#'   or an email address (a 6-digit code is sent; pass it as \code{code} in a
-#'   non-interactive session). With neither, the GitHub device flow runs.
+#'   \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold
+#'   (keys are personal and issued on request at
+#'   \url{https://rmorie.com/access}), or an email address (a 6-digit code is
+#'   sent; pass it as \code{code} in a non-interactive session). With neither,
+#'   the GitHub device flow runs. The service address comes from the signed
+#'   services document (\code{rmoriebricklayer::bricklayer_services()}).
 #' @export
 morie_data_hosted_login <- function(token = NULL, email = NULL, code = NULL,
                                     open_browser = interactive()) {
@@ -166,3 +196,5 @@ morie_data_hosted_load <- function(key, refresh = FALSE) {
   }
   utils::read.csv(gzfile(dest), stringsAsFactors = FALSE)
 }
+
+`%||%` <- function(a, b) if (is.null(a)) b else a
