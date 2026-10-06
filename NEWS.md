@@ -1,14 +1,3 @@
-# rmoriedata (development version)
-
-* `morie_dp_laplace_count()` and `morie_dp_laplace_histogram()` refuse counts
-  above 2^53. A double that large has no room for Laplace noise of scale
-  1/epsilon, so `morie_dp_laplace_count(1e300, 1)` returned exactly 1e300:
-  a "private" release equal to the true count (the round-8 review found it
-  answering an R-internal error on the way there).
-* The `?ask` example switches the hosted tier off for its run
-  (`MORIE_HOSTED_BASE_URL = "off"`), so it reaches no network on a machine
-  with a stored key; the live calls stay under `\dontrun`.
-
 # rmoriedata 0.3.4
 
 * The Parquet store is compressed: the writer's Snappy stream was literal-only (valid, but it
@@ -46,11 +35,15 @@
 * `ask()` sends the bundled catalogue (slug, kind, rows) with the question, so the model names tables
   (it was told only to "prefer the bundled catalog", which it could not see). Through the rmorie binary it
   calls `rmorie agent [--model NAME] QUESTION`, the agent's own options: it passed `--backend`, which
-  the agent refuses, and `-m` for the model; `backend` is `"auto"`, `"hosted"` or `"cli"`. The
-  examples that need a stored key or the binary are `\dontrun`; the one that runs signs in nowhere.
+  the agent refuses, and `-m` for the model; `backend` is `"auto"`, `"hosted"` or `"cli"`. The examples that need a stored key or the binary are `\dontrun`; the one that runs
+  switches the hosted tier off (`MORIE_HOSTED_BASE_URL = "off"`), so it reaches no network
+  whatever key the machine holds.
 * `morie_dp_laplace_count()` and `morie_dp_laplace_histogram()` refuse `Inf` in words (they warned
-  about integer coercion, then failed in R's internals), and accept a whole count beyond the integer
-  range; `morie_core_mean()` refuses text instead of averaging `NA`.
+  about integer coercion, then failed in R's internals) and refuse counts above 2^53: a double that
+  large has no room for Laplace noise of scale 1/epsilon, so `morie_dp_laplace_count(1e300, 1)`
+  returned exactly 1e300, a "private" release equal to the true count. A whole count beyond R's
+  integer range but below 2^53 is still a count. `morie_core_mean()` refuses text instead of
+  averaging `NA`.
 * Help: `?rmoriedata` describes the package's functions (it said there were none); `?load_siu_reports`
   lost "% of them" to an Rd escape; "more than 160" databases at data.rmorie.com; a garbled sentence
   in `?load_chicago_data`; the README's Chicago example is bounded (`limit = 200`).
