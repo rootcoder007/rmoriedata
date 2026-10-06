@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,6 +34,12 @@
       <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.5" id="rmoriedata-035">rmoriedata 0.3.5<a class="anchor" aria-label="anchor" href="#rmoriedata-035"></a></h2>
+<ul><li>The curated-data service address comes from the signed services document at rmorie.com (through <code>rmoriebricklayer::bricklayer_services()</code> when the installed bricklayer has it; an older bricklayer keeps the default address), so the endpoint can move or be paused without a release. Keys are personal and issued on request at <a href="https://rmorie.com/access" class="external-link uri">https://rmorie.com/access</a>; every hint says so, and <code>morie_data_hosted_login(token = )</code> stores one (the GitHub and emailed-code sign-ins keep working).</li>
+<li>
+<code><a href="../reference/ask.html">ask()</a></code> follows <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_ask.html" class="external-link">rmoriebricklayer::bricklayer_llm_ask()</a></code>’s route order: an endpoint of your own, a local Ollama server, then the hosted MORIE tier as a last resort; <code>backend = "hosted"</code> insists on the hosted tier. The setup hint when nothing answers names all three.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.4" id="rmoriedata-034">rmoriedata 0.3.4<a class="anchor" aria-label="anchor" href="#rmoriedata-034"></a></h2>
 <ul><li><p>The Parquet store is compressed: the writer’s Snappy stream was literal-only (valid, but it compressed nothing), so every table’s Parquet copy was as large as its raw pages. Pages are now written with GZIP (zlib, level 9) by default, and Snappy, still available, has a real match-finder; both codecs and the reader are C (<code>src/gzip.c</code>, <code>src/snappy.c</code>). The Parquet copies shrink from 16.1 MB to 3.3 MB (the SIU corpus from 10.0 MB to 2.1 MB) and the installed package from about 27 MB to 14.5 MB; pandas/pyarrow read them as before.</p></li>

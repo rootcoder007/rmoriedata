@@ -39,9 +39,11 @@ morie_data_hosted_load(key, refresh = FALSE)
 
   Passed to
   [`rmoriebricklayer::bricklayer_llm_login()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html):
-  a key you already hold, or an email address (a 6-digit code is sent;
-  pass it as `code` in a non-interactive session). With neither, the
-  GitHub device flow runs.
+  a key you already hold (keys are personal and issued on request at
+  <https://rmorie.com/access>), or an email address (a 6-digit code is
+  sent; pass it as `code` in a non-interactive session). With neither,
+  the GitHub device flow runs. The service address comes from the signed
+  services document (`rmoriebricklayer::bricklayer_services()`).
 
 - key:
 

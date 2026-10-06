@@ -29,7 +29,7 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta name="google-si
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.4</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -96,9 +96,12 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
 
 <dt id="arg-token-email-code-open-browser">token, email, code, open_browser<a class="anchor" aria-label="anchor" href="#arg-token-email-code-open-browser"></a></dt>
 <dd><p>Passed to
-<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html" class="external-link">rmoriebricklayer::bricklayer_llm_login()</a></code>: a key you already hold,
-or an email address (a 6-digit code is sent; pass it as <code>code</code> in a
-non-interactive session). With neither, the GitHub device flow runs.</p></dd>
+<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html" class="external-link">rmoriebricklayer::bricklayer_llm_login()</a></code>: a key you already hold
+(keys are personal and issued on request at
+<a href="https://rmorie.com/access" class="external-link">https://rmorie.com/access</a>), or an email address (a 6-digit code is
+sent; pass it as <code>code</code> in a non-interactive session). With neither,
+the GitHub device flow runs. The service address comes from the signed
+services document (<code>rmoriebricklayer::bricklayer_services()</code>).</p></dd>
 
 
 <dt id="arg-key">key<a class="anchor" aria-label="anchor" href="#arg-key"></a></dt>

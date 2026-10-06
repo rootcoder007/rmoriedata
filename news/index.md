@@ -1,5 +1,22 @@
 # Changelog
 
+## rmoriedata 0.3.5
+
+- The curated-data service address comes from the signed services
+  document at rmorie.com (through
+  `rmoriebricklayer::bricklayer_services()` when the installed
+  bricklayer has it; an older bricklayer keeps the default address), so
+  the endpoint can move or be paused without a release. Keys are
+  personal and issued on request at <https://rmorie.com/access>; every
+  hint says so, and `morie_data_hosted_login(token = )` stores one (the
+  GitHub and emailed-code sign-ins keep working).
+- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  follows
+  [`rmoriebricklayer::bricklayer_llm_ask()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_ask.html)’s
+  route order: an endpoint of your own, a local Ollama server, then the
+  hosted MORIE tier as a last resort; `backend = "hosted"` insists on
+  the hosted tier. The setup hint when nothing answers names all three.
+
 ## rmoriedata 0.3.4
 
 - The Parquet store is compressed: the writer’s Snappy stream was
