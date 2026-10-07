@@ -29,7 +29,7 @@ own (\code{MORIE_LLM_BASE_URL}), a local Ollama server, then the hosted
 MORIE tier as a last resort, with the key that
 \code{\link{morie_data_hosted_login}()} stores (the same key opens the
 curated tables; keys are issued on request at
-\url{https://rmorie.com/access/}).
+\url{https://www.rmorie.com/access/}).
 \code{rmoriebricklayer::bricklayer_llm_status()} shows which route would
 answer and \code{rmoriebricklayer::bricklayer_llm_models()} what the hosted
 key may use. With \code{backend = "cli"} the question goes to the optional
