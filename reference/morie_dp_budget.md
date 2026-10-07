@@ -37,7 +37,7 @@ persist across calls).
 ``` r
 b <- morie_dp_budget(epsilon = 2)
 morie_dp_laplace_count(42, epsilon = 1, budget = b)
-#> [1] 42
+#> [1] 40
 morie_dp_spent(b)
 #> $epsilon
 #> [1] 2
