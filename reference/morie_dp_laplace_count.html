@@ -99,18 +99,18 @@ Least Significant Bits for Differential Privacy, CCS.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># A single noised release of a true count of 42 (different every call).</span></span></span>
 <span class="r-in"><span><span class="fu">morie_dp_laplace_count</span><span class="op">(</span>true_count <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 43</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Smaller epsilon = stronger privacy = more noise.</span></span></span>
 <span class="r-in"><span><span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 32</span>
 <span class="r-in"><span><span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">5.0</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 42</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># The mechanism is unbiased: averaging many releases returns about the truth</span></span></span>
 <span class="r-in"><span><span class="co"># (for illustration; releasing many answers spends many epsilons).</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">500</span>, <span class="fu">morie_dp_laplace_count</span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41.89</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41.896</span>
 </code></pre></div>
     </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

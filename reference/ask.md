@@ -8,7 +8,7 @@ Ollama server, then the hosted MORIE tier as a last resort, with the key
 that
 [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
 stores (the same key opens the curated tables; keys are issued on
-request at <https://rmorie.com/access/>).
+request at <https://www.rmorie.com/access/>).
 [`rmoriebricklayer::bricklayer_llm_status()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_status.html)
 shows which route would answer and
 [`rmoriebricklayer::bricklayer_llm_models()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_models.html)

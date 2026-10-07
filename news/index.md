@@ -104,7 +104,7 @@
   when the installed bricklayer has it; an older bricklayer keeps the
   default address), so the endpoint can move or be paused without a
   release. Keys are personal and issued on request at
-  <https://rmorie.com/access/>; every hint says so, and
+  <https://www.rmorie.com/access/>; every hint says so, and
   `morie_data_hosted_login(token = )` stores one (the GitHub and
   emailed-code sign-ins keep working).
 
