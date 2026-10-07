@@ -2,20 +2,22 @@
 #
 # Differential privacy.
 #
-# One neighbouring relation for every mechanism here: two datasets are neighbours when one
-# is the other with a single record added or removed (unbounded DP). The guarantees compose
-# under that one relation, and morie_dp_budget() adds them up (basic composition).
+# One neighbouring relation for every mechanism here: two datasets are neighbours
+# when one is the other with a single record added or removed (unbounded DP). The
+# guarantees compose under that one relation, and morie_dp_budget() adds them up
+# (basic composition).
 #
-# Randomness comes from the operating system's CSPRNG (rmoriebricklayer::random_bytes()),
-# never from R's seeded generator: a release drawn from set.seed()-able noise is a
-# deterministic function of the true value and the seed. The counting mechanisms use the
-# exact discrete Laplace sampler of Canonne, Kamath and Steinke (2020), integer arithmetic
-# throughout, so the floating-point attack Mironov (2012) showed on the textbook continuous
-# Laplace sampler has nothing to act on. The mean uses the analytic Gaussian mechanism of
-# Balle and Wang (2018), which is valid for every epsilon (the classical calibration holds
-# only for epsilon <= 1).
+# Randomness comes from the operating system's CSPRNG
+# (rmoriebricklayer::random_bytes()), never from R's seeded generator: a release
+# drawn from set.seed()-able noise is a deterministic function of the true value and
+# the seed. The counting mechanisms use the exact discrete Laplace sampler of
+# Canonne, Kamath and Steinke (2020), integer arithmetic throughout, so the
+# floating-point attack Mironov (2012) showed on the textbook continuous Laplace
+# sampler has nothing to act on. The mean uses the analytic Gaussian mechanism of
+# Balle and Wang (2018), which is valid for every epsilon (the classical calibration
+# holds only for epsilon <= 1).
 
-# ---- CSPRNG primitives -------------------------------------------------------------------
+# ---- CSPRNG primitives -------------------------------------------------------
 
 .morie_dp_rng <- new.env(parent = emptyenv())
 
@@ -74,11 +76,21 @@
 .morie_dp_rational <- function(epsilon) {
   t <- 2^20
   s <- floor(epsilon * t)
-  if (s < 1) stop("`epsilon` is below 2^-20, the smallest this sampler represents.", call. = FALSE)
+  if (s < 1) {
+    stop("`epsilon` is below 2^-20, the smallest this sampler represents.",
+         call. = FALSE)
+  }
   g <- .morie_gcd(s, t)
   c(s = s / g, t = t / g)
 }
-.morie_gcd <- function(a, b) { while (b > 0) { r <- a %% b; a <- b; b <- r }; a }
+.morie_gcd <- function(a, b) {
+  while (b > 0) {
+    r <- a %% b
+    a <- b
+    b <- r
+  }
+  a
+}
 
 # A standard normal from 53-bit CSPRNG uniforms (Box-Muller).
 .morie_dp_rnorm1 <- function() {
@@ -90,7 +102,8 @@
 # smallest sigma with Phi(D/(2s) - e*s/D) - exp(e) * Phi(-D/(2s) - e*s/D) <= delta.
 .morie_dp_agm_sigma <- function(sensitivity, epsilon, delta) {
   f <- function(s) {
-    a <- sensitivity / (2 * s); b <- epsilon * s / sensitivity
+    a <- sensitivity / (2 * s)
+    b <- epsilon * s / sensitivity
     stats::pnorm(a - b) - exp(epsilon + stats::pnorm(-a - b, log.p = TRUE))
   }
   lo <- sensitivity * 1e-6
@@ -104,7 +117,7 @@
   hi
 }
 
-# ---- privacy budget ----------------------------------------------------------------------
+# ---- privacy budget ----------------------------------------------------------
 
 #' A privacy budget that DP releases are charged against
 #'
@@ -131,7 +144,8 @@ morie_dp_budget <- function(epsilon, delta = 0) {
   if (length(epsilon) != 1L || !is.numeric(epsilon) || is.na(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
-  if (length(delta) != 1L || !is.numeric(delta) || is.na(delta) || delta < 0 || delta >= 1) {
+  if (length(delta) != 1L || !is.numeric(delta) || is.na(delta) ||
+      delta < 0 || delta >= 1) {
     stop("`delta` must be a single number in [0, 1).", call. = FALSE)
   }
   b <- new.env(parent = emptyenv())
@@ -155,7 +169,7 @@ morie_dp_budget <- function(epsilon, delta = 0) {
 #' invisible(morie_dp_laplace_histogram(c(10, 20), epsilon = 0.25, budget = b))
 #' morie_dp_spent(b)$remaining_epsilon
 morie_dp_spent <- function(budget) {
-  if (!inherits(budget, "morie_dp_budget")) stop("`budget` must come from morie_dp_budget().", call. = FALSE)
+  .morie_dp_check_budget(budget)
   list(epsilon = budget$epsilon, delta = budget$delta,
        spent_epsilon = budget$spent_epsilon, spent_delta = budget$spent_delta,
        remaining_epsilon = budget$epsilon - budget$spent_epsilon,
@@ -166,19 +180,21 @@ morie_dp_spent <- function(budget) {
 #' @export
 print.morie_dp_budget <- function(x, ...) {
   s <- morie_dp_spent(x)
-  cat(sprintf("<morie_dp_budget> epsilon %.4g of %.4g spent, delta %.3g of %.3g, %d release(s)\n",
+  cat(sprintf(paste0("<morie_dp_budget> epsilon %.4g of %.4g spent, ",
+                     "delta %.3g of %.3g, %d release(s)\n"),
               s$spent_epsilon, s$epsilon, s$spent_delta, s$delta, s$releases))
   invisible(x)
 }
 
 .morie_dp_charge <- function(budget, epsilon, delta = 0) {
   if (is.null(budget)) return(invisible())
-  if (!inherits(budget, "morie_dp_budget")) stop("`budget` must come from morie_dp_budget().", call. = FALSE)
+  .morie_dp_check_budget(budget)
   tol <- 1e-12
   if (budget$spent_epsilon + epsilon > budget$epsilon + tol ||
       budget$spent_delta + delta > budget$delta + tol) {
-    stop(sprintf(paste0("this release (epsilon %.4g, delta %.3g) exceeds the remaining budget ",
-                        "(epsilon %.4g, delta %.3g); nothing was released."),
+    stop(sprintf(paste0("this release (epsilon %.4g, delta %.3g) exceeds the ",
+                        "remaining budget (epsilon %.4g, delta %.3g); nothing was ",
+                        "released."),
                  epsilon, delta, budget$epsilon - budget$spent_epsilon,
                  budget$delta - budget$spent_delta), call. = FALSE)
   }
@@ -188,7 +204,14 @@ print.morie_dp_budget <- function(x, ...) {
   invisible()
 }
 
-# ---- mechanisms --------------------------------------------------------------------------
+.morie_dp_check_budget <- function(budget) {
+  if (!inherits(budget, "morie_dp_budget")) {
+    stop("`budget` must come from morie_dp_budget().", call. = FALSE)
+  }
+  invisible()
+}
+
+# ---- mechanisms --------------------------------------------------------------
 
 #' Differentially-private count via the discrete Laplace mechanism
 #'
@@ -289,7 +312,10 @@ morie_dp_laplace_histogram <- function(counts, epsilon, budget = NULL) {
   }
   q <- .morie_dp_rational(epsilon)
   .morie_dp_charge(budget, epsilon)
-  as.numeric(counts) + vapply(seq_along(counts), function(i) .morie_dp_dlaplace1(q[["s"]], q[["t"]]), numeric(1))
+  noise <- vapply(seq_along(counts), function(i) {
+    .morie_dp_dlaplace1(q[["s"]], q[["t"]])
+  }, numeric(1))
+  as.numeric(counts) + noise
 }
 
 #' Differentially-private mean via the analytic Gaussian mechanism
@@ -323,7 +349,8 @@ morie_dp_laplace_histogram <- function(counts, epsilon, budget = NULL) {
 #'
 #' # Wider bounds raise sensitivity, so the same epsilon adds more noise.
 #' morie_dp_gaussian_mean(x, lower = -5, upper = 5, epsilon = 1.0)
-morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6, budget = NULL) {
+morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6,
+                                   budget = NULL) {
   if (!is.numeric(x) || length(x) == 0L) {
     stop("`x` must be a non-empty numeric vector.", call. = FALSE)
   }

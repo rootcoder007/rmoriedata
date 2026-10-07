@@ -597,14 +597,15 @@
   }
   n <- .pq_u32(tail[1:4])
   if (n < 2 || n > size - 12) {
-    stop("parquet: footer length ", n, " does not fit a ", size, "-byte file", call. = FALSE)
+    stop("parquet: footer length ", n, " does not fit a ", size, "-byte file",
+         call. = FALSE)
   }
   seek(con, size - 8L - n)
   .pq_struct(.pq_reader(readBin(con, "raw", n)))
 }
 
-# The largest page this reader will inflate, and the most rows it will build. A page header
-# or a footer that claims more is refused before anything is allocated.
+# The largest page this reader will inflate, and the most rows it will build. A
+# page header or a footer that claims more is refused before anything is allocated.
 .pq_max_page <- function() getOption("rmoriedata.parquet_max_page_bytes", 2^30)
 .pq_max_rows <- function() getOption("rmoriedata.parquet_max_rows", 5e7)
 
@@ -637,7 +638,9 @@
   }
   seek(con, start)
   blob <- readBin(con, "raw", clen)
-  if (length(blob) != clen) stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
+  if (length(blob) != clen) {
+    stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
+  }
 
   pos <- 1L
   dictionary <- NULL
@@ -659,7 +662,9 @@
     crc <- .pq_f(head, 4)
     if (!is.null(crc)) {
       have <- .Call(C_rmd_crc32, raw_page)
-      if (have != crc %% 2^32) stop("parquet: page CRC mismatch in column ", cname, call. = FALSE)
+      if (have != crc %% 2^32) {
+        stop("parquet: page CRC mismatch in column ", cname, call. = FALSE)
+      }
     }
     ptype_page <- as.integer(.pq_f(head, 1))
     if (ptype_page == .pqPDataV2) {
@@ -691,7 +696,8 @@
       dec <- .pq_decode_plain(page, 1L, ptype, nd, typelen)
       if (dec$pos != length(page) + 1L) {
         stop("parquet: dictionary page of column ", cname, " holds ",
-             length(page) - dec$pos + 1L, " bytes beyond its ", nd, " values", call. = FALSE)
+             length(page) - dec$pos + 1L, " bytes beyond its ", nd, " values",
+             call. = FALSE)
       }
       dictionary <- dec$values
       next

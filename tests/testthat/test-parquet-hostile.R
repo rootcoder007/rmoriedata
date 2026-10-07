@@ -33,8 +33,8 @@ pq_mutants_ok <- function(path, truth, n = 300L) {
 test_that("a 21-byte file claiming a huge map is refused at once, not looped on", {
   f <- tempfile(fileext = ".parquet")
   body <- as.raw(c(0x1b, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02, 0x88, 0x00))
-  writeBin(c(charToRaw("PAR1"), body, writeBin(length(body), raw(), size = 4L, endian = "little"),
-             charToRaw("PAR1")), f)
+  footer_len <- writeBin(length(body), raw(), size = 4L, endian = "little")
+  writeBin(c(charToRaw("PAR1"), body, footer_len, charToRaw("PAR1")), f)
   t0 <- proc.time()[["elapsed"]]
   expect_error(morie_read_parquet(f), "parquet")
   expect_lt(proc.time()[["elapsed"]] - t0, 5)

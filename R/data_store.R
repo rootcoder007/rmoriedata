@@ -357,7 +357,8 @@ morie_data_verify <- function() {
   }, TRUE)
   # the manifest, its signature and the public key are the trust machinery, not data
   present <- list.files(ed, recursive = TRUE)
-  extra <- setdiff(present, c(m$path, "_checksums.csv", "_checksums.sig", "_signing_key.json"))
+  trust <- c("_checksums.csv", "_checksums.sig", "_signing_key.json")
+  extra <- setdiff(present, c(m$path, trust))
   if (length(extra)) {
     fx <- file.path(ed, extra)
     m <- rbind(m, data.frame(

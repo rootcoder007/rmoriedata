@@ -58,6 +58,7 @@ morie_data_checksums <- function() {
   man <- tryCatch(.rmoriedata_manifest(), error = function(e) NULL)
   trust <- c("_checksums.csv", "_checksums.sig", "_signing_key.json")
   out$in_manifest <- if (is.null(man)) NA else
-    ifelse(out$path %in% trust, NA, (out$sha256 == man$sha256[match(out$path, man$path)]) %in% TRUE)
+    ifelse(out$path %in% trust, NA,
+           (out$sha256 == man$sha256[match(out$path, man$path)]) %in% TRUE)
   out
 }

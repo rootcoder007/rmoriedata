@@ -7,11 +7,14 @@ test_that("morie_dp_laplace_count mean converges to true count", {
   expect_equal(mean(draws), 100, tolerance = 0.05)
 })
 
-test_that("the variance is the discrete Laplace variance 2p / (1 - p)^2, p = exp(-epsilon)", {
+test_that("the variance is the discrete Laplace one, 2p / (1 - p)^2 with p = exp(-eps)", {
   n_draws <- 5000L
   draws_high <- replicate(n_draws, morie_dp_laplace_count(50L, epsilon = 2.0))
   draws_low <- replicate(n_draws, morie_dp_laplace_count(50L, epsilon = 0.5))
-  dvar <- function(eps) { p <- exp(-eps); 2 * p / (1 - p)^2 }
+  dvar <- function(eps) {
+    p <- exp(-eps)
+    2 * p / (1 - p)^2
+  }
   expect_gt(stats::var(draws_low), stats::var(draws_high))
   expect_equal(stats::var(draws_low), dvar(0.5), tolerance = 0.15)
   expect_equal(stats::var(draws_high), dvar(2.0), tolerance = 0.15)
@@ -21,8 +24,10 @@ test_that("the variance is the discrete Laplace variance 2p / (1 - p)^2, p = exp
 
 test_that("the noise does not follow set.seed (OS CSPRNG)", {
   same <- vapply(1:20, function(i) {
-    set.seed(1); a <- morie_dp_laplace_count(1000, epsilon = 0.1)
-    set.seed(1); b <- morie_dp_laplace_count(1000, epsilon = 0.1)
+    set.seed(1)
+    a <- morie_dp_laplace_count(1000, epsilon = 0.1)
+    set.seed(1)
+    b <- morie_dp_laplace_count(1000, epsilon = 0.1)
     a == b
   }, logical(1))
   # at epsilon 0.1 two independent draws agree with probability about 0.05
@@ -35,10 +40,12 @@ test_that("the Gaussian mean uses the analytic calibration, valid above epsilon 
   expect_equal(s, 3.7306, tolerance = 1e-4)
   # the defining condition holds with equality at the returned sigma
   a <- 1 / (2 * s)
-  expect_equal(stats::pnorm(a - s) - exp(1) * stats::pnorm(-a - s), 1e-5, tolerance = 1e-6)
+  at_sigma <- stats::pnorm(a - s) - exp(1) * stats::pnorm(-a - s)
+  expect_equal(at_sigma, 1e-5, tolerance = 1e-6)
   # above epsilon 1 the classical bound is invalid; the analytic one still satisfies delta
   s5 <- rmoriedata:::.morie_dp_agm_sigma(1, 5, 1e-5)
-  a5 <- 1 / (2 * s5); b5 <- 5 * s5
+  a5 <- 1 / (2 * s5)
+  b5 <- 5 * s5
   expect_lte(stats::pnorm(a5 - b5) - exp(5) * stats::pnorm(-a5 - b5), 1e-5 * (1 + 1e-6))
   expect_true(is.finite(morie_dp_gaussian_mean(runif(100), 0, 1, epsilon = 5)))
 })
@@ -50,10 +57,13 @@ test_that("a privacy budget is charged and enforced", {
   s <- morie_dp_spent(b)
   expect_equal(s$spent_epsilon, 1.5)
   expect_equal(s$releases, 2L)
-  expect_error(morie_dp_laplace_count(10, epsilon = 1, budget = b), "exceeds the remaining budget")
+  over <- "exceeds the remaining budget"
+  expect_error(morie_dp_laplace_count(10, epsilon = 1, budget = b), over)
   expect_equal(morie_dp_spent(b)$spent_epsilon, 1.5)
-  expect_error(morie_dp_gaussian_mean(runif(10), 0, 1, epsilon = 0.5, delta = 1e-4, budget = b),
-               "exceeds the remaining budget")
+  expect_error(
+    morie_dp_gaussian_mean(runif(10), 0, 1, epsilon = 0.5, delta = 1e-4, budget = b),
+    over
+  )
   expect_output(print(b), "epsilon 1.5 of 2 spent")
   expect_error(morie_dp_budget(0), "positive")
   expect_error(morie_dp_spent(list()), "morie_dp_budget")

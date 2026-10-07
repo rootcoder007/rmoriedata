@@ -181,11 +181,15 @@ test_that("k-anonymity counts rows with a missing quasi-identifier (review repro
   expect_equal(r$n_classes, 3L)
   expect_true(any(is.na(r$violating_classes$zip)))
   # every row is accounted for
-  expect_equal(sum(morie_k_anonymity_verify(d, c("zip", "sex"), k = 1)$violating_classes$.n), 0L)
+  # at k = 1 every class passes, the NA classes included
+  expect_true(morie_k_anonymity_verify(d, c("zip", "sex"), k = 1)$satisfies)
 })
 
 test_that("l-diversity counts only known sensitive values (review reproducer)", {
-  C <- data.frame(g = c("a", "a", "a", "b", "b", "b"), s = c("HIV", NA, NA, "FLU", "FLU", NA))
+  C <- data.frame(
+    g = c("a", "a", "a", "b", "b", "b"),
+    s = c("HIV", NA, NA, "FLU", "FLU", NA)
+  )
   r <- morie_l_diversity_verify(C, "g", "s", l = 2)
   expect_false(r$satisfies)
   expect_equal(r$min_diversity, 1L)

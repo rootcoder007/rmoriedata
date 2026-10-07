@@ -1,10 +1,11 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-# Equivalence classes over the quasi-identifiers, with a missing value as a level of its
-# own. stats::aggregate() drops every row whose grouping value is NA, and in administrative
-# data the rows with an unrecorded quasi-identifier are often the rarest, so dropping them
-# hides exactly the classes a verifier exists to catch. Returns the class id per row and one
-# row of keys per class (original values, NA kept), in order of first appearance.
+# Equivalence classes over the quasi-identifiers, with a missing value as a level
+# of its own. stats::aggregate() drops every row whose grouping value is NA, and in
+# administrative data the rows with an unrecorded quasi-identifier are often the
+# rarest, so dropping them hides exactly the classes a verifier exists to catch.
+# Returns the class id per row and one row of keys per class (original values, NA
+# kept), in order of first appearance.
 .morie_qi_classes <- function(qi) {
   enc <- lapply(qi, function(col) {
     v <- as.character(col)
@@ -392,9 +393,9 @@ morie_cell_suppress <- function(tbl, threshold = 5, return_complementary = TRUE)
   )
 }
 
-# The complement for line k (a row when by_row, else a column): a positive, published cell,
-# preferring one whose crossing line already holds a hidden cell, then the largest. NA when
-# the line has none to give.
+# The complement for line k (a row when by_row, else a column): a positive,
+# published cell, preferring one whose crossing line already holds a hidden cell,
+# then the largest. NA when the line has none to give.
 .morie_complement <- function(m, hidden, k, by_row) {
   vals <- if (by_row) m[k, ] else m[, k]
   h <- if (by_row) hidden[k, ] else hidden[, k]

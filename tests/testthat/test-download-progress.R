@@ -9,7 +9,8 @@ test_that(".rmd_dl refuses file:// and plain http before sending any header", {
     .rmd_dl(paste0("file://", normalizePath(src)), dest,
             headers = c(Authorization = "Bearer SECRET"), quiet = TRUE)
   )
-  expect_false(file.exists(dest) && any(grepl("LOCAL-SECRET", readLines(dest, warn = FALSE))))
+  leaked <- file.exists(dest) && any(grepl("LOCAL-SECRET", readLines(dest, warn = FALSE)))
+  expect_false(leaked)
   expect_error(
     .rmd_dl("http://example.com/x.csv.gz", dest,
             headers = c(Authorization = "Bearer SECRET"), quiet = TRUE)
@@ -19,7 +20,10 @@ test_that(".rmd_dl refuses file:// and plain http before sending any header", {
 test_that(".rmd_dl hands every argument to bricklayer's transport, file:// off", {
   seen <- NULL
   local_mocked_bindings(
-    bricklayer_download = function(...) { seen <<- list(...); invisible(..2) },
+    bricklayer_download = function(...) {
+      seen <<- list(...)
+      invisible(..2)
+    },
     .package = "rmoriebricklayer"
   )
   .rmd_dl("https://data.rmorie.com/x.csv.gz", "d", headers = c(A = "b"),
