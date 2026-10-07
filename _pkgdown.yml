@@ -51,6 +51,8 @@ reference:
       - morie_dp_laplace_count
       - morie_dp_laplace_histogram
       - morie_dp_gaussian_mean
+      - morie_dp_budget
+      - morie_dp_spent
   - title: Statistical disclosure control
     desc: >
       Re-identification safeguards for microdata releases: k-anonymity and
