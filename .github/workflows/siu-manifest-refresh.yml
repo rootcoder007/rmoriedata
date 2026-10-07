@@ -1,18 +1,20 @@
-# Weekly incremental refresh of the SIU drid manifest.
+# On-demand refresh of the SIU drid manifest, before a release.
 #
-# Crawls the SIU director's-reports indexes (en + fr), appends any new
-# reports to inst/extdata/siu_drid_manifest.csv.gz, and commits the
-# result. Only new drids trigger page fetches, at a polite 2-second
-# rate, so the weekly run is minutes long and gentle on siu.on.ca.
+# Crawls the SIU director's-reports indexes (en + fr) and appends any new reports to
+# inst/extdata/siu_drid_manifest.csv.gz, at a polite 2-second rate. It does NOT commit:
+# the manifest is covered by the XMSS-signed _checksums.csv, and that key is stateful
+# (each signature spends a one-time index), so it never leaves the maintainer's machine.
+# A refresh committed without re-signing would fail morie_data_verify() and
+# test-data-integrity.R. Download the artifact, copy it into inst/extdata/, then run
+# data-raw/sign_store.R locally and commit both together. No schedule: the package
+# ships its data with a release, not weekly.
 name: siu-manifest-refresh
 
 on:
-  schedule:
-    - cron: "17 6 * * 1" # Mondays 06:17 UTC
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   refresh:
@@ -26,15 +28,15 @@ jobs:
         run: Rscript -e 'install.packages("httr2")'
       - name: Refresh manifest
         run: Rscript data-raw/refresh_siu_manifest.R
-      - name: Commit if changed
+      - name: Report
         run: |
           if git diff --quiet inst/extdata/siu_drid_manifest.csv.gz; then
-            echo "Manifest unchanged; nothing to commit."
-            exit 0
+            echo "Manifest unchanged."
+          else
+            rows=$(Rscript -e 'cat(nrow(read.csv(gzfile("inst/extdata/siu_drid_manifest.csv.gz"))))')
+            echo "Manifest changed: ${rows} rows. Download the artifact, then re-sign locally with data-raw/sign_store.R."
           fi
-          rows=$(Rscript -e 'cat(nrow(read.csv(gzfile("inst/extdata/siu_drid_manifest.csv.gz"))))')
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add inst/extdata/siu_drid_manifest.csv.gz
-          git commit -m "data: weekly SIU manifest refresh (${rows} rows)"
-          git push
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: siu-drid-manifest
+          path: inst/extdata/siu_drid_manifest.csv.gz
