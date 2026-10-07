@@ -69,3 +69,23 @@ test_that("morie_data_hosted_login stores a key via rmoriebricklayer; the hub re
   expect_identical(seen$email, "someone@example.org")
   expect_identical(seen$code, "123456")
 })
+
+test_that("a damaged hosted table (a short row) is refused and its copy removed", {
+  cfg <- withr::local_tempdir()
+  withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA,
+                      MORIE_DATA_URL = "https://data.example.test")
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(path, dest, timeout = 600) {
+      con <- gzfile(dest, "w")
+      writeLines(c("id,name,value", "1,a,1", "2,b", "3,c,3"), con)
+      close(con)
+      invisible(dest)
+    },
+    .package = "rmoriedata"
+  )
+  dest <- file.path(rmoriedata:::.rmd_data_cache_dir(), "chicago_crime__incidents.csv.gz")
+  expect_error(morie_data_hosted_load("chicago_crime/incidents"),
+               "did not parse.*damaged copy was removed")
+  expect_false(file.exists(dest))
+})

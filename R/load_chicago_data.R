@@ -215,8 +215,10 @@ clear_chicago_cache <- function() {
         if (grepl("\\.parquet$", u)) {
           morie_read_parquet(u)
         } else {
+          # fill = FALSE: a row with a field missing or one too many is a garbled
+          # export, an error here rather than a padded row in the cache
           utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE,
-                          encoding = "UTF-8")
+                          encoding = "UTF-8", fill = FALSE)
         },
         warning = function(w) {
           msg <<- c(msg, conditionMessage(w))

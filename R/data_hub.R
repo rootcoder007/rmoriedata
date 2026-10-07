@@ -194,7 +194,17 @@ morie_data_hosted_load <- function(key, refresh = FALSE) {
     .rmd_data_get(sprintf("/%s/%s.csv.gz", parts[[1L]],
                           paste(parts[-1L], collapse = "/")), dest)
   }
-  utils::read.csv(gzfile(dest), stringsAsFactors = FALSE)
+  # fill = FALSE: a row with a field missing or one too many is a damaged download;
+  # it is removed so the next call fetches it again instead of padding the rows
+  tryCatch(
+    utils::read.csv(gzfile(dest), stringsAsFactors = FALSE, fill = FALSE),
+    error = function(e) {
+      unlink(dest)
+      stop(sprintf(paste0("the table %s did not parse (%s); ",
+                          "the damaged copy was removed, try again"),
+                   key, conditionMessage(e)), call. = FALSE)
+    }
+  )
 }
 
 `%||%` <- function(a, b) if (is.null(a)) b else a

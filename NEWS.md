@@ -2,6 +2,12 @@
 
 * A hex logo (`man/figures/logo.png`, source `data-raw/hex_logo.svg`), on the README and the
   package website, with its favicons; the website indexes `morie_dp_budget()` and `morie_dp_spent()`.
+* **A garbled download is refused, not padded.** The full Chicago export and the tables from
+  data.rmorie.com are read with `fill = FALSE`: a row with a field missing or one too many was
+  padded into the result (and, for Chicago, written to the cross-session cache); it is now an
+  error, and a damaged hosted table's local copy is removed so the next call fetches it again.
+  The Chicago tests also pin the 1% row-count tolerance at its edge (495 of 500 accepted, 494
+  refused) and the request size (the service's count, at least 5,000,000 rows).
 * **Privacy verifiers (review of 0.3.5).** `morie_k_anonymity_verify()` treats a missing
   quasi-identifier as a level of its own: `stats::aggregate()` had dropped every row with an `NA`
   key, so a class of one person could pass `k = 3`; class sizes now always sum to `nrow(data)`.

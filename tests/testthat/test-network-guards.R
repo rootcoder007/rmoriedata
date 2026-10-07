@@ -217,3 +217,49 @@ test_that("a cache that hashes correctly but is not Parquet is refetched, not an
   expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 500L)
   expect_equal(nrow(morie_read_parquet(cache)), 500L)
 })
+
+test_that("a garbled export (a short or long row) is refused, not padded and cached", {
+  d <- local_chicago_cache()
+  cache <- file.path(d, "arrests_full.parquet")
+  point_at(csv_file(c("id,name,value", "1,a,1", "2,b", "3,c,3")), count = 3)
+  expect_error(rmoriedata:::.rmd_fetch_full("arrests", NULL), "did not have 3 elements")
+  expect_false(file.exists(cache))
+  point_at(csv_file(c("id,name,value", "1,a,1", "2,b,2,EXTRA", "3,c,3")), count = 3)
+  expect_error(rmoriedata:::.rmd_fetch_full("arrests", NULL), "did not have")
+  expect_false(file.exists(cache))
+  # quoted fields may hold commas and newlines: still one row each
+  point_at(csv_file(c("id,name,value", "1,\"a, b\",1",
+                      "2,\"line one", "line two\",2")), count = 2)
+  expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 2L)
+})
+
+test_that("the 1% tolerance: 495 of 500 rows is the dataset, 494 is not", {
+  d <- local_chicago_cache()
+  cache <- file.path(d, "arrests_full.parquet")
+  point_at(good_csv(494), count = 500)
+  expect_error(rmoriedata:::.rmd_fetch_full("arrests", NULL),
+               "494 rows where the service reports 500")
+  expect_false(file.exists(cache))
+  point_at(good_csv(495), count = 500)
+  expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 495L)
+  expect_true(file.exists(cache))
+})
+
+test_that("the request asks for the service's full count, at least 5,000,000 rows", {
+  local_chicago_cache()
+  asked <- NULL
+  testthat::local_mocked_bindings(
+    .rmd_full_url = function(type, n) {
+      asked <<- n
+      good_csv(5)
+    },
+    .rmd_full_count_or_na = function(type) 8e6,
+    .package = "rmoriedata"
+  )
+  try(rmoriedata:::.rmd_fetch_full("arrests", NULL), silent = TRUE)
+  expect_equal(asked, 8e6)
+  testthat::local_mocked_bindings(.rmd_full_count_or_na = function(type) NA_real_,
+                                  .package = "rmoriedata")
+  rmoriedata:::.rmd_fetch_full("arrests", NULL)
+  expect_equal(asked, 5e6)
+})
