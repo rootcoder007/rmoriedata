@@ -39,12 +39,15 @@ Calibrated-noise mechanisms (Laplace, Gaussian) for releasing
 privacy-preserving counts, histograms, and means at a stated epsilon.
 
 - [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md)
-  : Differentially-private count via the Laplace mechanism
+  : Differentially-private count via the discrete Laplace mechanism
 - [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md)
-  : Differentially-private histogram via the Laplace mechanism
+  : Differentially-private histogram via the discrete Laplace mechanism
 - [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md)
-  : Differentially-private mean via the Gaussian mechanism with bounded
-  inputs
+  : Differentially-private mean via the analytic Gaussian mechanism
+- [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
+  : A privacy budget that DP releases are charged against
+- [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md)
+  : What a privacy budget has spent
 
 ## Statistical disclosure control
 
@@ -56,7 +59,8 @@ l-diversity checks plus small-cell suppression.
 - [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md)
   : l-diversity verification
 - [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
-  : Cell suppression with optional complementary suppression
+  : Cell suppression with complementary suppression and a recoverability
+  audit
 
 ## Core utilities
 

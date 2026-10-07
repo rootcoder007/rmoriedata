@@ -13,10 +13,17 @@ morie_data_verify()
 
 ## Value
 
-A data frame with one row per manifest entry: `path`, `bytes`, `sha256`,
-`ok` (the file on disk matches). The attribute `"signature"` is `TRUE`
-when the manifest's signature verified, and the function errors if it
-did not.
+A data frame with one row per manifest entry, then one per unlisted
+file: `path`, `bytes`, `sha256` (the manifest digest, or the file's own
+for an unlisted file), `listed`, `ok` (the file on disk is listed and
+matches). The attribute `"signature"` is `TRUE` when the manifest's
+signature verified, and the function errors if it did not.
+
+## Details
+
+A file present in the installed store but absent from the manifest is
+reported too, as a row with `listed = FALSE` and `ok = FALSE`: a file
+added to the store is as much a change as a file altered in it.
 
 ## Examples
 

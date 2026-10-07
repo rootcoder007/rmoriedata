@@ -58,6 +58,15 @@ A list with class `"morie_k_anon"` containing:
 
   human-readable one-line summary.
 
+## Details
+
+A missing value (`NA`) in a quasi-identifier is treated as a value of
+its own: rows with an unrecorded ward, age band or race form their own
+classes and are counted, never dropped. Unrecorded values are often the
+rarest records, which makes them the most re-identifiable, so they must
+meet the threshold like any other class. Every row is accounted for: the
+class sizes sum to `nrow(data)`.
+
 ## Examples
 
 ``` r

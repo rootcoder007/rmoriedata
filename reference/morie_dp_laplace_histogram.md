@@ -1,53 +1,51 @@
-# Differentially-private histogram via the Laplace mechanism
+# Differentially-private histogram via the discrete Laplace mechanism
 
-Adds independent Laplace(`1/epsilon`) noise to each bin count. Under the
-add-or-remove-one neighbouring-databases definition a single record
-participates in exactly one bin, so the per-bin sensitivity is 1 and the
-overall mechanism is (\\\epsilon\\, 0)-DP.
+Adds independent discrete Laplace noise, \\P(y) \propto e^{-\epsilon
+\|y\|}\\, to each bin count. Adding or removing one record changes
+exactly one bin by 1, so the whole histogram is pure \\\epsilon\\-DP
+under the add-or-remove-one relation. Noise and sampler as in
+[`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md).
 
 ## Usage
 
 ``` r
-morie_dp_laplace_histogram(counts, epsilon)
+morie_dp_laplace_histogram(counts, epsilon, budget = NULL)
 ```
 
 ## Arguments
 
 - counts:
 
-  Integer vector of non-negative bin counts.
+  Vector of non-negative whole-number bin counts.
 
 - epsilon:
 
-  Privacy budget (positive scalar).
+  Privacy loss for the whole histogram (positive scalar).
+
+- budget:
+
+  Optional
+  [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
+  to charge `epsilon` against.
 
 ## Value
 
-A numeric vector of the same length as `counts`. May contain fractional
-or negative values. Caller is responsible for any post-hoc
-non-negativity / rounding before display.
+A numeric vector of whole numbers, the same length as `counts` (values
+may be negative; clip for display).
 
 ## Examples
 
 ``` r
-set.seed(1)
 true <- c(120, 45, 8, 230, 17)
-
-# Independent Laplace noise added to every bin.
 morie_dp_laplace_histogram(true, epsilon = 0.5)
-#> [1] 118.734079  44.409238   8.314961 233.390161  15.184168
+#> [1] 122  48  11 226  15
 
-# Smaller epsilon = more noise per bin.
-morie_dp_laplace_histogram(true, epsilon = 0.1)
-#> [1] 135.934630  67.013881  11.880117 232.987135  -3.909269
-
-# Post-process for display: clip negatives, round to integers.
-noisy <- morie_dp_laplace_histogram(true, epsilon = 1.0)
-round(pmax(0, noisy))
-#> [1] 119  44   8 230  18
+# Post-process for display: clip negatives (costs no privacy).
+pmax(0, morie_dp_laplace_histogram(true, epsilon = 1.0))
+#> [1] 120  45   9 230  17
 
 # Release a private histogram straight from tabulated data.
 counts <- as.integer(table(complaint_sample$year))
 morie_dp_laplace_histogram(counts, epsilon = 1.0)
-#> [1] 24998.995388     1.571349
+#> [1] 25000     0
 ```

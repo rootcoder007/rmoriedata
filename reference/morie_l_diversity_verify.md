@@ -60,6 +60,14 @@ A list with class `"morie_l_div"` containing:
 
   human-readable.
 
+## Details
+
+Only known (non-`NA`) sensitive values count towards diversity: a class
+whose rows read `"HIV"`, `NA`, `NA` tells an adversary the attribute is
+HIV or withheld, which is diversity 1. Classes are formed as in
+[`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md),
+with `NA` in a quasi-identifier as a level of its own.
+
 ## Examples
 
 ``` r

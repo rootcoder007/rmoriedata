@@ -28,9 +28,11 @@
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_data_path.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.html</loc></url>
+<url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.html</loc></url>
+<url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.html</loc></url>
 <url><loc>https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.html</loc></url>

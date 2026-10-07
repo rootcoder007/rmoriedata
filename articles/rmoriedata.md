@@ -172,21 +172,21 @@ set.seed(1)
 
 # A private count of records matching a predicate.
 morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
-#> [1] 41.36704
+#> [1] 42
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
-#> [1] 41.98688
+#> [1] 42.0245
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.4893552
+#> [1] 0.50361
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, morie_dp_laplace_histogram(counts, epsilon = 1.0)))
-#> [1] 24999     2
+#> [1] 25000     3
 ```
 
 ## 5. Re-identification risk
@@ -225,10 +225,10 @@ tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60), nrow = 3,
               dimnames = list(c("A", "B", "C"), c("X", "Y", "Z")))
 res <- morie_cell_suppress(tbl, threshold = 5)
 res$suppressed
-#>     X  Y  Z
-#> A 120 NA 14
-#> B  NA NA NA
-#> C  NA 99 60
+#>    X  Y  Z
+#> A NA NA 14
+#> B NA NA 51
+#> C 47 99 60
 ```
 
 ## Bridging to Python

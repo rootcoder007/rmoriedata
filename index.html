@@ -6,13 +6,19 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Integrated Datasets for the rmorie Package • rmoriedata</title>
+<!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
+<link rel="icon" type="”image/svg+xml”" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="icon" sizes="any" href="favicon.ico">
+<link rel="manifest" href="site.webmanifest">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Integrated Datasets for the rmorie Package">
-<meta name="description" content="Integrated open data fixtures used by the rmorie package for examples, vignettes, and tests. Contains snapshots of publicly available datasets from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) director's reports, and synthetic fixtures for unit tests. Also ships a small set of analyst-facing helpers for releasing aggregate statistics without re-identification risk: Laplace and Gaussian differential privacy mechanisms and k-anonymity, l-diversity, and cell suppression verifiers.">
-<meta property="og:description" content="Integrated open data fixtures used by the rmorie package for examples, vignettes, and tests. Contains snapshots of publicly available datasets from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) director's reports, and synthetic fixtures for unit tests. Also ships a small set of analyst-facing helpers for releasing aggregate statistics without re-identification risk: Laplace and Gaussian differential privacy mechanisms and k-anonymity, l-diversity, and cell suppression verifiers.">
+<meta name="description" content="Integrated open data fixtures used by the rmorie package for examples, vignettes, and tests. Contains snapshots of publicly available datasets from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) directors reports, and synthetic fixtures for unit tests. Also ships a small set of disclosure-control helpers for aggregate releases: differential privacy (an exact discrete Laplace sampler for counts and the analytic Gaussian mechanism for means, drawing on the operating systems random source, with privacy-budget accounting), k-anonymity and l-diversity checks, and cell suppression audited for exact recovery from the margins.">
+<meta property="og:description" content="Integrated open data fixtures used by the rmorie package for examples, vignettes, and tests. Contains snapshots of publicly available datasets from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) directors reports, and synthetic fixtures for unit tests. Also ships a small set of disclosure-control helpers for aggregate releases: differential privacy (an exact discrete Laplace sampler for counts and the analytic Gaussian mechanism for means, drawing on the operating systems random source, with privacy-budget accounting), k-anonymity and l-diversity checks, and cell suppression audited for exact recovery from the margins.">
+<meta property="og:image" content="https://rootcoder007.github.io/rmoriedata/logo.png">
 <meta name="google-site-verification" content="8ORzeHrfoPIOrujfV-km-kXCi9HD8dvL5GYH-GqwjYI">
 </head>
 <body>
@@ -50,8 +56,10 @@
 </nav><div class="container template-home">
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header"><h1 id="rmoriedata">rmoriedata<a class="anchor" aria-label="anchor" href="#rmoriedata"></a>
-</h1></div>
+<div class="page-header">
+<img src="logo.png" class="logo" alt=""><h1 id="rmoriedata-">rmoriedata <a class="anchor" aria-label="anchor" href="#rmoriedata-"></a>
+</h1>
+</div>
 <!-- badges: start -->
 
 <p>Integrated open-data fixtures for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>, plus a small set of base-R helpers. Its core job remains the <code>inst/extdata/</code> files used by <code>rmorie</code>’s examples, vignettes, and tests.</p>
@@ -85,7 +93,7 @@
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
 </h2>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rootcoder007/rmoriedata" class="external-link">rmoriedata</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rootcoder007.github.io/rmoriedata/">rmoriedata</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Browse and load a bundled table by slug.</span></span>
 <span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span>
@@ -122,7 +130,7 @@
 </h2>
 <p>Bundled samples (<code>complaint_sample</code>, <code>arrest_sample</code>) from the City of Chicago open data; the full datasets are fetched on demand and cached.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/rootcoder007/rmoriedata" class="external-link">rmoriedata</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rootcoder007.github.io/rmoriedata/">rmoriedata</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">complaint_sample</span><span class="op">)</span>                       <span class="co"># bundled sample, offline</span></span>
 <span><span class="va">crimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>  <span class="co"># the full data, first 200 rows</span></span>
 <span><span class="co"># omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)</span></span>
