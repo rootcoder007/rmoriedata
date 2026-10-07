@@ -40,7 +40,9 @@
 #' the March 2026 release, not a permanent record of that year.
 #'
 #' @source Crime Statistics Agency Victoria, "Latest Victorian crime data".
-#'   \url{https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data}
+#'   https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data
+#'   (the page answers only browsers; archived copy of 7 October 2026:
+#'   \url{https://web.archive.org/web/20261007154657/https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data}).
 #'   Released under CC BY 4.0.
 #' @seealso [morie_data_catalog()], [morie_data_load()]
 #' @examples

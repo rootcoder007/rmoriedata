@@ -5,6 +5,7 @@
 #
 # Source: Crime Statistics Agency Victoria, "Latest Victorian crime data"
 #   https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data
+#   archived 2026-10-07: https://web.archive.org/web/20261007154657/https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data
 # Licence: CC BY 4.0 (the CSA publishes its data tables under Creative
 #   Commons Attribution 4.0 International).
 #
