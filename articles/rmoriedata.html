@@ -227,12 +227,12 @@ download and is a network call, so it isn’t run here.)</p>
 <span></span>
 <span><span class="co"># The mechanism is unbiased -- averaging many releases recovers the truth.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fu"><a href="../reference/morie_dp_laplace_count.html">morie_dp_laplace_count</a></span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 41.9835</span></span>
+<span><span class="co">#&gt; [1] 42.014</span></span>
 <span></span>
 <span><span class="co"># A private mean of bounded data.</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/morie_dp_gaussian_mean.html">morie_dp_gaussian_mean</a></span><span class="op">(</span><span class="va">x</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.4988882</span></span>
+<span><span class="co">#&gt; [1] 0.5043531</span></span>
 <span></span>
 <span><span class="co"># A private histogram straight from tabulated data.</span></span>
 <span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>

@@ -9,6 +9,15 @@
   and
   [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md).
 
+- **A garbled download is refused, not padded.** The full Chicago export
+  and the tables from data.rmorie.com are read with `fill = FALSE`: a
+  row with a field missing or one too many was padded into the result
+  (and, for Chicago, written to the cross-session cache); it is now an
+  error, and a damaged hosted table’s local copy is removed so the next
+  call fetches it again. The Chicago tests also pin the 1% row-count
+  tolerance at its edge (495 of 500 accepted, 494 refused) and the
+  request size (the service’s count, at least 5,000,000 rows).
+
 - **Privacy verifiers (review of 0.3.5).**
   [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md)
   treats a missing quasi-identifier as a level of its own:
