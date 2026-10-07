@@ -43,7 +43,8 @@ morie_data_hosted_load(key, refresh = FALSE)
   <https://rmorie.com/access>), or an email address (a 6-digit code is
   sent; pass it as `code` in a non-interactive session). With neither,
   the GitHub device flow runs. The service address comes from the signed
-  services document (`rmoriebricklayer::bricklayer_services()`).
+  services document
+  ([`rmoriebricklayer::bricklayer_services()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_services.html)).
 
 - key:
 

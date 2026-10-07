@@ -4,12 +4,13 @@
 
 - The curated-data service address comes from the signed services
   document at rmorie.com (through
-  `rmoriebricklayer::bricklayer_services()` when the installed
-  bricklayer has it; an older bricklayer keeps the default address), so
-  the endpoint can move or be paused without a release. Keys are
-  personal and issued on request at <https://rmorie.com/access>; every
-  hint says so, and `morie_data_hosted_login(token = )` stores one (the
-  GitHub and emailed-code sign-ins keep working).
+  [`rmoriebricklayer::bricklayer_services()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_services.html)
+  when the installed bricklayer has it; an older bricklayer keeps the
+  default address), so the endpoint can move or be paused without a
+  release. Keys are personal and issued on request at
+  <https://rmorie.com/access>; every hint says so, and
+  `morie_data_hosted_login(token = )` stores one (the GitHub and
+  emailed-code sign-ins keep working).
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   follows
   [`rmoriebricklayer::bricklayer_llm_ask()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_ask.html)’s

@@ -25,19 +25,22 @@ install.packages(
 
 The 161 databases (203 tables on 2026-10-05) the MORIE project
 materialises from BigQuery public datasets are served from the edge and
-opened by the MORIE key. rmoriedata is self-sufficient: sign in once,
-then load any `db/table` key.
+opened by the MORIE key, issued on request at
+<https://rmorie.com/access> under <https://rmorie.com/data-license>.
+rmoriedata is self-sufficient: store the key once, then load any
+`db/table` key. The endpoint comes from a signed services document the
+packages verify before use, so it can change without a release.
 
 ``` r
 
-morie_data_hosted_login()                      # GitHub device flow; or login(email = ), login(token = )
+morie_data_hosted_login(token = "...")         # the key from rmorie.com/access; login() (GitHub) and login(email = ) still work
 cat_ <- morie_data_hosted_catalog()            # key, rows, columns, source dataset
 df <- morie_data_hosted_load("fec_cm_2020/fec_cm_2020")
-ask("which tables cover police stops?", model = "kimi-k2.6:cf")   # the hosted MORIE tier, same key
+ask("which tables cover police stops?", model = "kimi-k2.6:cf")   # the hosted MORIE tier (last resort), same key
 ```
 
 The key lands in the credentials file that rmorie, morie and
-rmoriebricklayer read too, so one login serves every MORIE package.
+rmoriebricklayer read too, so one key serves every MORIE package.
 
 ## Quick start
 
