@@ -35,7 +35,7 @@
 .rmd_access_hint <- function() {
   svc <- .rmd_services_data()
   sprintf("keys are personal and issued on request at %s",
-          svc$request_access %||% "https://rmorie.com/access")
+          svc$request_access %||% "https://rmorie.com/access/")
 }
 
 .rmd_data_url <- function() {
@@ -45,7 +45,7 @@
   if (is.null(svc)) return("https://data.rmorie.com")
   if (!identical(svc$mode, "key") || !nzchar(svc$base_url %||% "")) {
     stop("the curated-data service is not available right now (see ",
-         svc$request_access %||% "https://rmorie.com/access", ")", call. = FALSE)
+         svc$request_access %||% "https://rmorie.com/access/", ")", call. = FALSE)
   }
   svc$base_url
 }
@@ -166,7 +166,7 @@ morie_data_hosted_catalog <- function(refresh = FALSE) {
 #' @param token,email,code,open_browser Passed to
 #'   \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold
 #'   (keys are personal and issued on request at
-#'   \url{https://rmorie.com/access}), or an email address (a 6-digit code is
+#'   \url{https://rmorie.com/access/}), or an email address (a 6-digit code is
 #'   sent; pass it as \code{code} in a non-interactive session). With neither,
 #'   the GitHub device flow runs. The service address comes from the signed
 #'   services document (\code{rmoriebricklayer::bricklayer_services()}).
