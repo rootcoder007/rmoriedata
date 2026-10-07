@@ -26,7 +26,7 @@ install.packages(
 The 161 databases (203 tables on 2026-10-05) the MORIE project
 materialises from BigQuery public datasets are served from the edge and
 opened by the MORIE key, issued on request at
-<https://rmorie.com/access> under <https://rmorie.com/data-license>.
+<https://rmorie.com/access/> under <https://rmorie.com/data-license/>.
 rmoriedata is self-sufficient: store the key once, then load any
 `db/table` key. The endpoint comes from a signed services document the
 packages verify before use, so it can change without a release.
