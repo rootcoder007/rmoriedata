@@ -1,5 +1,7 @@
 # rmoriedata 0.3.5
 
+* A hex logo (`man/figures/logo.png`, source `data-raw/hex_logo.svg`), on the README and the
+  package website.
 * **Privacy verifiers (review of 0.3.5).** `morie_k_anonymity_verify()` treats a missing
   quasi-identifier as a level of its own: `stats::aggregate()` had dropped every row with an `NA`
   key, so a class of one person could pass `k = 3`; class sizes now always sum to `nrow(data)`.
