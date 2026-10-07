@@ -52,6 +52,9 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
       call. = FALSE
     )
   }
+  # the catalogue's URLs feed downloads: it is checked against the signed manifest
+  # like every other bundled file before anything in it is believed
+  .rmoriedata_check_file("cihi_data_tables.csv")
   df <- utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
   if (isTRUE(archived_only) && "wayback_url" %in% names(df)) {
     df <- df[nzchar(df[["wayback_url"]]), , drop = FALSE]

@@ -332,10 +332,15 @@ morie_data_dictionary <- function(slug) {
 #' public half ships with the package. Loading a table checks its file
 #' against the manifest; this function checks all of them at once.
 #'
-#' @return A data frame with one row per manifest entry: `path`, `bytes`,
-#'   `sha256`, `ok` (the file on disk matches). The attribute
-#'   `"signature"` is `TRUE` when the manifest's signature verified, and
-#'   the function errors if it did not.
+#' A file present in the installed store but absent from the manifest is
+#' reported too, as a row with `listed = FALSE` and `ok = FALSE`: a file
+#' added to the store is as much a change as a file altered in it.
+#'
+#' @return A data frame with one row per manifest entry, then one per
+#'   unlisted file: `path`, `bytes`, `sha256` (the manifest digest, or the
+#'   file's own for an unlisted file), `listed`, `ok` (the file on disk is
+#'   listed and matches). The attribute `"signature"` is `TRUE` when the
+#'   manifest's signature verified, and the function errors if it did not.
 #' @examples
 #' v <- morie_data_verify()
 #' all(v$ok)
@@ -344,11 +349,23 @@ morie_data_dictionary <- function(slug) {
 morie_data_verify <- function() {
   m <- .rmoriedata_manifest()
   ed <- .rmoriedata_extdata()
+  m$listed <- rep(TRUE, nrow(m))
   m$ok <- vapply(seq_len(nrow(m)), function(i) {
     f <- file.path(ed, m$path[i])
     file.exists(f) &&
       identical(rmoriebricklayer::sha256_file(f), m$sha256[i])
   }, TRUE)
+  # the manifest, its signature and the public key are the trust machinery, not data
+  present <- list.files(ed, recursive = TRUE)
+  extra <- setdiff(present, c(m$path, "_checksums.csv", "_checksums.sig", "_signing_key.json"))
+  if (length(extra)) {
+    fx <- file.path(ed, extra)
+    m <- rbind(m, data.frame(
+      path = extra, bytes = file.size(fx),
+      sha256 = vapply(fx, rmoriebricklayer::sha256_file, character(1), USE.NAMES = FALSE),
+      listed = FALSE, ok = FALSE, stringsAsFactors = FALSE
+    )[names(m)])
+  }
   attr(m, "signature") <- TRUE
   m
 }

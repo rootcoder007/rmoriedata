@@ -128,11 +128,9 @@ test_that("cell_suppress suppresses primary cells below threshold", {
   expect_equal(res$suppressed["B", "Y"], 99)
 })
 
-test_that("complementary suppression hides reconstructability per row + col", {
-  # One small cell in row 'B' (value 3 < 5). The remaining row-B cells are
-  # 99 and 14; complementary picks the smallest -> 14 -> "B","Z".
-  # The same primary cell anchors column 'X' (other cells 120, 51);
-  # complementary picks the smallest -> 51 -> "C","X".
+test_that("complementary suppression leaves no hidden cell recoverable from the totals", {
+  # One small cell in row B. The 0.3.5 passes hid one complement in row B and one in
+  # column X and stopped: row C then held a lone hidden cell, readable off row C's total.
   tbl <- matrix(
     c(
       120, 47, 88,
@@ -144,18 +142,58 @@ test_that("complementary suppression hides reconstructability per row + col", {
   )
   res <- morie_cell_suppress(tbl, threshold = 5, return_complementary = TRUE)
   expect_equal(res$n_primary, 1L)
-  # one row-comp + one col-comp = 2 complementary suppressions
-  expect_equal(res$n_complementary, 2L)
-  expect_true(is.na(res$suppressed["B", "X"])) # primary
-  expect_true(is.na(res$suppressed["B", "Z"])) # row complement (min of 99,14)
-  expect_true(is.na(res$suppressed["C", "X"])) # col complement (min of 120,51)
-  # Untouched cells preserved.
-  expect_equal(res$suppressed["A", "X"], 120)
-  expect_equal(res$suppressed["A", "Y"], 47)
-  expect_equal(res$suppressed["A", "Z"], 88)
-  expect_equal(res$suppressed["B", "Y"], 99)
-  expect_equal(res$suppressed["C", "Y"], 60)
-  expect_equal(res$suppressed["C", "Z"], 60)
+  expect_true(is.na(res$suppressed["B", "X"]))
+  expect_true(res$protected)
+  expect_equal(res$n_recoverable, 0L)
+  hidden <- is.na(res$suppressed)
+  # no row or column holds exactly one hidden cell
+  expect_false(any(rowSums(hidden) == 1L))
+  expect_false(any(colSums(hidden) == 1L))
+  # published cells are untouched
+  expect_equal(res$suppressed[!hidden], tbl[!hidden])
+  # without complements the lone cell is recoverable, and the result says so
+  bare <- morie_cell_suppress(tbl, threshold = 5, return_complementary = FALSE)
+  expect_false(bare$protected)
+  expect_true(bare$recoverable_mask["B", "X"])
+})
+
+test_that("a primary cell is not recoverable from the margins (review reproducer)", {
+  # 0.3.5 published (NA NA 57 / NA 10 10 / 90 5 5): R2C1 = 100 - 20 = 80, then
+  # R1C1 = 173 - 90 - 80 = 3, the primary cell, exactly
+  tbl <- matrix(c(3, 40, 57, 80, 10, 10, 90, 5, 5), nrow = 3, byrow = TRUE,
+                dimnames = list(c("R1", "R2", "R3"), c("C1", "C2", "C3")))
+  res <- morie_cell_suppress(tbl, threshold = 5)
+  expect_true(is.na(res$suppressed["R1", "C1"]))
+  expect_true(res$protected)
+  hidden <- is.na(res$suppressed)
+  expect_false(any(rowSums(hidden) == 1L))
+  expect_false(any(colSums(hidden) == 1L))
+  # complements are never zero cells
+  expect_false(any(tbl[res$complementary_mask] == 0))
+})
+
+test_that("k-anonymity counts rows with a missing quasi-identifier (review reproducer)", {
+  d <- data.frame(zip = c(NA, NA, NA, "60601", "60601", "60601", "60601", "60601"),
+                  sex = c("M", "F", "M", "F", "F", "F", "F", "F"))
+  r <- morie_k_anonymity_verify(d, c("zip", "sex"), k = 3)
+  expect_false(r$satisfies)
+  expect_equal(r$min_class_size, 1L)
+  expect_equal(r$n_classes, 3L)
+  expect_true(any(is.na(r$violating_classes$zip)))
+  # every row is accounted for
+  expect_equal(sum(morie_k_anonymity_verify(d, c("zip", "sex"), k = 1)$violating_classes$.n), 0L)
+})
+
+test_that("l-diversity counts only known sensitive values (review reproducer)", {
+  C <- data.frame(g = c("a", "a", "a", "b", "b", "b"), s = c("HIV", NA, NA, "FLU", "FLU", NA))
+  r <- morie_l_diversity_verify(C, "g", "s", l = 2)
+  expect_false(r$satisfies)
+  expect_equal(r$min_diversity, 1L)
+  # a missing quasi-identifier is its own class here too
+  D <- data.frame(g = c("a", "a", NA, NA), s = c("x", "y", "z", "z"))
+  r2 <- morie_l_diversity_verify(D, "g", "s", l = 2)
+  expect_equal(r2$n_classes, 2L)
+  expect_false(r2$satisfies)
 })
 
 test_that("cell_suppress input validation", {

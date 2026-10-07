@@ -1,0 +1,57 @@
+# AddressSanitizer + UndefinedBehaviorSanitizer over the package's C (src/snappy.c,
+# src/gzip.c, the init/LinkingTo shims) and the full test suite, including
+# test-codec-hostile.R, which feeds both decoders thousands of malformed inputs.
+# rocker/r-devel-san ships R-devel built with both sanitizers as `RD`.
+name: sanitizers
+
+on:
+  push:
+    branches: [main]
+    paths: ['src/**', 'R/**', 'tests/**', 'DESCRIPTION', '.github/workflows/sanitizers.yml']
+  pull_request:
+    branches: [main]
+    paths: ['src/**', 'R/**', 'tests/**', 'DESCRIPTION', '.github/workflows/sanitizers.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sanitizers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  asan-ubsan:
+    name: ASAN + UBSAN (rocker/r-devel-san)
+    runs-on: ubuntu-latest
+    container: rocker/r-devel-san
+    timeout-minutes: 120
+    env:
+      ASAN_OPTIONS: detect_leaks=0:abort_on_error=0:print_summary=1
+      UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0
+      NOT_CRAN: "true"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: System libraries
+        run: apt-get update && apt-get install -y --no-install-recommends libcurl4-openssl-dev libuv1-dev libssl-dev zlib1g-dev pkg-config
+      - name: Dependencies (rmoriebricklayer from the family r-universe)
+        run: |
+          RDscript -e 'repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"); install.packages(c("rmoriebricklayer", "testthat", "withr", "jsonlite"), repos = repos); for (p in c("rmoriebricklayer", "testthat", "withr")) if (!requireNamespace(p, quietly = TRUE)) stop("could not install ", p)'
+      - name: Install under the sanitizers
+        shell: bash
+        run: |
+          set -o pipefail
+          RD CMD INSTALL --preclean . 2>&1 | tee install.log
+          if grep -E "runtime error:|ERROR: AddressSanitizer" install.log; then
+            echo "::error::sanitizer report during install"
+            exit 1
+          fi
+      - name: Run the test suite under ASAN + UBSAN
+        shell: bash
+        run: |
+          set -o pipefail
+          RDscript -e 'library(testthat); library(rmoriedata); test_dir("tests/testthat", package = "rmoriedata", reporter = "summary", stop_on_failure = TRUE)' 2>&1 | tee san.log
+          if grep -E "runtime error:|ERROR: AddressSanitizer|SUMMARY: (Address|UndefinedBehavior)Sanitizer" san.log; then
+            echo "::error::sanitizer report above"
+            exit 1
+          fi

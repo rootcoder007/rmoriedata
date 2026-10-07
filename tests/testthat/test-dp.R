@@ -7,17 +7,56 @@ test_that("morie_dp_laplace_count mean converges to true count", {
   expect_equal(mean(draws), 100, tolerance = 0.05)
 })
 
-test_that("variance scales as 2 / epsilon^2 for the Laplace mechanism", {
-  set.seed(20260526)
+test_that("the variance is the discrete Laplace variance 2p / (1 - p)^2, p = exp(-epsilon)", {
   n_draws <- 5000L
   draws_high <- replicate(n_draws, morie_dp_laplace_count(50L, epsilon = 2.0))
   draws_low <- replicate(n_draws, morie_dp_laplace_count(50L, epsilon = 0.5))
-  var_high <- stats::var(draws_high)
-  var_low <- stats::var(draws_low)
-  # Smaller epsilon -> larger variance.
-  expect_gt(var_low, var_high)
-  # Theoretical: var = 2 / epsilon^2; ratio should be ~16x for eps 2.0 vs 0.5.
-  expect_equal(var_low / var_high, 16, tolerance = 0.25)
+  dvar <- function(eps) { p <- exp(-eps); 2 * p / (1 - p)^2 }
+  expect_gt(stats::var(draws_low), stats::var(draws_high))
+  expect_equal(stats::var(draws_low), dvar(0.5), tolerance = 0.15)
+  expect_equal(stats::var(draws_high), dvar(2.0), tolerance = 0.15)
+  # releases are whole numbers: no floating-point residue to tell neighbours apart
+  expect_true(all(draws_low == round(draws_low)))
+})
+
+test_that("the noise does not follow set.seed (OS CSPRNG)", {
+  same <- vapply(1:20, function(i) {
+    set.seed(1); a <- morie_dp_laplace_count(1000, epsilon = 0.1)
+    set.seed(1); b <- morie_dp_laplace_count(1000, epsilon = 0.1)
+    a == b
+  }, logical(1))
+  # at epsilon 0.1 two independent draws agree with probability about 0.05
+  expect_lt(sum(same), 8)
+})
+
+test_that("the Gaussian mean uses the analytic calibration, valid above epsilon 1", {
+  # Balle and Wang (2018): sigma for epsilon 1, delta 1e-5, sensitivity 1 is 3.7306
+  s <- rmoriedata:::.morie_dp_agm_sigma(1, 1, 1e-5)
+  expect_equal(s, 3.7306, tolerance = 1e-4)
+  # the defining condition holds with equality at the returned sigma
+  a <- 1 / (2 * s)
+  expect_equal(stats::pnorm(a - s) - exp(1) * stats::pnorm(-a - s), 1e-5, tolerance = 1e-6)
+  # above epsilon 1 the classical bound is invalid; the analytic one still satisfies delta
+  s5 <- rmoriedata:::.morie_dp_agm_sigma(1, 5, 1e-5)
+  a5 <- 1 / (2 * s5); b5 <- 5 * s5
+  expect_lte(stats::pnorm(a5 - b5) - exp(5) * stats::pnorm(-a5 - b5), 1e-5 * (1 + 1e-6))
+  expect_true(is.finite(morie_dp_gaussian_mean(runif(100), 0, 1, epsilon = 5)))
+})
+
+test_that("a privacy budget is charged and enforced", {
+  b <- morie_dp_budget(epsilon = 2, delta = 1e-5)
+  morie_dp_laplace_count(10, epsilon = 1, budget = b)
+  morie_dp_laplace_histogram(c(1, 2, 3), epsilon = 0.5, budget = b)
+  s <- morie_dp_spent(b)
+  expect_equal(s$spent_epsilon, 1.5)
+  expect_equal(s$releases, 2L)
+  expect_error(morie_dp_laplace_count(10, epsilon = 1, budget = b), "exceeds the remaining budget")
+  expect_equal(morie_dp_spent(b)$spent_epsilon, 1.5)
+  expect_error(morie_dp_gaussian_mean(runif(10), 0, 1, epsilon = 0.5, delta = 1e-4, budget = b),
+               "exceeds the remaining budget")
+  expect_output(print(b), "epsilon 1.5 of 2 spent")
+  expect_error(morie_dp_budget(0), "positive")
+  expect_error(morie_dp_spent(list()), "morie_dp_budget")
 })
 
 test_that("morie_dp_laplace_count edge-case input validation", {

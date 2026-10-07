@@ -53,10 +53,31 @@
   e <- new.env(parent = emptyenv())
   e$buf <- buf
   e$pos <- pos
+  e$depth <- 0L
   e
 }
 
+# Every read is bounds-checked: subsetting a raw vector past its end yields 00 bytes, not
+# an error, and a reader built on that silently turns a truncated or lying file into wrong
+# data. These are the only ways the decoder touches bytes.
+.pq_need <- function(e, n) {
+  if (!is.finite(n) || n < 0 || e$pos + n - 1 > length(e$buf)) {
+    stop("parquet: truncated or corrupt metadata (", n, " bytes needed at byte ",
+         e$pos, " of ", length(e$buf), ")", call. = FALSE)
+  }
+  invisible()
+}
+
+.pq_slice <- function(buf, pos, n, what = "data") {
+  if (!is.finite(n) || n < 0 || !is.finite(pos) || pos < 1 || pos + n - 1 > length(buf)) {
+    stop("parquet: ", what, " runs past the end of its page or chunk (", n,
+         " bytes at ", pos, " of ", length(buf), ")", call. = FALSE)
+  }
+  if (n == 0) raw(0) else buf[seq.int(pos, length.out = n)]
+}
+
 .pq_byte <- function(e) {
+  .pq_need(e, 1)
   b <- as.integer(e$buf[e$pos])
   e$pos <- e$pos + 1L
   b
@@ -72,6 +93,10 @@
       return(result)
     }
     shift <- shift + 7
+    # a 64-bit value takes at most 10 bytes; anything longer is not a varint
+    if (shift > 63) {
+      stop("parquet: varint longer than 10 bytes at byte ", e$pos, call. = FALSE)
+    }
   }
 }
 
@@ -84,12 +109,14 @@
 
 .pq_binary <- function(e) {
   n <- .pq_varint(e)
-  out <- e$buf[seq.int(e$pos, length.out = n)]
+  .pq_need(e, n)
+  out <- if (n == 0) raw(0) else e$buf[seq.int(e$pos, length.out = n)]
   e$pos <- e$pos + n
   out
 }
 
 .pq_double <- function(e) {
+  .pq_need(e, 8)
   v <- readBin(e$buf[seq.int(e$pos, length.out = 8L)], "double",
     n = 1L, size = 8L, endian = "little"
   )
@@ -139,6 +166,11 @@
   if (size == 0) {
     return(list())
   }
+  # every element takes at least one byte, booleans included
+  if (size > length(e$buf) - e$pos + 1) {
+    stop("parquet: list of ", size, " elements in ", length(e$buf) - e$pos + 1,
+         " remaining bytes", call. = FALSE)
+  }
   lapply(seq_len(size), function(i) .pq_scalar(e, etype))
 }
 
@@ -146,6 +178,12 @@
   size <- .pq_varint(e)
   if (size == 0) {
     return(list())
+  }
+  # a map entry is at least a key byte and a value byte; a 21-byte file claiming 2^56
+  # entries used to loop until killed
+  if (size > (length(e$buf) - e$pos) / 2) {
+    stop("parquet: map of ", size, " entries in ", length(e$buf) - e$pos + 1,
+         " remaining bytes", call. = FALSE)
   }
   kv <- .pq_byte(e)
   ktype <- bitwShiftR(kv, 4L)
@@ -159,6 +197,9 @@
 }
 
 .pq_struct <- function(e) {
+  e$depth <- e$depth + 1L
+  on.exit(e$depth <- e$depth - 1L)
+  if (e$depth > 64L) stop("parquet: metadata nested deeper than 64 levels", call. = FALSE)
   out <- list()
   fid <- 0L
   repeat {
@@ -376,6 +417,8 @@
   if (width == 0L) {
     return(list(values = rep(0L, count), pos = pos))
   }
+  if (width > 32L) stop("parquet: RLE bit width ", width, " above 32", call. = FALSE)
+  end <- min(end, length(buf))
   out <- integer(count)
   o <- 0L
   nbytes <- (width + 7L) %/% 8L
@@ -383,43 +426,47 @@
     header <- 0
     shift <- 0
     repeat {
+      if (pos > end) stop("parquet: RLE run header runs past its data", call. = FALSE)
       b <- as.integer(buf[pos])
       pos <- pos + 1L
       header <- header + bitwAnd(b, 127L) * 2^shift
       if (bitwAnd(b, 128L) == 0L) break
       shift <- shift + 7
+      if (shift > 63) stop("parquet: RLE run header longer than 10 bytes", call. = FALSE)
     }
     if (header %% 2 == 1) { # bit-packed
       groups <- (header - 1) / 2
-      nvals <- groups * 8
       need <- groups * width
-      chunk <- as.integer(buf[seq.int(pos, length.out = need)])
+      if (need > end - pos + 1) stop("parquet: bit-packed run of ", groups,
+                                     " groups runs past its data", call. = FALSE)
+      nvals <- groups * 8
+      chunk <- .pq_slice(buf, pos, need, "bit-packed run")
       pos <- pos + need
       # Unpack LSB-first across byte boundaries.
-      bits <- as.integer(rawToBits(as.raw(chunk)))
-      idx <- seq_len(nvals)
-      vals <- vapply(idx, function(i) {
-        b0 <- (i - 1L) * width
-        sum(bits[(b0 + 1L):(b0 + width)] * 2L^(seq_len(width) - 1L))
-      }, numeric(1))
-      take <- min(length(vals), count - o)
+      bits <- as.integer(rawToBits(chunk))
+      take <- min(nvals, count - o)
       if (take > 0L) {
-        out[seq.int(o + 1L, length.out = take)] <-
-          as.integer(vals[seq_len(take)])
+        vals <- vapply(seq_len(take), function(i) {
+          b0 <- (i - 1L) * width
+          sum(bits[(b0 + 1L):(b0 + width)] * 2^(seq_len(width) - 1L))
+        }, numeric(1))
+        out[seq.int(o + 1L, length.out = take)] <- as.integer(vals)
       }
       o <- o + take
     } else { # RLE run
       run <- header / 2
-      val <- sum(as.integer(buf[seq.int(pos, length.out = nbytes)]) *
+      val <- sum(as.integer(.pq_slice(buf, pos, nbytes, "RLE run value")) *
         256^(seq_len(nbytes) - 1L))
       pos <- pos + nbytes
       take <- min(run, count - o)
       if (take > 0L) {
-        out[seq.int(o + 1L, length.out = take)] <-
-          as.integer(val)
+        out[seq.int(o + 1L, length.out = take)] <- as.integer(val)
       }
       o <- o + take
     }
+  }
+  if (o < count) {
+    stop("parquet: RLE data ran out after ", o, " of ", count, " values", call. = FALSE)
   }
   list(values = out, pos = pos)
 }
@@ -439,68 +486,61 @@
   if (count == 0L) {
     return(list(values = list(), pos = pos))
   }
+  take <- function(n) .pq_slice(buf, pos, n, "a PLAIN value block")
   if (ptype == .pqBoolean) {
     nb <- (count + 7L) %/% 8L
-    bits <- as.integer(rawToBits(buf[seq.int(pos, length.out = nb)]))
+    bits <- as.integer(rawToBits(take(nb)))
     return(list(
       values = as.logical(bits[seq_len(count)]),
       pos = pos + nb
     ))
   }
   if (ptype == .pqInt32) {
-    v <- readBin(buf[seq.int(pos, length.out = count * 4L)], "integer",
-      n = count, size = 4L, endian = "little"
-    )
+    v <- readBin(take(count * 4L), "integer", n = count, size = 4L, endian = "little")
     return(list(values = v, pos = pos + count * 4L))
   }
   if (ptype == .pqInt64) {
-    v <- .pq_read_i64(buf[seq.int(pos, length.out = count * 8L)], count)
+    v <- .pq_read_i64(take(count * 8L), count)
     return(list(values = v, pos = pos + count * 8L))
   }
   if (ptype == .pqFloat) {
-    v <- readBin(buf[seq.int(pos, length.out = count * 4L)], "double",
-      n = count, size = 4L, endian = "little"
-    )
+    v <- readBin(take(count * 4L), "double", n = count, size = 4L, endian = "little")
     return(list(values = v, pos = pos + count * 4L))
   }
   if (ptype == .pqDouble) {
-    v <- readBin(buf[seq.int(pos, length.out = count * 8L)], "double",
-      n = count, size = 8L, endian = "little"
-    )
+    v <- readBin(take(count * 8L), "double", n = count, size = 8L, endian = "little")
     return(list(values = v, pos = pos + count * 8L))
   }
   if (ptype == .pqByteArray) {
     vals <- vector("list", count)
     for (i in seq_len(count)) {
-      n <- .pq_u32(buf[seq.int(pos, length.out = 4L)])
+      n <- .pq_u32(.pq_slice(buf, pos, 4L, "a BYTE_ARRAY length"))
       pos <- pos + 4L
-      vals[[i]] <- if (n == 0L) {
-        raw(0)
-      } else {
-        buf[seq.int(pos, length.out = n)]
-      }
+      vals[[i]] <- .pq_slice(buf, pos, n, "a BYTE_ARRAY value")
       pos <- pos + n
     }
     return(list(values = vals, pos = pos))
   }
   if (ptype == .pqFlba) {
-    if (is.null(type_length)) {
-      stop("FIXED_LEN_BYTE_ARRAY without type_length", call. = FALSE)
+    if (is.null(type_length) || type_length < 1) {
+      stop("FIXED_LEN_BYTE_ARRAY without a positive type_length", call. = FALSE)
     }
+    block <- take(count * type_length)
     vals <- lapply(seq_len(count), function(i) {
-      buf[seq.int(pos + (i - 1L) * type_length, length.out = type_length)]
+      block[seq.int((i - 1L) * type_length + 1L, length.out = type_length)]
     })
     return(list(values = vals, pos = pos + count * type_length))
   }
   if (ptype == .pqInt96) {
+    block <- take(count * 12L)
     vals <- numeric(count)
     for (i in seq_len(count)) {
-      nanos <- .pq_read_i64(buf[seq.int(pos, length.out = 8L)], 1L)
-      jday <- .pq_u32(buf[seq.int(pos + 8L, length.out = 4L)])
-      pos <- pos + 12L
+      o <- (i - 1L) * 12L
+      nanos <- .pq_read_i64(block[o + 1:8], 1L)
+      jday <- .pq_u32(block[o + 9:12])
       vals[i] <- (jday - 2440588) * 86400 * 1e9 + nanos
     }
-    return(list(values = vals, pos = pos))
+    return(list(values = vals, pos = pos + count * 12L))
   }
   stop("unsupported physical type ", ptype, call. = FALSE)
 }
@@ -545,6 +585,7 @@
 # ------------------------------------------------------------------ read
 
 .pq_read_footer <- function(con, size) {
+  if (size < 12) stop("not a parquet file: ", size, " bytes", call. = FALSE)
   seek(con, 0L)
   if (!identical(readBin(con, "raw", 4L), charToRaw("PAR1"))) {
     stop("not a parquet file: missing leading PAR1", call. = FALSE)
@@ -555,16 +596,34 @@
     stop("not a parquet file: missing trailing PAR1", call. = FALSE)
   }
   n <- .pq_u32(tail[1:4])
+  if (n < 2 || n > size - 12) {
+    stop("parquet: footer length ", n, " does not fit a ", size, "-byte file", call. = FALSE)
+  }
   seek(con, size - 8L - n)
   .pq_struct(.pq_reader(readBin(con, "raw", n)))
 }
 
-.pq_column_values <- function(con, cm, num_rows, maxdef, typelen) {
+# The largest page this reader will inflate, and the most rows it will build. A page header
+# or a footer that claims more is refused before anything is allocated.
+.pq_max_page <- function() getOption("rmoriedata.parquet_max_page_bytes", 2^30)
+.pq_max_rows <- function() getOption("rmoriedata.parquet_max_rows", 5e7)
+
+.pq_column_values <- function(con, cm, num_rows, maxdef, typelen, stype, fsize, cname) {
   ptype <- as.integer(.pq_f(cm, 1))
+  if (!identical(ptype, as.integer(stype))) {
+    stop("parquet: column ", cname, " is declared type ", stype,
+         " in the schema but its chunk says ", ptype, call. = FALSE)
+  }
   codec <- as.integer(.pq_f(cm, 4))
   total_values <- .pq_f(cm, 5)
+  clen <- .pq_f(cm, 7)
   data_off <- .pq_f(cm, 9)
   dict_off <- .pq_f(cm, 11)
+  if (is.null(total_values) || is.null(clen) || is.null(data_off) ||
+      total_values != num_rows) {
+    stop("parquet: column ", cname, " chunk holds ", total_values %||% "?",
+         " values; its row group has ", num_rows, call. = FALSE)
+  }
 
   start <- if (!is.null(dict_off) && dict_off > 0 &&
     dict_off < data_off) {
@@ -572,8 +631,13 @@
   } else {
     data_off
   }
+  if (start < 4 || clen < 0 || start + clen > fsize - 8) {
+    stop("parquet: column ", cname, " chunk (", clen, " bytes at ", start,
+         ") lies outside the ", fsize, "-byte file", call. = FALSE)
+  }
   seek(con, start)
-  blob <- readBin(con, "raw", .pq_f(cm, 7) + 64)
+  blob <- readBin(con, "raw", clen)
+  if (length(blob) != clen) stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
 
   pos <- 1L
   dictionary <- NULL
@@ -584,9 +648,19 @@
     r <- .pq_reader(blob, pos)
     head <- .pq_struct(r)
     pos <- r$pos
+    usize <- .pq_f(head, 2)
     csize <- .pq_f(head, 3)
-    raw_page <- blob[seq.int(pos, length.out = csize)]
+    if (is.null(usize) || is.null(csize) || usize < 0 || usize > .pq_max_page()) {
+      stop("parquet: page of ", usize %||% "?", " bytes in column ", cname,
+           " (cap ", .pq_max_page(), ")", call. = FALSE)
+    }
+    raw_page <- .pq_slice(blob, pos, csize, paste("a page of column", cname))
     pos <- pos + csize
+    crc <- .pq_f(head, 4)
+    if (!is.null(crc)) {
+      have <- .Call(C_rmd_crc32, raw_page)
+      if (have != crc %% 2^32) stop("parquet: page CRC mismatch in column ", cname, call. = FALSE)
+    }
     ptype_page <- as.integer(.pq_f(head, 1))
     if (ptype_page == .pqPDataV2) {
       # v2 keeps its levels uncompressed ahead of the values, so
@@ -597,7 +671,7 @@
     if (codec == .pqCSnappy) {
       page <- .pq_snappy_decompress(raw_page)
     } else if (codec == .pqCGzip) {
-      page <- .Call(C_rmd_gzip_decompress, raw_page, .pq_f(head, 2))
+      page <- .Call(C_rmd_gzip_decompress, raw_page, usize)
     } else if (codec == .pqCUncompressed) {
       page <- raw_page
     } else {
@@ -606,27 +680,39 @@
         call. = FALSE
       )
     }
+    if (length(page) != usize) {
+      stop("parquet: page of column ", cname, " inflates to ", length(page),
+           " bytes; its header says ", usize, call. = FALSE)
+    }
 
     if (ptype_page == .pqPDict) {
       dh <- .pq_f(head, 7)
-      dictionary <- .pq_decode_plain(
-        page, 1L, ptype,
-        as.integer(.pq_f(dh, 1))
-      )$values
+      nd <- as.integer(.pq_f(dh, 1))
+      dec <- .pq_decode_plain(page, 1L, ptype, nd, typelen)
+      if (dec$pos != length(page) + 1L) {
+        stop("parquet: dictionary page of column ", cname, " holds ",
+             length(page) - dec$pos + 1L, " bytes beyond its ", nd, " values", call. = FALSE)
+      }
+      dictionary <- dec$values
       next
     }
     if (ptype_page != .pqPData) next
 
     dph <- .pq_f(head, 5)
     n <- as.integer(.pq_f(dph, 1))
+    if (is.na(n) || n < 0 || got + n > total_values) {
+      stop("parquet: page of column ", cname, " claims ", n, " values with ",
+           total_values - got, " left in the chunk", call. = FALSE)
+    }
     encoding <- as.integer(.pq_f(dph, 2))
     p <- 1L
 
     if (maxdef > 0L) {
       width <- .pq_bit_width(maxdef)
       if (as.integer(.pq_f(dph, 3)) == .pqERle) {
-        ln <- .pq_u32(page[seq.int(p, length.out = 4L)])
+        ln <- .pq_u32(.pq_slice(page, p, 4L, "a definition-level length"))
         p <- p + 4L
+        .pq_slice(page, p, ln, "definition levels")
         rr <- .pq_read_rle(page, p, width, n, p + ln - 1L)
         defs <- rr$values
         p <- p + ln
@@ -646,12 +732,22 @@
           call. = FALSE
         )
       }
-      width <- as.integer(page[p])
+      width <- as.integer(.pq_slice(page, p, 1L, "a dictionary bit width"))
       p <- p + 1L
       idx <- .pq_read_rle(page, p, width, present, length(page))$values
+      if (present && (min(idx) < 0L || max(idx) >= length(dictionary))) {
+        stop("parquet: dictionary index out of range in column ", cname, call. = FALSE)
+      }
       vals <- dictionary[idx + 1L]
     } else if (encoding == .pqEPlain) {
-      vals <- .pq_decode_plain(page, p, ptype, present, typelen)$values
+      dec <- .pq_decode_plain(page, p, ptype, present, typelen)
+      # PLAIN values fill the page exactly: bytes left over (or a shortfall, caught above)
+      # mean the declared type is not the type the page was written with
+      if (dec$pos != length(page) + 1L) {
+        stop("parquet: page of column ", cname, " holds ", length(page) - dec$pos + 1L,
+             " bytes beyond its ", present, " values of the declared type", call. = FALSE)
+      }
+      vals <- dec$values
     } else {
       stop("encoding ", encoding, " not implemented; the store uses ",
         "PLAIN and RLE_DICTIONARY",
@@ -674,10 +770,12 @@
     got <- got + n
   }
 
-  if (length(values) < num_rows) {
-    values <- c(values, vector("list", num_rows - length(values)))
+  # exact, never padded or truncated: a count the data does not bear out is an error
+  if (got != num_rows) {
+    stop("parquet: column ", cname, " decoded ", got, " values; its row group has ",
+         num_rows, call. = FALSE)
   }
-  values[seq_len(num_rows)]
+  values
 }
 
 #' Read a Parquet file
@@ -702,6 +800,16 @@ morie_read_parquet <- function(path, columns = NULL) {
   num_rows <- .pq_f(meta, 3)
   row_groups <- .pq_f(meta, 4)
   if (is.null(row_groups)) row_groups <- list()
+  if (is.null(num_rows) || num_rows < 0 || num_rows > .pq_max_rows()) {
+    stop("parquet: footer claims ", num_rows %||% "?", " rows (cap ",
+         .pq_max_rows(), ", option rmoriedata.parquet_max_rows)", call. = FALSE)
+  }
+  rg_rows <- vapply(row_groups, function(rg) as.numeric(.pq_f(rg, 3) %||% NA), numeric(1))
+  if (anyNA(rg_rows) || any(rg_rows < 0) || sum(rg_rows) != num_rows) {
+    stop("parquet: row groups hold ", sum(rg_rows), " rows; the footer says ",
+         num_rows, call. = FALSE)
+  }
+  if (is.null(schema) || length(schema) < 2L) stop("parquet: empty schema", call. = FALSE)
 
   leaves <- list()
   for (i in seq.int(2L, length(schema))) {
@@ -748,11 +856,15 @@ morie_read_parquet <- function(path, columns = NULL) {
     leaf <- leaves[[i]]
     col <- list()
     for (rg in row_groups) {
-      chunk <- .pq_f(rg, 1)[[i]]
-      cm <- .pq_f(chunk, 3)
+      chunks <- .pq_f(rg, 1)
+      if (length(chunks) != length(leaves)) {
+        stop("parquet: a row group has ", length(chunks), " column chunks for ",
+             length(leaves), " schema columns", call. = FALSE)
+      }
+      cm <- .pq_f(chunks[[i]], 3)
       col <- c(col, .pq_column_values(
         con, cm, .pq_f(rg, 3),
-        leaf$maxdef, leaf$typelen
+        leaf$maxdef, leaf$typelen, leaf$type, size, leaf$name
       ))
     }
     if (leaf$type == .pqByteArray) {
@@ -974,6 +1086,10 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
     last <- .pq_wi32(ph, 1L, .pqPData, 0L)
     last <- .pq_wi32(ph, 2L, length(body), last)
     last <- .pq_wi32(ph, 3L, length(payload), last)
+    # PageHeader.crc: CRC-32 of the page as stored (after compression), so a reader can
+    # tell a damaged page from data; written as the signed 32-bit value the spec uses
+    crc <- .Call(C_rmd_crc32, payload)
+    last <- .pq_wi32(ph, 4L, if (crc >= 2^31) crc - 2^32 else crc, last)
     last <- .pq_wstruct(ph, 5L, dph_body, last)
     ph_body <- .pq_wstop(ph)
 

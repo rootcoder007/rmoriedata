@@ -51,3 +51,19 @@ SEXP C_rmd_gzip_decompress(SEXP x, SEXP size) {
     UNPROTECT(1);
     return out;
 }
+
+/* CRC-32 (zlib's, the polynomial Parquet uses for PageHeader.crc) of a raw vector, as a
+ * double so the unsigned 32-bit value survives. */
+SEXP C_rmd_crc32(SEXP x) {
+    if (TYPEOF(x) != RAWSXP) Rf_error("crc32: `x` must be a raw vector");
+    uLong c = crc32(0L, Z_NULL, 0);
+    R_xlen_t n = XLENGTH(x);
+    const Bytef *p = (const Bytef *) RAW(x);
+    while (n > 0) {
+        uInt take = n > (R_xlen_t) 0x40000000 ? 0x40000000u : (uInt) n;
+        c = crc32(c, p, take);
+        p += take;
+        n -= take;
+    }
+    return Rf_ScalarReal((double) c);
+}

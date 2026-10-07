@@ -21,17 +21,20 @@ Description: Integrated open data fixtures used by the 'rmorie' package for exam
     Safety Statistics ('CCJS') tables, a multi-agent-reviewed corpus of
     Ontario Special Investigations Unit ('SIU', <https://www.siu.on.ca/>)
     director's reports, and synthetic fixtures for unit tests. Also ships a
-    small set of analyst-facing helpers for releasing aggregate statistics
-    without re-identification risk: Laplace and Gaussian differential
-    privacy mechanisms and k-anonymity, l-diversity, and cell suppression
-    verifiers.
+    small set of disclosure-control helpers for aggregate releases:
+    differential privacy (an exact discrete Laplace sampler for counts and
+    the analytic Gaussian mechanism for means, drawing on the operating
+    system's random source, with privacy-budget accounting), k-anonymity and
+    l-diversity checks, and cell suppression audited for exact recovery from
+    the margins.
 License: AGPL (>= 3)
 Encoding: UTF-8
 Depends:
   R (>= 4.3.0)
 Imports:
   stats,
-  rmoriebricklayer (>= 0.5.2)
+  utils,
+  rmoriebricklayer (>= 0.5.9)
 LinkingTo:
   rmoriebricklayer
 Suggests:
@@ -54,4 +57,3 @@ biocViews:
   ExperimentData
 Config/roxygen2/version: 8.0.0
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3

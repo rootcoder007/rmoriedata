@@ -4,13 +4,16 @@
 #'
 #' Computes the SHA256 digest of every file rmoriedata bundles in
 #' \code{inst/extdata}, using the shared provenance layer
-#' (\code{\link[rmoriebricklayer]{sha256_file}}). This lets an analysis
-#' verify it used the exact data slice rmoriedata shipped, and is
-#' rmoriedata's integration with the bricklayer provenance layer.
+#' (\code{\link[rmoriebricklayer]{sha256_file}}), and compares each with
+#' the digest the signed manifest records for it (\code{in_manifest}).
+#' For the full check, signature included, use [morie_data_verify()]; this
+#' function is the per-file record an analysis can pin and compare later.
 #'
 #' @return A data frame with one row per bundled file and columns
 #'   \code{path} (relative to the extdata root, forward slashes, unique),
-#'   \code{file} (the bare basename), \code{bytes}, and \code{sha256}.
+#'   \code{file} (the bare basename), \code{bytes}, \code{sha256}, and
+#'   \code{in_manifest} (TRUE when the signed manifest lists the file with
+#'   this digest; NA for the manifest's own files).
 #'   Use \code{path} to locate a file; several basenames recur in more
 #'   than one directory.
 #' @examples
@@ -35,7 +38,7 @@ morie_data_checksums <- function() {
   dir <- system.file("extdata", package = "rmoriedata")
   empty <- data.frame(
     path = character(), file = character(), bytes = numeric(),
-    sha256 = character(), stringsAsFactors = FALSE
+    sha256 = character(), in_manifest = logical(), stringsAsFactors = FALSE
   )
   if (!nzchar(dir) || !dir.exists(dir)) {
     return(empty)
@@ -44,7 +47,7 @@ morie_data_checksums <- function() {
   if (length(files) == 0L) {
     return(empty)
   }
-  data.frame(
+  out <- data.frame(
     path = substring(files, nchar(dir) + 2L),
     file = basename(files),
     bytes = file.size(files),
@@ -52,4 +55,9 @@ morie_data_checksums <- function() {
     row.names = NULL,
     stringsAsFactors = FALSE
   )
+  man <- tryCatch(.rmoriedata_manifest(), error = function(e) NULL)
+  trust <- c("_checksums.csv", "_checksums.sig", "_signing_key.json")
+  out$in_manifest <- if (is.null(man)) NA else
+    ifelse(out$path %in% trust, NA, (out$sha256 == man$sha256[match(out$path, man$path)]) %in% TRUE)
+  out
 }
