@@ -2,50 +2,47 @@
 % Please edit documentation in R/dp.R
 \name{morie_dp_gaussian_mean}
 \alias{morie_dp_gaussian_mean}
-\title{Differentially-private mean via the Gaussian mechanism with bounded inputs}
+\title{Differentially-private mean via the analytic Gaussian mechanism}
 \usage{
-morie_dp_gaussian_mean(x, lower, upper, epsilon, delta = 1e-06)
+morie_dp_gaussian_mean(x, lower, upper, epsilon, delta = 1e-06, budget = NULL)
 }
 \arguments{
 \item{x}{Numeric vector (no NAs).}
 
-\item{lower, upper}{Hard bounds on \code{x}. Caller must guarantee
-\code{all(x >= lower & x <= upper)}; the function clips defensively
-but emits a warning if clipping was necessary.}
+\item{lower, upper}{Hard bounds on \code{x}. Values outside are clipped (with a
+warning); the bounds must be chosen without looking at the data.}
 
-\item{epsilon, delta}{Privacy parameters. Standard recommendation:
-\code{delta < 1/length(x)}, \code{epsilon} in 0.1 to 5.0.}
+\item{epsilon, delta}{Privacy parameters for the whole release.
+\code{delta} should be well below \code{1 / length(x)}.}
+
+\item{budget}{Optional \code{\link[=morie_dp_budget]{morie_dp_budget()}} to charge against.}
 }
 \value{
 A noised mean (single numeric).
 }
 \description{
-Releases an approximately (\eqn{\epsilon}, \eqn{\delta})-DP mean of a
-bounded numeric vector. Sensitivity is derived from the user-asserted
-bounds: changing one record can shift the sum by at most
-\code{upper - lower}, so the mean's sensitivity is
-\code{(upper - lower) / length(x)}.
+Releases an \eqn{(\epsilon, \delta)}-DP mean of a bounded numeric vector,
+as a noised sum over a noised count, each with half the budget. Under the
+add-or-remove-one relation every mechanism here uses, one record moves
+the clipped sum by at most \code{max(abs(lower), abs(upper))} and the
+count by 1, so neither the sum nor \code{length(x)} is treated as public.
 }
 \details{
-The noise standard deviation follows the classical analytic-Gaussian
-calibration:
-\deqn{\sigma = \frac{\Delta \cdot \sqrt{2 \ln(1.25/\delta)}}{\epsilon}.}
+Each half is calibrated with the analytic Gaussian mechanism (Balle and
+Wang 2018), which holds for every \eqn{\epsilon > 0}; the classical
+bound \eqn{\sigma = \Delta \sqrt{2 \ln(1.25/\delta)}/\epsilon} holds only
+for \eqn{\epsilon \le 1} and is not used. Noise comes from the operating
+system's CSPRNG; \code{set.seed()} has no effect.
 }
 \examples{
-set.seed(1)
 x <- runif(1000, 0, 1)
-
-# A private mean of bounded data (bounds asserted by the caller).
 morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
 mean(x) # the true mean, for comparison
 
-# `delta` controls the (epsilon, delta) guarantee; smaller = stronger.
-morie_dp_gaussian_mean(x, 0, 1, epsilon = 1.0, delta = 1e-9)
-
 # Wider bounds raise sensitivity, so the same epsilon adds more noise.
 morie_dp_gaussian_mean(x, lower = -5, upper = 5, epsilon = 1.0)
-
-# Out-of-range values are clipped to [lower, upper] (with a warning).
-y <- c(x, 2, -1)
-suppressWarnings(morie_dp_gaussian_mean(y, lower = 0, upper = 1, epsilon = 1))
+}
+\references{
+Balle and Wang (2018), Improving the Gaussian Mechanism for
+Differential Privacy: Analytical Calibration and Optimal Denoising, ICML.
 }

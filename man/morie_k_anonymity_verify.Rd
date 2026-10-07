@@ -32,6 +32,14 @@ Checks whether a data.frame satisfies k-anonymity over the supplied
 quasi-identifier columns. A dataset is k-anonymous if every combination
 of quasi-identifier values appears in at least \code{k} rows.
 }
+\details{
+A missing value (\code{NA}) in a quasi-identifier is treated as a value of
+its own: rows with an unrecorded ward, age band or race form their own
+classes and are counted, never dropped. Unrecorded values are often the
+rarest records, which makes them the most re-identifiable, so they must
+meet the threshold like any other class. Every row is accounted for:
+the class sizes sum to \code{nrow(data)}.
+}
 \examples{
 df <- data.frame(
   age = c(25, 25, 25, 32, 32, 40),

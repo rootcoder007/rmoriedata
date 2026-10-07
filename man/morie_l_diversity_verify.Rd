@@ -34,6 +34,13 @@ Checks whether a data.frame satisfies l-diversity: within each
 equivalence class defined by the quasi-identifiers, the sensitive
 attribute must take at least \code{l} distinct values.
 }
+\details{
+Only known (non-\code{NA}) sensitive values count towards diversity: a class
+whose rows read \code{"HIV"}, \code{NA}, \code{NA} tells an adversary the attribute is
+HIV or withheld, which is diversity 1. Classes are formed as in
+\code{\link[=morie_k_anonymity_verify]{morie_k_anonymity_verify()}}, with \code{NA} in a quasi-identifier as a
+level of its own.
+}
 \examples{
 df <- data.frame(
   age = c(25, 25, 25, 25, 32, 32, 32),

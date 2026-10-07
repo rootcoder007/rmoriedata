@@ -1,5 +1,52 @@
 # rmoriedata 0.3.5
 
+* A hex logo (`man/figures/logo.png`, source `data-raw/hex_logo.svg`), on the README and the
+  package website.
+* **Privacy verifiers (review of 0.3.5).** `morie_k_anonymity_verify()` treats a missing
+  quasi-identifier as a level of its own: `stats::aggregate()` had dropped every row with an `NA`
+  key, so a class of one person could pass `k = 3`; class sizes now always sum to `nrow(data)`.
+  `morie_l_diversity_verify()` counts only known sensitive values (`"HIV", NA, NA` is diversity 1,
+  not 2). `morie_cell_suppress()` adds complementary suppressions to a fixed point and then audits
+  the result exactly: a hidden cell the row and column totals determine (its indicator in the row
+  space of the margin constraints) gets another complement, and the result carries
+  `recoverable_mask`, `n_recoverable` and a `protected` verdict to test before publishing. The
+  0.3.5 passes left a lone hidden cell in a row or column, from which the primary value followed
+  by two subtractions; zero cells are no longer used as complements. Checked against brute-force
+  enumeration of every margin-consistent fill on 464 random tables: no disagreement.
+* **Differential privacy.** Noise comes from the operating system's CSPRNG
+  (`rmoriebricklayer::random_bytes()`), not R's seeded generator, so `set.seed()` no longer
+  reproduces a release. Counts and histograms use the exact discrete Laplace sampler of Canonne,
+  Kamath and Steinke (2020) in integer arithmetic (whole-number releases; no floating-point
+  artefact of the kind Mironov (2012) showed in the textbook Laplace sampler). The mean uses the
+  analytic Gaussian mechanism of Balle and Wang (2018), valid for every epsilon; the classical
+  bound, valid only for epsilon <= 1, is gone. All three mechanisms use one neighbouring relation
+  (add or remove one record): the mean is a noised sum over a noised count. New
+  `morie_dp_budget()` / `morie_dp_spent()` charge releases against a budget (basic composition)
+  and refuse one that would exceed it. Examples no longer call `set.seed()`.
+* **Parquet reader.** Every byte access is bounds-checked (an out-of-range raw index had silently
+  read zeros); varints, lists, maps and nesting are capped by the bytes that remain, so the 21-byte
+  file that looped forever is refused at once; the decoded row count must equal the row group's
+  and the footer's exactly (no padding with `NA`, no truncation); a column chunk's type must match
+  the schema's; PLAIN values must fill their page exactly; dictionary indices are range-checked;
+  page sizes and footer row counts are capped (`options(rmoriedata.parquet_max_page_bytes,
+  rmoriedata.parquet_max_rows)`); `PageHeader.crc` is verified when present and the writer now
+  writes it. `tests/testthat/test-parquet-hostile.R` fuzzes all three codecs.
+* **Downloads.** `.rmd_dl()`, which carries the MORIE key as a bearer header, goes through
+  `rmoriebricklayer::bricklayer_download()` (https to public hosts only, no `file://`, size cap)
+  instead of base `url()`; requires rmoriebricklayer 0.5.9. `load_cihi_data_tables()` checks the
+  catalogue against the signed manifest before reading it. `morie_data_verify()` reports files
+  added to the store (`listed = FALSE`), and `morie_data_checksums()` compares each digest with the
+  manifest (`in_manifest`).
+* **Workflows.** The SIU manifest refresh runs only on demand and uploads an artifact instead of
+  committing: the manifest is covered by the XMSS-signed `_checksums.csv`, whose key never leaves
+  the maintainer's machine, so it is re-signed locally with `data-raw/sign_store.R`. A new
+  ASAN/UBSAN job builds the C and runs the suite, including `test-codec-hostile.R`.
+* **Packaging.** `utils` is declared in `Imports`; the stale `RoxygenNote` is dropped
+  (`Config/roxygen2/version` is the roxygen 8 field); `NOTICE` moves to `inst/NOTICE` so it
+  installs, and its data attribution now names the publishers instead of per-file headers that did
+  not exist. The licence text itself stays out of the tarball, as CRAN asks for a standard licence.
+  DESCRIPTION describes the disclosure-control helpers by what they do.
+
 * The curated-data service address comes from the signed services document at
   rmorie.com (through `rmoriebricklayer::bricklayer_services()` when the installed
   bricklayer has it; an older bricklayer keeps the default address), so the endpoint can

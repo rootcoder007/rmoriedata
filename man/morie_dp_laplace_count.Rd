@@ -2,43 +2,51 @@
 % Please edit documentation in R/dp.R
 \name{morie_dp_laplace_count}
 \alias{morie_dp_laplace_count}
-\title{Differentially-private count via the Laplace mechanism}
+\title{Differentially-private count via the discrete Laplace mechanism}
 \usage{
-morie_dp_laplace_count(true_count, epsilon)
+morie_dp_laplace_count(true_count, epsilon, budget = NULL)
 }
 \arguments{
 \item{true_count}{Non-negative integer; the true count.}
 
-\item{epsilon}{Privacy budget (smaller = more noise = stronger privacy).
-Typical range: 0.1 to 5.0.}
+\item{epsilon}{Privacy loss (smaller means more noise, stronger privacy).}
+
+\item{budget}{Optional \code{\link[=morie_dp_budget]{morie_dp_budget()}} to charge \code{epsilon} against.}
 }
 \value{
-A noised count (numeric, may be fractional or negative). Caller
-should usually clip to a non-negative integer for display:
-\code{round(pmax(0, x))}.
+The noised count, a whole number (it can be negative; clip with
+\code{pmax(0, x)} for display, which is post-processing and costs no
+privacy).
 }
 \description{
-Adds Laplace noise calibrated to sensitivity / epsilon. Use when releasing
-counts of records matching some predicate (e.g. number of UoF incidents
-in a division-year). Sensitivity is hardcoded to 1: one record entering
-or leaving the dataset changes the count by at most 1.
+Releases a count with discrete Laplace noise, \eqn{P(y) \propto
+e^{-\epsilon |y|}}, so the release is a whole number. Use it for the
+number of records matching a predicate (for example incidents in a
+division-year). Adding or removing one record changes the count by at
+most 1, and the release is pure \eqn{\epsilon}-DP under that
+add-or-remove-one relation, the one every mechanism in this package uses.
 }
 \details{
-Pure (\eqn{\epsilon}, 0)-differentially-private under the standard
-add-or-remove-one neighbouring-databases definition.
+The noise is drawn from the operating system's CSPRNG with the exact
+sampler of Canonne, Kamath and Steinke (2020), in integer arithmetic, so
+no floating-point artefact separates neighbouring datasets and
+\code{set.seed()} has no effect. \code{epsilon} is used as a rational with
+denominator \eqn{2^{20}}, rounded down.
 }
 \examples{
-set.seed(1)
-# A single noised release of a true count of 42.
+# A single noised release of a true count of 42 (different every call).
 morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
 
 # Smaller epsilon = stronger privacy = more noise.
-morie_dp_laplace_count(42, epsilon = 0.1) # noisier
-morie_dp_laplace_count(42, epsilon = 5.0) # closer to 42
+morie_dp_laplace_count(42, epsilon = 0.1)
+morie_dp_laplace_count(42, epsilon = 5.0)
 
-# The mechanism is unbiased: averaging many releases returns ~the truth.
-mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
-
-# For display, clip to a non-negative integer.
-round(pmax(0, morie_dp_laplace_count(3, epsilon = 0.5)))
+# The mechanism is unbiased: averaging many releases returns about the truth
+# (for illustration; releasing many answers spends many epsilons).
+mean(replicate(500, morie_dp_laplace_count(42, epsilon = 1.0)))
+}
+\references{
+Canonne, Kamath and Steinke (2020), The Discrete Gaussian for
+Differential Privacy, NeurIPS. Mironov (2012), On Significance of the
+Least Significant Bits for Differential Privacy, CCS.
 }

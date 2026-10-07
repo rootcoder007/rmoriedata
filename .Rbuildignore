@@ -18,7 +18,6 @@
 ^GEMINI\.md$
 ^SECURITY\.md$
 ^LICENSE$
-^NOTICE$
 ^CITATION\.cff$
 ^cran-comments\.md$
 ^inst/extdata/rmoriedata\.sqlite$

@@ -9,16 +9,19 @@ morie_data_checksums()
 \value{
 A data frame with one row per bundled file and columns
 \code{path} (relative to the extdata root, forward slashes, unique),
-\code{file} (the bare basename), \code{bytes}, and \code{sha256}.
+\code{file} (the bare basename), \code{bytes}, \code{sha256}, and
+\code{in_manifest} (TRUE when the signed manifest lists the file with
+this digest; NA for the manifest's own files).
 Use \code{path} to locate a file; several basenames recur in more
 than one directory.
 }
 \description{
 Computes the SHA256 digest of every file rmoriedata bundles in
 \code{inst/extdata}, using the shared provenance layer
-(\code{\link[rmoriebricklayer]{sha256_file}}). This lets an analysis
-verify it used the exact data slice rmoriedata shipped, and is
-rmoriedata's integration with the bricklayer provenance layer.
+(\code{\link[rmoriebricklayer]{sha256_file}}), and compares each with
+the digest the signed manifest records for it (\code{in_manifest}).
+For the full check, signature included, use \code{\link[=morie_data_verify]{morie_data_verify()}}; this
+function is the per-file record an analysis can pin and compare later.
 }
 \examples{
 # One row per bundled file: name, size in bytes, SHA256 digest.

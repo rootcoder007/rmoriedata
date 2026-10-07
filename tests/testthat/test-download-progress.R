@@ -1,44 +1,36 @@
-# The download helper: progress lines off a terminal, silence when quiet, bytes intact.
+# SPDX-License-Identifier: AGPL-3.0-or-later
 
-test_that(".rmd_dl copies a local file with milestone progress and honours quiet", {
-  src <- withr::local_tempfile(fileext = ".bin")
-  writeBin(as.raw(rep(65L, 3 * 1048576 + 7)), src)
-  dest <- withr::local_tempfile(fileext = ".bin")
-  withr::local_options(morie.progress = TRUE, morie.quiet = NULL)
-  msgs <- utils::capture.output(
-    .rmd_dl(paste0("file://", src), dest, label = "three-mb", size = file.size(src)),
-    type = "message"
+test_that(".rmd_dl refuses file:// and plain http before sending any header", {
+  src <- tempfile(fileext = ".txt")
+  writeLines("LOCAL-SECRET", src)
+  dest <- tempfile()
+  on.exit(unlink(c(src, dest)), add = TRUE)
+  expect_error(
+    .rmd_dl(paste0("file://", normalizePath(src)), dest,
+            headers = c(Authorization = "Bearer SECRET"), quiet = TRUE)
   )
-  expect_identical(file.size(dest), file.size(src))
-  expect_true(any(grepl("three-mb: downloading 3.0 MB", msgs, fixed = TRUE)))
-  expect_true(any(grepl("100%", msgs, fixed = TRUE)))
-  expect_true(any(grepl("three-mb: 3.0 MB in", msgs, fixed = TRUE)))
-
-  withr::local_options(morie.quiet = TRUE)
-  quiet <- utils::capture.output(
-    .rmd_dl(paste0("file://", src), dest, label = "q"),
-    type = "message"
+  leaked <- file.exists(dest) && any(grepl("LOCAL-SECRET", readLines(dest, warn = FALSE)))
+  expect_false(leaked)
+  expect_error(
+    .rmd_dl("http://example.com/x.csv.gz", dest,
+            headers = c(Authorization = "Bearer SECRET"), quiet = TRUE)
   )
-  expect_identical(quiet, character())
-  expect_identical(file.size(dest), file.size(src))
 })
 
-test_that(".rmd_dl_quiet follows the session and the options", {
-  withr::local_options(morie.progress = NULL, morie.quiet = NULL)
-  expect_identical(.rmd_dl_quiet(), !interactive())
-  withr::local_options(morie.progress = TRUE)
-  expect_false(.rmd_dl_quiet())
-  withr::local_options(morie.quiet = TRUE)
-  expect_true(.rmd_dl_quiet())
-})
-
-test_that(".rmd_fmt_bytes and the line renderer", {
-  expect_identical(.rmd_fmt_bytes(512), "512 B")
-  expect_identical(.rmd_fmt_bytes(1536), "1.5 KB")
-  expect_identical(.rmd_fmt_bytes(583 * 1048576), "583.0 MB")
-  line <- .rmd_dl_line("x", 50, 100, proc.time()[["elapsed"]] - 1, 0L)
-  expect_match(line, "\\[############\\.{13}\\]  50%  50 B / 100 B")
-  rows <- .rmd_dl_line("ckan", 32000, 40931, proc.time()[["elapsed"]] - 1, 0L,
-                       unit = "rows")
-  expect_match(rows, " 78%  32,000 rows / 40,931 rows", fixed = TRUE)
+test_that(".rmd_dl hands every argument to bricklayer's transport, file:// off", {
+  seen <- NULL
+  local_mocked_bindings(
+    bricklayer_download = function(...) {
+      seen <<- list(...)
+      invisible(..2)
+    },
+    .package = "rmoriebricklayer"
+  )
+  .rmd_dl("https://data.rmorie.com/x.csv.gz", "d", headers = c(A = "b"),
+          label = "x", size = 10, timeout = 5, quiet = TRUE, tty = FALSE)
+  expect_identical(seen[[1]], "https://data.rmorie.com/x.csv.gz")
+  expect_identical(seen$headers, c(A = "b"))
+  expect_identical(seen$size, 10)
+  expect_identical(seen$timeout, 5)
+  expect_false(seen$allow_file)
 })
