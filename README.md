@@ -15,7 +15,9 @@ files used by `rmorie`'s examples, vignettes, and tests.
 ## Install
 
 ```r
-# r-universe (recommended -- prebuilt binaries, no compiler needed)
+# r-universe (recommended -- the current release, prebuilt binaries for macOS
+# and Windows). Keep the repos argument: without it Rscript stops with
+# "trying to use CRAN without setting a mirror", and CRAN lags this release.
 install.packages(
   "rmoriedata",
   repos = c("https://rootcoder007.r-universe.dev",
@@ -23,8 +25,8 @@ install.packages(
 )
 
 # or from GitHub source
-# pak::pkg_install("rootcoder007/rmoriedata")
-# remotes::install_github("rootcoder007/rmoriedata")
+install.packages("remotes", repos = "https://cloud.r-project.org")
+remotes::install_github("rootcoder007/rmoriedata", upgrade = "always")
 ```
 
 ## Curated tables at data.rmorie.com
