@@ -57,11 +57,11 @@ Privacy: Analytical Calibration and Optimal Denoising, ICML.
 ``` r
 x <- runif(1000, 0, 1)
 morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.5067919
+#> [1] 0.5102663
 mean(x) # the true mean, for comparison
 #> [1] 0.5060361
 
 # Wider bounds raise sensitivity, so the same epsilon adds more noise.
 morie_dp_gaussian_mean(x, lower = -5, upper = 5, epsilon = 1.0)
-#> [1] 0.5255423
+#> [1] 0.4632265
 ```
