@@ -56,16 +56,16 @@ Least Significant Bits for Differential Privacy, CCS.
 ``` r
 # A single noised release of a true count of 42 (different every call).
 morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
-#> [1] 43
+#> [1] 41
 
 # Smaller epsilon = stronger privacy = more noise.
 morie_dp_laplace_count(42, epsilon = 0.1)
-#> [1] 48
+#> [1] 73
 morie_dp_laplace_count(42, epsilon = 5.0)
 #> [1] 42
 
 # The mechanism is unbiased: averaging many releases returns about the truth
 # (for illustration; releasing many answers spends many epsilons).
 mean(replicate(500, morie_dp_laplace_count(42, epsilon = 1.0)))
-#> [1] 41.894
+#> [1] 41.99
 ```

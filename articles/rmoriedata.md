@@ -176,17 +176,17 @@ morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
-#> [1] 41.9765
+#> [1] 41.964
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.5260961
+#> [1] 0.5082697
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, morie_dp_laplace_histogram(counts, epsilon = 1.0)))
-#> [1] 25001     0
+#> [1] 24999     0
 ```
 
 ## 5. Re-identification risk

@@ -19,8 +19,21 @@ install.packages(
 )
 
 # or from GitHub source
-install.packages("remotes", repos = "https://cloud.r-project.org")
-remotes::install_github("rootcoder007/rmoriedata", upgrade = "always")
+repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org")
+install.packages("remotes", repos = repos)
+remotes::install_github("rootcoder007/rmoriedata", repos = repos, upgrade = "always")
+```
+
+The same from a terminal (single quotes outside, double quotes inside,
+so the shell passes the R code through untouched). rmoriebricklayer is
+named too, so an older copy already installed is replaced:
+
+``` sh
+# r-universe
+Rscript -e 'install.packages(c("rmoriebricklayer", "rmoriedata"), repos = c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"))'
+
+# GitHub source
+Rscript -e 'repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"); install.packages("remotes", repos = repos); remotes::install_github("rootcoder007/rmoriedata", repos = repos, upgrade = "always")'
 ```
 
 ## Curated tables at data.rmorie.com
