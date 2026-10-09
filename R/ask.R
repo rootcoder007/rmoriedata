@@ -15,11 +15,18 @@
 #' key may use. With \code{backend = "cli"} the question goes to the optional
 #' \code{rmorie} command-line agent instead, as before.
 #'
+#' A stored hosted key is used whenever neither your own endpoint nor a local
+#' Ollama server with a model pulled is there: a running Ollama with nothing
+#' pulled no longer stops the call. To choose the route or the model once and
+#' for all, use \code{\link{morie_data_llm_config}()} (or \code{rmbl config}
+#' from the shell).
+#'
 #' @param question Character scalar.
 #' @param model Optional model id, e.g. \code{"gpt-oss-120b:cf"}; the tier's
 #'   default when \code{NULL}.
 #' @param backend \code{"auto"} (the first route \pkg{rmoriebricklayer} finds,
-#'   else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
+#'   else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only),
+#'   \code{"ollama"} or \code{"own"} (that route only), or
 #'   \code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
 #'   chain).
 #' @return Character scalar: the answer, or a sentence saying what to set up
@@ -52,8 +59,8 @@
 ask <- function(question, model = NULL, backend = "auto") {
   .rmoriedata_scalar(question, "question")
   .rmoriedata_scalar(backend, "backend")
-  if (!backend %in% c("auto", "hosted", "cli")) {
-    stop("`backend` must be one of \"auto\", \"hosted\" or \"cli\"", call. = FALSE)
+  if (!backend %in% c("auto", "hosted", "ollama", "own", "cli")) {
+    stop("`backend` must be one of \"auto\", \"hosted\", \"ollama\", \"own\" or \"cli\"", call. = FALSE)
   }
   if (!is.null(model)) .rmoriedata_scalar(model, "model")
   # the catalogue itself, so the model can name tables rather than guess
@@ -72,18 +79,26 @@ ask <- function(question, model = NULL, backend = "auto") {
     "(rmoriedata). Name the tables from the catalogue that answer the question.",
     listing
   )
-  if (backend %in% c("auto", "hosted")) {
+  if (backend %in% c("auto", "hosted", "ollama", "own")) {
     st <- rmoriebricklayer::bricklayer_llm_status()
     # one row per route; an older bricklayer has the hosted row alone
     hosted_ok <- any(st$status[grepl("hosted", st$route)] == "key stored")
-    any_ok <- hosted_ok || any(st$status %in% c("configured", "available"))
-    if (if (identical(backend, "hosted")) hosted_ok else any_ok) {
+    own_ok <- any(st$status[grepl("own", st$route)] == "configured")
+    ollama_ok <- any(st$status[grepl("Ollama", st$route)] == "available")
+    ok <- switch(backend, hosted = hosted_ok, own = own_ok, ollama = ollama_ok,
+                 hosted_ok || own_ok || ollama_ok)
+    if (ok) {
       # a rejected key, a model nobody serves or no network must read as a
       # sentence, never as an error: an example or a script keeps going
       args <- list(question, model = model, system_prompt = system_prompt)
-      # an older bricklayer has no `route`: there "hosted" is a wish, not a constraint
+      # an older bricklayer has no `route`: there a route is a wish, not a constraint
       has_route <- "route" %in% names(formals(rmoriebricklayer::bricklayer_llm_ask))
-      if (identical(backend, "hosted") && has_route) {
+      if (has_route && !identical(backend, "auto")) {
+        args$route <- backend
+      } else if (has_route && hosted_ok && !own_ok && !ollama_ok) {
+        # rmoriebricklayer before 0.5.11 stopped at a running Ollama with no model
+        # pulled ("local Ollama has no model to use") and never reached a stored
+        # hosted key; when the hosted tier is the only route that can answer, say so
         args$route <- "hosted"
       }
       return(tryCatch(
@@ -103,13 +118,20 @@ ask <- function(question, model = NULL, backend = "auto") {
         "once; ", .rmd_access_hint(), "."
       ))
     }
+    if (backend %in% c("ollama", "own")) {
+      return(paste0(
+        if (identical(backend, "ollama")) "No local Ollama with a model pulled (`ollama pull NAME`)"
+        else "No endpoint of your own is set",
+        ": see morie_data_llm_config() or `rmbl config setup`."
+      ))
+    }
   }
   bin <- Sys.which("rmorie")
   if (!nzchar(bin)) {
     return(paste0(
       "No language-model route is set up (no endpoint of your own, no local Ollama, ",
       "no hosted key) and no rmorie CLI on PATH: start a local model, ",
-      "set MORIE_LLM_BASE_URL, ",
+      "point at your own server with morie_data_llm_config(own.url = ), ",
       "or run morie_data_hosted_login(token = ) once; ", .rmd_access_hint(), "."
     ))
   }
@@ -133,4 +155,40 @@ ask <- function(question, model = NULL, backend = "auto") {
          call. = FALSE)
   }
   invisible(TRUE)
+}
+
+#' Show or save the language-model settings
+#'
+#' The route \code{\link{ask}()} takes and the address, key and model of each
+#' route (your own OpenAI-compatible server, a local or LAN Ollama server, the
+#' hosted MORIE tier), shared with \pkg{rmoriebricklayer}, \pkg{rmorie} and
+#' the Python package morie. A thin front to
+#' \code{rmoriebricklayer::bricklayer_llm_config()}, which saves them in
+#' \code{~/.config/morie/llm.json} only when you pass a setting; from the
+#' shell, \code{rmbl config} and \code{rmbl config setup} do the same.
+#'
+#' @param ... Settings as \code{key = value}, e.g. \code{route = "hosted"},
+#'   \code{hosted.model = "gpt-oss-120b:cf"},
+#'   \code{ollama.url = "http://192.168.1.20:11434"},
+#'   \code{own.url = "http://localhost:1234/v1"}; \code{NULL} removes one.
+#'   With no arguments nothing is written.
+#' @return A data frame with one row per setting (\code{key}, \code{value},
+#'   \code{source}, \code{env}, \code{help}).
+#' @examples
+#' if ("bricklayer_llm_config" %in% getNamespaceExports("rmoriebricklayer")) {
+#'   morie_data_llm_config()   # reading writes nothing
+#' }
+#' \dontrun{
+#' morie_data_llm_config(route = "hosted", hosted.model = "gpt-oss-120b:cf")
+#' morie_data_llm_config(route = NULL)   # back to the automatic order
+#' }
+#' @export
+morie_data_llm_config <- function(...) {
+  if (!"bricklayer_llm_config" %in% getNamespaceExports("rmoriebricklayer")) {
+    stop("saving language-model settings needs rmoriebricklayer 0.5.11 or later: ",
+         "install.packages(\"rmoriebricklayer\", repos = c(\"https://rootcoder007.r-universe.dev\", ",
+         "\"https://cloud.r-project.org\"))", call. = FALSE)
+  }
+  f <- getExportedValue("rmoriebricklayer", "bricklayer_llm_config")
+  f(...)
 }
