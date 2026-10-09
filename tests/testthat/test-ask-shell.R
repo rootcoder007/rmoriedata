@@ -46,7 +46,8 @@ test_that("ask() passes the model through quoted, and no backend flag the agent 
 test_that("ask() rejects bad model and backend before touching the shell", {
   expect_error(ask("q", backend = NA_character_), "backend")
   expect_error(ask("q", backend = c("a", "b")), "backend")
-  expect_error(ask("q", backend = "cloud"), "\"auto\", \"hosted\", \"ollama\", \"own\" or \"cli\"")
+  expect_error(ask("q", backend = "cloud"),
+               "\"auto\", \"hosted\", \"ollama\", \"own\" or \"cli\"")
   expect_error(ask("q", model = ""), "model")
   expect_error(ask("   "), "question")
 })

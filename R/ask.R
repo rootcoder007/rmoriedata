@@ -60,7 +60,8 @@ ask <- function(question, model = NULL, backend = "auto") {
   .rmoriedata_scalar(question, "question")
   .rmoriedata_scalar(backend, "backend")
   if (!backend %in% c("auto", "hosted", "ollama", "own", "cli")) {
-    stop("`backend` must be one of \"auto\", \"hosted\", \"ollama\", \"own\" or \"cli\"", call. = FALSE)
+    stop("`backend` must be one of \"auto\", \"hosted\", \"ollama\", \"own\" or \"cli\"",
+         call. = FALSE)
   }
   if (!is.null(model)) .rmoriedata_scalar(model, "model")
   # the catalogue itself, so the model can name tables rather than guess
@@ -120,8 +121,11 @@ ask <- function(question, model = NULL, backend = "auto") {
     }
     if (backend %in% c("ollama", "own")) {
       return(paste0(
-        if (identical(backend, "ollama")) "No local Ollama with a model pulled (`ollama pull NAME`)"
-        else "No endpoint of your own is set",
+        if (identical(backend, "ollama")) {
+          "No local Ollama with a model pulled (`ollama pull NAME`)"
+        } else {
+          "No endpoint of your own is set"
+        },
         ": see morie_data_llm_config() or `rmbl config setup`."
       ))
     }
@@ -186,8 +190,9 @@ ask <- function(question, model = NULL, backend = "auto") {
 morie_data_llm_config <- function(...) {
   if (!"bricklayer_llm_config" %in% getNamespaceExports("rmoriebricklayer")) {
     stop("saving language-model settings needs rmoriebricklayer 0.5.11 or later: ",
-         "install.packages(\"rmoriebricklayer\", repos = c(\"https://rootcoder007.r-universe.dev\", ",
-         "\"https://cloud.r-project.org\"))", call. = FALSE)
+         "install.packages(\"rmoriebricklayer\", repos = ",
+         "c(\"https://rootcoder007.r-universe.dev\", \"https://cloud.r-project.org\"))",
+         call. = FALSE)
   }
   f <- getExportedValue("rmoriebricklayer", "bricklayer_llm_config")
   f(...)
