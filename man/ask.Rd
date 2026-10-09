@@ -13,7 +13,8 @@ ask(question, model = NULL, backend = "auto")
 default when \code{NULL}.}
 
 \item{backend}{\code{"auto"} (the first route \pkg{rmoriebricklayer} finds,
-else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only), or
+else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only),
+\code{"ollama"} or \code{"own"} (that route only), or
 \code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
 chain).}
 }
@@ -34,6 +35,13 @@ curated tables; keys are issued on request at
 answer and \code{rmoriebricklayer::bricklayer_llm_models()} what the hosted
 key may use. With \code{backend = "cli"} the question goes to the optional
 \code{rmorie} command-line agent instead, as before.
+}
+\details{
+A stored hosted key is used whenever neither your own endpoint nor a local
+Ollama server with a model pulled is there: a running Ollama with nothing
+pulled no longer stops the call. To choose the route or the model once and
+for all, use \code{\link{morie_data_llm_config}()} (or \code{rmbl config}
+from the shell).
 }
 \examples{
 \dontrun{

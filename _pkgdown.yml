@@ -67,6 +67,7 @@ reference:
       - morie_core_mean
       - morie_core_sha256
       - ask
+      - morie_data_llm_config
   - title: Sample data objects
     desc: >
       Small documented data frames bundled for examples and tests

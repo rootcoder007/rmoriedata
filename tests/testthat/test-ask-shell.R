@@ -46,7 +46,8 @@ test_that("ask() passes the model through quoted, and no backend flag the agent 
 test_that("ask() rejects bad model and backend before touching the shell", {
   expect_error(ask("q", backend = NA_character_), "backend")
   expect_error(ask("q", backend = c("a", "b")), "backend")
-  expect_error(ask("q", backend = "ollama"), "\"auto\", \"hosted\" or \"cli\"")
+  expect_error(ask("q", backend = "cloud"),
+               "\"auto\", \"hosted\", \"ollama\", \"own\" or \"cli\"")
   expect_error(ask("q", model = ""), "model")
   expect_error(ask("   "), "question")
 })
@@ -120,4 +121,58 @@ test_that("ask() turns a hosted-tier failure into a sentence, not an error", {
   expect_match(out, "could not answer", fixed = TRUE)
   expect_match(out, "401", fixed = TRUE)
   expect_match(out, "morie_data_hosted_login", fixed = TRUE)
+})
+
+test_that("ask() reaches a stored hosted key past a running Ollama with no model", {
+  seen <- NULL
+  testthat::local_mocked_bindings(
+    bricklayer_llm_status = function() {
+      data.frame(
+        route = c("own endpoint", "local Ollama", "hosted MORIE tier"),
+        status = c("not set", "no models", "key stored"), detail = "",
+        stringsAsFactors = FALSE
+      )
+    },
+    bricklayer_llm_ask = function(prompt, model = NULL, timeout = 120,
+                                  system_prompt = NULL, route = NULL) {
+      seen <<- list(route = route)
+      "pong"
+    },
+    .package = "rmoriebricklayer"
+  )
+  expect_identical(ask("hello"), "pong")
+  expect_identical(seen$route, "hosted")
+  expect_identical(ask("hello", backend = "hosted"), "pong")
+  expect_identical(seen$route, "hosted")
+  # a route that is not there says what to set up, and reaches nothing
+  seen <- NULL
+  expect_match(ask("hello", backend = "ollama"), "ollama pull")
+  expect_match(ask("hello", backend = "own"), "morie_data_llm_config")
+  expect_null(seen)
+  # with a model pulled, auto leaves the choice to rmoriebricklayer
+  testthat::local_mocked_bindings(
+    bricklayer_llm_status = function() {
+      data.frame(
+        route = c("own endpoint", "local Ollama", "hosted MORIE tier"),
+        status = c("not set", "available", "key stored"), detail = "",
+        stringsAsFactors = FALSE
+      )
+    },
+    .package = "rmoriebricklayer"
+  )
+  expect_identical(ask("hello"), "pong")
+  expect_null(seen$route)
+  expect_identical(ask("hello", backend = "ollama"), "pong")
+  expect_identical(seen$route, "ollama")
+})
+
+test_that("morie_data_llm_config() forwards to rmoriebricklayer when it can", {
+  if ("bricklayer_llm_config" %in% getNamespaceExports("rmoriebricklayer")) {
+    withr::local_envvar(XDG_CONFIG_HOME = withr::local_tempdir(), MORIE_LLM_ROUTE = NA)
+    morie_data_llm_config(route = "hosted")
+    tab <- morie_data_llm_config()
+    expect_identical(tab$value[tab$key == "route"], "hosted")
+  } else {
+    expect_error(morie_data_llm_config(), "0.5.11 or later")
+  }
 })
