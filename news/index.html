@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,15 @@
       <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.3.6" id="rmoriedata-036">rmoriedata 0.3.6<a class="anchor" aria-label="anchor" href="#rmoriedata-036"></a></h2>
+<ul><li>
+<strong>A stored hosted key is used.</strong> With a local Ollama server running and no model pulled, <code><a href="../reference/ask.html">ask()</a></code> stopped there (“local Ollama has no model to use”) and never reached the hosted tier the key opens. When the hosted tier is the only route that can answer, <code><a href="../reference/ask.html">ask()</a></code> now sends the question there.</li>
+<li>
+<code>ask(backend = )</code> takes <code>"ollama"</code> and <code>"own"</code> as well, to insist on one route.</li>
+<li>
+<code><a href="../reference/morie_data_llm_config.html">morie_data_llm_config()</a></code> shows and saves the language-model settings (route, and the address, key and model of each route), shared with rmoriebricklayer, rmorie and morie; it needs rmoriebricklayer 0.5.11 or later.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.5" id="rmoriedata-035">rmoriedata 0.3.5<a class="anchor" aria-label="anchor" href="#rmoriedata-035"></a></h2>
 <ul><li><p>A hex logo (<code>man/figures/logo.png</code>, source <code>data-raw/hex_logo.svg</code>), on the README and the package website, with its favicons; the website indexes <code><a href="../reference/morie_dp_budget.html">morie_dp_budget()</a></code> and <code><a href="../reference/morie_dp_spent.html">morie_dp_spent()</a></code>.</p></li>

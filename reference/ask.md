@@ -35,13 +35,23 @@ ask(question, model = NULL, backend = "auto")
 - backend:
 
   `"auto"` (the first route rmoriebricklayer finds, else the `rmorie`
-  binary), `"hosted"` (the hosted tier only), or `"cli"` (the `rmorie`
-  binary's agent, with its own fallback chain).
+  binary), `"hosted"` (the hosted tier only), `"ollama"` or `"own"`
+  (that route only), or `"cli"` (the `rmorie` binary's agent, with its
+  own fallback chain).
 
 ## Value
 
 Character scalar: the answer, or a sentence saying what to set up when
 no route answers and the `rmorie` binary is not available.
+
+## Details
+
+A stored hosted key is used whenever neither your own endpoint nor a
+local Ollama server with a model pulled is there: a running Ollama with
+nothing pulled no longer stops the call. To choose the route or the
+model once and for all, use
+[`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
+(or `rmbl config` from the shell).
 
 ## Examples
 
@@ -66,7 +76,7 @@ old <- Sys.getenv(routes, unset = NA)
 Sys.setenv(MORIE_HOSTED_BASE_URL = "off", OLLAMA_HOST = "off",
            MORIE_LLM_BASE_URL = "off")
 if (!nzchar(Sys.which("rmorie"))) ask("hello")
-#> [1] "No language-model route is set up (no endpoint of your own, no local Ollama, no hosted key) and no rmorie CLI on PATH: start a local model, set MORIE_LLM_BASE_URL, or run morie_data_hosted_login(token = ) once; keys are personal and issued on request at https://rmorie.com/access."
+#> [1] "No language-model route is set up (no endpoint of your own, no local Ollama, no hosted key) and no rmorie CLI on PATH: start a local model, point at your own server with morie_data_llm_config(own.url = ), or run morie_data_hosted_login(token = ) once; keys are personal and issued on request at https://rmorie.com/access."
 for (v in routes) {
   if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
 }

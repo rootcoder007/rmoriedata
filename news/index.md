@@ -1,5 +1,22 @@
 # Changelog
 
+## rmoriedata 0.3.6
+
+- **A stored hosted key is used.** With a local Ollama server running
+  and no model pulled,
+  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  stopped there (“local Ollama has no model to use”) and never reached
+  the hosted tier the key opens. When the hosted tier is the only route
+  that can answer,
+  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  now sends the question there.
+- `ask(backend = )` takes `"ollama"` and `"own"` as well, to insist on
+  one route.
+- [`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
+  shows and saves the language-model settings (route, and the address,
+  key and model of each route), shared with rmoriebricklayer, rmorie and
+  morie; it needs rmoriebricklayer 0.5.11 or later.
+
 ## rmoriedata 0.3.5
 
 - A hex logo (`man/figures/logo.png`, source `data-raw/hex_logo.svg`),

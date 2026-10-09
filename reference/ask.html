@@ -29,7 +29,7 @@ rmorie command-line agent instead, as before.'><meta property="og:image" content
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.5</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.6</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -91,7 +91,8 @@ default when <code>NULL</code>.</p></dd>
 
 <dt id="arg-backend">backend<a class="anchor" aria-label="anchor" href="#arg-backend"></a></dt>
 <dd><p><code>"auto"</code> (the first route <span class="pkg">rmoriebricklayer</span> finds,
-else the <code>rmorie</code> binary), <code>"hosted"</code> (the hosted tier only), or
+else the <code>rmorie</code> binary), <code>"hosted"</code> (the hosted tier only),
+<code>"ollama"</code> or <code>"own"</code> (that route only), or
 <code>"cli"</code> (the <code>rmorie</code> binary's agent, with its own fallback
 chain).</p></dd>
 
@@ -100,6 +101,14 @@ chain).</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>Character scalar: the answer, or a sentence saying what to set up
 when no route answers and the <code>rmorie</code> binary is not available.</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A stored hosted key is used whenever neither your own endpoint nor a local
+Ollama server with a model pulled is there: a running Ollama with nothing
+pulled no longer stops the call. To choose the route or the model once and
+for all, use <code><a href="morie_data_llm_config.html">morie_data_llm_config()</a></code> (or <code>rmbl config</code>
+from the shell).</p>
     </div>
 
     <div class="section level2">
@@ -124,7 +133,7 @@ when no route answers and the <code>rmorie</code> binary is not available.</p>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>MORIE_HOSTED_BASE_URL <span class="op">=</span> <span class="st">"off"</span>, OLLAMA_HOST <span class="op">=</span> <span class="st">"off"</span>,</span></span>
 <span class="r-in"><span>           MORIE_LLM_BASE_URL <span class="op">=</span> <span class="st">"off"</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Sys.which.html" class="external-link">Sys.which</a></span><span class="op">(</span><span class="st">"rmorie"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="fu">ask</span><span class="op">(</span><span class="st">"hello"</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No language-model route is set up (no endpoint of your own, no local Ollama, no hosted key) and no rmorie CLI on PATH: start a local model, set MORIE_LLM_BASE_URL, or run morie_data_hosted_login(token = ) once; keys are personal and issued on request at https://rmorie.com/access."</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "No language-model route is set up (no endpoint of your own, no local Ollama, no hosted key) and no rmorie CLI on PATH: start a local model, point at your own server with morie_data_llm_config(own.url = ), or run morie_data_hosted_login(token = ) once; keys are personal and issued on request at https://rmorie.com/access."</span>
 <span class="r-in"><span><span class="kw">for</span> <span class="op">(</span><span class="va">v</span> <span class="kw">in</span> <span class="va">routes</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/NA.html" class="external-link">is.na</a></span><span class="op">(</span><span class="va">old</span><span class="op">[[</span><span class="va">v</span><span class="op">]</span><span class="op">]</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.unsetenv</a></span><span class="op">(</span><span class="va">v</span><span class="op">)</span> <span class="kw">else</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">Sys.setenv</span>, <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">as.list</a></span><span class="op">(</span><span class="va">old</span><span class="op">[</span><span class="va">v</span><span class="op">]</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="op">}</span></span></span>

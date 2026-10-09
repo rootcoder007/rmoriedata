@@ -281,6 +281,8 @@ Shared primitives used across the package.
   : Shared C-core helpers (rmorie ecosystem backend)
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   : Ask a language model about the bundled datasets
+- [`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
+  : Show or save the language-model settings
 
 ## Sample data objects
 
