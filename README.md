@@ -14,20 +14,49 @@ files used by `rmorie`'s examples, vignettes, and tests.
 
 ## Install
 
-```r
-# r-universe (recommended -- the current release, prebuilt binaries for macOS
-# and Windows). Keep the repos argument: without it Rscript stops with
-# "trying to use CRAN without setting a mirror", and CRAN lags this release.
-install.packages(
-  "rmoriedata",
-  repos = c("https://rootcoder007.r-universe.dev",
-            "https://cloud.r-project.org")
-)
+Current release from r-universe (prebuilt binaries for macOS and Windows);
+CRAN lags this release. rmoriebricklayer, its companion, is named too, so an
+older copy already installed is replaced.
 
-# or from GitHub source
-install.packages("remotes", repos = "https://cloud.r-project.org")
-remotes::install_github("rootcoder007/rmoriedata", upgrade = "always")
+With [pak](https://pak.r-lib.org) (progress bars, parallel downloads, compiler
+output hidden unless a build fails, and the named packages always upgraded to
+the current release). Keep the `repos` arguments as written: under `Rscript`
+there is no mirror chooser, so a bare `install.packages()` stops with "trying to
+use CRAN without setting a mirror", and CRAN carries older versions than
+r-universe.
+
+```r
+if (!requireNamespace("pak", quietly = TRUE)) {
+  install.packages("pak", repos = "https://cloud.r-project.org")
+}
+pak::repo_add(rootcoder007 = "https://rootcoder007.r-universe.dev")
+pak::pkg_install(c("rmoriebricklayer", "rmoriedata"))
 ```
+
+From a terminal (single quotes outside, double quotes inside, so the shell
+passes the R code through untouched):
+
+```sh
+Rscript -e 'if (!requireNamespace("pak", quietly = TRUE)) install.packages("pak", repos = "https://cloud.r-project.org"); pak::repo_add(rootcoder007 = "https://rootcoder007.r-universe.dev"); pak::pkg_install(c("rmoriebricklayer", "rmoriedata"))'
+```
+
+Without pak, plain `install.packages()` does the same with R's own output:
+
+```sh
+Rscript -e 'install.packages(c("rmoriebricklayer", "rmoriedata"), repos = c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"))'
+```
+
+Development version from GitHub (a source build; needs a C/C++ toolchain):
+
+```sh
+Rscript -e 'if (!requireNamespace("pak", quietly = TRUE)) install.packages("pak", repos = "https://cloud.r-project.org"); pak::repo_add(rootcoder007 = "https://rootcoder007.r-universe.dev"); pak::pkg_install("rootcoder007/rmoriedata")'
+# without pak
+Rscript -e 'repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"); install.packages("remotes", repos = repos); remotes::install_github("rootcoder007/rmoriedata", repos = repos, upgrade = "always")'
+```
+
+On macOS, CRAN's R (from <https://cloud.r-project.org/bin/macosx/>) installs
+r-universe's prebuilt binaries in seconds. Homebrew's R cannot use them, so
+there every package is compiled from source.
 
 ## Curated tables at data.rmorie.com
 
