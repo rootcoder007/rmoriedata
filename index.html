@@ -66,7 +66,7 @@
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
-<p>Current release from r-universe (prebuilt binaries for macOS and Windows); CRAN lags this release. rmoriebricklayer, its companion, is named too, so an older copy already installed is replaced.</p>
+<p>Current release(s) from r-universe (prebuilt binaries for macOS and Windows); if CRAN lags this release. rmoriebricklayer, its companion, is named too, so an older copy already installed is replaced.</p>
 <p>With <a href="https://pak.r-lib.org" class="external-link">pak</a> (progress bars, parallel downloads, compiler output hidden unless a build fails, and the named packages always upgraded to the current release). Keep the <code>repos</code> arguments as written: under <code>Rscript</code> there is no mirror chooser, so a bare <code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code> stops with “trying to use CRAN without setting a mirror”, and if CRAN carries older versions than r-universe.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"pak"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
