@@ -14,8 +14,8 @@ files used by `rmorie`'s examples, vignettes, and tests.
 
 ## Install
 
-Current release from r-universe (prebuilt binaries for macOS and Windows);
-CRAN lags this release. rmoriebricklayer, its companion, is named too, so an
+Current release(s) from r-universe (prebuilt binaries for macOS and Windows);
+if CRAN lags this release. rmoriebricklayer, its companion, is named too, so an
 older copy already installed is replaced.
 
 With [pak](https://pak.r-lib.org) (progress bars, parallel downloads, compiler
