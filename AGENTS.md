@@ -93,12 +93,9 @@ documented upstream URL, license, and refresh script.
 
 - Subject in imperative
 - Body: WHY > WHAT
-- Dual co-author trailer required:
-
-  ```
-  Co-Authored-By: Claude <noreply@anthropic.com>
-  Co-Authored-By: Vansh Singh Ruhela (rootcoder007) <vsruhela@proton.me>
-  ```
+- Don't put AI session links in commit messages, PR or issue text, or
+  code: no `Claude-Session:` lines and no `claude.ai/code/session_...`
+  URLs.
 
 ## Contact
 
