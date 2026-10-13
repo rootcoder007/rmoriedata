@@ -22,6 +22,7 @@ release aggregates safely. The raw files are also at
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://rootcoder007.github.io/rmoriedata/}
   \item \url{https://github.com/rootcoder007/rmoriedata}
   \item Report bugs at \url{https://github.com/rootcoder007/rmoriedata/issues}
 }

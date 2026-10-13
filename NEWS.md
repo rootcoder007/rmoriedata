@@ -1,5 +1,10 @@
 # rmoriedata 0.3.6
 
+* `ask()` uses a language model you bring (a provider's key, Ollama, or your own server) through
+  rmoriebricklayer, and the model is given rmoriedata's and rmoriebricklayer's help with tools to
+  read it. Its `backend` argument is now `route` (`"auto"`, `"own"`, `"ollama"` or a provider id
+  such as `"anthropic"`); the hosted MORIE tier and the `rmorie` command-line fallback are gone.
+
 * **A stored hosted key is used.** With a local Ollama server running and no model pulled,
   `ask()` stopped there ("local Ollama has no model to use") and never reached the hosted
   tier the key opens. When the hosted tier is the only route that can answer, `ask()` now
