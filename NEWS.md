@@ -4,6 +4,10 @@
   rmoriebricklayer, and the model is given rmoriedata's and rmoriebricklayer's help with tools to
   read it. Its `backend` argument is now `route` (`"auto"`, `"own"`, `"ollama"` or a provider id
   such as `"anthropic"`); the hosted MORIE tier and the `rmorie` command-line fallback are gone.
+* `morie_data_hosted_load()` uses a downloaded table only when it matches the SHA-256 the
+  manifest lists (fetching the manifest again once before calling a file bad); a mismatch
+  deletes the copy and says so. A restricted table (the ICPSR studies, NCVS 38604, the a2aj
+  case law) refused with 403 says to accept the terms at https://data.rmorie.com/terms.
 
 * **A stored hosted key is used.** With a local Ollama server running and no model pulled,
   `ask()` stopped there ("local Ollama has no model to use") and never reached the hosted
