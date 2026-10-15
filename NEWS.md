@@ -1,5 +1,7 @@
 # rmoriedata 0.3.6
 
+* Needs rmoriebricklayer 0.5.13, whose download bar now redraws in the RStudio, Positron and
+  R.app consoles and stays a plain line in knitr and Jupyter.
 * Needs rmoriebricklayer 0.5.12, whose language-model layer `ask()` is built on (0.5.9 was
   accepted, so a build against an older one ran `ask()` on the retired hosted tier).
 * `ask()` uses a language model you bring (a provider's key, Ollama, or your own server) through
