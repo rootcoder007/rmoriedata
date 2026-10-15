@@ -14,15 +14,16 @@ files used by `rmorie`'s examples, vignettes, and tests.
 
 ## Install
 
-Current release(s) from r-universe (prebuilt binaries for macOS and Windows);
-if CRAN lags this release. rmoriebricklayer, its companion, is named too, so an
-older copy already installed is replaced.
+Install the current release from r-universe (prebuilt binaries for macOS and
+Windows), which can be newer than CRAN. rmoriebricklayer, its companion, is
+named too, so an older copy already installed is replaced: rmoriedata needs
+rmoriebricklayer 0.5.12 or later.
 
 With [pak](https://pak.r-lib.org) (progress bars, parallel downloads, compiler
 output hidden unless a build fails, and the named packages always upgraded to
 the current release). Keep the `repos` arguments as written: under `Rscript`
 there is no mirror chooser, so a bare `install.packages()` stops with "trying to
-use CRAN without setting a mirror", and if CRAN carries older versions than
+use CRAN without setting a mirror", and CRAN can carry older versions than
 r-universe.
 
 ```r
@@ -126,7 +127,9 @@ A small, deliberate set of base-R helpers (the bulk of the package is still data
   cached full datasets.
 - **Differential privacy + re-identification risk** — `morie_dp_laplace_count()`,
   `morie_dp_gaussian_mean()`, `morie_dp_laplace_histogram()`,
-  `morie_cell_suppress()`, `morie_k_anonymity_verify()`, `morie_l_diversity_verify()`.
+  `morie_cell_suppress()`, `morie_k_anonymity_verify()`, `morie_l_diversity_verify()`;
+  `morie_dp_budget()` holds an epsilon (and delta) the releases draw down, and
+  `morie_dp_spent()` reports what has been spent.
 - **Shared compiled core** — `morie_core_sha256()` and `morie_core_mean()` delegate
   to the family's C core via `LinkingTo: rmoriebricklayer` (one source of truth).
 

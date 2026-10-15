@@ -24,7 +24,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, rmoriebricklayer=github::rootcoder007/rmorie-bricklayer@v0.5.12, local::.
+          extra-packages: any::pkgdown, local::.
           needs: website
           cache-version: 3
       - name: Install rmoriebricklayer after the dependency cache is restored (GitHub HEAD preferred; r-universe fallback)
