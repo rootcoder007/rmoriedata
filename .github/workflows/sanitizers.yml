@@ -27,6 +27,7 @@ jobs:
     container: rocker/r-devel-san
     timeout-minutes: 120
     env:
+      GITHUB_PAT: ${{ secrets.GITHUB_TOKEN }}
       ASAN_OPTIONS: detect_leaks=0:abort_on_error=0:print_summary=1
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=0
       NOT_CRAN: "true"
