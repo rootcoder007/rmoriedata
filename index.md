@@ -58,25 +58,47 @@ use them, so there every package is compiled from source.
 
 ## Curated tables at data.rmorie.com
 
-The 161 databases (203 tables on 2026-10-05) the MORIE project
-materialises from BigQuery public datasets are served from the edge and
-opened by the MORIE key, issued on request at
-<https://www.rmorie.com/access/> under
-<https://www.rmorie.com/data-license/>. rmoriedata is self-sufficient:
-store the key once, then load any `db/table` key. The endpoint comes
-from a signed services document the packages verify before use, so it
-can change without a release.
+The 175 databases (716 tables on 2026-10-13) the MORIE project
+materialises from BigQuery public datasets and the survey, court and
+justice data its ledger uses are served from the edge and opened by the
+MORIE key:
+[`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+signs in with GitHub or an emailed code, or ask at
+<https://www.rmorie.com/access/>; the terms are at
+<https://www.rmorie.com/data-license/>. The ICPSR, NCVS 38604 and a2aj
+tables open once you accept their terms at
+<https://data.rmorie.com/terms>. rmoriedata is self-sufficient: store
+the key once, then load any `db/table` key. The endpoint comes from a
+signed services document the packages verify before use, so it can
+change without a release.
 
 ``` r
 
 morie_data_hosted_login(token = "...")         # the key from rmorie.com/access; login() (GitHub) and login(email = ) still work
 cat_ <- morie_data_hosted_catalog()            # key, rows, columns, source dataset
 df <- morie_data_hosted_load("fec_cm_2020/fec_cm_2020")
-ask("which tables cover police stops?", model = "kimi-k2.6:cf")   # the hosted MORIE tier (last resort), same key
 ```
 
 The key lands in the credentials file that rmorie, morie and
-rmoriebricklayer read too, so one key serves every MORIE package.
+rmoriebricklayer read too, so one key serves every MORIE package. It
+opens the tables only; it is never a language model.
+
+## Asking a language model
+
+[`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+puts a question about the datasets to a language model you bring: a
+provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq,
+Mistral and more, each from its usual variable), an Ollama server, or an
+OpenAI-compatible server of your own. The model gets the catalogue and
+every function of rmoriedata and rmoriebricklayer, with tools to read
+their help.
+
+``` r
+
+Sys.setenv(ANTHROPIC_API_KEY = "...")          # or morie_data_llm_config(anthropic.key = "...")
+ask("which tables cover police stops?")
+ask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
+```
 
 ## Quick start
 

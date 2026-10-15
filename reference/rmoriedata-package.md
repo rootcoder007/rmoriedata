@@ -29,6 +29,8 @@ also at `system.file("extdata", package = "rmoriedata")`.
 
 Useful links:
 
+- <https://rootcoder007.github.io/rmoriedata/>
+
 - <https://github.com/rootcoder007/rmoriedata>
 
 - Report bugs at <https://github.com/rootcoder007/rmoriedata/issues>

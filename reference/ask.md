@@ -1,24 +1,25 @@
 # Ask a language model about the bundled datasets
 
-Sends a dataset-focused question through
+Sends a question through
 [`rmoriebricklayer::bricklayer_llm_ask()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_ask.html),
-which takes the first language-model route that answers: an
-OpenAI-compatible endpoint of your own (`MORIE_LLM_BASE_URL`), a local
-Ollama server, then the hosted MORIE tier as a last resort, with the key
-that
-[`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-stores (the same key opens the curated tables; keys are issued on
-request at <https://www.rmorie.com/access/>).
+to a language model you bring: an OpenAI-compatible endpoint of your
+own, a provider whose key is set (OpenAI, Anthropic, Google Gemini,
+OpenRouter, Groq, Mistral and more:
+[`rmoriebricklayer::bricklayer_llm_providers()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_providers.html)),
+or an Ollama server. Nothing is sent anywhere you did not set up. The
+model is given every function of rmoriedata and rmoriebricklayer and
+tools to read their help, and this package's catalogue of datasets, so
+it can name the tables and write the code that loads them.
 [`rmoriebricklayer::bricklayer_llm_status()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_status.html)
-shows which route would answer and
-[`rmoriebricklayer::bricklayer_llm_models()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_models.html)
-what the hosted key may use. With `backend = "cli"` the question goes to
-the optional `rmorie` command-line agent instead, as before.
+shows which route would answer;
+[`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
+(or `rmbl config setup` from the shell) saves a provider's key, the
+route and the model.
 
 ## Usage
 
 ``` r
-ask(question, model = NULL, backend = "auto")
+ask(question, model = NULL, route = NULL)
 ```
 
 ## Arguments
@@ -29,55 +30,45 @@ ask(question, model = NULL, backend = "auto")
 
 - model:
 
-  Optional model id, e.g. `"gpt-oss-120b:cf"`; the tier's default when
-  `NULL`.
+  Optional model name; the route's model when `NULL`.
 
-- backend:
+- route:
 
-  `"auto"` (the first route rmoriebricklayer finds, else the `rmorie`
-  binary), `"hosted"` (the hosted tier only), `"ollama"` or `"own"`
-  (that route only), or `"cli"` (the `rmorie` binary's agent, with its
-  own fallback chain).
+  `NULL` or `"auto"` (the first route that is set up), `"own"`,
+  `"ollama"` or a provider id such as `"anthropic"` (that route only).
 
 ## Value
 
-Character scalar: the answer, or a sentence saying what to set up when
-no route answers and the `rmorie` binary is not available.
-
-## Details
-
-A stored hosted key is used whenever neither your own endpoint nor a
-local Ollama server with a model pulled is there: a running Ollama with
-nothing pulled no longer stops the call. To choose the route or the
-model once and for all, use
-[`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
-(or `rmbl config` from the shell).
+Character scalar: the answer, or a sentence saying what went wrong or
+what to set up (never an error, so a script keeps going).
 
 ## Examples
 
 ``` r
 if (FALSE) { # \dontrun{
-# These need a stored key (morie_data_hosted_login()) or the rmorie binary.
-# After morie_data_hosted_login(): the hosted tier answers.
+# These need a language model: a provider's key, Ollama, or your own server.
+Sys.setenv(ANTHROPIC_API_KEY = "...")
 ask("which bundled datasets cover Toronto police use-of-force?")
-
-# Pin one of the additional AI models.
-ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
-
-# Ask through the rmorie command-line agent.
-ask("list the Chicago datasets", backend = "cli")
+ask("summarise the SIU director's-report corpus", route = "ollama",
+    model = "qwen3:8b")
 } # }
 
-# With every route switched off and no rmorie binary on PATH the call
-# returns a setup hint, not an error, and reaches no network whatever
-# key this machine has stored:
-routes <- c("MORIE_HOSTED_BASE_URL", "OLLAMA_HOST", "MORIE_LLM_BASE_URL")
-old <- Sys.getenv(routes, unset = NA)
-Sys.setenv(MORIE_HOSTED_BASE_URL = "off", OLLAMA_HOST = "off",
-           MORIE_LLM_BASE_URL = "off")
-if (!nzchar(Sys.which("rmorie"))) ask("hello")
-#> [1] "No language-model route is set up (no endpoint of your own, no local Ollama, no hosted key) and no rmorie CLI on PATH: start a local model, point at your own server with morie_data_llm_config(own.url = ), or run morie_data_hosted_login(token = ) once; keys are personal and issued on request at https://rmorie.com/access."
-for (v in routes) {
-  if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
+# With no route set up the call returns a setup hint, not an error, and
+# reaches no network:
+if (requireNamespace("rmoriebricklayer", quietly = TRUE)) {
+  old <- Sys.getenv(c("OLLAMA_HOST", "MORIE_LLM_BASE_URL"), unset = NA)
+  Sys.setenv(OLLAMA_HOST = "off", MORIE_LLM_BASE_URL = "off")
+  if (!nrow(subset(rmoriebricklayer::bricklayer_llm_status(),
+                   status %in% c("key set", "configured")))) {
+    cat(ask("hello"))
+  }
+  for (v in names(old)) {
+    if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
+  }
 }
+#> The language model could not answer: No language-model route is set up on this machine: bring your own key, or run a model locally:
+#>   a provider's key: set its variable (OPENAI_API_KEY, ANTHROPIC_API_KEY, GEMINI_API_KEY, OPENROUTER_API_KEY, ...) or `rmoriebricklayer config set PROVIDER.key`; providers: openai, anthropic, gemini, openrouter, groq, together, fireworks, deepseek, mistral, xai, cerebras, perplexity, huggingface, opencode, cohere, nvidia
+#>   local Ollama: OLLAMA_HOST=off
+#>   own endpoint: `rmoriebricklayer config set own.url URL` (and own.model, own.key) for any OpenAI-compatible server (LM Studio, vLLM, llama.cpp, a company gateway)
+#> `rmoriebricklayer config setup` walks through it.
 ```
