@@ -29,7 +29,7 @@ jobs:
         uses: r-lib/actions/setup-r-dependencies@v2
         with:
           dependencies: '"hard"'
-          extra-packages: any::pkgload any::testthat any::withr any::httr2 any::jsonlite
+          extra-packages: any::pkgload any::testthat any::withr any::httr2 any::jsonlite rmoriebricklayer=github::rootcoder007/rmorie-bricklayer@v0.5.12
       - name: install dependencies with base R (when pak cannot solve)
         if: steps.deps.outcome == 'failure'
         shell: Rscript {0}
@@ -37,6 +37,8 @@ jobs:
           repos <- c("https://rootcoder007.r-universe.dev", "https://stan-dev.r-universe.dev", "https://cloud.r-project.org")
           install.packages(c("remotes", "pkgload", "testthat", "withr", "httr2", "jsonlite"), repos = repos)
           remotes::install_deps(".", dependencies = NA, repos = repos, upgrade = "never")
+          # rmoriedata needs rmoriebricklayer >= 0.5.12, which r-universe may not have built yet
+          remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.12", upgrade = "never")
       - name: install
         shell: bash
         run: R CMD INSTALL .

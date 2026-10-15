@@ -35,7 +35,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::lintr, local::.
+          extra-packages: any::lintr, rmoriebricklayer=github::rootcoder007/rmorie-bricklayer@v0.5.12, local::.
           needs: lint
 
       - name: Lint
@@ -61,7 +61,7 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: local::.
+          extra-packages: rmoriebricklayer=github::rootcoder007/rmorie-bricklayer@v0.5.12, local::.
           needs: check
 
       - name: Rd consistency (codoc + usage + undocumented args)
