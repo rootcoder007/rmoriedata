@@ -34,7 +34,7 @@ Depends:
 Imports:
   stats,
   utils,
-  rmoriebricklayer (>= 0.5.9)
+  rmoriebricklayer (>= 0.5.12)
 LinkingTo:
   rmoriebricklayer
 Suggests:

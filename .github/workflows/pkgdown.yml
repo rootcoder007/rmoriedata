@@ -24,13 +24,13 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libcurl4-openssl-dev
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, local::.
+          extra-packages: any::pkgdown, rmoriebricklayer=github::rootcoder007/rmorie-bricklayer@v0.5.12, local::.
           needs: website
           cache-version: 3
       - name: Install rmoriebricklayer after the dependency cache is restored (GitHub HEAD preferred; r-universe fallback)
         run: |
           install.packages("remotes", repos = "https://cloud.r-project.org")
-          ok <- tryCatch({ remotes::install_github("rootcoder007/rmorie-bricklayer", upgrade = "never", force = TRUE); TRUE },
+          ok <- tryCatch({ remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.12", upgrade = "never", force = TRUE); TRUE },
                          error = function(e) { message("github: ", conditionMessage(e)); FALSE })
           if (!ok || !requireNamespace("rmoriebricklayer", quietly = TRUE))
             install.packages("rmoriebricklayer", repos = c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"))
