@@ -38,14 +38,14 @@ may be negative; clip for display).
 ``` r
 true <- c(120, 45, 8, 230, 17)
 morie_dp_laplace_histogram(true, epsilon = 0.5)
-#> [1] 121  47  10 229  15
+#> [1] 119  45   6 231  11
 
 # Post-process for display: clip negatives (costs no privacy).
 pmax(0, morie_dp_laplace_histogram(true, epsilon = 1.0))
-#> [1] 122  45   8 229  18
+#> [1] 120  45   8 229  17
 
 # Release a private histogram straight from tabulated data.
 counts <- as.integer(table(complaint_sample$year))
 morie_dp_laplace_histogram(counts, epsilon = 1.0)
-#> [1] 24999     1
+#> [1] 25001     1
 ```

@@ -30,12 +30,13 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.png" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/floor-0513/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.3.6" id="rmoriedata-036">rmoriedata 0.3.6<a class="anchor" aria-label="anchor" href="#rmoriedata-036"></a></h2>
-<ul><li>Needs rmoriebricklayer 0.5.12, whose language-model layer <code><a href="../reference/ask.html">ask()</a></code> is built on (0.5.9 was accepted, so a build against an older one ran <code><a href="../reference/ask.html">ask()</a></code> on the retired hosted tier).</li>
+<ul><li>Needs rmoriebricklayer 0.5.13, whose download bar now redraws in the RStudio, Positron and R.app consoles and stays a plain line in knitr and Jupyter.</li>
+<li>Needs rmoriebricklayer 0.5.12, whose language-model layer <code><a href="../reference/ask.html">ask()</a></code> is built on (0.5.9 was accepted, so a build against an older one ran <code><a href="../reference/ask.html">ask()</a></code> on the retired hosted tier).</li>
 <li>
 <code><a href="../reference/ask.html">ask()</a></code> uses a language model you bring (a provider’s key, Ollama, or your own server) through rmoriebricklayer, and the model is given rmoriedata’s and rmoriebricklayer’s help with tools to read it. Its <code>backend</code> argument is now <code>route</code> (<code>"auto"</code>, <code>"own"</code>, <code>"ollama"</code> or a provider id such as <code>"anthropic"</code>); the hosted MORIE tier and the <code>rmorie</code> command-line fallback are gone.</li>
 <li>

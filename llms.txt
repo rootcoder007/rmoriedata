@@ -10,7 +10,7 @@ base-R helpers. Its core job remains the `inst/extdata/` files used by
 Install the current release from r-universe (prebuilt binaries for macOS
 and Windows), which can be newer than CRAN. rmoriebricklayer, its
 companion, is named too, so an older copy already installed is replaced:
-rmoriedata needs rmoriebricklayer 0.5.12 or later.
+rmoriedata needs rmoriebricklayer 0.5.13 or later.
 
 With [pak](https://pak.r-lib.org) (progress bars, parallel downloads,
 compiler output hidden unless a build fails, and the named packages

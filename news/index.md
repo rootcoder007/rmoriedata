@@ -2,6 +2,9 @@
 
 ## rmoriedata 0.3.6
 
+- Needs rmoriebricklayer 0.5.13, whose download bar now redraws in the
+  RStudio, Positron and R.app consoles and stays a plain line in knitr
+  and Jupyter.
 - Needs rmoriebricklayer 0.5.12, whose language-model layer
   [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   is built on (0.5.9 was accepted, so a build against an older one ran

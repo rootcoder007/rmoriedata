@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`inst/CITATION`](https://github.com/rootcoder007/rmoriedata/blob/main/inst/CITATION)
+[`inst/CITATION`](https://github.com/rootcoder007/rmoriedata/blob/floor-0513/inst/CITATION)
 
 Ruhela V (2026). *rmoriedata: Integrated Datasets for the rmorie
 Package*. R package version 0.3.6,
