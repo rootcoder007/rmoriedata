@@ -4,67 +4,54 @@
 \alias{ask}
 \title{Ask a language model about the bundled datasets}
 \usage{
-ask(question, model = NULL, backend = "auto")
+ask(question, model = NULL, route = NULL)
 }
 \arguments{
 \item{question}{Character scalar.}
 
-\item{model}{Optional model id, e.g. \code{"gpt-oss-120b:cf"}; the tier's
-default when \code{NULL}.}
+\item{model}{Optional model name; the route's model when \code{NULL}.}
 
-\item{backend}{\code{"auto"} (the first route \pkg{rmoriebricklayer} finds,
-else the \code{rmorie} binary), \code{"hosted"} (the hosted tier only),
-\code{"ollama"} or \code{"own"} (that route only), or
-\code{"cli"} (the \code{rmorie} binary's agent, with its own fallback
-chain).}
+\item{route}{\code{NULL} or \code{"auto"} (the first route that is set up),
+\code{"own"}, \code{"ollama"} or a provider id such as
+\code{"anthropic"} (that route only).}
 }
 \value{
-Character scalar: the answer, or a sentence saying what to set up
-when no route answers and the \code{rmorie} binary is not available.
+Character scalar: the answer, or a sentence saying what went wrong
+or what to set up (never an error, so a script keeps going).
 }
 \description{
-Sends a dataset-focused question through
-\code{rmoriebricklayer::bricklayer_llm_ask()}, which takes the first
-language-model route that answers: an OpenAI-compatible endpoint of your
-own (\code{MORIE_LLM_BASE_URL}), a local Ollama server, then the hosted
-MORIE tier as a last resort, with the key that
-\code{\link{morie_data_hosted_login}()} stores (the same key opens the
-curated tables; keys are issued on request at
-\url{https://www.rmorie.com/access/}).
+Sends a question through \code{rmoriebricklayer::bricklayer_llm_ask()},
+to a language model you bring: an OpenAI-compatible endpoint of your own,
+a provider whose key is set (OpenAI, Anthropic, Google Gemini, OpenRouter,
+Groq, Mistral and more: \code{rmoriebricklayer::bricklayer_llm_providers()}),
+or an Ollama server. Nothing is sent anywhere you did not set up.
+The model is given every function of rmoriedata and rmoriebricklayer and
+tools to read their help, and this package's catalogue of datasets, so it
+can name the tables and write the code that loads them.
 \code{rmoriebricklayer::bricklayer_llm_status()} shows which route would
-answer and \code{rmoriebricklayer::bricklayer_llm_models()} what the hosted
-key may use. With \code{backend = "cli"} the question goes to the optional
-\code{rmorie} command-line agent instead, as before.
-}
-\details{
-A stored hosted key is used whenever neither your own endpoint nor a local
-Ollama server with a model pulled is there: a running Ollama with nothing
-pulled no longer stops the call. To choose the route or the model once and
-for all, use \code{\link{morie_data_llm_config}()} (or \code{rmbl config}
-from the shell).
+answer; \code{\link{morie_data_llm_config}()} (or \code{rmbl config setup}
+from the shell) saves a provider's key, the route and the model.
 }
 \examples{
 \dontrun{
-# These need a stored key (morie_data_hosted_login()) or the rmorie binary.
-# After morie_data_hosted_login(): the hosted tier answers.
+# These need a language model: a provider's key, Ollama, or your own server.
+Sys.setenv(ANTHROPIC_API_KEY = "...")
 ask("which bundled datasets cover Toronto police use-of-force?")
-
-# Pin one of the additional AI models.
-ask("summarise the SIU director's-report corpus", model = "gpt-oss-120b:cf")
-
-# Ask through the rmorie command-line agent.
-ask("list the Chicago datasets", backend = "cli")
+ask("summarise the SIU director's-report corpus", route = "ollama",
+    model = "qwen3:8b")
 }
 
-# With every route switched off and no rmorie binary on PATH the call
-# returns a setup hint, not an error, and reaches no network whatever
-# key this machine has stored:
-routes <- c("MORIE_HOSTED_BASE_URL", "OLLAMA_HOST", "MORIE_LLM_BASE_URL")
-old <- Sys.getenv(routes, unset = NA)
-Sys.setenv(MORIE_HOSTED_BASE_URL = "off", OLLAMA_HOST = "off",
-           MORIE_LLM_BASE_URL = "off")
-if (!nzchar(Sys.which("rmorie"))) ask("hello")
-for (v in routes) {
-  if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
+# With no route set up the call returns a setup hint, not an error, and
+# reaches no network:
+if (requireNamespace("rmoriebricklayer", quietly = TRUE)) {
+  old <- Sys.getenv(c("OLLAMA_HOST", "MORIE_LLM_BASE_URL"), unset = NA)
+  Sys.setenv(OLLAMA_HOST = "off", MORIE_LLM_BASE_URL = "off")
+  if (!nrow(subset(rmoriebricklayer::bricklayer_llm_status(),
+                   status \%in\% c("key set", "configured")))) {
+    cat(ask("hello"))
+  }
+  for (v in names(old)) {
+    if (is.na(old[[v]])) Sys.unsetenv(v) else do.call(Sys.setenv, as.list(old[v]))
+  }
 }
 }

@@ -34,7 +34,7 @@
 
 .rmd_access_hint <- function() {
   svc <- .rmd_services_data()
-  sprintf("keys are personal and issued on request at %s",
+  sprintf("keys are personal: sign in with GitHub or an emailed code, or ask at %s",
           svc$request_access %||% "https://www.rmorie.com/access/")
 }
 
@@ -69,6 +69,55 @@
   NULL
 }
 
+# The tables whose source licence asks more than attribution (ICPSR studies, the NCVS
+# 38604 extract, the a2aj case law): data.rmorie.com opens them once the terms are
+# accepted.
+.rmd_restricted <- function(key) grepl("^(icpsr_|ncvs_38604|a2aj_)", key)
+
+# The SHA-256 the manifest lists for a table (NA when it lists none, NULL when the table
+# is not listed); `refresh` fetches the manifest again first.
+.rmd_manifest_sha <- function(key, refresh = FALSE) {
+  morie_data_hosted_catalog(refresh = refresh)  # fetches the manifest when stale or asked
+  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
+  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
+  m <- rmoriebricklayer::bricklayer_json_from_json(txt, simplifyVector = FALSE)
+  for (d in m$datasets) {
+    if (identical(d$key, key)) {
+      s <- d$sha256
+      ok <- is.character(s) && length(s) == 1L && nzchar(s)
+      return(if (ok) tolower(s) else NA_character_)
+    }
+  }
+  NULL
+}
+
+# A downloaded table is used only when it matches the manifest's SHA-256 (fetched again
+# once before a mismatch is called a damaged or tampered file); a table the manifest
+# lists without a digest is used as it is.
+.rmd_check_sha <- function(key, dest) {
+  unlisted <- function() {
+    unlink(dest)
+    stop(key, " is not listed in the manifest of data.rmorie.com", call. = FALSE)
+  }
+  want <- .rmd_manifest_sha(key)
+  if (is.null(want)) unlisted()
+  if (is.na(want)) return(invisible(TRUE))
+  have <- tolower(rmoriebricklayer::sha256_file(dest))
+  if (!identical(have, want)) {
+    want <- .rmd_manifest_sha(key, refresh = TRUE)
+    if (is.null(want)) unlisted()
+    if (is.na(want)) return(invisible(TRUE))
+  }
+  if (!identical(have, want)) {
+    unlink(dest)
+    stop(sprintf(paste0("%s does not match the manifest's SHA-256 (%s... vs %s...): ",
+                        "the file was deleted; run again, and if it still fails it ",
+                        "was altered in transit"),
+                 key, substr(have, 1L, 12L), substr(want, 1L, 12L)), call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 .rmd_data_get <- function(path, dest, timeout = 600) {
   key <- .rmd_hosted_key()
   if (is.null(key)) {
@@ -89,6 +138,12 @@
   )
   if (inherits(rc, "condition")) {
     msg <- conditionMessage(rc)
+    label <- sub("\\.csv\\.gz$", "", sub("^/", "", path))
+    if (grepl("403|Forbidden", msg) && .rmd_restricted(label)) {
+      stop(label, " is a restricted table (its source asks more than a citation): ",
+           "read and accept the terms at https://data.rmorie.com/terms, signed in ",
+           "with your key, then ask again.", call. = FALSE)
+    }
     if (grepl("401|403|Unauthorized|Forbidden", msg)) {
       stop("the curated-data service rejected the stored key; store a valid one with ",
            "morie_data_hosted_login(token = ) or sign in again.", call. = FALSE)
@@ -165,7 +220,7 @@ morie_data_hosted_catalog <- function(refresh = FALSE) {
 #' @rdname morie_data_hosted_catalog
 #' @param token,email,code,open_browser Passed to
 #'   \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold
-#'   (keys are personal and issued on request at
+#'   (keys are personal: sign in with GitHub or an emailed code, or ask at
 #'   \url{https://www.rmorie.com/access/}), or an email address (a 6-digit code is
 #'   sent; pass it as \code{code} in a non-interactive session). With neither,
 #'   the GitHub device flow runs. The service address comes from the signed
@@ -194,6 +249,7 @@ morie_data_hosted_load <- function(key, refresh = FALSE) {
     .rmd_data_get(sprintf("/%s/%s.csv.gz", parts[[1L]],
                           paste(parts[-1L], collapse = "/")), dest)
   }
+  .rmd_check_sha(key, dest)
   # fill = FALSE: a row with a field missing or one too many is a damaged download;
   # it is removed so the next call fetches it again instead of padding the rows
   tryCatch(

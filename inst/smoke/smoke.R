@@ -24,14 +24,10 @@ cases <- list(
     df <- morie_data_hosted_load("fec_cm_2020/fec_cm_2020"); check(nrow(df) > 1000, "hosted load")
   },
   ask = function() {
-    if (!nzchar(key)) {
-      check(grepl("morie_data_hosted_login", ask("hello"), fixed = TRUE), "no key: ask must say how to sign in")
-      return(message("  ask: SKIP (no key)"))
-    }
-    morie_data_hosted_login(token = key, open_browser = FALSE)
-    a <- ask("Reply with the single word pong.", model = "gpt-oss-120b:cf")
-    if (grepl("429", a, fixed = TRUE)) { Sys.sleep(45); a <- ask("Reply with the single word pong.", model = "gpt-oss-120b:cf") }
-    check(nzchar(trimws(a)) && !grepl("morie_data_hosted_login", a, fixed = TRUE), paste("ask:", a))
+    # a runner has no language model of its own: with none set up, ask must say how to bring one
+    a <- ask("Reply with the single word pong.")
+    check(nzchar(trimws(a)) && (!grepl("could not answer", a, fixed = TRUE) || grepl("bring your own key", a, fixed = TRUE)),
+          paste("ask:", a))
   },
   dp = function() { x <- morie_dp_laplace_count(10, epsilon = 1); check(is.numeric(x), "dp") }
 )

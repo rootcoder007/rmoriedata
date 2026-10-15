@@ -22,7 +22,7 @@ morie_data_hosted_load(key, refresh = FALSE)
 
 \item{token, email, code, open_browser}{Passed to
 \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold
-(keys are personal and issued on request at
+(keys are personal: sign in with GitHub or an emailed code, or ask at
 \url{https://www.rmorie.com/access/}), or an email address (a 6-digit code is
 sent; pass it as \code{code} in a non-interactive session). With neither,
 the GitHub device flow runs. The service address comes from the signed
