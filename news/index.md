@@ -7,7 +7,6 @@
   is built on (0.5.9 was accepted, so a build against an older one ran
   [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   on the retired hosted tier).
-
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   uses a language model you bring (a provider’s key, Ollama, or your own
   server) through rmoriebricklayer, and the model is given rmoriedata’s
@@ -15,30 +14,16 @@
   argument is now `route` (`"auto"`, `"own"`, `"ollama"` or a provider
   id such as `"anthropic"`); the hosted MORIE tier and the `rmorie`
   command-line fallback are gone.
-
 - [`morie_data_hosted_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
   uses a downloaded table only when it matches the SHA-256 the manifest
   lists (fetching the manifest again once before calling a file bad); a
   mismatch deletes the copy and says so. A restricted table (the ICPSR
   studies, NCVS 38604, the a2aj case law) refused with 403 says to
   accept the terms at <https://data.rmorie.com/terms>.
-
-- **A stored hosted key is used.** With a local Ollama server running
-  and no model pulled,
-  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  stopped there (“local Ollama has no model to use”) and never reached
-  the hosted tier the key opens. When the hosted tier is the only route
-  that can answer,
-  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  now sends the question there.
-
-- `ask(backend = )` takes `"ollama"` and `"own"` as well, to insist on
-  one route.
-
 - [`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
   shows and saves the language-model settings (route, and the address,
   key and model of each route), shared with rmoriebricklayer, rmorie and
-  morie; it needs rmoriebricklayer 0.5.11 or later.
+  morie.
 
 ## rmoriedata 0.3.5
 

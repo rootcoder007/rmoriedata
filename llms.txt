@@ -7,17 +7,18 @@ base-R helpers. Its core job remains the `inst/extdata/` files used by
 
 ## Install
 
-Current release(s) from r-universe (prebuilt binaries for macOS and
-Windows); if CRAN lags this release. rmoriebricklayer, its companion, is
-named too, so an older copy already installed is replaced.
+Install the current release from r-universe (prebuilt binaries for macOS
+and Windows), which can be newer than CRAN. rmoriebricklayer, its
+companion, is named too, so an older copy already installed is replaced:
+rmoriedata needs rmoriebricklayer 0.5.12 or later.
 
 With [pak](https://pak.r-lib.org) (progress bars, parallel downloads,
 compiler output hidden unless a build fails, and the named packages
 always upgraded to the current release). Keep the `repos` arguments as
 written: under `Rscript` there is no mirror chooser, so a bare
 [`install.packages()`](https://rdrr.io/r/utils/install.packages.html)
-stops with “trying to use CRAN without setting a mirror”, and if CRAN
-carries older versions than r-universe.
+stops with “trying to use CRAN without setting a mirror”, and CRAN can
+carry older versions than r-universe.
 
 ``` r
 
@@ -153,7 +154,11 @@ still data):
   [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md),
   [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md),
   [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md),
-  [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md).
+  [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md);
+  [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
+  holds an epsilon (and delta) the releases draw down, and
+  [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md)
+  reports what has been spent.
 - **Shared compiled core** —
   [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   and
