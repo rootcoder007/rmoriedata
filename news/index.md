@@ -2,6 +2,12 @@
 
 ## rmoriedata 0.3.6
 
+- Needs rmoriebricklayer 0.5.12, whose language-model layer
+  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  is built on (0.5.9 was accepted, so a build against an older one ran
+  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+  on the retired hosted tier).
+
 - [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
   uses a language model you bring (a provider’s key, Ollama, or your own
   server) through rmoriebricklayer, and the model is given rmoriedata’s
