@@ -23,7 +23,8 @@ morie_data_hosted_login(
   token = NULL,
   email = NULL,
   code = NULL,
-  open_browser = interactive()
+  open_browser = interactive(),
+  ...
 )
 
 morie_data_hosted_load(key, refresh = FALSE)
@@ -41,10 +42,19 @@ morie_data_hosted_load(key, refresh = FALSE)
   [`rmoriebricklayer::bricklayer_llm_login()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html):
   a key you already hold (keys are personal: sign in with GitHub or an
   emailed code, or ask at <https://www.rmorie.com/access/>), or an email
-  address (a 6-digit code is sent; pass it as `code` in a
+  address (a one-time code is sent; pass it as `code` in a
   non-interactive session). With neither, the GitHub device flow runs.
   The service address comes from the signed services document
   ([`rmoriebricklayer::bricklayer_services()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_services.html)).
+
+- ...:
+
+  Passed to
+  [`rmoriebricklayer::bricklayer_llm_login()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html):
+  the data access terms and who is asking, which a new key needs
+  (`accept_terms`, `name`, `affiliation`, `purpose`, `restricted`,
+  `supervisor_name`, `supervisor_role`, `supervisor_email`); what is not
+  given is asked at the console.
 
 - key:
 

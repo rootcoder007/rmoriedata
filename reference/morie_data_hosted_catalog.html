@@ -29,7 +29,7 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta property="og:im
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.6</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.7</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -79,7 +79,8 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
 <span>  token <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  email <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  code <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  open_browser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span></span>
+<span>  open_browser <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>,</span>
+<span>  <span class="va">...</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">morie_data_hosted_load</span><span class="op">(</span><span class="va">key</span>, refresh <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
@@ -97,10 +98,18 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
 <dd><p>Passed to
 <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html" class="external-link">rmoriebricklayer::bricklayer_llm_login()</a></code>: a key you already hold
 (keys are personal: sign in with GitHub or an emailed code, or ask at
-<a href="https://www.rmorie.com/access/" class="external-link">https://www.rmorie.com/access/</a>), or an email address (a 6-digit code is
+<a href="https://www.rmorie.com/access/" class="external-link">https://www.rmorie.com/access/</a>), or an email address (a one-time code is
 sent; pass it as <code>code</code> in a non-interactive session). With neither,
 the GitHub device flow runs. The service address comes from the signed
 services document (<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_services.html" class="external-link">rmoriebricklayer::bricklayer_services()</a></code>).</p></dd>
+
+
+<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
+<dd><p>Passed to <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_login.html" class="external-link">rmoriebricklayer::bricklayer_llm_login()</a></code>: the
+data access terms and who is asking, which a new key needs
+(<code>accept_terms</code>, <code>name</code>, <code>affiliation</code>, <code>purpose</code>,
+<code>restricted</code>, <code>supervisor_name</code>, <code>supervisor_role</code>,
+<code>supervisor_email</code>); what is not given is asked at the console.</p></dd>
 
 
 <dt id="arg-key">key<a class="anchor" aria-label="anchor" href="#arg-key"></a></dt>
