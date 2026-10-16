@@ -221,16 +221,21 @@ morie_data_hosted_catalog <- function(refresh = FALSE) {
 #' @param token,email,code,open_browser Passed to
 #'   \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold
 #'   (keys are personal: sign in with GitHub or an emailed code, or ask at
-#'   \url{https://www.rmorie.com/access/}), or an email address (a 6-digit code is
+#'   \url{https://www.rmorie.com/access/}), or an email address (a one-time code is
 #'   sent; pass it as \code{code} in a non-interactive session). With neither,
 #'   the GitHub device flow runs. The service address comes from the signed
 #'   services document (\code{rmoriebricklayer::bricklayer_services()}).
+#' @param ... Passed to \code{rmoriebricklayer::bricklayer_llm_login()}: the
+#'   data access terms and who is asking, which a new key needs
+#'   (\code{accept_terms}, \code{name}, \code{affiliation}, \code{purpose},
+#'   \code{restricted}, \code{supervisor_name}, \code{supervisor_role},
+#'   \code{supervisor_email}); what is not given is asked at the console.
 #' @export
 morie_data_hosted_login <- function(token = NULL, email = NULL, code = NULL,
-                                    open_browser = interactive()) {
+                                    open_browser = interactive(), ...) {
   key <- rmoriebricklayer::bricklayer_llm_login(token = token, email = email,
                                                 code = code,
-                                                open_browser = open_browser)
+                                                open_browser = open_browser, ...)
   invisible(key)
 }
 

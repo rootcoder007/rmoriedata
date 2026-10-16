@@ -39,8 +39,8 @@ jobs:
         run: |
           repos <- c("https://rootcoder007.r-universe.dev", "https://stan-dev.r-universe.dev", "https://cloud.r-project.org")
           install.packages(c("remotes", "pkgload", "testthat", "withr", "httr2", "jsonlite"), repos = repos)
-          # rmoriebricklayer first: install_deps cannot meet the >= 0.5.13 floor from r-universe alone
-          remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.13", upgrade = "never")
+          # rmoriebricklayer first: install_deps cannot meet the >= 0.5.14 floor from r-universe alone
+          remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.14", upgrade = "never")
           remotes::install_deps(".", dependencies = NA, repos = repos, upgrade = "never")
       - name: install
         shell: bash

@@ -1,3 +1,10 @@
+# rmoriedata 0.3.7
+
+* Needs rmoriebricklayer 0.5.14: a new data key from `morie_data_hosted_login()` needs the data
+  access terms accepted first, then your name, organisation and why you need the data (and, for the
+  restricted tables, a supervisor, department chair, director or coordinator). Pass them as
+  arguments (`accept_terms = TRUE`, `name = `, `purpose = `, ...) or answer at the console.
+
 # rmoriedata 0.3.6
 
 * Needs rmoriebricklayer 0.5.13, whose download bar now redraws in the RStudio, Positron and

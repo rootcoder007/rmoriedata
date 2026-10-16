@@ -37,7 +37,7 @@ jobs:
         run: apt-get update && apt-get install -y --no-install-recommends libcurl4-openssl-dev libuv1-dev libssl-dev zlib1g-dev pkg-config
       - name: Dependencies (rmoriebricklayer from the family r-universe)
         run: |
-          RDscript -e 'repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"); install.packages(c("remotes", "testthat", "withr", "jsonlite"), repos = repos); ok <- tryCatch({ remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.13", upgrade = "never"); TRUE }, error = function(e) FALSE); if (!ok) install.packages("rmoriebricklayer", repos = repos); if (packageVersion("rmoriebricklayer") < "0.5.13") stop("rmoriebricklayer >= 0.5.13 needed"); for (p in c("rmoriebricklayer", "testthat", "withr")) if (!requireNamespace(p, quietly = TRUE)) stop("could not install ", p)'
+          RDscript -e 'repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"); install.packages(c("remotes", "testthat", "withr", "jsonlite"), repos = repos); ok <- tryCatch({ remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.14", upgrade = "never"); TRUE }, error = function(e) FALSE); if (!ok) install.packages("rmoriebricklayer", repos = repos); if (packageVersion("rmoriebricklayer") < "0.5.14") stop("rmoriebricklayer >= 0.5.14 needed"); for (p in c("rmoriebricklayer", "testthat", "withr")) if (!requireNamespace(p, quietly = TRUE)) stop("could not install ", p)'
       - name: Install under the sanitizers
         shell: bash
         run: |

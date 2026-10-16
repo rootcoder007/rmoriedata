@@ -24,6 +24,7 @@ Useful links:
 \itemize{
   \item \url{https://rootcoder007.github.io/rmoriedata/}
   \item \url{https://github.com/rootcoder007/rmoriedata}
+  \item \url{https://rmorie.com}
   \item Report bugs at \url{https://github.com/rootcoder007/rmoriedata/issues}
 }
 

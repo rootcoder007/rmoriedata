@@ -1,7 +1,7 @@
 Package: rmoriedata
 Type: Package
 Title: Integrated Datasets for the 'rmorie' Package
-Version: 0.3.6
+Version: 0.3.7
 Authors@R: c(
   person(
     given = "Vansh Singh",
@@ -34,7 +34,7 @@ Depends:
 Imports:
   stats,
   utils,
-  rmoriebricklayer (>= 0.5.13)
+  rmoriebricklayer (>= 0.5.14)
 LinkingTo:
   rmoriebricklayer
 Suggests:
@@ -60,4 +60,4 @@ biocViews:
 Config/roxygen2/version: 8.0.0
 Roxygen: list(markdown = TRUE)
 Remotes:
-    rmoriebricklayer=rootcoder007/rmorie-bricklayer@v0.5.13
+    rmoriebricklayer=rootcoder007/rmorie-bricklayer@v0.5.14
