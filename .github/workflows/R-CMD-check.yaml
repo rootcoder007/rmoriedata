@@ -77,13 +77,13 @@ jobs:
           remotes::install_deps(dependencies = TRUE, upgrade = "never")
       - name: Install rmoriebricklayer after the dependency cache is restored (GitHub HEAD preferred; r-universe fallback)
         # Not on CRAN. Prefer the GitHub HEAD (always the latest -- new exports
-        # like bricklayer_fetch present immediately); fall back to the
+        # like blfetch present immediately); fall back to the
         # r-universe binary if GitHub is unavailable. Runs before dependency
         # resolution so the hard Import is already satisfied.
         run: |
           install.packages("remotes", repos = "https://cloud.r-project.org")
           ok <- tryCatch({
-            remotes::install_github("rootcoder007/rmorie-bricklayer@v0.5.14",
+            remotes::install_github("rootcoder007/rmorie-bricklayer@v1.0.0",
                                     upgrade = "never", force = TRUE); TRUE
           }, error = function(e) { message("github: ", conditionMessage(e)); FALSE })
           if (!ok || !requireNamespace("rmoriebricklayer", quietly = TRUE)) {

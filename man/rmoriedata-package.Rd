@@ -8,13 +8,13 @@
 \description{
 Open data fixtures for the rmorie package
 (https://github.com/rootcoder007/rmorie), with the functions that read
-them: \code{\link[=morie_data_catalog]{morie_data_catalog()}} lists the bundled tables and
-\code{\link[=morie_data_load]{morie_data_load()}} loads one; \code{\link[=load_siu_reports]{load_siu_reports()}},
-\code{\link[=load_chicago_data]{load_chicago_data()}}, \code{\link[=load_cihi_data_tables]{load_cihi_data_tables()}} and \code{\link[=fetch_cihi_table]{fetch_cihi_table()}}
-read their datasets, \code{\link[=morie_data_verify]{morie_data_verify()}} checks the bundle's
-checksums; \code{\link[=morie_data_hosted_login]{morie_data_hosted_login()}},
-\code{\link[=morie_data_hosted_catalog]{morie_data_hosted_catalog()}} and \code{\link[=morie_data_hosted_load]{morie_data_hosted_load()}} reach the
-tables served at data.rmorie.com; \code{\link[=ask]{ask()}} asks a language model about
+them: \code{\link[=mdcat]{mdcat()}} lists the bundled tables and
+\code{\link[=mdload]{mdload()}} loads one; \code{\link[=siuload]{siuload()}},
+\code{\link[=chiload]{chiload()}}, \code{\link[=cihitbls]{cihitbls()}} and \code{\link[=cihiget]{cihiget()}}
+read their datasets, \code{\link[=mdverify]{mdverify()}} checks the bundle's
+checksums; \code{\link[=hostlogin]{hostlogin()}},
+\code{\link[=hostcat]{hostcat()}} and \code{\link[=hostload]{hostload()}} reach the
+tables served at data.rmorie.com; \code{\link[=mdask]{mdask()}} asks a language model about
 the catalogue; and the differential-privacy and k-anonymity helpers
 release aggregates safely. The raw files are also at
 \code{system.file("extdata", package = "rmoriedata")}.

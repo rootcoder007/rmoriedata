@@ -35,15 +35,15 @@
 #' counts and the original source path each table was built from.
 #'
 #' @return A `data.frame` with columns `slug`, `source_path`, `kind`,
-#'   `n_rows`, `n_cols`.
-#' @seealso [morie_data_load()], [morie_data_dictionary()]
+#'   `nrows`, `n_cols`.
+#' @seealso [mdload()], [mddict()]
 #' @examples
 #' if (requireNamespace("RSQLite", quietly = TRUE)) {
-#'   cat <- morie_data_catalog()
-#'   head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+#'   cat <- mdcat()
+#'   head(cat[cat$kind == "table", c("slug", "nrows", "n_cols")])
 #' }
 #' @export
-morie_data_catalog <- function() {
+mdcat <- function() {
   .rmoriedata_need_db()
   con <- DBI::dbConnect(RSQLite::SQLite(), .rmoriedata_db_path())
   on.exit(DBI::dbDisconnect(con))
@@ -52,39 +52,39 @@ morie_data_catalog <- function() {
 
 #' Load a bundled dataset by slug
 #'
-#' @param slug Dataset slug; see the `slug` column of [morie_data_catalog()].
+#' @param slug Dataset slug; see the `slug` column of [mdcat()].
 #' @return A `data.frame`.
-#' @seealso [morie_data_catalog()]
+#' @seealso [mdcat()]
 #' @examples
 #' if (requireNamespace("RSQLite", quietly = TRUE)) {
-#'   df <- morie_data_load("chicago_iucr_codes")
+#'   df <- mdload("chicagoiucrcodes")
 #'   str(df)
 #' }
 #' @export
-morie_data_load <- function(slug) {
+mdload <- function(slug) {
   .rmoriedata_need_db()
   con <- DBI::dbConnect(RSQLite::SQLite(), .rmoriedata_db_path())
   on.exit(DBI::dbDisconnect(con))
   tables <- DBI::dbListTables(con)
   if (!slug %in% tables)
-    stop(sprintf("No dataset '%s'. See morie_data_catalog() for valid slugs.",
+    stop(sprintf("No dataset '%s'. See mdcat() for valid slugs.",
                  slug), call. = FALSE)
   DBI::dbReadTable(con, slug)
 }
 
 #' Data dictionary (JSON) for a dataset, if one is bundled
 #'
-#' @param slug Dictionary slug; see [morie_data_catalog()] rows where
+#' @param slug Dictionary slug; see [mdcat()] rows where
 #'   `kind == "dictionary"`.
 #' @return A character scalar of JSON, or `NULL` if no dictionary exists.
-#' @seealso [morie_data_catalog()]
+#' @seealso [mdcat()]
 #' @examples
 #' if (requireNamespace("RSQLite", quietly = TRUE)) {
-#'   dicts <- morie_data_catalog()
+#'   dicts <- mdcat()
 #'   subset(dicts, kind == "dictionary", "slug")
 #' }
 #' @export
-morie_data_dictionary <- function(slug) {
+mddict <- function(slug) {
   .rmoriedata_need_db()
   con <- DBI::dbConnect(RSQLite::SQLite(), .rmoriedata_db_path())
   on.exit(DBI::dbDisconnect(con))

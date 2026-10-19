@@ -14,9 +14,9 @@
 #' Pair with \code{rmorie::morie_ingest_cihi_xlsx()} to download + parse
 #' any row (that helper tries \code{url} first and falls back to
 #' \code{wayback_url}). The Wayback snapshots were resolved with
-#' \code{rmoriebricklayer::wayback_snapshot_url()}.
+#' \code{rmoriebricklayer::wbsnpurl()}.
 #'
-#' @param archived_only If \code{TRUE}, drop rows with no Wayback
+#' @param archonly If \code{TRUE}, drop rows with no Wayback
 #'   snapshot. Default \code{FALSE} (return the full catalogue).
 #' @return A \code{data.frame} with columns \code{title}, \code{url},
 #'   \code{wayback_url}.
@@ -26,23 +26,23 @@
 #'   Catalogue current as of 2026-07.
 #' @examples
 #' # Full catalogue: title, live url, Wayback snapshot url.
-#' cat <- load_cihi_data_tables()
+#' cat <- cihitbls()
 #' nrow(cat)
 #' names(cat)
 #' head(cat$title, 3)
 #'
-#' # `archived_only = TRUE` keeps only rows that have a Wayback snapshot,
+#' # `archonly = TRUE` keeps only rows that have a Wayback snapshot,
 #' # i.e. tables still retrievable if CIHI rotates the live file.
-#' arch <- load_cihi_data_tables(archived_only = TRUE)
+#' arch <- cihitbls(archonly = TRUE)
 #' nrow(arch) # <= nrow(cat)
 #' all(nzchar(arch$wayback_url)) # TRUE
 #'
 #' # Find a table by keyword before fetching it.
 #' cat$title[grepl("hospital", cat$title, ignore.case = TRUE)][1:3]
 #' @export
-load_cihi_data_tables <- function(archived_only = FALSE) {
-  if (!isTRUE(archived_only) && !isFALSE(archived_only)) {
-    stop("`archived_only` must be TRUE or FALSE.", call. = FALSE)
+cihitbls <- function(archonly = FALSE) {
+  if (!isTRUE(archonly) && !isFALSE(archonly)) {
+    stop("`archonly` must be TRUE or FALSE.", call. = FALSE)
   }
   path <- system.file("extdata", "cihi_data_tables.csv",
     package = "rmoriedata"
@@ -56,7 +56,7 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
   # like every other bundled file before anything in it is believed
   .rmoriedata_check_file("cihi_data_tables.csv")
   df <- utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
-  if (isTRUE(archived_only) && "wayback_url" %in% names(df)) {
+  if (isTRUE(archonly) && "wayback_url" %in% names(df)) {
     df <- df[nzchar(df[["wayback_url"]]), , drop = FALSE]
     rownames(df) <- NULL
   }
@@ -69,10 +69,10 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 #' \code{dest}, falling back to the Internet Archive snapshot if the live
 #' CIHI URL has rotated or been removed. The download + fallback runs
 #' through \pkg{rmoriebricklayer}'s shared C++/libcurl foundation
-#' (\code{bricklayer_fetch()}), the same engine \pkg{rmorie} and
+#' (\code{blfetch()}), the same engine \pkg{rmorie} and
 #' \pkg{morie} use -- one implementation across the ecosystem.
 #'
-#' @param which A row index into \code{load_cihi_data_tables()}, or a
+#' @param which A row index into \code{cihitbls()}, or a
 #'   string matched (case-insensitively, as a substring) against table
 #'   titles. Must resolve to exactly one table.
 #' @param dest Destination file path. Default: a tempfile with the
@@ -82,34 +82,34 @@ load_cihi_data_tables <- function(archived_only = FALSE) {
 #'   and its Wayback fallback fail.
 #' @examples
 #' # Offline: inspect the catalogue to choose a `which` argument.
-#' cat <- load_cihi_data_tables()
+#' cat <- cihitbls()
 #' head(cat$title, 3)
 #'
 #' \donttest{
 #' # Downloads a table from the live CIHI web service; try() keeps the
 #' # example graceful when the service is unreachable.
 #' # `which` by title substring (case-insensitive; must match exactly one).
-#' f1 <- try(fetch_cihi_table("Hospital Beds, 2024")) # -> tempfile path
+#' f1 <- try(cihiget("Hospital Beds, 2024")) # -> tempfile path
 #'
-#' # `which` by row index into load_cihi_data_tables(); `dest` chooses the
+#' # `which` by row index into cihitbls(); `dest` chooses the
 #' # output path and `timeout` bounds each request (seconds).
-#' f3 <- try(fetch_cihi_table(1,
+#' f3 <- try(cihiget(1,
 #'   dest = tempfile(fileext = ".xlsx"),
 #'   timeout = 60
 #' ))
 #'
 #' # An ambiguous substring errors and lists the candidates:
-#' try(fetch_cihi_table("data"))
+#' try(cihiget("data"))
 #' }
 #' @export
-fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
+cihiget <- function(which, dest = NULL, timeout = 120L) {
   if (!requireNamespace("rmoriebricklayer", quietly = TRUE)) {
-    stop("fetch_cihi_table() needs 'rmoriebricklayer' for the shared ",
+    stop("cihiget() needs 'rmoriebricklayer' for the shared ",
       "fetch-with-fallback engine.",
       call. = FALSE
     )
   }
-  cat_df <- load_cihi_data_tables()
+  cat_df <- cihitbls()
   if (!is.numeric(timeout) || length(timeout) != 1L || !is.finite(timeout) ||
         timeout <= 0) {
     stop("`timeout` must be a single positive number of seconds.",
@@ -119,7 +119,7 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
     if (length(which) != 1L || is.na(which) || which != trunc(which) ||
           which < 1 || which > nrow(cat_df)) {
       stop(sprintf("`which` must be a whole number between 1 and %d (a row of ",
-                   nrow(cat_df)), "load_cihi_data_tables()) or a title substring.",
+                   nrow(cat_df)), "cihitbls()) or a title substring.",
            call. = FALSE)
     }
     idx <- as.integer(which)
@@ -156,8 +156,8 @@ fetch_cihi_table <- function(which, dest = NULL, timeout = 120L) {
 
 # The shared fetch-with-fallback engine; one seam for the tests.
 .rmd_fetch_file <- function(url, dest, wayback, timeout) {
-  rmoriebricklayer::bricklayer_fetch(url, dest, wayback = wayback,
-                                     timeout = timeout)
+  rmoriebricklayer::blfetch(url, dest, wb = wayback,
+                                     tmout = timeout)
 }
 
 # A 200 is not a table: an outage page or an empty body arrives with the

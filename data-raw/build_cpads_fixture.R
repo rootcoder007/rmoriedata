@@ -32,7 +32,7 @@ prov <- list(
     filename="cpads-2021-2022-pumf2.csv",
     direct_url="https://open.canada.ca/data/en/datastore/dump/d2639429-c304-45a6-90b3-770562f4d46d",
     size_bytes=as.integer(file.size(canon)),
-    sha256=sha256_file(canon),
+    sha256=sha256file(canon),
     row_count_data_rows=nrow(real), header_row_present=TRUE),
   wayback=list(captured_at_utc="2026-07-09T03:49:35Z",
     catalogue_page_snapshot="https://web.archive.org/web/20260709034919/https://open.canada.ca/data/en/dataset/736fa9b2-62e4-4e31-aea4-51869605b363",
@@ -43,5 +43,5 @@ prov <- list(
   fallback_chain=list("ckan_resolve","direct_url","wayback","synthetic"))
 writeLines(jsonlite::toJSON(prov, auto_unbox=TRUE, pretty=TRUE, null="null"), prov_out)
 cat("provenance written:", prov_out, " bytes=", file.size(prov_out), "\n")
-res <- make_synthetic_csv(recipe, fx_out, n_rows=500L)
+res <- mksyncsv(recipe, fx_out, nrows=500L)
 cat("fixture:", res$rows, "rows, seed", res$seed, " bytes=", file.size(fx_out), " cols=", ncol(utils::read.csv(fx_out, check.names=FALSE, nrows=1)), "\n")

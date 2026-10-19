@@ -64,7 +64,7 @@ test_that("a damaged cache is discarded and refetched; refresh forces a refetch"
   expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 500L)
   expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL,
                                                  refresh = TRUE)), 600L)
-  expect_equal(nrow(load_chicago_data("arrests", full = TRUE,
+  expect_equal(nrow(chiload("arrests", full = TRUE,
                                       refresh = TRUE)), 600L)
 })
 
@@ -123,7 +123,7 @@ test_that(".rmd_check_download rejects outage pages, empty bodies and the wrong 
   expect_error(rmoriedata:::.rmd_check_download(f, "csv"), "not a csv file")
 })
 
-test_that("fetch_cihi_table refuses an outage page and falls back to Wayback", {
+test_that("cihiget refuses an outage page and falls back to Wayback", {
   fake_cat <- data.frame(
     title = "Stub table", url = "https://live.example/t.xlsx",
     format = "xlsx", wayback_url = "https://web.archive.org/t.xlsx",
@@ -131,7 +131,7 @@ test_that("fetch_cihi_table refuses an outage page and falls back to Wayback", {
   )
   fetched <- character()
   testthat::local_mocked_bindings(
-    load_cihi_data_tables = function(...) fake_cat,
+    cihitbls = function(...) fake_cat,
     .rmd_fetch_file = function(url, dest, wayback, timeout) {
       fetched <<- c(fetched, url)
       if (grepl("archive", url)) {
@@ -144,31 +144,31 @@ test_that("fetch_cihi_table refuses an outage page and falls back to Wayback", {
     .package = "rmoriedata"
   )
   out <- tempfile(fileext = ".xlsx")
-  expect_identical(fetch_cihi_table(1, dest = out), out)
+  expect_identical(cihiget(1, dest = out), out)
   expect_identical(fetched, c(fake_cat$url, fake_cat$wayback_url))
   expect_identical(readBin(out, "raw", 2L), as.raw(c(0x50, 0x4b)))
   # no archived copy: the outage page is refused and removed
   fake_cat$wayback_url <- ""
   out2 <- tempfile(fileext = ".xlsx")
-  expect_error(fetch_cihi_table(1, dest = out2), "not a xlsx file")
+  expect_error(cihiget(1, dest = out2), "not a xlsx file")
   expect_false(file.exists(out2))
 })
 
-test_that("fetch_cihi_table validates its arguments before any network call", {
-  n <- nrow(load_cihi_data_tables())
-  expect_error(fetch_cihi_table(0), "between 1 and")
-  expect_error(fetch_cihi_table(-1), "between 1 and")
-  expect_error(fetch_cihi_table(n + 1), "between 1 and")
-  expect_error(fetch_cihi_table(1.7), "whole number")
-  expect_error(fetch_cihi_table(NA_integer_), "between 1 and")
-  expect_error(fetch_cihi_table(c(1, 2)), "between 1 and")
-  expect_error(fetch_cihi_table(""), "which")
-  expect_error(fetch_cihi_table(NA_character_), "which")
-  expect_error(fetch_cihi_table(1, timeout = -1), "timeout")
-  expect_error(fetch_cihi_table(1, timeout = NA), "timeout")
-  expect_error(fetch_cihi_table(1, timeout = "60"), "timeout")
-  expect_error(fetch_cihi_table(1, timeout = c(1, 2)), "timeout")
-  expect_error(fetch_cihi_table(1, timeout = Inf), "timeout")
+test_that("cihiget validates its arguments before any network call", {
+  n <- nrow(cihitbls())
+  expect_error(cihiget(0), "between 1 and")
+  expect_error(cihiget(-1), "between 1 and")
+  expect_error(cihiget(n + 1), "between 1 and")
+  expect_error(cihiget(1.7), "whole number")
+  expect_error(cihiget(NA_integer_), "between 1 and")
+  expect_error(cihiget(c(1, 2)), "between 1 and")
+  expect_error(cihiget(""), "which")
+  expect_error(cihiget(NA_character_), "which")
+  expect_error(cihiget(1, timeout = -1), "timeout")
+  expect_error(cihiget(1, timeout = NA), "timeout")
+  expect_error(cihiget(1, timeout = "60"), "timeout")
+  expect_error(cihiget(1, timeout = c(1, 2)), "timeout")
+  expect_error(cihiget(1, timeout = Inf), "timeout")
 })
 
 test_that("a live fetch returns UTF-8-marked strings, like the cache does", {
@@ -200,19 +200,19 @@ test_that("a cache whose bytes changed is not served: the sidecar catches it", {
   expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 700L)
 })
 
-test_that("load_cihi_data_tables rejects anything but TRUE or FALSE", {
+test_that("cihitbls rejects anything but TRUE or FALSE", {
   for (bad in list(1, "yes", NA, c(TRUE, FALSE), NULL)) {
-    expect_error(load_cihi_data_tables(archived_only = bad), "TRUE or FALSE")
+    expect_error(cihitbls(archonly = bad), "TRUE or FALSE")
   }
-  expect_lt(nrow(load_cihi_data_tables(archived_only = TRUE)),
-            nrow(load_cihi_data_tables()))
+  expect_lt(nrow(cihitbls(archonly = TRUE)),
+            nrow(cihitbls()))
 })
 
 test_that("a cache that hashes correctly but is not Parquet is refetched, not an error", {
   d <- local_chicago_cache()
   cache <- file.path(d, "arrests_full.parquet")
   writeLines("not parquet at all", cache)
-  writeLines(rmoriebricklayer::sha256_file(cache), paste0(cache, ".sha256"))
+  writeLines(rmoriebricklayer::sha256file(cache), paste0(cache, ".sha256"))
   point_at(good_csv(500), count = 500)
   expect_equal(nrow(rmoriedata:::.rmd_fetch_full("arrests", NULL)), 500L)
   expect_equal(nrow(morie_read_parquet(cache)), 500L)

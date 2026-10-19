@@ -26,7 +26,7 @@ arrest_sample
 }
 \description{
 A CRAN-safe slice of the City of Chicago "Arrests" dataset. For the full
-~1.5M-row dataset use \code{load_chicago_data("arrests", full = TRUE)}.
+~1.5M-row dataset use \code{chiload("arrests", full = TRUE)}.
 }
 \examples{
 data(arrest_sample)
@@ -46,6 +46,6 @@ head(sort(table(arrest_sample$charge_desc), decreasing = TRUE), 5)
 with(arrest_sample, table(race, charge_type))
 }
 \seealso{
-\code{\link{load_chicago_data}}
+\code{\link{chiload}}
 }
 \keyword{datasets}

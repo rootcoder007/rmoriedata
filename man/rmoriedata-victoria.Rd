@@ -14,7 +14,7 @@ Released under CC BY 4.0.
 \description{
 Ten tables from the Crime Statistics Agency's "Latest Victorian crime
 data" release, bundled in the CSV store and reached by slug through
-\code{\link[=morie_data_load]{morie_data_load()}}. Each is Table 01 -- the headline series -- of the
+\code{\link[=mdload]{mdload()}}. Each is Table 01 -- the headline series -- of the
 corresponding published workbook, for the year ending March 2026.
 }
 \details{
@@ -49,11 +49,11 @@ the March 2026 release, not a permanent record of that year.
 }
 \examples{
 # Every bundled Victorian table, by slug.
-cat <- morie_data_catalog()
+cat <- mdcat()
 cat[grepl("^vic_", cat$slug), c("slug", "n_rows", "n_cols")]
 
 # Headline criminal-incident series.
-ci <- morie_data_load("vic_criminal_incidents")
+ci <- mdload("vic_criminal_incidents")
 str(ci)
 
 # Incidents by offence division for the most recent year.
@@ -61,6 +61,6 @@ latest <- ci[ci$Year == max(ci$Year), ]
 tapply(latest$`Incidents Recorded`, latest$`Offence Division`, sum)
 }
 \seealso{
-\code{\link[=morie_data_catalog]{morie_data_catalog()}}, \code{\link[=morie_data_load]{morie_data_load()}}
+\code{\link[=mdcat]{mdcat()}}, \code{\link[=mdload]{mdload()}}
 }
 \keyword{datasets}

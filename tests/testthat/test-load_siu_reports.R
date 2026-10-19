@@ -1,21 +1,21 @@
 
 test_that("the csv bundle is the corpus and the parquet copy matches it", {
-  d <- load_siu_reports()
+  d <- siuload()
   cat <- utils::read.csv(system.file("extdata", "_catalog.csv", package = "rmoriedata"))
   expect_equal(nrow(d), cat$n_rows[cat$slug == "siu_directors_reports"])
-  expect_identical(d, load_siu_reports(format = "csv"))
-  expect_identical(load_siu_reports(format = "parquet"), d)
+  expect_identical(d, siuload(format = "csv"))
+  expect_identical(siuload(format = "parquet"), d)
 })
 
 test_that("each report names its subject officials' service, once per language", {
-  d <- load_siu_reports()
+  d <- siuload()
   expect_true(all(nzchar(d$police_service)))
   expect_false(anyDuplicated(paste(d$drid, d[["_language"]])) > 0L)
   expect_setequal(unique(d[["_language"]]), c("en", "fr"))
 })
 
 test_that("round 8: French legacy reports are French, with their own service", {
-  d <- load_siu_reports()
+  d <- siuload()
   lang <- d[["_language"]]
   row <- function(drid) d[d$drid == drid, , drop = FALSE]
   expect_false(any(d$police_service == "Guelph Police Service" &
@@ -33,7 +33,7 @@ test_that("round 8: French legacy reports are French, with their own service", {
 })
 
 test_that("round 8: a corrigendum is carried on the report it corrects, not counted", {
-  d <- load_siu_reports()
+  d <- siuload()
   expect_false(any(d$drid %in% c("385", "620", "621", "5065")))
   corrected <- d$drid[nzchar(d$corrigenda)]
   expect_true(all(c("328", "329", "521", "522", "4561", "4572") %in% corrected))
@@ -44,10 +44,10 @@ test_that("round 8: a corrigendum is carried on the report it corrects, not coun
 })
 
 test_that("round 8: one coding per column; French rows hold the English case facts", {
-  d <- load_siu_reports()
+  d <- siuload()
   expect_setequal(setdiff(unique(d$charges_recommended), ""), c("FALSE", "TRUE"))
   # the typed table reads it as logical, as panel_reviewed
-  typed <- morie_data_load("siu_directors_reports")
+  typed <- mdload("siu_directors_reports")
   expect_type(typed$charges_recommended, "logical")
   expect_identical(sum(typed$charges_recommended, na.rm = TRUE),
                    sum(d$charges_recommended == "TRUE"))
@@ -73,7 +73,7 @@ test_that("round 8: one coding per column; French rows hold the English case fac
 })
 
 test_that("narrative_summary is the report's own account of the incident", {
-  d <- load_siu_reports()
+  d <- siuload()
   n <- d$narrative_summary
   # every report whose page has an incident account carries it (8 pages have none)
   expect_gte(sum(nzchar(n)), 4600L)

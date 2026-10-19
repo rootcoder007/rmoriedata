@@ -8,9 +8,9 @@ Behavioural guidance for AI coding agents working in this repository.
 small, deliberate set of analyst-facing helpers:
 
 - **Differential privacy + re-identification risk** — `morie_dp_*`,
-  `morie_k_anonymity_verify`, `morie_l_diversity_verify`,
-  `morie_cell_suppress` (base-R only).
-- **Shared C backend** — `morie_core_sha256()` / `morie_core_mean()`
+  `kanonvrf`, `ldivvrf`,
+  `cellsupp` (base-R only).
+- **Shared C backend** — `mdsha()` / `mdmean()`
   delegate to the ecosystem's compiled core via
   `LinkingTo: rmoriebricklayer` (one shared copy of morie's arithmetic;
   see [rmoriebricklayer]). `src/` exists for this and must stay a thin

@@ -32,7 +32,7 @@ complaint_sample
 \description{
 A CRAN-safe slice of the City of Chicago "Crimes -- 2001 to present" dataset
 (reported incidents), filtered to geocoded rows from 2020 onward. For the
-full dataset use \code{load_chicago_data("complaints", full = TRUE)}.
+full dataset use \code{chiload("complaints", full = TRUE)}.
 }
 \examples{
 data(complaint_sample)
@@ -54,6 +54,6 @@ head(sort(table(complaint_sample$primary_type[complaint_sample$domestic]),
 ), 3)
 }
 \seealso{
-\code{\link{load_chicago_data}}
+\code{\link{chiload}}
 }
 \keyword{datasets}

@@ -20,7 +20,7 @@ test_that(".rmd_dl refuses file:// and plain http before sending any header", {
 test_that(".rmd_dl hands every argument to bricklayer's transport, file:// off", {
   seen <- NULL
   local_mocked_bindings(
-    bricklayer_download = function(...) {
+    bldl = function(...) {
       seen <<- list(...)
       invisible(..2)
     },
@@ -31,6 +31,6 @@ test_that(".rmd_dl hands every argument to bricklayer's transport, file:// off",
   expect_identical(seen[[1]], "https://data.rmorie.com/x.csv.gz")
   expect_identical(seen$headers, c(A = "b"))
   expect_identical(seen$size, 10)
-  expect_identical(seen$timeout, 5)
-  expect_false(seen$allow_file)
+  expect_identical(seen$tmout, 5)
+  expect_false(seen$allowfile)
 })

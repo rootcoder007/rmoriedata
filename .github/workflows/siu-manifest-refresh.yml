@@ -4,7 +4,7 @@
 # inst/extdata/siu_drid_manifest.csv.gz, at a polite 2-second rate. It does NOT commit:
 # the manifest is covered by the XMSS-signed _checksums.csv, and that key is stateful
 # (each signature spends a one-time index), so it never leaves the maintainer's machine.
-# A refresh committed without re-signing would fail morie_data_verify() and
+# A refresh committed without re-signing would fail mdverify() and
 # test-data-integrity.R. Download the artifact, copy it into inst/extdata/, then run
 # data-raw/sign_store.R locally and commit both together. No schedule: the package
 # ships its data with a release, not weekly.

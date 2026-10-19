@@ -1,12 +1,12 @@
 # Build the CSV data store from the (retired) parquet store.
 #
 # rmoriedata 0.3.3 ships every table once, as the CSV that rmorie reads by
-# name. morie_data_load() reads that CSV and applies the column names and
+# name. mdload() reads that CSV and applies the column names and
 # classes recorded in inst/extdata/_schema.csv, so a table comes back
 # exactly as the parquet copy did. This script, run once against a tree
 # that still has inst/extdata/parquet/, writes:
 #
-#   inst/extdata/_catalog.csv   slug, source_path, kind, n_rows, n_cols
+#   inst/extdata/_catalog.csv   slug, source_path, kind, nrows, n_cols
 #   inst/extdata/_schema.csv    slug, position, name, class
 #   inst/extdata/vic/*.csv      the Victoria tables, which existed only as
 #                               parquet

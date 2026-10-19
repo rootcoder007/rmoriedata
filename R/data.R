@@ -5,7 +5,7 @@
 #'
 #' A CRAN-safe slice of the City of Chicago "Crimes -- 2001 to present" dataset
 #' (reported incidents), filtered to geocoded rows from 2020 onward. For the
-#' full dataset use \code{load_chicago_data("complaints", full = TRUE)}.
+#' full dataset use \code{chiload("complaints", full = TRUE)}.
 #'
 #' @format A base \code{data.frame} with up to 25,000 rows and 16 columns:
 #' \describe{
@@ -25,7 +25,7 @@
 #' }
 #' @source City of Chicago Open Data Portal, "Crimes - 2001 to present"
 #'   (dataset \code{ijzp-q8t2}). \url{https://data.cityofchicago.org/}
-#' @seealso \code{\link{load_chicago_data}}
+#' @seealso \code{\link{chiload}}
 #' @examples
 #' data(complaint_sample)
 #' dim(complaint_sample)
@@ -49,7 +49,7 @@
 #' Chicago arrests sample
 #'
 #' A CRAN-safe slice of the City of Chicago "Arrests" dataset. For the full
-#' ~1.5M-row dataset use \code{load_chicago_data("arrests", full = TRUE)}.
+#' ~1.5M-row dataset use \code{chiload("arrests", full = TRUE)}.
 #'
 #' @format A base \code{data.frame} with up to 25,000 rows and 8 columns:
 #' \describe{
@@ -64,7 +64,7 @@
 #' }
 #' @source City of Chicago Open Data Portal, "Arrests"
 #'   (dataset \code{dpt3-jri9}). \url{https://data.cityofchicago.org/}
-#' @seealso \code{\link{load_chicago_data}}
+#' @seealso \code{\link{chiload}}
 #' @examples
 #' data(arrest_sample)
 #' dim(arrest_sample)

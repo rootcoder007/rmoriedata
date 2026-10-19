@@ -1,13 +1,13 @@
 # R/vic_data.R -- documentation for the bundled Victorian (Australia) crime
 # tables. No exported code: the tables are reached through
-# morie_data_load("vic_<key>") like every other slug in the store.
+# mdload("vic_<key>") like every other slug in the store.
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
 #' Victorian crime statistics (Crime Statistics Agency Victoria)
 #'
 #' Ten tables from the Crime Statistics Agency's "Latest Victorian crime
 #' data" release, bundled in the CSV store and reached by slug through
-#' [morie_data_load()]. Each is Table 01 -- the headline series -- of the
+#' [mdload()]. Each is Table 01 -- the headline series -- of the
 #' corresponding published workbook, for the year ending March 2026.
 #'
 #' \describe{
@@ -44,14 +44,14 @@
 #'   (the page answers only browsers; archived copy of 7 October 2026:
 #'   \url{https://web.archive.org/web/20261007154657/https://www.crimestatistics.vic.gov.au/crime-statistics/latest-victorian-crime-data}).
 #'   Released under CC BY 4.0.
-#' @seealso [morie_data_catalog()], [morie_data_load()]
+#' @seealso [mdcat()], [mdload()]
 #' @examples
 #' # Every bundled Victorian table, by slug.
-#' cat <- morie_data_catalog()
+#' cat <- mdcat()
 #' cat[grepl("^vic_", cat$slug), c("slug", "n_rows", "n_cols")]
 #'
 #' # Headline criminal-incident series.
-#' ci <- morie_data_load("vic_criminal_incidents")
+#' ci <- mdload("vic_criminal_incidents")
 #' str(ci)
 #'
 #' # Incidents by offence division for the most recent year.

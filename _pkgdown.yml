@@ -30,44 +30,44 @@ reference:
       (OTIS carceral data, CIHI health tables, Chicago crime) that the rmorie
       analysis functions consume.
     contents:
-      - morie_data_catalog
-      - morie_data_load
-      - morie_data_hosted_catalog
-      - morie_data_hosted_login
-      - morie_data_path
-      - morie_data_dictionary
-      - morie_data_checksums
-      - morie_data_verify
-      - load_chicago_data
-      - clear_chicago_cache
-      - load_cihi_data_tables
-      - fetch_cihi_table
-      - load_siu_reports
+      - mdcat
+      - mdload
+      - hostcat
+      - hostlogin
+      - mdpath
+      - mddict
+      - mdsums
+      - mdverify
+      - chiload
+      - chiclr
+      - cihitbls
+      - cihiget
+      - siuload
   - title: Differential privacy
     desc: >
       Calibrated-noise mechanisms (Laplace, Gaussian) for releasing
       privacy-preserving counts, histograms, and means at a stated epsilon.
     contents:
-      - morie_dp_laplace_count
-      - morie_dp_laplace_histogram
-      - morie_dp_gaussian_mean
-      - morie_dp_budget
-      - morie_dp_spent
+      - dplapcnt
+      - dplaphist
+      - dpgmean
+      - dpbudget
+      - dpspent
   - title: Statistical disclosure control
     desc: >
       Re-identification safeguards for microdata releases: k-anonymity and
       l-diversity checks plus small-cell suppression.
     contents:
-      - morie_k_anonymity_verify
-      - morie_l_diversity_verify
-      - morie_cell_suppress
+      - kanonvrf
+      - ldivvrf
+      - cellsupp
   - title: Core utilities
     desc: Shared primitives used across the package.
     contents:
-      - morie_core_mean
-      - morie_core_sha256
+      - mdmean
+      - mdsha
       - ask
-      - morie_data_llm_config
+      - mdllmconf
   - title: Sample data objects
     desc: >
       Small documented data frames bundled for examples and tests
@@ -78,6 +78,6 @@ reference:
   - title: International datasets
     desc: >
       Non-Canadian tables in the bundled store, reached by slug through
-      morie_data_load().
+      mdload().
     contents:
       - rmoriedata-victoria

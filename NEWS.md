@@ -1,3 +1,13 @@
+# rmoriedata 0.4.0
+
+* Short names, without underscores, for every exported function and argument, matching
+  rmoriebricklayer 1.0.0: `morie_data_load()` is `mdload()`, `morie_dp_laplace_count()` is
+  `dplapcnt()`, `load_chicago_data()` is `chiload()`, `quasi_identifiers` is `qids`, and so on.
+  Each help page gives the full form of its short name. The old names are not kept.
+* Needs rmoriebricklayer 1.0.0 or later, and calls it by its new names.
+* The citation gives the CRAN DOI and the CRAN address, and the author's given names in full
+  ("Ruhela VS").
+
 # rmoriedata 0.3.7
 
 * Needs rmoriebricklayer 0.5.14: a new data key from `morie_data_hosted_login()` needs the data

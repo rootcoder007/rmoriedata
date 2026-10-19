@@ -12,20 +12,20 @@ test_that("a re-signed store with a foreign key is refused", {
   tmp <- file.path(tempdir(), "rd_forged")
   dir.create(tmp, showWarnings = FALSE)
   file.copy(list.files(src, full.names = TRUE), tmp, overwrite = TRUE)
-  key <- rmoriebricklayer::pqc_keygen(height = 2)
+  key <- rmoriebricklayer::pqckg(height = 2)
   man <- file.path(tmp, "_checksums.csv")
   bytes <- readBin(man, "raw", n = file.size(man))
-  sig <- rmoriebricklayer::capsule_sign(rmoriebricklayer::core_sha256(bytes),
+  sig <- rmoriebricklayer::cpssign(rmoriebricklayer::csha256(bytes),
                                         key)
-  writeLines(rmoriebricklayer::bricklayer_json_to_json(unclass(sig),
+  writeLines(rmoriebricklayer::tojs(unclass(sig),
                                                        auto_unbox = TRUE),
              file.path(tmp, "_checksums.sig"))
-  writeLines(rmoriebricklayer::bricklayer_json_to_json(
-    unclass(rmoriebricklayer::signing_public_key(key)), auto_unbox = TRUE),
+  writeLines(rmoriebricklayer::tojs(
+    unclass(rmoriebricklayer::signpubkey(key)), auto_unbox = TRUE),
     file.path(tmp, "_signing_key.json"))
   op <- options(rmoriedata.store = tmp)
   rmoriedata:::.rmoriedata_reset_cache()
-  expect_error(rmoriedata::morie_data_verify(),
+  expect_error(rmoriedata::mdverify(),
                "does not match the root pinned")
   options(op)
   rmoriedata:::.rmoriedata_reset_cache()
@@ -37,11 +37,11 @@ test_that("every table loads its declared rows in a C locale", {
   Sys.setlocale("LC_CTYPE", "C")
   Sys.setlocale("LC_COLLATE", "C")
   rmoriedata:::.rmoriedata_reset_cache()
-  cat_ <- rmoriedata::morie_data_catalog()
+  cat_ <- rmoriedata::mdcat()
   cat_ <- cat_[cat_$kind == "table", ]
   short <- 0L
   for (i in seq_len(nrow(cat_))) {
-    d <- rmoriedata::morie_data_load(cat_$slug[i])
+    d <- rmoriedata::mdload(cat_$slug[i])
     if (nrow(d) != cat_$n_rows[i]) short <- short + 1L
   }
   Sys.setlocale("LC_CTYPE", old_ctype)

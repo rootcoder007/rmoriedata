@@ -8,7 +8,7 @@
 #' cached as Parquet under \code{tempdir()} for the session; to keep it
 #' across sessions name a directory first, for example
 #' \code{options(rmoriedata.cache_dir = tools::R_user_dir("rmoriedata", "cache"))},
-#' and drop it with \code{\link{clear_chicago_cache}()}. Nothing is written
+#' and drop it with \code{\link{chiclr}()}. Nothing is written
 #' outside \code{tempdir()} unless you set that option. The result can be
 #' returned as a base data frame, a
 #' tibble, or written to a Parquet file whose path is returned -- the last being
@@ -46,15 +46,15 @@
 #'   path when \code{as = "parquet_path"}.
 #' @examples
 #' # `type` selects the dataset; the bundled sample is returned by default.
-#' comp <- load_chicago_data("complaints") # reported incidents
-#' arr <- load_chicago_data("arrests") # arrests
+#' comp <- chiload("complaints") # reported incidents
+#' arr <- chiload("arrests") # arrests
 #' nrow(comp)
 #' nrow(arr)
 #' head(sort(table(comp$primary_type), decreasing = TRUE), 5)
 #'
 #' # `as = "tibble"` returns a tibble when the package is installed.
 #' if (requireNamespace("tibble", quietly = TRUE)) {
-#'   tb <- load_chicago_data("complaints", as = "tibble")
+#'   tb <- chiload("complaints", as = "tibble")
 #'   class(tb)
 #' }
 #'
@@ -62,7 +62,7 @@
 #' # `as = "parquet_path"` writes a Parquet file and returns its path --
 #' # the recommended bridge to Python (pandas.read_parquet). Offline: the
 #' # bundled sample is written, no network.
-#' pq <- load_chicago_data("arrests", as = "parquet_path")
+#' pq <- chiload("arrests", as = "parquet_path")
 #' file.exists(pq)
 #' }
 #'
@@ -74,11 +74,11 @@
 #' # tries an offline-friendly Parquet mirror first when set.
 #' # `fraction = 0.001` takes a share of the dataset (0.1% of all rows)
 #' # instead of a row count; the live total is looked up first.
-#' big <- try(load_chicago_data("complaints", full = TRUE, limit = 200))
+#' big <- try(chiload("complaints", full = TRUE, limit = 200))
 #' if (!inherits(big, "try-error")) nrow(big)
 #' }
 #' @export
-load_chicago_data <- function(type = c("arrests", "complaints"),
+chiload <- function(type = c("arrests", "complaints"),
                               as = c("data.frame", "tibble", "parquet_path"),
                               full = FALSE,
                               mirror = getOption("rmoriedata.mirror", NULL),
@@ -144,15 +144,15 @@ load_chicago_data <- function(type = c("arrests", "complaints"),
 
 #' Clear the cache of full Chicago datasets
 #'
-#' Deletes the Parquet files that \code{load_chicago_data(full = TRUE)}
+#' Deletes the Parquet files that \code{chiload(full = TRUE)}
 #' wrote to the cache directory: \code{tempdir()} by default, or the
 #' directory named in \code{options(rmoriedata.cache_dir = )}.
 #'
 #' @return The cache directory, invisibly.
 #' @examples
-#' clear_chicago_cache()
+#' chiclr()
 #' @export
-clear_chicago_cache <- function() {
+chiclr <- function() {
   d <- .rmd_cache_dir()
   unlink(list.files(d, full.names = TRUE, all.files = TRUE, no.. = TRUE),
          recursive = TRUE)
@@ -285,7 +285,7 @@ clear_chicago_cache <- function() {
   tmp2 <- paste0(tmp, ".sha256")
   on.exit(unlink(c(tmp, tmp2)), add = TRUE)
   morie_write_parquet(as.data.frame(df), tmp)
-  writeLines(rmoriebricklayer::sha256_file(tmp), tmp2)
+  writeLines(rmoriebricklayer::sha256file(tmp), tmp2)
   # data first, then its digest: a reader between the two renames sees
   # the new file against the old sidecar and refetches (a wasted fetch),
   # never the new digest against the old file
@@ -301,7 +301,7 @@ clear_chicago_cache <- function() {
   side <- paste0(path, ".sha256")
   if (!file.exists(side)) return(NULL)
   want <- readLines(side, n = 1L, warn = FALSE)
-  if (!identical(rmoriebricklayer::sha256_file(path), want)) return(NULL)
+  if (!identical(rmoriebricklayer::sha256file(path), want)) return(NULL)
   tryCatch(morie_read_parquet(path), error = function(e) NULL)
 }
 

@@ -15,20 +15,20 @@
   p <- .rmd_credentials_path()
   if (!file.exists(p)) return(NULL)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  d <- tryCatch(rmoriebricklayer::bricklayer_json_from_json(txt),
+  d <- tryCatch(rmoriebricklayer::fromjs(txt),
                 error = function(e) NULL)
   key <- d$hosted_key
   if (is.character(key) && length(key) == 1L && nzchar(key)) key else NULL
 }
 
 # The data service, as the signed services document at rmorie.com describes it
-# (read through rmoriebricklayer when it has bricklayer_services(); an older
+# (read through rmoriebricklayer when it has svcs(); an older
 # bricklayer leaves the address at its default). NULL when the document says
 # the service is off.
 .rmd_services_data <- function() {
   ns <- asNamespace("rmoriebricklayer")
-  if (!exists("bricklayer_services", envir = ns, inherits = FALSE)) return(NULL)
-  tryCatch(get("bricklayer_services", envir = ns)(offline = TRUE)$data,
+  if (!exists("svcs", envir = ns, inherits = FALSE)) return(NULL)
+  tryCatch(get("svcs", envir = ns)(offline = TRUE)$data,
            error = function(e) NULL)
 }
 
@@ -63,7 +63,7 @@
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
   if (!file.exists(p)) return(NULL)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- tryCatch(rmoriebricklayer::bricklayer_json_from_json(txt, simplifyVector = FALSE),
+  m <- tryCatch(rmoriebricklayer::fromjs(txt, simplifyVector = FALSE),
                 error = function(e) NULL)
   for (d in m$datasets) if (identical(d$key, key)) return(d$bytes_gz)
   NULL
@@ -77,10 +77,10 @@
 # The SHA-256 the manifest lists for a table (NA when it lists none, NULL when the table
 # is not listed); `refresh` fetches the manifest again first.
 .rmd_manifest_sha <- function(key, refresh = FALSE) {
-  morie_data_hosted_catalog(refresh = refresh)  # fetches the manifest when stale or asked
+  hostcat(refresh = refresh)  # fetches the manifest when stale or asked
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- rmoriebricklayer::bricklayer_json_from_json(txt, simplifyVector = FALSE)
+  m <- rmoriebricklayer::fromjs(txt, simplifyVector = FALSE)
   for (d in m$datasets) {
     if (identical(d$key, key)) {
       s <- d$sha256
@@ -102,7 +102,7 @@
   want <- .rmd_manifest_sha(key)
   if (is.null(want)) unlisted()
   if (is.na(want)) return(invisible(TRUE))
-  have <- tolower(rmoriebricklayer::sha256_file(dest))
+  have <- tolower(rmoriebricklayer::sha256file(dest))
   if (!identical(have, want)) {
     want <- .rmd_manifest_sha(key, refresh = TRUE)
     if (is.null(want)) unlisted()
@@ -122,7 +122,7 @@
   key <- .rmd_hosted_key()
   if (is.null(key)) {
     stop("the curated tables need your MORIE key: run ",
-         "morie_data_hosted_login(token = ) once (or `rmorie login --token`); ",
+         "hostlogin(token = ) once (or `rmorie login --token`); ",
          .rmd_access_hint(), ".",
          call. = FALSE)
   }
@@ -146,7 +146,7 @@
     }
     if (grepl("401|403|Unauthorized|Forbidden", msg)) {
       stop("the curated-data service rejected the stored key; store a valid one with ",
-           "morie_data_hosted_login(token = ) or sign in again.", call. = FALSE)
+           "hostlogin(token = ) or sign in again.", call. = FALSE)
     }
     stop("data.rmorie.com: ", msg, call. = FALSE)
   }
@@ -161,27 +161,27 @@
 #' Ethereum, World Bank, ...) and serves their tables from the edge. They
 #' open with the MORIE key that rmorie, morie or rmoriebricklayer store
 #' (\code{rmorie login}, \code{rmorie::morie_llm_login()},
-#' \code{rmoriebricklayer::bricklayer_llm_login()}).
-#' \code{morie_data_hosted_catalog()} returns every table with its key,
+#' \code{rmoriebricklayer::dlogin()}).
+#' \code{hostcat()} returns every table with its key,
 #' description, rows and BigQuery source (the manifest is kept for a day);
-#' \code{morie_data_hosted_load("db/table")} returns one table, cached under
+#' \code{hostload("db/table")} returns one table, cached under
 #' the package cache directory (\code{tempdir()} unless
 #' \code{options(rmoriedata.cache_dir = )} names a persistent one).
 #'
 #' @param refresh Fetch again even when a day-old copy is cached.
 #' @param key A \code{db/table} key from the catalog.
-#' @return \code{morie_data_hosted_login()}: the key, invisibly, after storing it
+#' @return \code{hostlogin()}: the key, invisibly, after storing it
 #'   in the shared credentials file.
-#'   \code{morie_data_hosted_catalog()}: a data frame with \code{key},
+#'   \code{hostcat()}: a data frame with \code{key},
 #'   \code{name}, \code{rows} and \code{source};
-#'   \code{morie_data_hosted_load()}: the table as a data frame.
+#'   \code{hostload()}: the table as a data frame.
 #' @examples
 #' \dontrun{
-#' head(morie_data_hosted_catalog())
-#' df <- morie_data_hosted_load("chicago_crime/incidents")
+#' head(hostcat())
+#' df <- hostload("chicago_crime/incidents")
 #' }
 #' @export
-morie_data_hosted_catalog <- function(refresh = FALSE) {
+hostcat <- function(refresh = FALSE) {
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE", call. = FALSE)
   }
@@ -194,7 +194,7 @@ morie_data_hosted_catalog <- function(refresh = FALSE) {
   fresh <- age < 86400
   if (refresh || !fresh) .rmd_data_get("/manifest.json", p, timeout = 60)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- rmoriebricklayer::bricklayer_json_from_json(txt, simplifyVector = FALSE)
+  m <- rmoriebricklayer::fromjs(txt, simplifyVector = FALSE)
   ds <- m$datasets
   if (!length(ds)) {
     return(data.frame(key = character(), name = character(), rows = integer(),
@@ -217,35 +217,35 @@ morie_data_hosted_catalog <- function(refresh = FALSE) {
     stringsAsFactors = FALSE)
 }
 
-#' @rdname morie_data_hosted_catalog
-#' @param token,email,code,open_browser Passed to
-#'   \code{rmoriebricklayer::bricklayer_llm_login()}: a key you already hold
+#' @rdname hostcat
+#' @param token,email,code,openbro Passed to
+#'   \code{rmoriebricklayer::dlogin()}: a key you already hold
 #'   (keys are personal: sign in with GitHub or an emailed code, or ask at
 #'   \url{https://www.rmorie.com/access/}), or an email address (a one-time code is
 #'   sent; pass it as \code{code} in a non-interactive session). With neither,
 #'   the GitHub device flow runs. The service address comes from the signed
-#'   services document (\code{rmoriebricklayer::bricklayer_services()}).
-#' @param ... Passed to \code{rmoriebricklayer::bricklayer_llm_login()}: the
+#'   services document (\code{rmoriebricklayer::svcs()}).
+#' @param ... Passed to \code{rmoriebricklayer::dlogin()}: the
 #'   data access terms and who is asking, which a new key needs
-#'   (\code{accept_terms}, \code{name}, \code{affiliation}, \code{purpose},
-#'   \code{restricted}, \code{supervisor_name}, \code{supervisor_role},
-#'   \code{supervisor_email}); what is not given is asked at the console.
+#'   (\code{accter}, \code{name}, \code{affiliation}, \code{purpose},
+#'   \code{restricted}, \code{supnm}, \code{suprole},
+#'   \code{supemail}); what is not given is asked at the console.
 #' @export
-morie_data_hosted_login <- function(token = NULL, email = NULL, code = NULL,
-                                    open_browser = interactive(), ...) {
-  key <- rmoriebricklayer::bricklayer_llm_login(token = token, email = email,
+hostlogin <- function(token = NULL, email = NULL, code = NULL,
+                                    openbro = interactive(), ...) {
+  key <- rmoriebricklayer::dlogin(token = token, email = email,
                                                 code = code,
-                                                open_browser = open_browser, ...)
+                                                openbro = openbro, ...)
   invisible(key)
 }
 
-#' @rdname morie_data_hosted_catalog
+#' @rdname hostcat
 #' @export
-morie_data_hosted_load <- function(key, refresh = FALSE) {
+hostload <- function(key, refresh = FALSE) {
   ok <- is.character(key) && length(key) == 1L && grepl("/", key, fixed = TRUE) &&
     !startsWith(key, "/") && !endsWith(key, "/")
   if (!ok) {
-    stop("key must be db/table (see morie_data_hosted_catalog())", call. = FALSE)
+    stop("key must be db/table (see hostcat())", call. = FALSE)
   }
   parts <- strsplit(key, "/", fixed = TRUE)[[1L]]
   dest <- file.path(.rmd_data_cache_dir(),

@@ -1,17 +1,17 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-test_that("load_chicago_data returns correct type per `as`", {
+test_that("chiload returns correct type per `as`", {
   expect_s3_class(
-    load_chicago_data("complaints", as = "data.frame"),
+    chiload("complaints", as = "data.frame"),
     "data.frame"
   )
 
   skip_if_not_installed("tibble")
-  expect_s3_class(load_chicago_data("arrests", as = "tibble"), "tbl_df")
+  expect_s3_class(chiload("arrests", as = "tibble"), "tbl_df")
 })
 
 test_that("parquet_path writes a file the native codec reads back", {
-  p <- load_chicago_data("complaints", as = "parquet_path")
+  p <- chiload("complaints", as = "parquet_path")
   expect_true(file.exists(p))
   expect_true(startsWith(normalizePath(p), normalizePath(tempdir())))
   expect_identical(readBin(p, "raw", 4L), charToRaw("PAR1"))
@@ -26,7 +26,7 @@ test_that("the native codec agrees with nanoparquet byte for byte", {
   # codec would only ever be checked against itself, which proves
   # nothing about whether the files are really Parquet.
   skip_if_not_installed("nanoparquet")
-  p <- load_chicago_data("complaints", as = "parquet_path")
+  p <- chiload("complaints", as = "parquet_path")
 
   ours <- morie_read_parquet(p)
   theirs <- as.data.frame(nanoparquet::read_parquet(p))
@@ -66,8 +66,8 @@ test_that("a corrupted cell is detected, so the check above can fail", {
 })
 
 test_that("type + as are validated", {
-  expect_error(load_chicago_data("bogus"), "should be one of")
-  expect_error(load_chicago_data("arrests", as = "xml"), "should be one of")
+  expect_error(chiload("bogus"), "should be one of")
+  expect_error(chiload("arrests", as = "xml"), "should be one of")
 })
 
 test_that("full=TRUE fetches live Chicago data (opt-in only)", {
@@ -77,21 +77,21 @@ test_that("full=TRUE fetches live Chicago data (opt-in only)", {
   if (!identical(tolower(Sys.getenv("RMORIEDATA_TEST_LIVE")), "true")) {
     skip("live network test (set RMORIEDATA_TEST_LIVE=true to run)")
   }
-  df <- load_chicago_data("complaints", full = TRUE)
+  df <- chiload("complaints", full = TRUE)
   expect_s3_class(df, "data.frame")
   expect_gt(nrow(df), 0L)
 })
 
 test_that("limit and fraction are mutually exclusive and validated", {
-  expect_error(load_chicago_data("arrests",
+  expect_error(chiload("arrests",
     full = TRUE, limit = 5,
     fraction = 0.5
   ), "not both")
-  expect_error(load_chicago_data("arrests", full = TRUE, limit = 0))
-  expect_error(load_chicago_data("arrests", full = TRUE, limit = "x"))
-  expect_error(load_chicago_data("arrests", full = TRUE, fraction = 0))
-  expect_error(load_chicago_data("arrests", full = TRUE, fraction = 1.5))
-  expect_error(load_chicago_data("arrests", full = TRUE, fraction = -0.1))
+  expect_error(chiload("arrests", full = TRUE, limit = 0))
+  expect_error(chiload("arrests", full = TRUE, limit = "x"))
+  expect_error(chiload("arrests", full = TRUE, fraction = 0))
+  expect_error(chiload("arrests", full = TRUE, fraction = 1.5))
+  expect_error(chiload("arrests", full = TRUE, fraction = -0.1))
 })
 
 test_that("fraction resolves to a row cap from the live total (mocked)", {
@@ -104,7 +104,7 @@ test_that("fraction resolves to a row cap from the live total (mocked)", {
     },
     .package = "rmoriedata"
   )
-  df <- load_chicago_data("complaints", full = TRUE, fraction = 0.05)
+  df <- chiload("complaints", full = TRUE, fraction = 0.05)
   expect_identical(seen_limit, 50L) # 5 percent of 1000 rows, rounded up
   expect_equal(nrow(df), 50L)
 })
@@ -118,7 +118,7 @@ test_that("limit is passed through verbatim (mocked)", {
     },
     .package = "rmoriedata"
   )
-  load_chicago_data("arrests", full = TRUE, limit = 123)
+  chiload("arrests", full = TRUE, limit = 123)
   expect_equal(seen_limit, 123)
 })
 
@@ -161,6 +161,6 @@ test_that("the cache directory is tempdir() unless the user names one", {
   expect_identical(normalizePath(rmoriedata:::.rmd_cache_dir()),
                    normalizePath(mine))
   writeLines("x", file.path(mine, "arrests_full.parquet"))
-  expect_identical(normalizePath(clear_chicago_cache()), normalizePath(mine))
+  expect_identical(normalizePath(chiclr()), normalizePath(mine))
   expect_length(list.files(mine), 0L)
 })

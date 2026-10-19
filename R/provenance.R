@@ -4,9 +4,9 @@
 #'
 #' Computes the SHA256 digest of every file rmoriedata bundles in
 #' \code{inst/extdata}, using the shared provenance layer
-#' (\code{\link[rmoriebricklayer]{sha256_file}}), and compares each with
+#' (\code{\link[rmoriebricklayer]{sha256file}}), and compares each with
 #' the digest the signed manifest records for it (\code{in_manifest}).
-#' For the full check, signature included, use [morie_data_verify()]; this
+#' For the full check, signature included, use [mdverify()]; this
 #' function is the per-file record an analysis can pin and compare later.
 #'
 #' @return A data frame with one row per bundled file and columns
@@ -18,7 +18,7 @@
 #'   than one directory.
 #' @examples
 #' # One row per bundled file: name, size in bytes, SHA256 digest.
-#' ck <- morie_data_checksums()
+#' ck <- mdsums()
 #' str(ck)
 #' head(ck)
 #'
@@ -30,11 +30,11 @@
 #' # assert it hasn't changed under you in a later session / reinstall.
 #' if (nrow(ck)) {
 #'   pinned <- ck$sha256[1]
-#'   again <- morie_data_checksums()
+#'   again <- mdsums()
 #'   stopifnot(again$sha256[again$path == ck$path[1]] == pinned)
 #' }
 #' @export
-morie_data_checksums <- function() {
+mdsums <- function() {
   dir <- system.file("extdata", package = "rmoriedata")
   empty <- data.frame(
     path = character(), file = character(), bytes = numeric(),
@@ -51,7 +51,7 @@ morie_data_checksums <- function() {
     path = substring(files, nchar(dir) + 2L),
     file = basename(files),
     bytes = file.size(files),
-    sha256 = vapply(files, rmoriebricklayer::sha256_file, character(1)),
+    sha256 = vapply(files, rmoriebricklayer::sha256file, character(1)),
     row.names = NULL,
     stringsAsFactors = FALSE
   )

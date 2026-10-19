@@ -24,8 +24,8 @@ test_that("the writer keeps UTF-8 bytes whether or not the string is marked", {
 })
 
 test_that("the SIU corpus carries the same bytes from CSV and Parquet", {
-  a <- load_siu_reports()
-  b <- load_siu_reports(format = "parquet")
+  a <- siuload()
+  b <- siuload(format = "parquet")
   hit <- NULL
   for (col in names(a)) {
     i <- which(vapply(a[[col]], function(z) any(charToRaw(z) > 0x7f), TRUE))

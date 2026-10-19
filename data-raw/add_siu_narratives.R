@@ -32,7 +32,7 @@ end_re <- paste0("^(Relevant Legislation|Analysis and Director|Evidence|Nature o
                  "Nature des blessures|Incident Commander|Duty Rosters)")
 narrative_of <- function(file) {
   h <- paste(readLines(file, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-  l <- trimws(strsplit(bricklayer_siu_text(h), "\n")[[1]])
+  l <- trimws(strsplit(siutxt(h), "\n")[[1]])
   fn <- "( \\[\\d+\\])?$"
   i <- tail(grep(paste0("^(Incident Narrative|Récit de l.incident|Description de l.incident)", fn), l,
                  ignore.case = TRUE), 1)

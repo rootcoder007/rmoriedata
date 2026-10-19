@@ -1,5 +1,5 @@
 test_that("every catalog entry points at a shipped file", {
-  cat <- morie_data_catalog()
+  cat <- mdcat()
   ed <- system.file("extdata", package = "rmoriedata")
   expect_true(all(file.exists(file.path(ed, cat$source_path))))
   expect_setequal(unique(cat$kind), c("table", "dictionary"))
@@ -10,14 +10,14 @@ test_that("every catalog entry points at a shipped file", {
 })
 
 test_that("the schema covers every table and every table loads to it", {
-  cat <- morie_data_catalog()
+  cat <- mdcat()
   tb <- cat[cat$kind == "table", ]
   s <- rmoriedata:::.rmoriedata_schema()
   expect_setequal(unique(s$slug), tb$slug)
   expect_true(all(s$class %in% c("character", "integer", "numeric",
                                  "logical", "Date")))
   for (i in seq_len(nrow(tb))) {
-    d <- morie_data_load(tb$slug[i], refresh = TRUE)
+    d <- mdload(tb$slug[i], refresh = TRUE)
     ss <- s[s$slug == tb$slug[i], ]
     ss <- ss[order(ss$position), ]
     expect_identical(names(d), ss$name, info = tb$slug[i])
@@ -29,29 +29,29 @@ test_that("the schema covers every table and every table loads to it", {
 })
 
 test_that("loads are cached and refresh re-reads", {
-  d1 <- morie_data_load("arsau_2023_uof_main_records")
-  d2 <- morie_data_load("arsau_2023_uof_main_records")
+  d1 <- mdload("arsau_2023_uof_main_records")
+  d2 <- mdload("arsau_2023_uof_main_records")
   expect_identical(d1, d2)
-  t <- system.time(for (i in 1:50) morie_data_load("arsau_2023_uof_main_records"))
+  t <- system.time(for (i in 1:50) mdload("arsau_2023_uof_main_records"))
   expect_lt(t[["elapsed"]], 1)
-  d3 <- morie_data_load("arsau_2023_uof_main_records", refresh = TRUE)
+  d3 <- mdload("arsau_2023_uof_main_records", refresh = TRUE)
   expect_identical(d1, d3)
-  expect_error(morie_data_load("no_such_table"), "No dataset")
-  expect_error(morie_data_load(c("a", "b")), "single dataset slug")
+  expect_error(mdload("no_such_table"), "No dataset")
+  expect_error(mdload(c("a", "b")), "single dataset slug")
 })
 
 test_that("dictionaries are the shipped JSON, parseable, one per catalog row", {
-  cat <- morie_data_catalog()
+  cat <- mdcat()
   dn <- cat[cat$kind == "dictionary", ]
   expect_gt(nrow(dn), 0)
   skip_if_not_installed("jsonlite")
   for (s in dn$slug) {
-    txt <- morie_data_dictionary(s)
+    txt <- mddict(s)
     expect_type(txt, "character")
     expect_length(txt, 1L)
     expect_type(jsonlite::fromJSON(txt, simplifyVector = FALSE), "list")
   }
-  expect_message(out <- morie_data_dictionary("no_such_dictionary"),
+  expect_message(out <- mddict("no_such_dictionary"),
                  "No dictionary bundled")
   expect_null(out)
 })
@@ -62,7 +62,7 @@ test_that("each table ships once as CSV and once as Parquet, nothing else twice"
   files <- list.files(ed, recursive = TRUE)
   csv <- files[grepl("\\.(csv|csv\\.gz)$", files) & !startsWith(files, "parquet/")]
   expect_false(anyDuplicated(sub("\\.(csv|csv\\.gz)$", "", csv)) > 0)
-  cat <- morie_data_catalog()
+  cat <- mdcat()
   t <- cat[cat$kind == "table", ]
   # the SIU corpus ships once: the parquet route reads the typed table's copy
   expect_setequal(list.files(file.path(ed, "parquet")),

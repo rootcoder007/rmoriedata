@@ -3,13 +3,13 @@
 #'
 #' Open data fixtures for the rmorie package
 #' (https://github.com/rootcoder007/rmorie), with the functions that read
-#' them: [morie_data_catalog()] lists the bundled tables and
-#' [morie_data_load()] loads one; [load_siu_reports()],
-#' [load_chicago_data()], [load_cihi_data_tables()] and [fetch_cihi_table()]
-#' read their datasets, [morie_data_verify()] checks the bundle's
-#' checksums; [morie_data_hosted_login()],
-#' [morie_data_hosted_catalog()] and [morie_data_hosted_load()] reach the
-#' tables served at data.rmorie.com; [ask()] asks a language model about
+#' them: [mdcat()] lists the bundled tables and
+#' [mdload()] loads one; [siuload()],
+#' [chiload()], [cihitbls()] and [cihiget()]
+#' read their datasets, [mdverify()] checks the bundle's
+#' checksums; [hostlogin()],
+#' [hostcat()] and [hostload()] reach the
+#' tables served at data.rmorie.com; [mdask()] asks a language model about
 #' the catalogue; and the differential-privacy and k-anonymity helpers
 #' release aggregates safely. The raw files are also at
 #' `system.file("extdata", package = "rmoriedata")`.

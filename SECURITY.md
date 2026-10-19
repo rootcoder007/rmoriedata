@@ -230,9 +230,9 @@ ITSG-33: Treasury Board of Canada IT Security Guidance. NIST 800-53 Rev 5 modera
 
 - **DP + k-anonymity helpers — done (v0.1.1).** Six exported, base-R-only
   primitives for analysts releasing aggregates without re-identification
-  risk: `morie_dp_laplace_count()`, `morie_dp_gaussian_mean()`,
-  `morie_dp_laplace_histogram()`, `morie_k_anonymity_verify()`,
-  `morie_l_diversity_verify()`, `morie_cell_suppress()`. Round-trip /
+  risk: `dplapcnt()`, `dpgmean()`,
+  `dplaphist()`, `kanonvrf()`,
+  `ldivvrf()`, `cellsupp()`. Round-trip /
   variance-scaling tests under `tests/testthat/`.
 - SLSA L3 attestation on every release.
 - Hash-chained release manifest.

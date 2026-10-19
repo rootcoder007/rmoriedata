@@ -6,7 +6,7 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
                       MORIE_DATA_URL = "https://data.example.test")
   withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
   expect_null(.rmd_hosted_key())
-  expect_error(morie_data_hosted_catalog(), "MORIE key")
+  expect_error(hostcat(), "MORIE key")
   dir.create(file.path(cfg, "morie"), recursive = TRUE)
   writeLines('{"hosted_key": "sk-good", "hosted_user": "me"}',
              file.path(cfg, "morie", "credentials.json"))
@@ -21,7 +21,7 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
     '{"generated_utc":"2026-10-01T00:00:00Z","datasets":[{"db":"chicago_crime",',
     '"table":"incidents","key":"chicago_crime/incidents","rows":3,',
     '"columns":["id","type"],"bytes_gz":10,"sha256":"',
-    rmoriebricklayer::sha256_file(served), '",',
+    rmoriebricklayer::sha256file(served), '",',
     '"source":"bigquery-public-data.chicago_crime.crime",',
     '"meta":{"description":"Chicago Police incidents"}}]}'
   )
@@ -37,26 +37,26 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
       }
       invisible(dest)
     })
-  cat_ <- morie_data_hosted_catalog()
+  cat_ <- hostcat()
   expect_equal(cat_$key, "chicago_crime/incidents")
   expect_equal(cat_$name, "Chicago Police incidents")
   expect_equal(cat_$rows, 3L)
-  morie_data_hosted_catalog()
+  hostcat()
   expect_equal(sum(calls == "/manifest.json"), 1L)
-  df <- morie_data_hosted_load("chicago_crime/incidents")
+  df <- hostload("chicago_crime/incidents")
   expect_equal(nrow(df), 3L)
-  morie_data_hosted_load("chicago_crime/incidents")
+  hostload("chicago_crime/incidents")
   expect_equal(sum(calls == "/chicago_crime/incidents.csv.gz"), 1L)
-  expect_error(morie_data_hosted_load("nokey"), "db/table")
+  expect_error(hostload("nokey"), "db/table")
 })
 
-test_that("morie_data_hosted_login stores a key via rmoriebricklayer; the hub reads it", {
+test_that("hostlogin stores a key via rmoriebricklayer; the hub reads it", {
   cfg <- withr::local_tempdir()
   withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA)
   seen <- NULL
   local_mocked_bindings(
-    bricklayer_llm_login = function(token = NULL, email = NULL, code = NULL,
-                                    open_browser = FALSE, ...) {
+    dlogin = function(token = NULL, email = NULL, code = NULL,
+                                    openbro = FALSE, ...) {
       seen <<- list(token = token, email = email, code = code)
       dir.create(file.path(cfg, "morie"), recursive = TRUE, showWarnings = FALSE)
       writeLines('{"hosted_key": "sk-from-login"}',
@@ -65,11 +65,11 @@ test_that("morie_data_hosted_login stores a key via rmoriebricklayer; the hub re
     },
     .package = "rmoriebricklayer"
   )
-  expect_identical(morie_data_hosted_login(token = "sk-from-login"), "sk-from-login")
+  expect_identical(hostlogin(token = "sk-from-login"), "sk-from-login")
   expect_identical(seen$token, "sk-from-login")
   expect_identical(.rmd_hosted_key(), "sk-from-login")
-  morie_data_hosted_login(email = "someone@example.org", code = "123456",
-                          open_browser = FALSE)
+  hostlogin(email = "someone@example.org", code = "123456",
+                          openbro = FALSE)
   expect_identical(seen$email, "someone@example.org")
   expect_identical(seen$code, "123456")
 })
@@ -93,7 +93,7 @@ test_that("a damaged hosted table (a short row) is refused and its copy removed"
     .package = "rmoriedata"
   )
   dest <- file.path(rmoriedata:::.rmd_data_cache_dir(), "chicago_crime__incidents.csv.gz")
-  expect_error(morie_data_hosted_load("chicago_crime/incidents"),
+  expect_error(hostload("chicago_crime/incidents"),
                "did not parse.*damaged copy was removed")
   expect_false(file.exists(dest))
 })
@@ -115,7 +115,7 @@ test_that("a table failing the manifest's SHA-256 is deleted after a refresh", {
     .package = "rmoriedata"
   )
   dest <- file.path(rmoriedata:::.rmd_data_cache_dir(), "chicago_crime__incidents.csv.gz")
-  expect_error(morie_data_hosted_load("chicago_crime/incidents"),
+  expect_error(hostload("chicago_crime/incidents"),
                "does not match the manifest's SHA-256 .*aaaaaaaaaaaa")
   expect_false(file.exists(dest))
   # the manifest is fetched again before the file is called bad
@@ -128,7 +128,7 @@ test_that("a table failing the manifest's SHA-256 is deleted after a refresh", {
     },
     .package = "rmoriedata"
   )
-  expect_error(morie_data_hosted_load("chicago_crime/incidents", refresh = TRUE),
+  expect_error(hostload("chicago_crime/incidents", refresh = TRUE),
                "not listed in the manifest")
 })
 

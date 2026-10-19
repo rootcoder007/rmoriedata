@@ -8,13 +8,13 @@
 #   Rscript data-raw/apply_siu_review.R         # the reviewed corrections
 #   Rscript data-raw/build_parquet_store.R && Rscript data-raw/sign_store.R
 #
-# The French pages are fetched once with rmoriebricklayer::bricklayer_fetch_siu(drid, dest,
+# The French pages are fetched once with rmoriebricklayer::siufetch(drid, dest,
 # lang = "fr") at a polite rate (one request, then a 2-second pause). What changes:
 #   * rows for report ids that hold no report (no case number and nothing parsed beyond the
 #     id, URL and timestamps) are removed;
 #   * a row whose language was "unknown" takes it from its URL (/en/ or /fr/);
 #   * French rows get their police service from the page (the corpus parser read only the
-#     English label), as bricklayer_parse_siu() reads it;
+#     English label), as siuprs() reads it;
 #   * an incident date written out ("July 18, 2021") in date_of_incident_iso becomes ISO;
 #   * age_affected text that is not an age (stray sentence fragments, a value above 110) is
 #     cleared.
@@ -44,7 +44,7 @@ if (nzchar(dir)) {
   for (i in fr) {
     f <- file.path(dir, sprintf("fr_%s.html", s$drid[i]))
     if (!file.exists(f)) next
-    p <- tryCatch(as.list(bricklayer_parse_siu(f)), error = function(e) NULL)
+    p <- tryCatch(as.list(siuprs(f)), error = function(e) NULL)
     ps <- if (is.null(p)) "" else as.character(p[["police_service"]] %||% "")
     if (length(ps) == 1L && !is.na(ps) && nzchar(ps)) {
       s$police_service[i] <- ps
@@ -55,7 +55,7 @@ if (nzchar(dir)) {
 
 iso <- s$date_of_incident_iso
 bad_iso <- nzchar(iso) & !grepl("^[0-9]{4}-[0-9]{2}-[0-9]{2}$", iso)
-s$date_of_incident_iso[bad_iso] <- bricklayer_siu_iso_date(sub(",", "", iso[bad_iso]))
+s$date_of_incident_iso[bad_iso] <- siudate(sub(",", "", iso[bad_iso]))
 
 age <- s$age_affected
 num <- suppressWarnings(as.numeric(age))

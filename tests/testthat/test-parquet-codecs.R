@@ -31,8 +31,8 @@ test_that("every codec writes a file that reads back identically", {
 })
 
 test_that("the shipped store is GZIP and much smaller than its raw pages", {
-  p <- morie_data_path("siu_directors_reports")
-  d <- morie_data_load("siu_directors_reports", format = "parquet")
+  p <- mdpath("siu_directors_reports")
+  d <- mdload("siu_directors_reports", format = "parquet")
   expect_identical(nrow(d), 4613L)
   # the SIU table's pages hold ~10.6 MB of text; GZIP stores it in ~2 MB
   expect_lt(file.size(p), 3e6)

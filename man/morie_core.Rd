@@ -2,22 +2,22 @@
 % Please edit documentation in R/core_backend.R
 \name{morie_core}
 \alias{morie_core}
-\alias{morie_core_sha256}
-\alias{morie_core_mean}
+\alias{mdsha}
+\alias{mdmean}
 \title{Shared C-core helpers (rmorie ecosystem backend)}
 \usage{
-morie_core_sha256(x)
+mdsha(x)
 
-morie_core_mean(x)
+mdmean(x)
 }
 \arguments{
-\item{x}{For \code{morie_core_sha256()}, a length-1 character vector or a
-raw vector. For \code{morie_core_mean()}, a numeric vector (coerced with
+\item{x}{For \code{mdsha()}, a length-1 character vector or a
+raw vector. For \code{mdmean()}, a numeric vector (coerced with
 \code{\link[=as.numeric]{as.numeric()}}); NA/NaN propagate.}
 }
 \value{
-\code{morie_core_sha256()} returns a 64-character lowercase hex
-digest. \code{morie_core_mean()} returns a length-1 numeric.
+\code{mdsha()} returns a 64-character lowercase hex
+digest. \code{mdmean()} returns a length-1 numeric.
 }
 \description{
 Thin access to the compiled core that ships in
@@ -28,25 +28,25 @@ back fast data-integrity hashing and summaries for the bundled
 datasets without requiring \pkg{rmorie}.
 }
 \examples{
-## ---- morie_core_sha256(): 64-char lowercase hex digest --------------
-morie_core_sha256("abc") # hash a character scalar
-morie_core_sha256("") # the empty string still hashes
-morie_core_sha256(charToRaw("abc")) # identical digest from raw bytes
+## ---- mdsha(): 64-char lowercase hex digest --------------
+mdsha("abc") # hash a character scalar
+mdsha("") # the empty string still hashes
+mdsha(charToRaw("abc")) # identical digest from raw bytes
 
 # character input and its raw-byte equivalent agree:
-identical(morie_core_sha256("abc"), morie_core_sha256(charToRaw("abc")))
+identical(mdsha("abc"), mdsha(charToRaw("abc")))
 
 # Data-integrity pin: verify a value is byte-for-byte what you expect.
-expected <- morie_core_sha256("record-42")
-stopifnot(morie_core_sha256("record-42") == expected)
+expected <- mdsha("record-42")
+stopifnot(mdsha("record-42") == expected)
 
 # Fingerprint a whole object by hashing its serialization.
-morie_core_sha256(serialize(list(a = 1, b = "x"), NULL))
+mdsha(serialize(list(a = 1, b = "x"), NULL))
 
-## ---- morie_core_mean(): fast length-1 mean --------------------------
-morie_core_mean(1:10) # 5.5
-morie_core_mean(c(2, 4, 6)) # 4
-morie_core_mean(c(-1, 0, 1)) # 0
-morie_core_mean(c(1, 2, NA)) # NA propagates (no na.rm)
-morie_core_mean(complaint_sample$year) # mean over a bundled column
+## ---- mdmean(): fast length-1 mean --------------------------
+mdmean(1:10) # 5.5
+mdmean(c(2, 4, 6)) # 4
+mdmean(c(-1, 0, 1)) # 0
+mdmean(c(1, 2, NA)) # NA propagates (no na.rm)
+mdmean(complaint_sample$year) # mean over a bundled column
 }

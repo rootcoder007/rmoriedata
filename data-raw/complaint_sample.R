@@ -1,7 +1,7 @@
 # data-raw/complaint_sample.R
 # Build `complaint_sample`: a CRAN-safe slice of Chicago "Crimes" (reported
 # incidents = complaints). Full data (~8M rows) is fetched on demand by
-# load_chicago_data("complaints", full = TRUE); here we bundle only a sample.
+# chiload("complaints", full = TRUE); here we bundle only a sample.
 #
 # Source: City of Chicago Open Data, "Crimes - 2001 to present"
 #   https://data.cityofchicago.org/resource/ijzp-q8t2.csv  (SODA2 / SoQL)

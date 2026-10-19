@@ -1,6 +1,6 @@
 # data-raw/arrest_sample.R
 # Build `arrest_sample`: a CRAN-safe slice of Chicago "Arrests". Full data
-# (~1.5M rows) is fetched on demand by load_chicago_data("arrests", full = TRUE).
+# (~1.5M rows) is fetched on demand by chiload("arrests", full = TRUE).
 #
 # Source: City of Chicago Open Data, "Arrests"
 #   https://data.cityofchicago.org/resource/dpt3-jri9.csv

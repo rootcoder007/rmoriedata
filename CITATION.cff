@@ -7,8 +7,9 @@ authors:
     orcid: "https://orcid.org/0009-0004-1750-3592"
     affiliation: "Centre for Criminology and Sociolegal Studies, University of Toronto"
     name-particle: "Singh"
-version: "0.3.7"
-url: "https://github.com/rootcoder007/rmoriedata"
+version: "0.4.0"
+doi: "10.32614/CRAN.package.rmoriedata"
+url: "https://rootcoder007.r-universe.dev/rmoriedata"
 repository-code: "https://github.com/rootcoder007/rmoriedata"
 license: "AGPL-3.0-or-later"
 preferred-citation:
@@ -20,4 +21,5 @@ preferred-citation:
       orcid: "https://orcid.org/0009-0004-1750-3592"
       affiliation: "Centre for Criminology and Sociolegal Studies, University of Toronto"
   year: "2026"
-  url: "https://github.com/rootcoder007/rmoriedata"
+  doi: "10.32614/CRAN.package.rmoriedata"
+  url: "https://rootcoder007.r-universe.dev/rmoriedata"

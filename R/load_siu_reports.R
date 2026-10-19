@@ -24,7 +24,7 @@
 #'
 #' \code{charges_recommended} is \code{"FALSE"}, \code{"TRUE"} or empty here
 #' (every column is text); in the typed table,
-#' \code{morie_data_load("siu_directors_reports")}, it is logical
+#' \code{mdload("siu_directors_reports")}, it is logical
 #' (\code{FALSE}, \code{TRUE}, or \code{NA} when the report does not say).
 #' \code{corrigenda} holds the SIU's correction notice of a report (a
 #' corrigendum is applied to the report it corrects, not counted as a
@@ -61,7 +61,7 @@
 #' This loader returns the corpus as text: every column is character and
 #' an empty cell is \code{""}, which is the form the SIU parser writes and
 #' \pkg{rmorie} reads back. The same table is also in the typed data
-#' store: \code{morie_data_load("siu_directors_reports")} applies the
+#' store: \code{mdload("siu_directors_reports")} applies the
 #' bundled schema (integer \code{drid} and counts, \code{NA} for empty
 #' cells), so counts of missing values differ between the two entry
 #' points by construction; pick the typed store for analysis and this
@@ -81,19 +81,19 @@
 #'   \pkg{rmorie} SIU subsystem.
 #' @examples
 #' # Default: every parsed report, as a base data.frame.
-#' all <- load_siu_reports()
+#' all <- siuload()
 #' nrow(all)
 #' ncol(all)
 #'
 #' # `lang` filters the corpus by report language.
-#' en <- load_siu_reports(lang = "en") # English director's reports
-#' fr <- load_siu_reports(lang = "fr") # French director's reports
+#' en <- siuload(lang = "en") # English director's reports
+#' fr <- siuload(lang = "fr") # French director's reports
 #' nrow(en)
 #' nrow(fr)
 #'
 #' # `as = "tibble"` returns a tibble when the tibble package is present.
 #' if (requireNamespace("tibble", quietly = TRUE)) {
-#'   tb <- load_siu_reports(lang = "en", as = "tibble")
+#'   tb <- siuload(lang = "en", as = "tibble")
 #'   class(tb)
 #' }
 #'
@@ -103,7 +103,7 @@
 #'   head(top, 5)
 #' }
 #' @export
-load_siu_reports <- function(lang = c("all", "en", "fr"),
+siuload <- function(lang = c("all", "en", "fr"),
                              as = c("data.frame", "tibble"),
                              format = c("csv", "parquet")) {
   lang <- match.arg(lang)
@@ -118,7 +118,7 @@ load_siu_reports <- function(lang = c("all", "en", "fr"),
   }
   df <- if (format == "parquet") {
     # the typed table's Parquet copy as text: the corpus ships one Parquet copy, not two
-    d <- morie_data_load("siu_directors_reports", format = "parquet")
+    d <- mdload("siu_directors_reports", format = "parquet")
     d[] <- lapply(d, function(z) {
       z <- as.character(z)
       z[is.na(z)] <- ""

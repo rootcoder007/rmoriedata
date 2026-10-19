@@ -7,7 +7,7 @@
 # accepted any scheme.
 .rmd_dl <- function(url, dest, headers = NULL, label = basename(dest),
                     size = NULL, timeout = 3600, quiet = NULL, tty = NULL) {
-  rmoriebricklayer::bricklayer_download(url, dest, headers = headers, label = label,
-                                        size = size, timeout = timeout, quiet = quiet,
-                                        tty = tty, allow_file = FALSE)
+  rmoriebricklayer::bldl(url, dest, headers = headers, label = label,
+                                        size = size, tmout = timeout, quiet = quiet,
+                                        tty = tty, allowfile = FALSE)
 }

@@ -4,11 +4,11 @@
 #
 # One neighbouring relation for every mechanism here: two datasets are neighbours
 # when one is the other with a single record added or removed (unbounded DP). The
-# guarantees compose under that one relation, and morie_dp_budget() adds them up
+# guarantees compose under that one relation, and dpbudget() adds them up
 # (basic composition).
 #
 # Randomness comes from the operating system's CSPRNG
-# (rmoriebricklayer::random_bytes()), never from R's seeded generator: a release
+# (rmoriebricklayer::rndbytes()), never from R's seeded generator: a release
 # drawn from set.seed()-able noise is a deterministic function of the true value and
 # the seed. The counting mechanisms use the exact discrete Laplace sampler of
 # Canonne, Kamath and Steinke (2020), integer arithmetic throughout, so the
@@ -25,7 +25,7 @@
   buf <- .morie_dp_rng$buf
   pos <- .morie_dp_rng$pos %||% 1L
   if (is.null(buf) || pos + n - 1L > length(buf)) {
-    buf <- rmoriebricklayer::random_bytes(max(4096L, n))
+    buf <- rmoriebricklayer::rndbytes(max(4096L, n))
     pos <- 1L
   }
   .morie_dp_rng$buf <- buf
@@ -130,17 +130,17 @@
 #'
 #' @param epsilon Total epsilon available (positive).
 #' @param delta Total delta available (0 for pure DP only).
-#' @return An object of class `"morie_dp_budget"` (an environment, so
+#' @return An object of class `"dpbudget"` (an environment, so
 #'   charges persist across calls).
-#' @seealso [morie_dp_spent()]
+#' @seealso [dpspent()]
 #' @export
 #' @examples
-#' b <- morie_dp_budget(epsilon = 2)
-#' morie_dp_laplace_count(42, epsilon = 1, budget = b)
-#' morie_dp_spent(b)
+#' b <- dpbudget(epsilon = 2)
+#' dplapcnt(42, epsilon = 1, budget = b)
+#' dpspent(b)
 #' # a second release at epsilon = 1.5 would exceed the remaining 1
-#' try(morie_dp_laplace_count(42, epsilon = 1.5, budget = b))
-morie_dp_budget <- function(epsilon, delta = 0) {
+#' try(dplapcnt(42, epsilon = 1.5, budget = b))
+dpbudget <- function(epsilon, delta = 0) {
   if (length(epsilon) != 1L || !is.numeric(epsilon) || is.na(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
@@ -154,21 +154,21 @@ morie_dp_budget <- function(epsilon, delta = 0) {
   b$spent_epsilon <- 0
   b$spent_delta <- 0
   b$releases <- 0L
-  class(b) <- "morie_dp_budget"
+  class(b) <- "dpbudget"
   b
 }
 
 #' What a privacy budget has spent
 #'
-#' @param budget A budget from [morie_dp_budget()].
+#' @param budget A budget from [dpbudget()].
 #' @return A list: `epsilon`, `delta` (the totals), `spent_epsilon`,
 #'   `spent_delta`, `remaining_epsilon`, `remaining_delta`, `releases`.
 #' @export
 #' @examples
-#' b <- morie_dp_budget(1)
-#' invisible(morie_dp_laplace_histogram(c(10, 20), epsilon = 0.25, budget = b))
-#' morie_dp_spent(b)$remaining_epsilon
-morie_dp_spent <- function(budget) {
+#' b <- dpbudget(1)
+#' invisible(dplaphist(c(10, 20), epsilon = 0.25, budget = b))
+#' dpspent(b)$remaining_epsilon
+dpspent <- function(budget) {
   .morie_dp_check_budget(budget)
   list(epsilon = budget$epsilon, delta = budget$delta,
        spent_epsilon = budget$spent_epsilon, spent_delta = budget$spent_delta,
@@ -178,9 +178,9 @@ morie_dp_spent <- function(budget) {
 }
 
 #' @export
-print.morie_dp_budget <- function(x, ...) {
-  s <- morie_dp_spent(x)
-  cat(sprintf(paste0("<morie_dp_budget> epsilon %.4g of %.4g spent, ",
+print.dpbudget <- function(x, ...) {
+  s <- dpspent(x)
+  cat(sprintf(paste0("<dpbudget> epsilon %.4g of %.4g spent, ",
                      "delta %.3g of %.3g, %d release(s)\n"),
               s$spent_epsilon, s$epsilon, s$spent_delta, s$delta, s$releases))
   invisible(x)
@@ -205,8 +205,8 @@ print.morie_dp_budget <- function(x, ...) {
 }
 
 .morie_dp_check_budget <- function(budget) {
-  if (!inherits(budget, "morie_dp_budget")) {
-    stop("`budget` must come from morie_dp_budget().", call. = FALSE)
+  if (!inherits(budget, "dpbudget")) {
+    stop("`budget` must come from dpbudget().", call. = FALSE)
   }
   invisible()
 }
@@ -228,9 +228,9 @@ print.morie_dp_budget <- function(x, ...) {
 #' `set.seed()` has no effect. `epsilon` is used as a rational with
 #' denominator \eqn{2^{20}}, rounded down.
 #'
-#' @param true_count Non-negative integer; the true count.
+#' @param truecnt Non-negative integer; the true count.
 #' @param epsilon Privacy loss (smaller means more noise, stronger privacy).
-#' @param budget Optional [morie_dp_budget()] to charge `epsilon` against.
+#' @param budget Optional [dpbudget()] to charge `epsilon` against.
 #' @return The noised count, a whole number (it can be negative; clip with
 #'   \code{pmax(0, x)} for display, which is post-processing and costs no
 #'   privacy).
@@ -240,24 +240,24 @@ print.morie_dp_budget <- function(x, ...) {
 #' @export
 #' @examples
 #' # A single noised release of a true count of 42 (different every call).
-#' morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
+#' dplapcnt(truecnt = 42, epsilon = 1.0)
 #'
 #' # Smaller epsilon = stronger privacy = more noise.
-#' morie_dp_laplace_count(42, epsilon = 0.1)
-#' morie_dp_laplace_count(42, epsilon = 5.0)
+#' dplapcnt(42, epsilon = 0.1)
+#' dplapcnt(42, epsilon = 5.0)
 #'
 #' # The mechanism is unbiased: averaging many releases returns about the truth
 #' # (for illustration; releasing many answers spends many epsilons).
-#' mean(replicate(500, morie_dp_laplace_count(42, epsilon = 1.0)))
-morie_dp_laplace_count <- function(true_count, epsilon, budget = NULL) {
-  if (length(true_count) != 1L || !is.numeric(true_count) ||
-    !is.finite(true_count) || true_count < 0 ||
-    true_count != floor(true_count)) {
-    stop("`true_count` must be a single non-negative integer.", call. = FALSE)
+#' mean(replicate(500, dplapcnt(42, epsilon = 1.0)))
+dplapcnt <- function(truecnt, epsilon, budget = NULL) {
+  if (length(truecnt) != 1L || !is.numeric(truecnt) ||
+    !is.finite(truecnt) || truecnt < 0 ||
+    truecnt != floor(truecnt)) {
+    stop("`truecnt` must be a single non-negative integer.", call. = FALSE)
   }
   # above 2^53 a double cannot carry the count and a unit of noise distinctly
-  if (true_count > 2^53) {
-    stop("`true_count` must not exceed 2^53: the noise would be lost in ",
+  if (truecnt > 2^53) {
+    stop("`truecnt` must not exceed 2^53: the noise would be lost in ",
          "the representation and the release would equal the true count.",
          call. = FALSE)
   }
@@ -267,7 +267,7 @@ morie_dp_laplace_count <- function(true_count, epsilon, budget = NULL) {
   }
   q <- .morie_dp_rational(epsilon)
   .morie_dp_charge(budget, epsilon)
-  as.numeric(true_count) + .morie_dp_dlaplace1(q[["s"]], q[["t"]])
+  as.numeric(truecnt) + .morie_dp_dlaplace1(q[["s"]], q[["t"]])
 }
 
 #' Differentially-private histogram via the discrete Laplace mechanism
@@ -276,25 +276,25 @@ morie_dp_laplace_count <- function(true_count, epsilon, budget = NULL) {
 #' e^{-\epsilon |y|}}, to each bin count. Adding or removing one record
 #' changes exactly one bin by 1, so the whole histogram is pure
 #' \eqn{\epsilon}-DP under the add-or-remove-one relation. Noise and sampler
-#' as in [morie_dp_laplace_count()].
+#' as in [dplapcnt()].
 #'
 #' @param counts Vector of non-negative whole-number bin counts.
 #' @param epsilon Privacy loss for the whole histogram (positive scalar).
-#' @param budget Optional [morie_dp_budget()] to charge `epsilon` against.
+#' @param budget Optional [dpbudget()] to charge `epsilon` against.
 #' @return A numeric vector of whole numbers, the same length as `counts`
 #'   (values may be negative; clip for display).
 #' @export
 #' @examples
 #' true <- c(120, 45, 8, 230, 17)
-#' morie_dp_laplace_histogram(true, epsilon = 0.5)
+#' dplaphist(true, epsilon = 0.5)
 #'
 #' # Post-process for display: clip negatives (costs no privacy).
-#' pmax(0, morie_dp_laplace_histogram(true, epsilon = 1.0))
+#' pmax(0, dplaphist(true, epsilon = 1.0))
 #'
 #' # Release a private histogram straight from tabulated data.
 #' counts <- as.integer(table(complaint_sample$year))
-#' morie_dp_laplace_histogram(counts, epsilon = 1.0)
-morie_dp_laplace_histogram <- function(counts, epsilon, budget = NULL) {
+#' dplaphist(counts, epsilon = 1.0)
+dplaphist <- function(counts, epsilon, budget = NULL) {
   if (!is.numeric(counts) || length(counts) == 0L || any(!is.finite(counts)) ||
     any(counts < 0) || any(counts != floor(counts))) {
     stop("`counts` must be a non-empty vector of non-negative integers.",
@@ -337,19 +337,19 @@ morie_dp_laplace_histogram <- function(counts, epsilon, budget = NULL) {
 #'   warning); the bounds must be chosen without looking at the data.
 #' @param epsilon,delta Privacy parameters for the whole release.
 #'   `delta` should be well below `1 / length(x)`.
-#' @param budget Optional [morie_dp_budget()] to charge against.
+#' @param budget Optional [dpbudget()] to charge against.
 #' @return A noised mean (single numeric).
 #' @references Balle and Wang (2018), Improving the Gaussian Mechanism for
 #'   Differential Privacy: Analytical Calibration and Optimal Denoising, ICML.
 #' @export
 #' @examples
 #' x <- runif(1000, 0, 1)
-#' morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
+#' dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
 #' mean(x) # the true mean, for comparison
 #'
 #' # Wider bounds raise sensitivity, so the same epsilon adds more noise.
-#' morie_dp_gaussian_mean(x, lower = -5, upper = 5, epsilon = 1.0)
-morie_dp_gaussian_mean <- function(x, lower, upper, epsilon, delta = 1e-6,
+#' dpgmean(x, lower = -5, upper = 5, epsilon = 1.0)
+dpgmean <- function(x, lower, upper, epsilon, delta = 1e-6,
                                    budget = NULL) {
   if (!is.numeric(x) || length(x) == 0L) {
     stop("`x` must be a non-empty numeric vector.", call. = FALSE)

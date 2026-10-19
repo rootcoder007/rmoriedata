@@ -7,9 +7,9 @@
 #   Rscript data-raw/build_parquet_store.R && Rscript data-raw/sign_store.R
 #
 # Crawls both language indexes of siu.on.ca (the same crawl as refresh_siu_manifest.R), and for
-# every report id the corpus lacks fetches its page once (rmoriebricklayer::bricklayer_fetch_siu,
+# every report id the corpus lacks fetches its page once (rmoriebricklayer::siufetch,
 # one request, then a 2-second pause; pages are cached in SIU_NEW_HTML so a rerun fetches
-# nothing twice), parses it with bricklayer_parse_siu(), and appends a corpus row and a manifest
+# nothing twice), parses it with siuprs(), and appends a corpus row and a manifest
 # row. Fields the parser does not read stay empty, as in the rest of the corpus.
 suppressPackageStartupMessages(library(rmoriebricklayer))
 polite <- 2.0
@@ -80,11 +80,11 @@ for (i in seq_len(nrow(new))) {
   lg <- new$lang[i]
   f <- file.path(cache, sprintf("%s_%d.html", lg, d))
   if (!file.exists(f) || file.size(f) < 1000) {
-    ok <- tryCatch({ bricklayer_fetch_siu(d, f, lang = lg); TRUE }, error = function(e) FALSE)
+    ok <- tryCatch({ siufetch(d, f, lang = lg); TRUE }, error = function(e) FALSE)
     Sys.sleep(polite)
     if (!ok) { message("could not fetch ", lg, " ", d); next }
   }
-  p <- tryCatch(as.list(bricklayer_parse_siu(f)), error = function(e) NULL)
+  p <- tryCatch(as.list(siuprs(f)), error = function(e) NULL)
   if (is.null(p)) { message("could not parse ", lg, " ", d); next }
   # the parser names the subject-officer count as the schema did before the corpus renamed it
   if (!is.null(p[["number_of_subject_officers"]])) p[["number_of_subject_officials"]] <- p[["number_of_subject_officers"]]
