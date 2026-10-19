@@ -33,7 +33,7 @@ Useful links:
 
 - <https://github.com/rootcoder007/rmoriedata>
 
-- <https://rmorie.com>
+- <https://www.rmorie.com>
 
 - Report bugs at <https://github.com/rootcoder007/rmoriedata/issues>
 
