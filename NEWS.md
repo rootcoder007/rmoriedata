@@ -5,8 +5,8 @@
   `dplapcnt()`, `load_chicago_data()` is `chiload()`, `quasi_identifiers` is `qids`, and so on.
   Each help page gives the full form of its short name. The old names are not kept.
 * Needs rmoriebricklayer 1.0.0 or later, and calls it by its new names.
-* The citation gives the CRAN DOI and the CRAN address, and the author's given names in full
-  ("Ruhela VS").
+* The citation gives the CRAN DOI and the r-universe page, and the author's given names in
+  full ("Ruhela VS").
 
 # rmoriedata 0.3.7
 
