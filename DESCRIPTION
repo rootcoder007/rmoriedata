@@ -29,6 +29,7 @@ Description: Integrated open data fixtures used by the 'rmorie' package for exam
     the margins.
 License: AGPL (>= 3)
 Encoding: UTF-8
+Language: en-GB
 Depends:
   R (>= 4.3.0)
 Imports:
