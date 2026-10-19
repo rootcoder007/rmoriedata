@@ -29,7 +29,7 @@ COPY . /pkg
 
 # Install the package and verify the Parquet-backed catalogue loads.
 RUN R CMD INSTALL --no-multiarch --with-keep.source /pkg \
-    && Rscript -e 'stopifnot(requireNamespace("rmoriedata", quietly = TRUE)); cat(nrow(rmoriedata::morie_data_catalog()), "datasets in the bundled store\n")'
+    && Rscript -e 'stopifnot(requireNamespace("rmoriedata", quietly = TRUE)); cat(nrow(rmoriedata::mdcat()), "datasets in the bundled store\n")'
 
 # Drop into R with rmoriedata available:  library(rmoriedata)
 CMD ["R"]
