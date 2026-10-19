@@ -10,14 +10,17 @@
 Source:
 [`inst/CITATION`](https://github.com/rootcoder007/rmoriedata/blob/main/inst/CITATION)
 
-Ruhela V (2026). *rmoriedata: Integrated Datasets for the rmorie
-Package*. R package version 0.3.7,
-<https://github.com/rootcoder007/rmoriedata>.
+Ruhela VS (2026). *rmoriedata: Integrated Datasets for the rmorie
+Package*.
+[doi:10.32614/CRAN.package.rmoriedata](https://doi.org/10.32614/CRAN.package.rmoriedata).
+R package version 0.4.0,
+<https://rootcoder007.r-universe.dev/rmoriedata>.
 
     @Manual{ruhela_rmoriedata_2026,
       title = {rmoriedata: Integrated Datasets for the rmorie Package},
       author = {Vansh Singh Ruhela},
       year = {2026},
-      note = {R package version 0.3.7},
-      url = {https://github.com/rootcoder007/rmoriedata},
+      note = {R package version 0.4.0},
+      doi = {10.32614/CRAN.package.rmoriedata},
+      url = {https://rootcoder007.r-universe.dev/rmoriedata},
     }

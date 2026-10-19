@@ -1,0 +1,101 @@
+# l-diversity verification
+
+Checks whether a data.frame satisfies l-diversity: within each
+equivalence class defined by the quasi-identifiers, the sensitive
+attribute must take at least `l` distinct values.
+
+## Usage
+
+``` r
+ldivvrf(data, qids, sensitive, l = 3)
+```
+
+## Arguments
+
+- data:
+
+  data.frame.
+
+- qids:
+
+  Character vector of QI column names.
+
+- sensitive:
+
+  Name of the sensitive-attribute column.
+
+- l:
+
+  Minimum number of distinct sensitive values per class. Default 3.
+
+## Value
+
+A list with class `"morie_l_div"` containing:
+
+- `satisfies`:
+
+  logical.
+
+- `l`:
+
+  the threshold used.
+
+- `min_diversity`:
+
+  integer, lowest per-class distinct count.
+
+- `n_classes`:
+
+  integer.
+
+- `n_violations`:
+
+  integer, classes below the threshold.
+
+- `violating_classes`:
+
+  data.frame of class keys plus their `.diversity` count.
+
+- `summary`:
+
+  human-readable.
+
+## Details
+
+Only known (non-`NA`) sensitive values count towards diversity: a class
+whose rows read `"HIV"`, `NA`, `NA` tells an adversary the attribute is
+HIV or withheld, which is diversity 1. Classes are formed as in
+[`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
+with `NA` in a quasi-identifier as a level of its own.
+
+## Examples
+
+``` r
+df <- data.frame(
+  age = c(25, 25, 25, 25, 32, 32, 32),
+  sex = c("F", "F", "F", "F", "M", "M", "M"),
+  dx  = c("A", "B", "C", "A", "X", "Y", "Z")
+)
+
+# Class {25,F} has 3 distinct dx (A,B,C); {32,M} has 3 (X,Y,Z) -> l=3 holds.
+res <- ldivvrf(df, c("age", "sex"), "dx", l = 3)
+res$summary
+#> [1] "l=3: SATISFIED (min diversity=3; 0/2 classes below threshold)"
+res$satisfies
+#> [1] TRUE
+res$min_diversity
+#> [1] 3
+
+# Demanding l = 4 fails: no class has 4 distinct sensitive values.
+bad <- ldivvrf(df, c("age", "sex"), "dx", l = 4)
+bad$satisfies
+#> [1] FALSE
+bad$violating_classes
+#>   age sex .diversity
+#> 1  25   F          3
+#> 2  32   M          3
+
+# k-anonymity and l-diversity are complementary: check both.
+kanonvrf(df, c("age", "sex"), k = 3)$satisfies
+#> [1] TRUE
+```

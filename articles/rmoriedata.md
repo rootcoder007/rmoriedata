@@ -12,20 +12,20 @@ The package has four surfaces:
 2.  **Named loaders** for the Chicago crime samples, the Ontario SIU
     director’s-report corpus, and the CIHI data-table catalogue.
 3.  **Differential-privacy mechanisms** (`morie_dp_*`).
-4.  **Re-identification-risk verifiers** (`morie_k_anonymity_verify`,
-    `morie_l_diversity_verify`, `morie_cell_suppress`).
+4.  **Re-identification-risk verifiers** (`kanonvrf`, `ldivvrf`,
+    `cellsupp`).
 
 ## 1. Browsing the bundled store
 
 Every bundled table ships as a CSV with a bundled column schema, listed
 in a SHA-256 manifest that is signed with the package’s XMSS key and
 verified on load (see ).
-[`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
+[`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md)
 lists what’s there, with row/column counts and the original source path.
 
 ``` r
 
-cat <- morie_data_catalog()
+cat <- mdcat()
 table(cat$kind)
 #> 
 #> dictionary      table 
@@ -44,7 +44,7 @@ Load any table by its `slug`:
 
 ``` r
 
-iucr <- morie_data_load("chicago_iucr_codes")
+iucr <- mdload("chicago_iucr_codes")
 head(iucr)
 #>   iucr primary_description         secondary_description index_code active
 #> 1 031A             ROBBERY               ARMED - HANDGUN          I   True
@@ -59,9 +59,9 @@ Unknown slugs error with guidance rather than failing silently:
 
 ``` r
 
-morie_data_load("no_such_dataset")
+mdload("no_such_dataset")
 #> Error:
-#> ! No dataset 'no_such_dataset'. See morie_data_catalog() for valid slugs.
+#> ! No dataset 'no_such_dataset'. See mdcat() for valid slugs.
 ```
 
 Some tables ship a data dictionary (JSON). Find them via the catalogue’s
@@ -82,13 +82,13 @@ head(dict_slugs)
 
 Two CRAN-safe slices of the City of Chicago open data ship as
 lazy-loaded data objects, and
-[`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+[`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
 wraps them (with an optional `full = TRUE` network fetch of the complete
 dataset).
 
 ``` r
 
-comp <- load_chicago_data("complaints")
+comp <- chiload("complaints")
 dim(comp)
 #> [1] 25000    16
 head(sort(table(comp$primary_type), decreasing = TRUE), 5)
@@ -96,7 +96,7 @@ head(sort(table(comp$primary_type), decreasing = TRUE), 5)
 #>           THEFT         BATTERY CRIMINAL DAMAGE         ASSAULT   OTHER OFFENSE 
 #>            5825            4800            2362            1975            1760
 
-arr <- load_chicago_data("arrests")
+arr <- chiload("arrests")
 sort(table(arr$charge_type), decreasing = TRUE)
 #> 
 #>     M           F 
@@ -111,7 +111,7 @@ structured columns.
 
 ``` r
 
-en <- load_siu_reports(lang = "en")
+en <- siuload(lang = "en")
 nrow(en)
 #> [1] 2309
 head(sort(table(en$police_service), decreasing = TRUE), 5)
@@ -129,12 +129,12 @@ head(sort(table(en$police_service), decreasing = TRUE), 5)
 A catalogue of the public CIHI data-table workbooks, each with a live
 URL and an Internet Archive fallback so the table stays retrievable if
 CIHI rotates the file.
-([`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
+([`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
 does the actual download and is a network call, so it isn’t run here.)
 
 ``` r
 
-tables <- load_cihi_data_tables()
+tables <- cihitbls()
 nrow(tables)
 #> [1] 232
 head(tables$title, 3)
@@ -149,7 +149,7 @@ Verify you’re using the exact data slice the package shipped:
 
 ``` r
 
-ck <- morie_data_checksums()
+ck <- mdsums()
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
 #> 181  siu_directors_reports.csv.gz 2378925
@@ -157,7 +157,7 @@ head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #> 33            describe_corpus.Rds 1712072
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
-morie_core_sha256("abc")
+mdsha("abc")
 #> [1] "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"
 ```
 
@@ -171,22 +171,22 @@ Release counts, means, and histograms with calibrated noise. Smaller
 set.seed(1)
 
 # A private count of records matching a predicate.
-morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
-#> [1] 42
+dplapcnt(truecnt = 42, epsilon = 1.0)
+#> [1] 40
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
-mean(replicate(2000, morie_dp_laplace_count(42, epsilon = 1.0)))
-#> [1] 42.09
+mean(replicate(2000, dplapcnt(42, epsilon = 1.0)))
+#> [1] 41.997
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
-morie_dp_gaussian_mean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.5094863
+dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
+#> [1] 0.4917308
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
-round(pmax(0, morie_dp_laplace_histogram(counts, epsilon = 1.0)))
-#> [1] 25000     1
+round(pmax(0, dplaphist(counts, epsilon = 1.0)))
+#> [1] 25001     3
 ```
 
 ## 5. Re-identification risk
@@ -202,7 +202,7 @@ df <- data.frame(
 )
 
 # k-anonymity: every quasi-identifier combo must appear >= k times.
-morie_k_anonymity_verify(df, c("age", "sex"), k = 2)$summary
+kanonvrf(df, c("age", "sex"), k = 2)$summary
 #> [1] "k=2: VIOLATED (min class size=1; 1/3 classes below threshold)"
 
 # l-diversity: each class must hold >= l distinct sensitive values.
@@ -211,7 +211,7 @@ df2 <- data.frame(
   sex = c("F", "F", "F", "F", "M", "M", "M"),
   dx  = c("A", "B", "C", "A", "X", "Y", "Z")
 )
-morie_l_diversity_verify(df2, c("age", "sex"), "dx", l = 3)$summary
+ldivvrf(df2, c("age", "sex"), "dx", l = 3)$summary
 #> [1] "l=3: SATISFIED (min diversity=3; 0/2 classes below threshold)"
 ```
 
@@ -223,7 +223,7 @@ the marginals:
 
 tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60), nrow = 3,
               dimnames = list(c("A", "B", "C"), c("X", "Y", "Z")))
-res <- morie_cell_suppress(tbl, threshold = 5)
+res <- cellsupp(tbl, threshold = 5)
 res$suppressed
 #>    X  Y  Z
 #> A NA NA 14
@@ -233,11 +233,10 @@ res$suppressed
 
 ## Bridging to Python
 
-`load_chicago_data(..., as = "parquet_path")` writes a Parquet file and
-returns its path – the recommended hand-off to `pandas.read_parquet()`.
-The file comes from the package’s own Parquet writer, so it loads
-natively in pandas, polars, DuckDB and Arrow with no R runtime. The
-bundled store itself is one CSV per table plus a column schema; read it
-with
-[`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+`chiload(..., as = "parquet_path")` writes a Parquet file and returns
+its path – the recommended hand-off to `pandas.read_parquet()`. The file
+comes from the package’s own Parquet writer, so it loads natively in
+pandas, polars, DuckDB and Arrow with no R runtime. The bundled store
+itself is one CSV per table plus a column schema; read it with
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
 in R or with any CSV reader elsewhere.

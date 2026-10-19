@@ -17,7 +17,7 @@ datasets without requiring rmorie."><meta property="og:image" content="https://r
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -55,9 +55,9 @@ datasets without requiring <span class="pkg">rmorie</span>.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">mdsha</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">morie_core_mean</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">mdmean</span><span class="op">(</span><span class="va">x</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -65,49 +65,49 @@ datasets without requiring <span class="pkg">rmorie</span>.</p>
 
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
-<dd><p>For <code>morie_core_sha256()</code>, a length-1 character vector or a
-raw vector. For <code>morie_core_mean()</code>, a numeric vector (coerced with
+<dd><p>For <code>mdsha()</code>, a length-1 character vector or a
+raw vector. For <code>mdmean()</code>, a numeric vector (coerced with
 <code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">as.numeric()</a></code>); NA/NaN propagate.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>morie_core_sha256()</code> returns a 64-character lowercase hex
-digest. <code>morie_core_mean()</code> returns a length-1 numeric.</p>
+    <p><code>mdsha()</code> returns a 64-character lowercase hex
+digest. <code>mdmean()</code> returns a length-1 numeric.</p>
     </div>
 
     <div class="section level2">
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">## ---- morie_core_sha256(): 64-char lowercase hex digest --------------</span></span></span>
-<span class="r-in"><span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span> <span class="co"># hash a character scalar</span></span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co">## ---- mdsha(): 64-char lowercase hex digest --------------</span></span></span>
+<span class="r-in"><span><span class="fu">mdsha</span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span> <span class="co"># hash a character scalar</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"</span>
-<span class="r-in"><span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="st">""</span><span class="op">)</span> <span class="co"># the empty string still hashes</span></span></span>
+<span class="r-in"><span><span class="fu">mdsha</span><span class="op">(</span><span class="st">""</span><span class="op">)</span> <span class="co"># the empty string still hashes</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"</span>
-<span class="r-in"><span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html" class="external-link">charToRaw</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span><span class="op">)</span> <span class="co"># identical digest from raw bytes</span></span></span>
+<span class="r-in"><span><span class="fu">mdsha</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html" class="external-link">charToRaw</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span><span class="op">)</span> <span class="co"># identical digest from raw bytes</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># character input and its raw-byte equivalent agree:</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span>, <span class="fu">morie_core_sha256</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html" class="external-link">charToRaw</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/identical.html" class="external-link">identical</a></span><span class="op">(</span><span class="fu">mdsha</span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span>, <span class="fu">mdsha</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/rawConversion.html" class="external-link">charToRaw</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] TRUE</span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Data-integrity pin: verify a value is byte-for-byte what you expect.</span></span></span>
-<span class="r-in"><span><span class="va">expected</span> <span class="op">&lt;-</span> <span class="fu">morie_core_sha256</span><span class="op">(</span><span class="st">"record-42"</span><span class="op">)</span></span></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="st">"record-42"</span><span class="op">)</span> <span class="op">==</span> <span class="va">expected</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">expected</span> <span class="op">&lt;-</span> <span class="fu">mdsha</span><span class="op">(</span><span class="st">"record-42"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu">mdsha</span><span class="op">(</span><span class="st">"record-42"</span><span class="op">)</span> <span class="op">==</span> <span class="va">expected</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Fingerprint a whole object by hashing its serialization.</span></span></span>
-<span class="r-in"><span><span class="fu">morie_core_sha256</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/serialize.html" class="external-link">serialize</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span>, b <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu">mdsha</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/serialize.html" class="external-link">serialize</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>a <span class="op">=</span> <span class="fl">1</span>, b <span class="op">=</span> <span class="st">"x"</span><span class="op">)</span>, <span class="cn">NULL</span><span class="op">)</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "abf3149d8418cb5aff681febf06d66e362c42b3b4b1a3e196a1398aa08d60f4f"</span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="co">## ---- morie_core_mean(): fast length-1 mean --------------------------</span></span></span>
-<span class="r-in"><span><span class="fu">morie_core_mean</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="co"># 5.5</span></span></span>
+<span class="r-in"><span><span class="co">## ---- mdmean(): fast length-1 mean --------------------------</span></span></span>
+<span class="r-in"><span><span class="fu">mdmean</span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">10</span><span class="op">)</span> <span class="co"># 5.5</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 5.5</span>
-<span class="r-in"><span><span class="fu">morie_core_mean</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span> <span class="co"># 4</span></span></span>
+<span class="r-in"><span><span class="fu">mdmean</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">4</span>, <span class="fl">6</span><span class="op">)</span><span class="op">)</span> <span class="co"># 4</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 4</span>
-<span class="r-in"><span><span class="fu">morie_core_mean</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="co"># 0</span></span></span>
+<span class="r-in"><span><span class="fu">mdmean</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span> <span class="co"># 0</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0</span>
-<span class="r-in"><span><span class="fu">morie_core_mean</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="co"># NA propagates (no na.rm)</span></span></span>
+<span class="r-in"><span><span class="fu">mdmean</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span>, <span class="cn">NA</span><span class="op">)</span><span class="op">)</span> <span class="co"># NA propagates (no na.rm)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] NA</span>
-<span class="r-in"><span><span class="fu">morie_core_mean</span><span class="op">(</span><span class="va">complaint_sample</span><span class="op">$</span><span class="va">year</span><span class="op">)</span> <span class="co"># mean over a bundled column</span></span></span>
+<span class="r-in"><span><span class="fu">mdmean</span><span class="op">(</span><span class="va">complaint_sample</span><span class="op">$</span><span class="va">year</span><span class="op">)</span> <span class="co"># mean over a bundled column</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2020</span>
 </code></pre></div>
     </div>

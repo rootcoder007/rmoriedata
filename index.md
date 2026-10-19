@@ -10,7 +10,7 @@ base-R helpers. Its core job remains the `inst/extdata/` files used by
 Install the current release from r-universe (prebuilt binaries for macOS
 and Windows), which can be newer than CRAN. rmoriebricklayer, its
 companion, is named too, so an older copy already installed is replaced:
-rmoriedata needs rmoriebricklayer 0.5.14 or later.
+rmoriedata needs rmoriebricklayer 1.0.0 or later.
 
 With [pak](https://pak.r-lib.org) (progress bars, parallel downloads,
 compiler output hidden unless a build fails, and the named packages
@@ -63,7 +63,7 @@ The 175 databases (716 tables on 2026-10-13) the MORIE project
 materialises from BigQuery public datasets and the survey, court and
 justice data its ledger uses are served from the edge and opened by the
 MORIE key:
-[`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+[`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
 signs in with GitHub or an emailed code, or ask at
 <https://www.rmorie.com/access/>; the terms are at
 <https://www.rmorie.com/data-license/>. The ICPSR, NCVS 38604 and a2aj
@@ -75,9 +75,9 @@ change without a release.
 
 ``` r
 
-morie_data_hosted_login(token = "...")         # the key from rmorie.com/access; login() (GitHub) and login(email = ) still work
-cat_ <- morie_data_hosted_catalog()            # key, rows, columns, source dataset
-df <- morie_data_hosted_load("fec_cm_2020/fec_cm_2020")
+hostlogin(token = "...")         # the key from rmorie.com/access; login() (GitHub) and login(email = ) still work
+cat_ <- hostcat()            # key, rows, columns, source dataset
+df <- hostload("fec_cm_2020/fec_cm_2020")
 ```
 
 The key lands in the credentials file that rmorie, morie and
@@ -86,17 +86,16 @@ opens the tables only; it is never a language model.
 
 ## Asking a language model
 
-[`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-puts a question about the datasets to a language model you bring: a
-provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq,
-Mistral and more, each from its usual variable), an Ollama server, or an
-OpenAI-compatible server of your own. The model gets the catalogue and
-every function of rmoriedata and rmoriebricklayer, with tools to read
-their help.
+`ask()` puts a question about the datasets to a language model you
+bring: a provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter,
+Groq, Mistral and more, each from its usual variable), an Ollama server,
+or an OpenAI-compatible server of your own. The model gets the catalogue
+and every function of rmoriedata and rmoriebricklayer, with tools to
+read their help.
 
 ``` r
 
-Sys.setenv(ANTHROPIC_API_KEY = "...")          # or morie_data_llm_config(anthropic.key = "...")
+Sys.setenv(ANTHROPIC_API_KEY = "...")          # or mdllmconf(anthropic.key = "...")
 ask("which tables cover police stops?")
 ask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 ```
@@ -108,14 +107,14 @@ ask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 library(rmoriedata)
 
 # Browse and load a bundled table by slug.
-cat <- morie_data_catalog()
+cat <- mdcat()
 head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
-iucr <- morie_data_load("chicago_iucr_codes")
+iucr <- mdload("chicago_iucr_codes")
 
 # Release a private count, then check a table for re-identification risk.
-morie_dp_laplace_count(true_count = 42, epsilon = 1.0)
+dplapcnt(true_count = 42, epsilon = 1.0)
 df <- data.frame(age = c(25, 25, 25, 40), sex = c("F", "F", "F", "M"))
-morie_k_anonymity_verify(df, c("age", "sex"), k = 2)$summary
+kanonvrf(df, c("age", "sex"), k = 2)$summary
 ```
 
 See
@@ -128,41 +127,41 @@ A small, deliberate set of base-R helpers (the bulk of the package is
 still data):
 
 - **Data access** —
-  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md),
-  [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md),
-  [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md),
-  [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md);
-  [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+  [`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md),
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md),
+  [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md);
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
   checks every bundled file against the signed manifest.
 - **Ontario SIU director’s reports** —
-  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md)
   returns the reviewed corpus (one row per report, French and English,
   with corrigenda applied).
 - **CIHI data tables** —
-  [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
+  [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
   lists the open workbooks and
-  [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
+  [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
   downloads one (live, with a Wayback fallback).
 - **Chicago** —
-  [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
   (below) and
-  [`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md)
+  [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
   for the cached full datasets.
 - **Differential privacy + re-identification risk** —
-  [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md),
-  [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md),
-  [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md),
-  [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md),
-  [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md),
-  [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md);
-  [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
+  [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md),
+  [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md),
+  [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md);
+  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
   holds an epsilon (and delta) the releases draw down, and
-  [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md)
+  [`dpspent()`](https://rootcoder007.github.io/rmoriedata/reference/dpspent.md)
   reports what has been spent.
 - **Shared compiled core** —
-  [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   and
-  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  [`mdmean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   delegate to the family’s C core via `LinkingTo: rmoriebricklayer` (one
   source of truth).
 
@@ -175,14 +174,14 @@ Chicago open data; the full datasets are fetched on demand and cached.
 
 library(rmoriedata)
 data(complaint_sample)                       # bundled sample, offline
-crimes <- load_chicago_data("complaints", full = TRUE, limit = 200)  # the full data, first 200 rows
+crimes <- chiload("complaints", full = TRUE, limit = 200)  # the full data, first 200 rows
 # omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)
-pq <- load_chicago_data("arrests", as = "parquet_path")  # Parquet for Python
+pq <- chiload("arrests", as = "parquet_path")  # Parquet for Python
 ```
 
 ``` python
 import pandas as pd
-df = pd.read_parquet(pq)                      # path printed by load_chicago_data
+df = pd.read_parquet(pq)                      # path printed by chiload
 
 # Or read the bundled .rda directly (no R install) — use the date_iso column,
 # since POSIXct does not roundtrip cleanly through pyreadr:
@@ -190,8 +189,8 @@ import pyreadr
 complaints = pyreadr.read_r("rmoriedata/data/complaint_sample.rda")["complaint_sample"]
 ```
 
-Every bundled table also ships as Parquet: `morie_data_path("<slug>")`
-gives the verified path, `pd.read_parquet()` reads it.
+Every bundled table also ships as Parquet: `mdpath("<slug>")` gives the
+verified path, `pd.read_parquet()` reads it.
 
 **Recommended Python bridge:** the Parquet path (`as = "parquet_path"`)
 — typed, columnar, read natively by pandas/polars/duckdb with correct
@@ -210,7 +209,9 @@ trigger a reviewer pushback. Splitting the data out keeps `rmorie` lean
 If you use rmoriedata in your research, please cite the software:
 
 > Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie
-> Package.* <https://github.com/rootcoder007/rmoriedata>
+> Package.* R package version 0.4.0.
+> <doi:10.32614/CRAN.package.rmoriedata>.
+> <https://rootcoder007.r-universe.dev/rmoriedata>
 
 BibTeX (or run `citation("rmoriedata")` after installation for the entry
 stamped with the exact installed version, sourced from `inst/CITATION`):
@@ -220,7 +221,8 @@ stamped with the exact installed version, sourced from `inst/CITATION`):
   title  = {rmoriedata: Integrated Datasets for the rmorie Package},
   author = {Ruhela, Vansh Singh},
   year   = {2026},
-  url    = {https://github.com/rootcoder007/rmoriedata}
+  doi    = {10.32614/CRAN.package.rmoriedata},
+  url    = {https://rootcoder007.r-universe.dev/rmoriedata}
 }
 ```
 

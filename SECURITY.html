@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -258,7 +258,7 @@
 <li>Same-day yank procedure documented.</li>
 </ul><p><strong>Wave 2 — in progress / done</strong></p>
 <ul><li>
-<strong>DP + k-anonymity helpers — done (v0.1.1).</strong> Six exported, base-R-only primitives for analysts releasing aggregates without re-identification risk: <code><a href="reference/morie_dp_laplace_count.html">morie_dp_laplace_count()</a></code>, <code><a href="reference/morie_dp_gaussian_mean.html">morie_dp_gaussian_mean()</a></code>, <code><a href="reference/morie_dp_laplace_histogram.html">morie_dp_laplace_histogram()</a></code>, <code><a href="reference/morie_k_anonymity_verify.html">morie_k_anonymity_verify()</a></code>, <code><a href="reference/morie_l_diversity_verify.html">morie_l_diversity_verify()</a></code>, <code><a href="reference/morie_cell_suppress.html">morie_cell_suppress()</a></code>. Round-trip / variance-scaling tests under <code>tests/testthat/</code>.</li>
+<strong>DP + k-anonymity helpers — done (v0.1.1).</strong> Six exported, base-R-only primitives for analysts releasing aggregates without re-identification risk: <code><a href="reference/dplapcnt.html">dplapcnt()</a></code>, <code><a href="reference/dpgmean.html">dpgmean()</a></code>, <code><a href="reference/dplaphist.html">dplaphist()</a></code>, <code><a href="reference/kanonvrf.html">kanonvrf()</a></code>, <code><a href="reference/ldivvrf.html">ldivvrf()</a></code>, <code><a href="reference/cellsupp.html">cellsupp()</a></code>. Round-trip / variance-scaling tests under <code>tests/testthat/</code>.</li>
 <li>SLSA L3 attestation on every release.</li>
 <li>Hash-chained release manifest.</li>
 <li>

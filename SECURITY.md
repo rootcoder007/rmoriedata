@@ -237,12 +237,12 @@ ITSG-33: Treasury Board of Canada IT Security Guidance. NIST 800-53 Rev
 - **DP + k-anonymity helpers — done (v0.1.1).** Six exported,
   base-R-only primitives for analysts releasing aggregates without
   re-identification risk:
-  [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md),
-  [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md),
-  [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md),
-  [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md),
-  [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md),
-  [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md).
+  [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md),
+  [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md),
+  [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md).
   Round-trip / variance-scaling tests under `tests/testthat/`.
 - SLSA L3 attestation on every release.
 - Hash-chained release manifest.

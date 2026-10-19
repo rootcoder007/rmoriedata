@@ -26,7 +26,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -86,19 +86,18 @@ catalogue.</li>
 (<code>morie_dp_*</code>).</li>
 <li>
 <strong>Re-identification-risk verifiers</strong>
-(<code>morie_k_anonymity_verify</code>,
-<code>morie_l_diversity_verify</code>,
-<code>morie_cell_suppress</code>).</li>
+(<code>kanonvrf</code>, <code>ldivvrf</code>,
+<code>cellsupp</code>).</li>
 </ol>
 <div class="section level2">
 <h2 id="browsing-the-bundled-store">1. Browsing the bundled store<a class="anchor" aria-label="anchor" href="#browsing-the-bundled-store"></a>
 </h2>
 <p>Every bundled table ships as a CSV with a bundled column schema,
 listed in a SHA-256 manifest that is signed with the package’s XMSS key
-and verified on load (see ). <code><a href="../reference/morie_data_catalog.html">morie_data_catalog()</a></code> lists
-what’s there, with row/column counts and the original source path.</p>
+and verified on load (see ). <code><a href="../reference/mdcat.html">mdcat()</a></code> lists what’s there,
+with row/column counts and the original source path.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mdcat.html">mdcat</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; dictionary      table </span></span>
@@ -113,7 +112,7 @@ what’s there, with row/column counts and the original source path.</p>
 <span><span class="co">#&gt; 8                   arsau_2023_uof_weapon_records_invaliddata      5      5</span></span></code></pre></div>
 <p>Load any table by its <code>slug</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">iucr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_load.html">morie_data_load</a></span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">iucr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mdload.html">mdload</a></span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">iucr</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   iucr primary_description         secondary_description index_code active</span></span>
 <span><span class="co">#&gt; 1 031A             ROBBERY               ARMED - HANDGUN          I   True</span></span>
@@ -124,9 +123,9 @@ what’s there, with row/column counts and the original source path.</p>
 <span><span class="co">#&gt; 6 041B             BATTERY    AGGRAVATED - OTHER FIREARM          I   True</span></span></code></pre></div>
 <p>Unknown slugs error with guidance rather than failing silently:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/morie_data_load.html">morie_data_load</a></span><span class="op">(</span><span class="st">"no_such_dataset"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/mdload.html">mdload</a></span><span class="op">(</span><span class="st">"no_such_dataset"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #BBBB00; font-weight: bold;">Error</span><span style="font-weight: bold;">:</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No dataset 'no_such_dataset'. See morie_data_catalog() for valid slugs.</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BBBB00;">!</span> No dataset 'no_such_dataset'. See mdcat() for valid slugs.</span></span></code></pre></div>
 <p>Some tables ship a data dictionary (JSON). Find them via the
 catalogue’s <code>kind</code> column:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
@@ -143,11 +142,11 @@ catalogue’s <code>kind</code> column:</p>
 <h3 id="chicago-crime-samples">Chicago crime samples<a class="anchor" aria-label="anchor" href="#chicago-crime-samples"></a>
 </h3>
 <p>Two CRAN-safe slices of the City of Chicago open data ship as
-lazy-loaded data objects, and <code><a href="../reference/load_chicago_data.html">load_chicago_data()</a></code> wraps
-them (with an optional <code>full = TRUE</code> network fetch of the
-complete dataset).</p>
+lazy-loaded data objects, and <code><a href="../reference/chiload.html">chiload()</a></code> wraps them (with an
+optional <code>full = TRUE</code> network fetch of the complete
+dataset).</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"complaints"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">comp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chiload.html">chiload</a></span><span class="op">(</span><span class="st">"complaints"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">comp</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 25000    16</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">primary_type</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
@@ -155,7 +154,7 @@ complete dataset).</p>
 <span><span class="co">#&gt;           THEFT         BATTERY CRIMINAL DAMAGE         ASSAULT   OTHER OFFENSE </span></span>
 <span><span class="co">#&gt;            5825            4800            2362            1975            1760</span></span>
 <span></span>
-<span><span class="va">arr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"arrests"</span><span class="op">)</span></span>
+<span><span class="va">arr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/chiload.html">chiload</a></span><span class="op">(</span><span class="st">"arrests"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">arr</span><span class="op">$</span><span class="va">charge_type</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt;     M           F </span></span>
@@ -168,7 +167,7 @@ complete dataset).</p>
 Investigations Unit director’s-report corpus – one row per report, 64
 structured columns.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">en</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_siu_reports.html">load_siu_reports</a></span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"en"</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">en</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/siuload.html">siuload</a></span><span class="op">(</span>lang <span class="op">=</span> <span class="st">"en"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">en</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 2309</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sort.html" class="external-link">sort</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">en</span><span class="op">$</span><span class="va">police_service</span><span class="op">)</span>, decreasing <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>, <span class="fl">5</span><span class="op">)</span></span>
@@ -185,10 +184,10 @@ structured columns.</p>
 </h3>
 <p>A catalogue of the public CIHI data-table workbooks, each with a live
 URL and an Internet Archive fallback so the table stays retrievable if
-CIHI rotates the file. (<code><a href="../reference/fetch_cihi_table.html">fetch_cihi_table()</a></code> does the actual
-download and is a network call, so it isn’t run here.)</p>
+CIHI rotates the file. (<code><a href="../reference/cihiget.html">cihiget()</a></code> does the actual download
+and is a network call, so it isn’t run here.)</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">tables</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/load_cihi_data_tables.html">load_cihi_data_tables</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">tables</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cihitbls.html">cihitbls</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">tables</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 232</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">tables</span><span class="op">$</span><span class="va">title</span>, <span class="fl">3</span><span class="op">)</span></span>
@@ -202,7 +201,7 @@ download and is a network call, so it isn’t run here.)</p>
 </h2>
 <p>Verify you’re using the exact data slice the package shipped:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_data_checksums.html">morie_data_checksums</a></span><span class="op">(</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">ck</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mdsums.html">mdsums</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">ck</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/order.html" class="external-link">order</a></span><span class="op">(</span><span class="op">-</span><span class="va">ck</span><span class="op">$</span><span class="va">bytes</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"file"</span>, <span class="st">"bytes"</span><span class="op">)</span><span class="op">]</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt;                              file   bytes</span></span>
 <span><span class="co">#&gt; 181  siu_directors_reports.csv.gz 2378925</span></span>
@@ -210,7 +209,7 @@ download and is a network call, so it isn’t run here.)</p>
 <span><span class="co">#&gt; 33            describe_corpus.Rds 1712072</span></span>
 <span></span>
 <span><span class="co"># The same compiled SHA256 kernel the whole ecosystem uses:</span></span>
-<span><span class="fu"><a href="../reference/morie_core.html">morie_core_sha256</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="../reference/morie_core.html">mdsha</a></span><span class="op">(</span><span class="st">"abc"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"</span></span></code></pre></div>
 </div>
 <div class="section level2">
@@ -222,22 +221,22 @@ download and is a network call, so it isn’t run here.)</p>
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># A private count of records matching a predicate.</span></span>
-<span><span class="fu"><a href="../reference/morie_dp_laplace_count.html">morie_dp_laplace_count</a></span><span class="op">(</span>true_count <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 42</span></span>
+<span><span class="fu"><a href="../reference/dplapcnt.html">dplapcnt</a></span><span class="op">(</span>truecnt <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 40</span></span>
 <span></span>
 <span><span class="co"># The mechanism is unbiased -- averaging many releases recovers the truth.</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fu"><a href="../reference/morie_dp_laplace_count.html">morie_dp_laplace_count</a></span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 42.09</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fu"><a href="../reference/dplapcnt.html">dplapcnt</a></span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 41.997</span></span>
 <span></span>
 <span><span class="co"># A private mean of bounded data.</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/morie_dp_gaussian_mean.html">morie_dp_gaussian_mean</a></span><span class="op">(</span><span class="va">x</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.5094863</span></span>
+<span><span class="fu"><a href="../reference/dpgmean.html">dpgmean</a></span><span class="op">(</span><span class="va">x</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 0.4917308</span></span>
 <span></span>
 <span><span class="co"># A private histogram straight from tabulated data.</span></span>
 <span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="../reference/morie_dp_laplace_histogram.html">morie_dp_laplace_histogram</a></span><span class="op">(</span><span class="va">counts</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 25000     1</span></span></code></pre></div>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="../reference/dplaphist.html">dplaphist</a></span><span class="op">(</span><span class="va">counts</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1] 25001     3</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="re-identification-risk">5. Re-identification risk<a class="anchor" aria-label="anchor" href="#re-identification-risk"></a>
@@ -251,7 +250,7 @@ before publishing it.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># k-anonymity: every quasi-identifier combo must appear &gt;= k times.</span></span>
-<span><span class="fu"><a href="../reference/morie_k_anonymity_verify.html">morie_k_anonymity_verify</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, k <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span></span>
+<span><span class="fu"><a href="../reference/kanonvrf.html">kanonvrf</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, k <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span></span>
 <span><span class="co">#&gt; [1] "k=2: VIOLATED (min class size=1; 1/3 classes below threshold)"</span></span>
 <span></span>
 <span><span class="co"># l-diversity: each class must hold &gt;= l distinct sensitive values.</span></span>
@@ -260,7 +259,7 @@ before publishing it.</p>
 <span>  sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"F"</span>, <span class="st">"F"</span>, <span class="st">"F"</span>, <span class="st">"M"</span>, <span class="st">"M"</span>, <span class="st">"M"</span><span class="op">)</span>,</span>
 <span>  dx  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span>, <span class="st">"A"</span>, <span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"Z"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/morie_l_diversity_verify.html">morie_l_diversity_verify</a></span><span class="op">(</span><span class="va">df2</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, <span class="st">"dx"</span>, l <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span></span>
+<span><span class="fu"><a href="../reference/ldivvrf.html">ldivvrf</a></span><span class="op">(</span><span class="va">df2</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, <span class="st">"dx"</span>, l <span class="op">=</span> <span class="fl">3</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span></span>
 <span><span class="co">#&gt; [1] "l=3: SATISFIED (min diversity=3; 0/2 classes below threshold)"</span></span></code></pre></div>
 <p>Cell suppression hides small counts and (by default) applies
 complementary suppression so the hidden values can’t be recovered from
@@ -268,7 +267,7 @@ the marginals:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">matrix</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">120</span>, <span class="fl">3</span>, <span class="fl">47</span>, <span class="fl">88</span>, <span class="fl">2</span>, <span class="fl">99</span>, <span class="fl">14</span>, <span class="fl">51</span>, <span class="fl">60</span><span class="op">)</span>, nrow <span class="op">=</span> <span class="fl">3</span>,</span>
 <span>              dimnames <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"A"</span>, <span class="st">"B"</span>, <span class="st">"C"</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"X"</span>, <span class="st">"Y"</span>, <span class="st">"Z"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/morie_cell_suppress.html">morie_cell_suppress</a></span><span class="op">(</span><span class="va">tbl</span>, threshold <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/cellsupp.html">cellsupp</a></span><span class="op">(</span><span class="va">tbl</span>, threshold <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
 <span><span class="va">res</span><span class="op">$</span><span class="va">suppressed</span></span>
 <span><span class="co">#&gt;    X  Y  Z</span></span>
 <span><span class="co">#&gt; A NA NA 14</span></span>
@@ -278,13 +277,13 @@ the marginals:</p>
 <div class="section level2">
 <h2 id="bridging-to-python">Bridging to Python<a class="anchor" aria-label="anchor" href="#bridging-to-python"></a>
 </h2>
-<p><code>load_chicago_data(..., as = "parquet_path")</code> writes a
-Parquet file and returns its path – the recommended hand-off to
+<p><code>chiload(..., as = "parquet_path")</code> writes a Parquet file
+and returns its path – the recommended hand-off to
 <code>pandas.read_parquet()</code>. The file comes from the package’s
 own Parquet writer, so it loads natively in pandas, polars, DuckDB and
 Arrow with no R runtime. The bundled store itself is one CSV per table
-plus a column schema; read it with <code><a href="../reference/morie_data_load.html">morie_data_load()</a></code> in R
-or with any CSV reader elsewhere.</p>
+plus a column schema; read it with <code><a href="../reference/mdload.html">mdload()</a></code> in R or with
+any CSV reader elsewhere.</p>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

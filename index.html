@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.7</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -66,7 +66,7 @@
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
-<p>Install the current release from r-universe (prebuilt binaries for macOS and Windows), which can be newer than CRAN. rmoriebricklayer, its companion, is named too, so an older copy already installed is replaced: rmoriedata needs rmoriebricklayer 0.5.14 or later.</p>
+<p>Install the current release from r-universe (prebuilt binaries for macOS and Windows), which can be newer than CRAN. rmoriebricklayer, its companion, is named too, so an older copy already installed is replaced: rmoriedata needs rmoriebricklayer 1.0.0 or later.</p>
 <p>With <a href="https://pak.r-lib.org" class="external-link">pak</a> (progress bars, parallel downloads, compiler output hidden unless a build fails, and the named packages always upgraded to the current release). Keep the <code>repos</code> arguments as written: under <code>Rscript</code> there is no mirror chooser, so a bare <code><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages()</a></code> stops with “trying to use CRAN without setting a mirror”, and CRAN can carry older versions than r-universe.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"pak"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
@@ -87,21 +87,21 @@
 <div class="section level2">
 <h2 id="curated-tables-at-datarmoriecom">Curated tables at data.rmorie.com<a class="anchor" aria-label="anchor" href="#curated-tables-at-datarmoriecom"></a>
 </h2>
-<p>The 175 databases (716 tables on 2026-10-13) the MORIE project materialises from BigQuery public datasets and the survey, court and justice data its ledger uses are served from the edge and opened by the MORIE key: <code><a href="reference/morie_data_hosted_catalog.html">morie_data_hosted_login()</a></code> signs in with GitHub or an emailed code, or ask at <a href="https://www.rmorie.com/access/" class="external-link uri">https://www.rmorie.com/access/</a>; the terms are at <a href="https://www.rmorie.com/data-license/" class="external-link uri">https://www.rmorie.com/data-license/</a>. The ICPSR, NCVS 38604 and a2aj tables open once you accept their terms at <a href="https://data.rmorie.com/terms" class="external-link uri">https://data.rmorie.com/terms</a>. rmoriedata is self-sufficient: store the key once, then load any <code>db/table</code> key. The endpoint comes from a signed services document the packages verify before use, so it can change without a release.</p>
+<p>The 175 databases (716 tables on 2026-10-13) the MORIE project materialises from BigQuery public datasets and the survey, court and justice data its ledger uses are served from the edge and opened by the MORIE key: <code><a href="reference/hostcat.html">hostlogin()</a></code> signs in with GitHub or an emailed code, or ask at <a href="https://www.rmorie.com/access/" class="external-link uri">https://www.rmorie.com/access/</a>; the terms are at <a href="https://www.rmorie.com/data-license/" class="external-link uri">https://www.rmorie.com/data-license/</a>. The ICPSR, NCVS 38604 and a2aj tables open once you accept their terms at <a href="https://data.rmorie.com/terms" class="external-link uri">https://data.rmorie.com/terms</a>. rmoriedata is self-sufficient: store the key once, then load any <code>db/table</code> key. The endpoint comes from a signed services document the packages verify before use, so it can change without a release.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/morie_data_hosted_catalog.html">morie_data_hosted_login</a></span><span class="op">(</span>token <span class="op">=</span> <span class="st">"..."</span><span class="op">)</span>         <span class="co"># the key from rmorie.com/access; login() (GitHub) and login(email = ) still work</span></span>
-<span><span class="va">cat_</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/morie_data_hosted_catalog.html">morie_data_hosted_catalog</a></span><span class="op">(</span><span class="op">)</span>            <span class="co"># key, rows, columns, source dataset</span></span>
-<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/morie_data_hosted_catalog.html">morie_data_hosted_load</a></span><span class="op">(</span><span class="st">"fec_cm_2020/fec_cm_2020"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/hostcat.html">hostlogin</a></span><span class="op">(</span>token <span class="op">=</span> <span class="st">"..."</span><span class="op">)</span>         <span class="co"># the key from rmorie.com/access; login() (GitHub) and login(email = ) still work</span></span>
+<span><span class="va">cat_</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hostcat.html">hostcat</a></span><span class="op">(</span><span class="op">)</span>            <span class="co"># key, rows, columns, source dataset</span></span>
+<span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/hostcat.html">hostload</a></span><span class="op">(</span><span class="st">"fec_cm_2020/fec_cm_2020"</span><span class="op">)</span></span></code></pre></div>
 <p>The key lands in the credentials file that rmorie, morie and rmoriebricklayer read too, so one key serves every MORIE package. It opens the tables only; it is never a language model.</p>
 </div>
 <div class="section level2">
 <h2 id="asking-a-language-model">Asking a language model<a class="anchor" aria-label="anchor" href="#asking-a-language-model"></a>
 </h2>
-<p><code><a href="reference/ask.html">ask()</a></code> puts a question about the datasets to a language model you bring: a provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, Mistral and more, each from its usual variable), an Ollama server, or an OpenAI-compatible server of your own. The model gets the catalogue and every function of rmoriedata and rmoriebricklayer, with tools to read their help.</p>
+<p><code>ask()</code> puts a question about the datasets to a language model you bring: a provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, Mistral and more, each from its usual variable), an Ollama server, or an OpenAI-compatible server of your own. The model gets the catalogue and every function of rmoriedata and rmoriebricklayer, with tools to read their help.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>ANTHROPIC_API_KEY <span class="op">=</span> <span class="st">"..."</span><span class="op">)</span>          <span class="co"># or morie_data_llm_config(anthropic.key = "...")</span></span>
-<span><span class="fu"><a href="reference/ask.html">ask</a></span><span class="op">(</span><span class="st">"which tables cover police stops?"</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/ask.html">ask</a></span><span class="op">(</span><span class="st">"which tables cover police stops?"</span>, route <span class="op">=</span> <span class="st">"ollama"</span>, model <span class="op">=</span> <span class="st">"qwen3:8b"</span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Sys.setenv.html" class="external-link">Sys.setenv</a></span><span class="op">(</span>ANTHROPIC_API_KEY <span class="op">=</span> <span class="st">"..."</span><span class="op">)</span>          <span class="co"># or mdllmconf(anthropic.key = "...")</span></span>
+<span><span class="fu">ask</span><span class="op">(</span><span class="st">"which tables cover police stops?"</span><span class="op">)</span></span>
+<span><span class="fu">ask</span><span class="op">(</span><span class="st">"which tables cover police stops?"</span>, route <span class="op">=</span> <span class="st">"ollama"</span>, model <span class="op">=</span> <span class="st">"qwen3:8b"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="quick-start">Quick start<a class="anchor" aria-label="anchor" href="#quick-start"></a>
@@ -110,14 +110,14 @@
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rootcoder007.github.io/rmoriedata/">rmoriedata</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Browse and load a bundled table by slug.</span></span>
-<span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/morie_data_catalog.html">morie_data_catalog</a></span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mdcat.html">mdcat</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">cat</span><span class="op">[</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span> <span class="op">==</span> <span class="st">"table"</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"slug"</span>, <span class="st">"n_rows"</span>, <span class="st">"n_cols"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="va">iucr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/morie_data_load.html">morie_data_load</a></span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span>
+<span><span class="va">iucr</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/mdload.html">mdload</a></span><span class="op">(</span><span class="st">"chicago_iucr_codes"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Release a private count, then check a table for re-identification risk.</span></span>
-<span><span class="fu"><a href="reference/morie_dp_laplace_count.html">morie_dp_laplace_count</a></span><span class="op">(</span>true_count <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/dplapcnt.html">dplapcnt</a></span><span class="op">(</span>true_count <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
 <span><span class="va">df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span>age <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">25</span>, <span class="fl">25</span>, <span class="fl">25</span>, <span class="fl">40</span><span class="op">)</span>, sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"F"</span>, <span class="st">"F"</span>, <span class="st">"F"</span>, <span class="st">"M"</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="fu"><a href="reference/morie_k_anonymity_verify.html">morie_k_anonymity_verify</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, k <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
+<span><span class="fu"><a href="reference/kanonvrf.html">kanonvrf</a></span><span class="op">(</span><span class="va">df</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span>, k <span class="op">=</span> <span class="fl">2</span><span class="op">)</span><span class="op">$</span><span class="va">summary</span></span></code></pre></div>
 <p>See <code><a href="articles/rmoriedata.html">vignette("rmoriedata")</a></code> for the full tour.</p>
 </div>
 <div class="section level2">
@@ -126,17 +126,17 @@
 <p>A small, deliberate set of base-R helpers (the bulk of the package is still data):</p>
 <ul>
 <li>
-<strong>Data access</strong> — <code><a href="reference/morie_data_catalog.html">morie_data_catalog()</a></code>, <code><a href="reference/morie_data_load.html">morie_data_load()</a></code>, <code><a href="reference/morie_data_dictionary.html">morie_data_dictionary()</a></code>, <code><a href="reference/morie_data_checksums.html">morie_data_checksums()</a></code>; <code><a href="reference/morie_data_verify.html">morie_data_verify()</a></code> checks every bundled file against the signed manifest.</li>
+<strong>Data access</strong> — <code><a href="reference/mdcat.html">mdcat()</a></code>, <code><a href="reference/mdload.html">mdload()</a></code>, <code><a href="reference/mddict.html">mddict()</a></code>, <code><a href="reference/mdsums.html">mdsums()</a></code>; <code><a href="reference/mdverify.html">mdverify()</a></code> checks every bundled file against the signed manifest.</li>
 <li>
-<strong>Ontario SIU director’s reports</strong> — <code><a href="reference/load_siu_reports.html">load_siu_reports()</a></code> returns the reviewed corpus (one row per report, French and English, with corrigenda applied).</li>
+<strong>Ontario SIU director’s reports</strong> — <code><a href="reference/siuload.html">siuload()</a></code> returns the reviewed corpus (one row per report, French and English, with corrigenda applied).</li>
 <li>
-<strong>CIHI data tables</strong> — <code><a href="reference/load_cihi_data_tables.html">load_cihi_data_tables()</a></code> lists the open workbooks and <code><a href="reference/fetch_cihi_table.html">fetch_cihi_table()</a></code> downloads one (live, with a Wayback fallback).</li>
+<strong>CIHI data tables</strong> — <code><a href="reference/cihitbls.html">cihitbls()</a></code> lists the open workbooks and <code><a href="reference/cihiget.html">cihiget()</a></code> downloads one (live, with a Wayback fallback).</li>
 <li>
-<strong>Chicago</strong> — <code><a href="reference/load_chicago_data.html">load_chicago_data()</a></code> (below) and <code><a href="reference/clear_chicago_cache.html">clear_chicago_cache()</a></code> for the cached full datasets.</li>
+<strong>Chicago</strong> — <code><a href="reference/chiload.html">chiload()</a></code> (below) and <code><a href="reference/chiclr.html">chiclr()</a></code> for the cached full datasets.</li>
 <li>
-<strong>Differential privacy + re-identification risk</strong> — <code><a href="reference/morie_dp_laplace_count.html">morie_dp_laplace_count()</a></code>, <code><a href="reference/morie_dp_gaussian_mean.html">morie_dp_gaussian_mean()</a></code>, <code><a href="reference/morie_dp_laplace_histogram.html">morie_dp_laplace_histogram()</a></code>, <code><a href="reference/morie_cell_suppress.html">morie_cell_suppress()</a></code>, <code><a href="reference/morie_k_anonymity_verify.html">morie_k_anonymity_verify()</a></code>, <code><a href="reference/morie_l_diversity_verify.html">morie_l_diversity_verify()</a></code>; <code><a href="reference/morie_dp_budget.html">morie_dp_budget()</a></code> holds an epsilon (and delta) the releases draw down, and <code><a href="reference/morie_dp_spent.html">morie_dp_spent()</a></code> reports what has been spent.</li>
+<strong>Differential privacy + re-identification risk</strong> — <code><a href="reference/dplapcnt.html">dplapcnt()</a></code>, <code><a href="reference/dpgmean.html">dpgmean()</a></code>, <code><a href="reference/dplaphist.html">dplaphist()</a></code>, <code><a href="reference/cellsupp.html">cellsupp()</a></code>, <code><a href="reference/kanonvrf.html">kanonvrf()</a></code>, <code><a href="reference/ldivvrf.html">ldivvrf()</a></code>; <code><a href="reference/dpbudget.html">dpbudget()</a></code> holds an epsilon (and delta) the releases draw down, and <code><a href="reference/dpspent.html">dpspent()</a></code> reports what has been spent.</li>
 <li>
-<strong>Shared compiled core</strong> — <code><a href="reference/morie_core.html">morie_core_sha256()</a></code> and <code><a href="reference/morie_core.html">morie_core_mean()</a></code> delegate to the family’s C core via <code>LinkingTo: rmoriebricklayer</code> (one source of truth).</li>
+<strong>Shared compiled core</strong> — <code><a href="reference/morie_core.html">mdsha()</a></code> and <code><a href="reference/morie_core.html">mdmean()</a></code> delegate to the family’s C core via <code>LinkingTo: rmoriebricklayer</code> (one source of truth).</li>
 </ul>
 </div>
 <div class="section level2">
@@ -146,17 +146,17 @@
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://rootcoder007.github.io/rmoriedata/">rmoriedata</a></span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/data.html" class="external-link">data</a></span><span class="op">(</span><span class="va">complaint_sample</span><span class="op">)</span>                       <span class="co"># bundled sample, offline</span></span>
-<span><span class="va">crimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>  <span class="co"># the full data, first 200 rows</span></span>
+<span><span class="va">crimes</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chiload.html">chiload</a></span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">200</span><span class="op">)</span>  <span class="co"># the full data, first 200 rows</span></span>
 <span><span class="co"># omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)</span></span>
-<span><span class="va">pq</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/load_chicago_data.html">load_chicago_data</a></span><span class="op">(</span><span class="st">"arrests"</span>, as <span class="op">=</span> <span class="st">"parquet_path"</span><span class="op">)</span>  <span class="co"># Parquet for Python</span></span></code></pre></div>
+<span><span class="va">pq</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/chiload.html">chiload</a></span><span class="op">(</span><span class="st">"arrests"</span>, as <span class="op">=</span> <span class="st">"parquet_path"</span><span class="op">)</span>  <span class="co"># Parquet for Python</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
-<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>df <span class="op">=</span> pd.read_parquet(pq)                      <span class="co"># path printed by load_chicago_data</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>df <span class="op">=</span> pd.read_parquet(pq)                      <span class="co"># path printed by chiload</span></span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a></span>
 <span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co"># Or read the bundled .rda directly (no R install) — use the date_iso column,</span></span>
 <span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co"># since POSIXct does not roundtrip cleanly through pyreadr:</span></span>
 <span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="im">import</span> pyreadr</span>
 <span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>complaints <span class="op">=</span> pyreadr.read_r(<span class="st">"rmoriedata/data/complaint_sample.rda"</span>)[<span class="st">"complaint_sample"</span>]</span></code></pre></div>
-<p>Every bundled table also ships as Parquet: <code>morie_data_path("&lt;slug&gt;")</code> gives the verified path, <code>pd.read_parquet()</code> reads it.</p>
+<p>Every bundled table also ships as Parquet: <code>mdpath("&lt;slug&gt;")</code> gives the verified path, <code>pd.read_parquet()</code> reads it.</p>
 <p><strong>Recommended Python bridge:</strong> the Parquet path (<code>as = "parquet_path"</code>) — typed, columnar, read natively by pandas/polars/duckdb with correct timestamps and no R runtime. <code>pyreadr</code> on the <code>.rda</code> works for quick read-only access but is slower and mangles <code>POSIXct</code> (use <code>date_iso</code>).</p>
 </div>
 <div class="section level2">
@@ -169,15 +169,16 @@
 </h2>
 <p>If you use rmoriedata in your research, please cite the software:</p>
 <blockquote>
-<p>Ruhela, V. S. (2026). <em>rmoriedata: Integrated Datasets for the rmorie Package.</em> <a href="https://github.com/rootcoder007/rmoriedata" class="external-link uri">https://github.com/rootcoder007/rmoriedata</a></p>
+<p>Ruhela, V. S. (2026). <em>rmoriedata: Integrated Datasets for the rmorie Package.</em> R package version 0.4.0. <a href="doi:10.32614/CRAN.package.rmoriedata" class="uri">doi:10.32614/CRAN.package.rmoriedata</a>. <a href="https://rootcoder007.r-universe.dev/rmoriedata" class="external-link uri">https://rootcoder007.r-universe.dev/rmoriedata</a></p>
 </blockquote>
 <p>BibTeX (or run <code>citation("rmoriedata")</code> after installation for the entry stamped with the exact installed version, sourced from <code>inst/CITATION</code>):</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">ruhela_rmoriedata_2026</span>,</span>
 <span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="dt">title</span>  = {rmoriedata: Integrated Datasets for the rmorie Package},</span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="dt">author</span> = {Ruhela, Vansh Singh},</span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
-<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="dt">url</span>    = {https://github.com/rootcoder007/rmoriedata}</span>
-<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="dt">doi</span>    = {10.32614/CRAN.package.rmoriedata},</span>
+<span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="dt">url</span>    = {https://rootcoder007.r-universe.dev/rmoriedata}</span>
+<span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>}</span></code></pre></div>
 <p>See <a href="https://github.com/rootcoder007/rmoriedata/blob/main/CITATION.cff" class="external-link"><code>CITATION.cff</code></a> for the machine-readable metadata GitHub’s “Cite this repository” button uses.</p>
 </div>
 <div class="section level2">

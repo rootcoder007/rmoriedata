@@ -1,51 +1,58 @@
 # Changelog
 
+## rmoriedata 0.4.0
+
+- Short names, without underscores, for every exported function and
+  argument, matching rmoriebricklayer 1.0.0: `morie_data_load()` is
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  `morie_dp_laplace_count()` is
+  [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  `load_chicago_data()` is
+  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md),
+  `quasi_identifiers` is `qids`, and so on. Each help page gives the
+  full form of its short name. The old names are not kept.
+- Needs rmoriebricklayer 1.0.0 or later, and calls it by its new names.
+- The citation gives the CRAN DOI and the r-universe page, and the
+  author’s given names in full (“Ruhela VS”).
+
 ## rmoriedata 0.3.7
 
 - Needs rmoriebricklayer 0.5.14: a new data key from
-  [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  needs the data access terms accepted first, then your name,
-  organisation and why you need the data (and, for the restricted
-  tables, a supervisor, department chair, director or coordinator). Pass
-  them as arguments (`accept_terms = TRUE`, `name =`, `purpose =`, …) or
-  answer at the console.
+  `morie_data_hosted_login()` needs the data access terms accepted
+  first, then your name, organisation and why you need the data (and,
+  for the restricted tables, a supervisor, department chair, director or
+  coordinator). Pass them as arguments (`accept_terms = TRUE`, `name =`,
+  `purpose =`, …) or answer at the console.
 
 ## rmoriedata 0.3.6
 
 - Needs rmoriebricklayer 0.5.13, whose download bar now redraws in the
   RStudio, Positron and R.app consoles and stays a plain line in knitr
   and Jupyter.
-- Needs rmoriebricklayer 0.5.12, whose language-model layer
-  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  is built on (0.5.9 was accepted, so a build against an older one ran
-  [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  on the retired hosted tier).
-- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  uses a language model you bring (a provider’s key, Ollama, or your own
-  server) through rmoriebricklayer, and the model is given rmoriedata’s
-  and rmoriebricklayer’s help with tools to read it. Its `backend`
-  argument is now `route` (`"auto"`, `"own"`, `"ollama"` or a provider
-  id such as `"anthropic"`); the hosted MORIE tier and the `rmorie`
-  command-line fallback are gone.
-- [`morie_data_hosted_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  uses a downloaded table only when it matches the SHA-256 the manifest
-  lists (fetching the manifest again once before calling a file bad); a
-  mismatch deletes the copy and says so. A restricted table (the ICPSR
-  studies, NCVS 38604, the a2aj case law) refused with 403 says to
-  accept the terms at <https://data.rmorie.com/terms>.
-- [`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
-  shows and saves the language-model settings (route, and the address,
-  key and model of each route), shared with rmoriebricklayer, rmorie and
-  morie.
+- Needs rmoriebricklayer 0.5.12, whose language-model layer `ask()` is
+  built on (0.5.9 was accepted, so a build against an older one ran
+  `ask()` on the retired hosted tier).
+- `ask()` uses a language model you bring (a provider’s key, Ollama, or
+  your own server) through rmoriebricklayer, and the model is given
+  rmoriedata’s and rmoriebricklayer’s help with tools to read it. Its
+  `backend` argument is now `route` (`"auto"`, `"own"`, `"ollama"` or a
+  provider id such as `"anthropic"`); the hosted MORIE tier and the
+  `rmorie` command-line fallback are gone.
+- `morie_data_hosted_load()` uses a downloaded table only when it
+  matches the SHA-256 the manifest lists (fetching the manifest again
+  once before calling a file bad); a mismatch deletes the copy and says
+  so. A restricted table (the ICPSR studies, NCVS 38604, the a2aj case
+  law) refused with 403 says to accept the terms at
+  <https://data.rmorie.com/terms>.
+- `morie_data_llm_config()` shows and saves the language-model settings
+  (route, and the address, key and model of each route), shared with
+  rmoriebricklayer, rmorie and morie.
 
 ## rmoriedata 0.3.5
 
 - A hex logo (`man/figures/logo.png`, source `data-raw/hex_logo.svg`),
   on the README and the package website, with its favicons; the website
-  indexes
-  [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
-  and
-  [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md).
+  indexes `morie_dp_budget()` and `morie_dp_spent()`.
 
 - **A garbled download is refused, not padded.** The full Chicago export
   and the tables from data.rmorie.com are read with `fill = FALSE`: a
@@ -56,18 +63,15 @@
   tolerance at its edge (495 of 500 accepted, 494 refused) and the
   request size (the service’s count, at least 5,000,000 rows).
 
-- **Privacy verifiers (review of 0.3.5).**
-  [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md)
+- **Privacy verifiers (review of 0.3.5).** `morie_k_anonymity_verify()`
   treats a missing quasi-identifier as a level of its own:
   [`stats::aggregate()`](https://rdrr.io/r/stats/aggregate.html) had
   dropped every row with an `NA` key, so a class of one person could
   pass `k = 3`; class sizes now always sum to `nrow(data)`.
-  [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md)
-  counts only known sensitive values (`"HIV", NA, NA` is diversity 1,
-  not 2).
-  [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
-  adds complementary suppressions to a fixed point and then audits the
-  result exactly: a hidden cell the row and column totals determine (its
+  `morie_l_diversity_verify()` counts only known sensitive values
+  (`"HIV", NA, NA` is diversity 1, not 2). `morie_cell_suppress()` adds
+  complementary suppressions to a fixed point and then audits the result
+  exactly: a hidden cell the row and column totals determine (its
   indicator in the row space of the margin constraints) gets another
   complement, and the result carries `recoverable_mask`, `n_recoverable`
   and a `protected` verdict to test before publishing. The 0.3.5 passes
@@ -77,10 +81,8 @@
   margin-consistent fill on 464 random tables: no disagreement.
 
 - **Differential privacy.** Noise comes from the operating system’s
-  CSPRNG
-  ([`rmoriebricklayer::random_bytes()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/random_bytes.html)),
-  not R’s seeded generator, so
-  [`set.seed()`](https://rdrr.io/r/base/Random.html) no longer
+  CSPRNG (`rmoriebricklayer::random_bytes()`), not R’s seeded generator,
+  so [`set.seed()`](https://rdrr.io/r/base/Random.html) no longer
   reproduces a release. Counts and histograms use the exact discrete
   Laplace sampler of Canonne, Kamath and Steinke (2020) in integer
   arithmetic (whole-number releases; no floating-point artefact of the
@@ -89,11 +91,9 @@
   for every epsilon; the classical bound, valid only for epsilon \<= 1,
   is gone. All three mechanisms use one neighbouring relation (add or
   remove one record): the mean is a noised sum over a noised count. New
-  [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
-  /
-  [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md)
-  charge releases against a budget (basic composition) and refuse one
-  that would exceed it. Examples no longer call
+  `morie_dp_budget()` / `morie_dp_spent()` charge releases against a
+  budget (basic composition) and refuse one that would exceed it.
+  Examples no longer call
   [`set.seed()`](https://rdrr.io/r/base/Random.html).
 
 - **Parquet reader.** Every byte access is bounds-checked (an
@@ -109,17 +109,14 @@
   it. `tests/testthat/test-parquet-hostile.R` fuzzes all three codecs.
 
 - **Downloads.** `.rmd_dl()`, which carries the MORIE key as a bearer
-  header, goes through
-  [`rmoriebricklayer::bricklayer_download()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_download.html)
-  (https to public hosts only, no `file://`, size cap) instead of base
+  header, goes through `rmoriebricklayer::bricklayer_download()` (https
+  to public hosts only, no `file://`, size cap) instead of base
   [`url()`](https://rdrr.io/r/base/connections.html); requires
-  rmoriebricklayer 0.5.9.
-  [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
-  checks the catalogue against the signed manifest before reading it.
-  [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+  rmoriebricklayer 0.5.9. `load_cihi_data_tables()` checks the catalogue
+  against the signed manifest before reading it. `morie_data_verify()`
   reports files added to the store (`listed = FALSE`), and
-  [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
-  compares each digest with the manifest (`in_manifest`).
+  `morie_data_checksums()` compares each digest with the manifest
+  (`in_manifest`).
 
 - **Workflows.** The SIU manifest refresh runs only on demand and
   uploads an artifact instead of committing: the manifest is covered by
@@ -138,20 +135,17 @@
 
 - The curated-data service address comes from the signed services
   document at rmorie.com (through
-  [`rmoriebricklayer::bricklayer_services()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_services.html)
-  when the installed bricklayer has it; an older bricklayer keeps the
-  default address), so the endpoint can move or be paused without a
-  release. Keys are personal and issued on request at
-  <https://www.rmorie.com/access/>; every hint says so, and
-  `morie_data_hosted_login(token = )` stores one (the GitHub and
-  emailed-code sign-ins keep working).
+  `rmoriebricklayer::bricklayer_services()` when the installed
+  bricklayer has it; an older bricklayer keeps the default address), so
+  the endpoint can move or be paused without a release. Keys are
+  personal and issued on request at <https://www.rmorie.com/access/>;
+  every hint says so, and `morie_data_hosted_login(token = )` stores one
+  (the GitHub and emailed-code sign-ins keep working).
 
-- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  follows
-  [`rmoriebricklayer::bricklayer_llm_ask()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/bricklayer_llm_ask.html)’s
-  route order: an endpoint of your own, a local Ollama server, then the
-  hosted MORIE tier as a last resort; `backend = "hosted"` insists on
-  the hosted tier. The setup hint when nothing answers names all three.
+- `ask()` follows `rmoriebricklayer::bricklayer_llm_ask()`’s route
+  order: an endpoint of your own, a local Ollama server, then the hosted
+  MORIE tier as a last resort; `backend = "hosted"` insists on the
+  hosted tier. The setup hint when nothing answers names all three.
 
 ## rmoriedata 0.3.4
 
@@ -205,37 +199,32 @@
     case law a report cites (it held the page’s share and privacy
     links).
 
-- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  sends the bundled catalogue (slug, kind, rows) with the question, so
-  the model names tables (it was told only to “prefer the bundled
-  catalog”, which it could not see). Through the rmorie binary it calls
-  `rmorie agent [--model NAME] QUESTION`, the agent’s own options: it
-  passed `--backend`, which the agent refuses, and `-m` for the model;
-  `backend` is `"auto"`, `"hosted"` or `"cli"`. The examples that need a
-  stored key or the binary are `\dontrun`; the one that runs switches
-  the hosted tier off (`MORIE_HOSTED_BASE_URL = "off"`), so it reaches
-  no network whatever key the machine holds.
+- `ask()` sends the bundled catalogue (slug, kind, rows) with the
+  question, so the model names tables (it was told only to “prefer the
+  bundled catalog”, which it could not see). Through the rmorie binary
+  it calls `rmorie agent [--model NAME] QUESTION`, the agent’s own
+  options: it passed `--backend`, which the agent refuses, and `-m` for
+  the model; `backend` is `"auto"`, `"hosted"` or `"cli"`. The examples
+  that need a stored key or the binary are `\dontrun`; the one that runs
+  switches the hosted tier off (`MORIE_HOSTED_BASE_URL = "off"`), so it
+  reaches no network whatever key the machine holds.
 
-- [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md)
-  and
-  [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md)
-  refuse `Inf` in words (they warned about integer coercion, then failed
-  in R’s internals) and refuse counts above 2^53: a double that large
-  has no room for Laplace noise of scale 1/epsilon, so
+- `morie_dp_laplace_count()` and `morie_dp_laplace_histogram()` refuse
+  `Inf` in words (they warned about integer coercion, then failed in R’s
+  internals) and refuse counts above 2^53: a double that large has no
+  room for Laplace noise of scale 1/epsilon, so
   `morie_dp_laplace_count(1e300, 1)` returned exactly 1e300, a “private”
   release equal to the true count. A whole count beyond R’s integer
-  range but below 2^53 is still a count.
-  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
-  refuses text instead of averaging `NA`.
+  range but below 2^53 is still a count. `morie_core_mean()` refuses
+  text instead of averaging `NA`.
 
 - Help:
   [`?rmoriedata`](https://rootcoder007.github.io/rmoriedata/reference/rmoriedata-package.md)
   describes the package’s functions (it said there were none);
-  [`?load_siu_reports`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
-  lost “% of them” to an Rd escape; “more than 160” databases at
-  data.rmorie.com; a garbled sentence in
-  [`?load_chicago_data`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md);
-  the README’s Chicago example is bounded (`limit = 200`).
+  `?load_siu_reports` lost “% of them” to an Rd escape; “more than 160”
+  databases at data.rmorie.com; a garbled sentence in
+  `?load_chicago_data`; the README’s Chicago example is bounded
+  (`limit = 200`).
 
 - The SIU director’s-report corpus: `police_service` is the service of
   the subject officials on every row (it was the notifying force on many
@@ -246,25 +235,24 @@
   added; 54 French reports filed under /en/ relabelled; 29 rows that
   held no director’s report removed.
 
-- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  answers through the hosted MORIE tier with the key
-  [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  stores (ollama.com cloud models and additional AI models such as
-  `kimi-k2.6:cf` or `gpt-oss-120b:cf`), and only falls back to the
-  optional `rmorie` command-line agent when no key is stored.
+- `ask()` answers through the hosted MORIE tier with the key
+  `morie_data_hosted_login()` stores (ollama.com cloud models and
+  additional AI models such as `kimi-k2.6:cf` or `gpt-oss-120b:cf`), and
+  only falls back to the optional `rmorie` command-line agent when no
+  key is stored.
 
 - Hosted tables download with a live progress bar (percent, size, rate)
   in an interactive session; `options(morie.quiet = TRUE)` silences it.
 
 - Requires rmoriebricklayer 0.5.2 or newer (the login flow).
 
-- [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  signs in to the hosted MORIE tier (GitHub device flow, email code, or
-  a key you hold) and stores the key in the credentials file every MORIE
-  package reads, so rmoriedata alone is enough to use data.rmorie.com.
+- `morie_data_hosted_login()` signs in to the hosted MORIE tier (GitHub
+  device flow, email code, or a key you hold) and stores the key in the
+  credentials file every MORIE package reads, so rmoriedata alone is
+  enough to use data.rmorie.com.
 
-- [`morie_data_hosted_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  and `morie_data_hosted_load("db/table")`: the 160 databases the MORIE
+- `morie_data_hosted_catalog()` and
+  `morie_data_hosted_load("db/table")`: the 160 databases the MORIE
   project materialises from BigQuery public datasets, served from the
   edge at data.rmorie.com and opened by the MORIE key that rmorie, morie
   or rmoriebricklayer store. Cached under the package cache directory
@@ -280,18 +268,15 @@ CRAN release: 2026-09-24
   asks. The Chicago full-dataset cache lives under
   [`tempdir()`](https://rdrr.io/r/base/tempfile.html) by default and
   moves to a persistent directory only through
-  `options(rmoriedata.cache_dir = )`;
-  [`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md)
-  empties it. `load_chicago_data(as = "parquet_path")` also writes under
+  `options(rmoriedata.cache_dir = )`; `clear_chicago_cache()` empties
+  it. `load_chicago_data(as = "parquet_path")` also writes under
   [`tempdir()`](https://rdrr.io/r/base/tempfile.html): it wrote the
   bundled sample into the user’s `R_user_dir()` cache, and a bounded
   `full = TRUE` fetch could land on the full-dataset cache path. The
   schema names the language column of `siu_directors_reports` and
   `siu_drid_manifest` `_language`, as the files do; it carried the
   `X_language` that `check.names` had made of it, so the typed store and
-  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
-  disagreed on the name.
-  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+  `load_siu_reports()` disagreed on the name. `load_siu_reports()`
   documents that it returns the corpus as text (`""` for empty cells)
   while `morie_data_load("siu_directors_reports")` returns the typed
   frame.
@@ -310,42 +295,34 @@ CRAN release: 2026-09-24
   ([`enc2utf8()`](https://rdrr.io/r/base/Encoding.html) on an unmarked
   string turned each byte into its `<c3><a9>` display form, and
   `load_chicago_data(full = TRUE)` wrote that into the cross-session
-  cache).
-  [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
-  reads its CSV as UTF-8 like the store does, so both copies agree in
-  every locale; a data page v2 file is reported as such before any
-  decompression; and CI runs the check in a C locale. Every CSV reader
-  in the package now declares UTF-8, so a live Chicago fetch and its
-  cached copy are [`identical()`](https://rdrr.io/r/base/identical.html)
-  in any locale. A string that is not valid UTF-8 and carries no
-  encoding mark is refused by column name (a Parquet string is UTF-8;
-  escaping lost the data, passing the bytes through made a file no other
-  reader opens), and duplicate column names are refused on write and
-  kept apart on read. The cross-session Chicago cache carries a SHA-256
-  sidecar checked on every read.
-  [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
-  rejects an `archived_only` that is not TRUE or FALSE instead of
-  ignoring it.
+  cache). `load_siu_reports()` reads its CSV as UTF-8 like the store
+  does, so both copies agree in every locale; a data page v2 file is
+  reported as such before any decompression; and CI runs the check in a
+  C locale. Every CSV reader in the package now declares UTF-8, so a
+  live Chicago fetch and its cached copy are
+  [`identical()`](https://rdrr.io/r/base/identical.html) in any locale.
+  A string that is not valid UTF-8 and carries no encoding mark is
+  refused by column name (a Parquet string is UTF-8; escaping lost the
+  data, passing the bytes through made a file no other reader opens),
+  and duplicate column names are refused on write and kept apart on
+  read. The cross-session Chicago cache carries a SHA-256 sidecar
+  checked on every read. `load_cihi_data_tables()` rejects an
+  `archived_only` that is not TRUE or FALSE instead of ignoring it.
 
-- [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
-  gains a `path` column relative to the extdata root; the bare `file`
-  basenames it returned were not unique and 20 of them did not resolve
-  from the root
-  ([`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
-  already returned `path`).
+- `morie_data_checksums()` gains a `path` column relative to the extdata
+  root; the bare `file` basenames it returned were not unique and 20 of
+  them did not resolve from the root (`morie_data_verify()` already
+  returned `path`).
 
-- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
-  quotes every argument it hands to the `rmorie` CLI. The preamble
-  contains a parenthesis, so with the CLI installed every call had died
-  in the shell before the binary ran; a `;` in the question would have
-  run as a command. `model` and `backend` are validated, and a blank or
-  `NA` question is rejected like `""` and `NULL`. A stub binary on
-  `PATH` now exercises the branch the tests never reached.
+- `ask()` quotes every argument it hands to the `rmorie` CLI. The
+  preamble contains a parenthesis, so with the CLI installed every call
+  had died in the shell before the binary ran; a `;` in the question
+  would have run as a command. `model` and `backend` are validated, and
+  a blank or `NA` question is rejected like `""` and `NULL`. A stub
+  binary on `PATH` now exercises the branch the tests never reached.
 
-- [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
-  on a dictionary slug says to use
-  [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
-  instead of pointing back at the catalog.
+- `morie_data_load()` on a dictionary slug says to use
+  `morie_data_dictionary()` instead of pointing back at the catalog.
 
 - `load_chicago_data(full = TRUE)` no longer caches a response that is
   not the dataset. A 200 carrying an outage page, a header-only body or
@@ -358,12 +335,11 @@ CRAN release: 2026-09-24
   When the service’s count endpoint is down the data is returned but not
   cached across sessions.
 
-- [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
-  checks the downloaded file’s size and signature against the
-  catalogue’s declared format and validates `which` (a whole number
-  within the catalogue, or a non-empty title substring) and `timeout`
-  before any request. A live URL that answers 200 with an outage page
-  now falls through to the Wayback copy.
+- `fetch_cihi_table()` checks the downloaded file’s size and signature
+  against the catalogue’s declared format and validates `which` (a whole
+  number within the catalogue, or a non-empty title substring) and
+  `timeout` before any request. A live URL that answers 200 with an
+  outage page now falls through to the Wayback copy.
 
 - The verifier pins the signing key’s XMSS root and public seed in
   package code. A store re-signed with another key, even with a
@@ -380,35 +356,31 @@ CRAN release: 2026-09-24
   8391, SHA-256) signature whose public key ships as
   `_signing_key.json`. The signature is checked once per session and
   each file when first read, so a modified or corrupted install errors
-  instead of returning altered data;
-  [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
-  checks the whole store at once. Needs rmoriebricklayer 0.4.0 or newer
-  for the verification.
+  instead of returning altered data; `morie_data_verify()` checks the
+  whole store at once. Needs rmoriebricklayer 0.4.0 or newer for the
+  verification.
 
 - `load_siu_reports(format = "parquet")` pointed at the parquet copy
   this release removed; the option now errors with a note that the gzip
   CSV is the same corpus. rmorie reads the corpus through the default
   `"csv"`.
 
-- [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md)
-  now rejects infinite `lower` or `upper` with the error its message
-  already promised, instead of returning `NaN` with a warning from
+- `morie_dp_gaussian_mean()` now rejects infinite `lower` or `upper`
+  with the error its message already promised, instead of returning
+  `NaN` with a warning from
   [`rnorm()`](https://rdrr.io/r/stats/Normal.html).
 
-- The data store ships every table once.
-  [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
-  reads the table’s CSV (the file rmorie reads by name) and applies a
-  bundled column schema, so each table comes back with exactly the names
-  and classes the retired parquet copies had (verified identical for all
-  99 tables), and keeps it in a session cache: repeated loads are
-  instant. The parquet directory, a duplicate `samples/` directory and a
-  second copy of the SIU reports are gone, which takes the source
-  tarball from 6.8 MB to under the 5 MB CRAN cap. The ten Victoria
-  tables that existed only as parquet now ship as CSV under `vic/`.
-  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
-  has `n_rows` and `n_cols` for every table;
-  [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
-  returns the shipped JSON.
+- The data store ships every table once. `morie_data_load()` reads the
+  table’s CSV (the file rmorie reads by name) and applies a bundled
+  column schema, so each table comes back with exactly the names and
+  classes the retired parquet copies had (verified identical for all 99
+  tables), and keeps it in a session cache: repeated loads are instant.
+  The parquet directory, a duplicate `samples/` directory and a second
+  copy of the SIU reports are gone, which takes the source tarball from
+  6.8 MB to under the 5 MB CRAN cap. The ten Victoria tables that
+  existed only as parquet now ship as CSV under `vic/`.
+  `morie_data_catalog()` has `n_rows` and `n_cols` for every table;
+  `morie_data_dictionary()` returns the shipped JSON.
 
 - Documentation is generated with markdown roxygen; backticks in the
   help pages are now `\code{}` (they rendered as stray opening quotes in
@@ -438,11 +410,9 @@ The package shipped 9.2 MB, and most of the excess was duplication:
 - The SIU director’s-report corpus was bundled three times – as a
   top-level Parquet file, again inside the Parquet store, and as a
   `.csv.gz`. `load_siu_reports(format = "parquet")` now reads the store
-  copy that
-  [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
-  already serves, so the top-level duplicate is gone. The CSV remains:
-  it is the default format and a genuinely different encoding, not a
-  third copy of the same one.
+  copy that `morie_data_load()` already serves, so the top-level
+  duplicate is gone. The CSV remains: it is the default format and a
+  genuinely different encoding, not a third copy of the same one.
 - `describe_corpus.Rds` (1.6 MB, and it does not compress) is referenced
   by no R code, Rd page or test. Excluded.
 
@@ -469,9 +439,7 @@ corpus.
   recorded offences, victim reports, alleged offender incidents, family
   incidents, the LGA cuts of each, and the two Indigenous-status
   breakdowns. Reach them as `morie_data_load("vic_<key>")`; they appear
-  in
-  [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
-  like any other slug.
+  in `morie_data_catalog()` like any other slug.
 - The workbooks are .xlsx and were read with rmorie’s native reader, so
   the bundled data comes through the same code path a user hits – no
   readxl/openxlsx dependency and no second parser to disagree with the
@@ -520,14 +488,11 @@ corpus.
 - rmoriedata now declares `LinkingTo: rmoriebricklayer (>= 0.2.0)` and
   links the ecosystem’s shared compiled core instead of duplicating any
   C code.
-- New exports
-  [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
-  and
-  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
-  call the shared kernels directly (fast data-integrity hashing +
-  summaries for the integrated fixtures, with no dependency on rmorie).
-  Tests assert they are byte-identical to `rmoriebricklayer`’s own
-  `core_sha256()` / `core_mean()`.
+- New exports `morie_core_sha256()` and `morie_core_mean()` call the
+  shared kernels directly (fast data-integrity hashing + summaries for
+  the integrated fixtures, with no dependency on rmorie). Tests assert
+  they are byte-identical to `rmoriebricklayer`’s own `core_sha256()` /
+  `core_mean()`.
 
 ## rmoriedata 0.1.1
 
@@ -537,22 +502,18 @@ Six small, base-R-only helpers for analysts releasing aggregate
 statistics from the integrated fixtures (or any other dataset) without
 re-identification risk:
 
-- [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md)
-  — (epsilon, 0)-DP count via the Laplace mechanism (sensitivity 1).
-- [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md)
-  — approximate (epsilon, delta)-DP mean of a bounded numeric vector via
-  the analytic Gaussian mechanism.
-- [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md)
-  — per-bin Laplace noise on a histogram.
-- [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md)
-  — checks k-anonymity over a set of quasi-identifiers and returns the
-  offending equivalence classes.
-- [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md)
-  — per-class distinct-count check on a sensitive attribute.
-- [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
-  — small-cell suppression with optional complementary suppression so
-  primary-suppressed cells can’t be reconstructed from row/column
-  marginals (StatCan-style).
+- `morie_dp_laplace_count()` — (epsilon, 0)-DP count via the Laplace
+  mechanism (sensitivity 1).
+- `morie_dp_gaussian_mean()` — approximate (epsilon, delta)-DP mean of a
+  bounded numeric vector via the analytic Gaussian mechanism.
+- `morie_dp_laplace_histogram()` — per-bin Laplace noise on a histogram.
+- `morie_k_anonymity_verify()` — checks k-anonymity over a set of
+  quasi-identifiers and returns the offending equivalence classes.
+- `morie_l_diversity_verify()` — per-class distinct-count check on a
+  sensitive attribute.
+- `morie_cell_suppress()` — small-cell suppression with optional
+  complementary suppression so primary-suppressed cells can’t be
+  reconstructed from row/column marginals (StatCan-style).
 
 All helpers use only base R + the existing `stats` import; no new
 runtime dependencies. Inputs are validated and edge cases (empty

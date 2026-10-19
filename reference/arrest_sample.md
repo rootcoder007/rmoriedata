@@ -1,7 +1,7 @@
 # Chicago arrests sample
 
 A CRAN-safe slice of the City of Chicago "Arrests" dataset. For the full
-~1.5M-row dataset use `load_chicago_data("arrests", full = TRUE)`.
+~1.5M-row dataset use `chiload("arrests", full = TRUE)`.
 
 ## Usage
 
@@ -52,7 +52,7 @@ City of Chicago Open Data Portal, "Arrests" (dataset `dpt3-jri9`).
 
 ## See also
 
-[`load_chicago_data`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+[`chiload`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
 
 ## Examples
 

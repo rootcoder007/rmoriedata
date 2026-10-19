@@ -2,8 +2,7 @@
 
 A CRAN-safe slice of the City of Chicago "Crimes – 2001 to present"
 dataset (reported incidents), filtered to geocoded rows from 2020
-onward. For the full dataset use
-`load_chicago_data("complaints", full = TRUE)`.
+onward. For the full dataset use `chiload("complaints", full = TRUE)`.
 
 ## Usage
 
@@ -71,7 +70,7 @@ City of Chicago Open Data Portal, "Crimes - 2001 to present" (dataset
 
 ## See also
 
-[`load_chicago_data`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+[`chiload`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
 
 ## Examples
 

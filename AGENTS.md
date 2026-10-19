@@ -9,12 +9,11 @@ bundled open-data fixtures, but it has grown a small, deliberate set of
 analyst-facing helpers:
 
 - **Differential privacy + re-identification risk** — `morie_dp_*`,
-  `morie_k_anonymity_verify`, `morie_l_diversity_verify`,
-  `morie_cell_suppress` (base-R only).
+  `kanonvrf`, `ldivvrf`, `cellsupp` (base-R only).
 - **Shared C backend** —
-  [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   /
-  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  [`mdmean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   delegate to the ecosystem’s compiled core via
   `LinkingTo: rmoriebricklayer` (one shared copy of morie’s arithmetic;
   see

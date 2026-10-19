@@ -3,24 +3,24 @@
 Open data fixtures for the rmorie package
 (https://github.com/rootcoder007/rmorie), with the functions that read
 them:
-[`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
+[`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md)
 lists the bundled tables and
-[`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
 loads one;
-[`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md),
-[`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md),
-[`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
+[`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md),
+[`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md),
+[`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
 and
-[`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
+[`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
 read their datasets,
-[`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+[`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
 checks the bundle's checksums;
-[`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md),
-[`morie_data_hosted_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+[`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
+[`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
 and
-[`morie_data_hosted_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+[`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
 reach the tables served at data.rmorie.com;
-[`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+[`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
 asks a language model about the catalogue; and the differential-privacy
 and k-anonymity helpers release aggregates safely. The raw files are
 also at `system.file("extdata", package = "rmoriedata")`.

@@ -6,31 +6,31 @@ Discover, load, and inspect the packaged Canadian public-data tables
 (OTIS carceral data, CIHI health tables, Chicago crime) that the rmorie
 analysis functions consume.
 
-- [`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md)
+- [`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md)
   : Catalog of the bundled datasets
-- [`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+- [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
   : Load a bundled dataset by slug
-- [`morie_data_hosted_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  [`morie_data_hosted_login()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
-  [`morie_data_hosted_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_hosted_catalog.md)
+- [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  [`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   : Curated datasets at data.rmorie.com
-- [`morie_data_path()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_path.md)
+- [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md)
   : Path of a bundled table's shipped file
-- [`morie_data_dictionary()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_dictionary.md)
+- [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md)
   : Data dictionary for a bundled dataset
-- [`morie_data_checksums()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_checksums.md)
+- [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md)
   : SHA256 checksums of bundled rmoriedata files
-- [`morie_data_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_verify.md)
+- [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
   : Verify the bundled data store against its signed manifest
-- [`load_chicago_data()`](https://rootcoder007.github.io/rmoriedata/reference/load_chicago_data.md)
+- [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
   : Load Chicago crime or arrest data
-- [`clear_chicago_cache()`](https://rootcoder007.github.io/rmoriedata/reference/clear_chicago_cache.md)
+- [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
   : Clear the cache of full Chicago datasets
-- [`load_cihi_data_tables()`](https://rootcoder007.github.io/rmoriedata/reference/load_cihi_data_tables.md)
+- [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
   : Catalogue of CIHI open data-table workbooks (with Wayback fallbacks)
-- [`fetch_cihi_table()`](https://rootcoder007.github.io/rmoriedata/reference/fetch_cihi_table.md)
+- [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
   : Download a CIHI data table (live, with Wayback fallback)
-- [`load_siu_reports()`](https://rootcoder007.github.io/rmoriedata/reference/load_siu_reports.md)
+- [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md)
   : Load the Ontario SIU director's-report corpus
 
 ## Differential privacy
@@ -38,15 +38,15 @@ analysis functions consume.
 Calibrated-noise mechanisms (Laplace, Gaussian) for releasing
 privacy-preserving counts, histograms, and means at a stated epsilon.
 
-- [`morie_dp_laplace_count()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_count.md)
+- [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md)
   : Differentially-private count via the discrete Laplace mechanism
-- [`morie_dp_laplace_histogram()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_laplace_histogram.md)
+- [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
   : Differentially-private histogram via the discrete Laplace mechanism
-- [`morie_dp_gaussian_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_gaussian_mean.md)
+- [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md)
   : Differentially-private mean via the analytic Gaussian mechanism
-- [`morie_dp_budget()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_budget.md)
+- [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
   : A privacy budget that DP releases are charged against
-- [`morie_dp_spent()`](https://rootcoder007.github.io/rmoriedata/reference/morie_dp_spent.md)
+- [`dpspent()`](https://rootcoder007.github.io/rmoriedata/reference/dpspent.md)
   : What a privacy budget has spent
 
 ## Statistical disclosure control
@@ -54,11 +54,11 @@ privacy-preserving counts, histograms, and means at a stated epsilon.
 Re-identification safeguards for microdata releases: k-anonymity and
 l-diversity checks plus small-cell suppression.
 
-- [`morie_k_anonymity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_k_anonymity_verify.md)
+- [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
   : k-anonymity verification
-- [`morie_l_diversity_verify()`](https://rootcoder007.github.io/rmoriedata/reference/morie_l_diversity_verify.md)
+- [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
   : l-diversity verification
-- [`morie_cell_suppress()`](https://rootcoder007.github.io/rmoriedata/reference/morie_cell_suppress.md)
+- [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
   : Cell suppression with complementary suppression and a recoverability
   audit
 
@@ -66,12 +66,12 @@ l-diversity checks plus small-cell suppression.
 
 Shared primitives used across the package.
 
-- [`morie_core_sha256()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
-  [`morie_core_mean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+- [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  [`mdmean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   : Shared C-core helpers (rmorie ecosystem backend)
-- [`ask()`](https://rootcoder007.github.io/rmoriedata/reference/ask.md)
+- [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
   : Ask a language model about the bundled datasets
-- [`morie_data_llm_config()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_llm_config.md)
+- [`mdllmconf()`](https://rootcoder007.github.io/rmoriedata/reference/mdllmconf.md)
   : Show or save the language-model settings
 
 ## Sample data objects
@@ -87,7 +87,7 @@ via data()).
 ## International datasets
 
 Non-Canadian tables in the bundled store, reached by slug through
-morie_data_load().
+mdload().
 
 - [`rmoriedata-victoria`](https://rootcoder007.github.io/rmoriedata/reference/rmoriedata-victoria.md)
   : Victorian crime statistics (Crime Statistics Agency Victoria)

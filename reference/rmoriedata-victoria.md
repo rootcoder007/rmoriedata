@@ -2,7 +2,7 @@
 
 Ten tables from the Crime Statistics Agency's "Latest Victorian crime
 data" release, bundled in the CSV store and reached by slug through
-[`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md).
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md).
 Each is Table 01 – the headline series – of the corresponding published
 workbook, for the year ending March 2026.
 
@@ -59,14 +59,14 @@ release, not a permanent record of that year.
 
 ## See also
 
-[`morie_data_catalog()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_catalog.md),
-[`morie_data_load()`](https://rootcoder007.github.io/rmoriedata/reference/morie_data_load.md)
+[`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md),
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
 
 ## Examples
 
 ``` r
 # Every bundled Victorian table, by slug.
-cat <- morie_data_catalog()
+cat <- mdcat()
 cat[grepl("^vic_", cat$slug), c("slug", "n_rows", "n_cols")]
 #>                                slug n_rows n_cols
 #> 97   vic_alleged_offender_incidents    740      8
@@ -81,7 +81,7 @@ cat[grepl("^vic_", cat$slug), c("slug", "n_rows", "n_cols")]
 #> 106              vic_victim_reports    300      7
 
 # Headline criminal-incident series.
-ci <- morie_data_load("vic_criminal_incidents")
+ci <- mdload("vic_criminal_incidents")
 str(ci)
 #> 'data.frame':    1120 obs. of  7 variables:
 #>  $ Year                       : int  2026 2026 2026 2026 2026 2026 2026 2026 2026 2026 ...
