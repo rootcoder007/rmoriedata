@@ -37,7 +37,7 @@ across calls).
 ``` r
 b <- dpbudget(epsilon = 2)
 dplapcnt(42, epsilon = 1, budget = b)
-#> [1] 40
+#> [1] 42
 dpspent(b)
 #> $epsilon
 #> [1] 2
