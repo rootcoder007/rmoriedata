@@ -33,8 +33,6 @@ Useful links:
 
 - <https://github.com/rootcoder007/rmoriedata>
 
-- <https://www.rmorie.com>
-
 - Report bugs at <https://github.com/rootcoder007/rmoriedata/issues>
 
 ## Author

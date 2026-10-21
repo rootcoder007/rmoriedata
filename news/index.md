@@ -81,8 +81,10 @@
   margin-consistent fill on 464 random tables: no disagreement.
 
 - **Differential privacy.** Noise comes from the operating system’s
-  CSPRNG (`rmoriebricklayer::random_bytes()`), not R’s seeded generator,
-  so [`set.seed()`](https://rdrr.io/r/base/Random.html) no longer
+  CSPRNG
+  ([`rmoriebricklayer::random_bytes()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/rmbl-aliases.html)),
+  not R’s seeded generator, so
+  [`set.seed()`](https://rdrr.io/r/base/Random.html) no longer
   reproduces a release. Counts and histograms use the exact discrete
   Laplace sampler of Canonne, Kamath and Steinke (2020) in integer
   arithmetic (whole-number releases; no floating-point artefact of the
@@ -109,8 +111,9 @@
   it. `tests/testthat/test-parquet-hostile.R` fuzzes all three codecs.
 
 - **Downloads.** `.rmd_dl()`, which carries the MORIE key as a bearer
-  header, goes through `rmoriebricklayer::bricklayer_download()` (https
-  to public hosts only, no `file://`, size cap) instead of base
+  header, goes through
+  [`rmoriebricklayer::bricklayer_download()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/rmbl-aliases.html)
+  (https to public hosts only, no `file://`, size cap) instead of base
   [`url()`](https://rdrr.io/r/base/connections.html); requires
   rmoriebricklayer 0.5.9. `load_cihi_data_tables()` checks the catalogue
   against the signed manifest before reading it. `morie_data_verify()`
@@ -135,17 +138,19 @@
 
 - The curated-data service address comes from the signed services
   document at rmorie.com (through
-  `rmoriebricklayer::bricklayer_services()` when the installed
-  bricklayer has it; an older bricklayer keeps the default address), so
-  the endpoint can move or be paused without a release. Keys are
-  personal and issued on request at <https://www.rmorie.com/access/>;
-  every hint says so, and `morie_data_hosted_login(token = )` stores one
-  (the GitHub and emailed-code sign-ins keep working).
+  [`rmoriebricklayer::bricklayer_services()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/rmbl-aliases.html)
+  when the installed bricklayer has it; an older bricklayer keeps the
+  default address), so the endpoint can move or be paused without a
+  release. Keys are personal and issued on request at
+  `www.rmorie.com/access/`; every hint says so, and
+  `morie_data_hosted_login(token = )` stores one (the GitHub and
+  emailed-code sign-ins keep working).
 
-- `ask()` follows `rmoriebricklayer::bricklayer_llm_ask()`’s route
-  order: an endpoint of your own, a local Ollama server, then the hosted
-  MORIE tier as a last resort; `backend = "hosted"` insists on the
-  hosted tier. The setup hint when nothing answers names all three.
+- `ask()` follows
+  [`rmoriebricklayer::bricklayer_llm_ask()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/rmbl-aliases.html)’s
+  route order: an endpoint of your own, a local Ollama server, then the
+  hosted MORIE tier as a last resort; `backend = "hosted"` insists on
+  the hosted tier. The setup hint when nothing answers names all three.
 
 ## rmoriedata 0.3.4
 

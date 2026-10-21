@@ -40,10 +40,10 @@ hostload(key, refresh = FALSE)
   Passed to
   [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html):
   a key you already hold (keys are personal: sign in with GitHub or an
-  emailed code, or ask at <https://www.rmorie.com/access/>), or an email
-  address (a one-time code is sent; pass it as `code` in a
-  non-interactive session). With neither, the GitHub device flow runs.
-  The service address comes from the signed services document
+  emailed code, or ask at `www.rmorie.com/access/`), or an email address
+  (a one-time code is sent; pass it as `code` in a non-interactive
+  session). With neither, the GitHub device flow runs. The service
+  address comes from the signed services document
   ([`rmoriebricklayer::svcs()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/svcs.html)).
 
 - ...:
