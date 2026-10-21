@@ -18,7 +18,7 @@ than one directory.
 \description{
 Computes the SHA256 digest of every file rmoriedata bundles in
 \code{inst/extdata}, using the shared provenance layer
-(\code{\link[rmoriebricklayer]{sha256file}}), and compares each with
+(\code{rmoriebricklayer::sha256file()}), and compares each with
 the digest the signed manifest records for it (\code{in_manifest}).
 For the full check, signature included, use \code{\link[=mdverify]{mdverify()}}; this
 function is the per-file record an analysis can pin and compare later.

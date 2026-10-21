@@ -7,6 +7,7 @@ test_that("the shipped signing key matches the root pinned in code", {
 })
 
 test_that("a re-signed store with a foreign key is refused", {
+  skip_if_old_bricklayer()
   skip_if_not_installed("rmoriebricklayer")
   src <- system.file("extdata", package = "rmoriedata")
   tmp <- file.path(tempdir(), "rd_forged")
@@ -15,7 +16,7 @@ test_that("a re-signed store with a foreign key is refused", {
   key <- rmoriebricklayer::pqckg(height = 2)
   man <- file.path(tmp, "_checksums.csv")
   bytes <- readBin(man, "raw", n = file.size(man))
-  sig <- rmoriebricklayer::cpssign(rmoriebricklayer::csha256(bytes),
+  sig <- rmoriebricklayer::cpssign(.rmd_bl("csha256")(bytes),
                                         key)
   writeLines(rmoriebricklayer::tojs(unclass(sig),
                                                        auto_unbox = TRUE),

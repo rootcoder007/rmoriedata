@@ -25,7 +25,7 @@
   buf <- .morie_dp_rng$buf
   pos <- .morie_dp_rng$pos %||% 1L
   if (is.null(buf) || pos + n - 1L > length(buf)) {
-    buf <- rmoriebricklayer::rndbytes(max(4096L, n))
+    buf <- .rmd_bl("rndbytes")(max(4096L, n))
     pos <- 1L
   }
   .morie_dp_rng$buf <- buf

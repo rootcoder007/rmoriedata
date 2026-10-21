@@ -156,8 +156,7 @@ cihiget <- function(which, dest = NULL, timeout = 120L) {
 
 # The shared fetch-with-fallback engine; one seam for the tests.
 .rmd_fetch_file <- function(url, dest, wayback, timeout) {
-  rmoriebricklayer::blfetch(url, dest, wb = wayback,
-                                     tmout = timeout)
+  .rmd_bl("blfetch")(url, dest, wayback, timeout)
 }
 
 # A 200 is not a table: an outage page or an empty body arrives with the

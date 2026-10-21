@@ -285,7 +285,7 @@ chiclr <- function() {
   tmp2 <- paste0(tmp, ".sha256")
   on.exit(unlink(c(tmp, tmp2)), add = TRUE)
   morie_write_parquet(as.data.frame(df), tmp)
-  writeLines(rmoriebricklayer::sha256file(tmp), tmp2)
+  writeLines(.rmd_bl("sha256file")(tmp), tmp2)
   # data first, then its digest: a reader between the two renames sees
   # the new file against the old sidecar and refetches (a wasted fetch),
   # never the new digest against the old file
@@ -301,7 +301,7 @@ chiclr <- function() {
   side <- paste0(path, ".sha256")
   if (!file.exists(side)) return(NULL)
   want <- readLines(side, n = 1L, warn = FALSE)
-  if (!identical(rmoriebricklayer::sha256file(path), want)) return(NULL)
+  if (!identical(.rmd_bl("sha256file")(path), want)) return(NULL)
   tryCatch(morie_read_parquet(path), error = function(e) NULL)
 }
 

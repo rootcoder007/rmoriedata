@@ -21,7 +21,7 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
     '{"generated_utc":"2026-10-01T00:00:00Z","datasets":[{"db":"chicago_crime",',
     '"table":"incidents","key":"chicago_crime/incidents","rows":3,',
     '"columns":["id","type"],"bytes_gz":10,"sha256":"',
-    rmoriebricklayer::sha256file(served), '",',
+    .rmd_bl("sha256file")(served), '",',
     '"source":"bigquery-public-data.chicago_crime.crime",',
     '"meta":{"description":"Chicago Police incidents"}}]}'
   )
@@ -51,6 +51,7 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
 })
 
 test_that("hostlogin stores a key via rmoriebricklayer; the hub reads it", {
+  skip_if_old_bricklayer()
   cfg <- withr::local_tempdir()
   withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA)
   seen <- NULL

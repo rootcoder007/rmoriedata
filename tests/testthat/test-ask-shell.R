@@ -11,6 +11,7 @@ test_that("mdask() rejects a bad question, model or route before asking anything
 })
 
 test_that("mdask() sends the catalogue and both packages' help, on the route asked for", {
+  skip_if_old_bricklayer()
   seen <- NULL
   testthat::local_mocked_bindings(
     llmask = function(prompt, model = NULL, tmout = 120,
@@ -38,6 +39,7 @@ test_that("mdask() sends the catalogue and both packages' help, on the route ask
 })
 
 test_that("mdask() works with an older rmoriebricklayer that has no help tools", {
+  skip_if_old_bricklayer()
   seen <- NULL
   testthat::local_mocked_bindings(
     llmask = function(prompt, model = NULL, tmout = 120,
@@ -52,6 +54,7 @@ test_that("mdask() works with an older rmoriebricklayer that has no help tools",
 })
 
 test_that("mdask() turns a failure into a sentence, not an error", {
+  skip_if_old_bricklayer()
   testthat::local_mocked_bindings(
     llmask = function(...) stop("Anthropic rejected your key (HTTP 401)"),
     .package = "rmoriebricklayer"
@@ -62,6 +65,7 @@ test_that("mdask() turns a failure into a sentence, not an error", {
 })
 
 test_that("with no route set up, mdask() says what to set up and reaches nothing", {
+  skip_if_old_bricklayer()
   skip_if_not("docs" %in% names(formals(rmoriebricklayer::llmask)))
   ps <- rmoriebricklayer::llmprvd()
   vars <- c(ps$key_env, "MORIE_LLM_BASE_URL", "MORIE_LLM_ROUTE")

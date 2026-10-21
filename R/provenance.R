@@ -4,7 +4,7 @@
 #'
 #' Computes the SHA256 digest of every file rmoriedata bundles in
 #' \code{inst/extdata}, using the shared provenance layer
-#' (\code{\link[rmoriebricklayer]{sha256file}}), and compares each with
+#' (\code{rmoriebricklayer::sha256file()}), and compares each with
 #' the digest the signed manifest records for it (\code{in_manifest}).
 #' For the full check, signature included, use [mdverify()]; this
 #' function is the per-file record an analysis can pin and compare later.
@@ -51,7 +51,7 @@ mdsums <- function() {
     path = substring(files, nchar(dir) + 2L),
     file = basename(files),
     bytes = file.size(files),
-    sha256 = vapply(files, rmoriebricklayer::sha256file, character(1)),
+    sha256 = vapply(files, .rmd_bl("sha256file"), character(1)),
     row.names = NULL,
     stringsAsFactors = FALSE
   )

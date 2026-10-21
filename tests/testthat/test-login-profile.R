@@ -1,6 +1,7 @@
 # hostlogin() hands the terms and who-is-asking arguments to
 # rmoriebricklayer, which asks for whatever is not given before a new key is issued.
 test_that("hostlogin passes the terms and profile arguments through", {
+  skip_if_old_bricklayer()
   seen <- NULL
   testthat::local_mocked_bindings(
     dlogin = function(...) {

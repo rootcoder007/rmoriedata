@@ -25,3 +25,8 @@
   # useDynLib + registration) before any C call.
   requireNamespace("rmoriebricklayer", quietly = TRUE)
 }
+
+.onAttach <- function(libname, pkgname) {
+  note <- .rmd_bl_note(utils::packageVersion("rmoriebricklayer"))
+  if (!is.null(note)) packageStartupMessage(note)
+}

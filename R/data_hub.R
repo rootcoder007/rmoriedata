@@ -15,7 +15,7 @@
   p <- .rmd_credentials_path()
   if (!file.exists(p)) return(NULL)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  d <- tryCatch(rmoriebricklayer::fromjs(txt),
+  d <- tryCatch(.rmd_bl("fromjs")(txt),
                 error = function(e) NULL)
   key <- d$hosted_key
   if (is.character(key) && length(key) == 1L && nzchar(key)) key else NULL
@@ -63,7 +63,7 @@
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
   if (!file.exists(p)) return(NULL)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- tryCatch(rmoriebricklayer::fromjs(txt, simplifyVector = FALSE),
+  m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE),
                 error = function(e) NULL)
   for (d in m$datasets) if (identical(d$key, key)) return(d$bytes_gz)
   NULL
@@ -80,7 +80,7 @@
   hostcat(refresh = refresh)  # fetches the manifest when stale or asked
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- rmoriebricklayer::fromjs(txt, simplifyVector = FALSE)
+  m <- .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
   for (d in m$datasets) {
     if (identical(d$key, key)) {
       s <- d$sha256
@@ -102,7 +102,7 @@
   want <- .rmd_manifest_sha(key)
   if (is.null(want)) unlisted()
   if (is.na(want)) return(invisible(TRUE))
-  have <- tolower(rmoriebricklayer::sha256file(dest))
+  have <- tolower(.rmd_bl("sha256file")(dest))
   if (!identical(have, want)) {
     want <- .rmd_manifest_sha(key, refresh = TRUE)
     if (is.null(want)) unlisted()
@@ -194,7 +194,7 @@ hostcat <- function(refresh = FALSE) {
   fresh <- age < 86400
   if (refresh || !fresh) .rmd_data_get("/manifest.json", p, timeout = 60)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- rmoriebricklayer::fromjs(txt, simplifyVector = FALSE)
+  m <- .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
   ds <- m$datasets
   if (!length(ds)) {
     return(data.frame(key = character(), name = character(), rows = integer(),
@@ -233,7 +233,7 @@ hostcat <- function(refresh = FALSE) {
 #' @export
 hostlogin <- function(token = NULL, email = NULL, code = NULL,
                                     openbro = interactive(), ...) {
-  key <- rmoriebricklayer::dlogin(token = token, email = email,
+  key <- .rmd_bl("dlogin")(token = token, email = email,
                                                 code = code,
                                                 openbro = openbro, ...)
   invisible(key)

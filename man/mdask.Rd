@@ -43,7 +43,7 @@ mdask("summarise the SIU director's-report corpus", route = "ollama",
 
 # With no route set up the call returns a setup hint, not an error, and
 # reaches no network:
-if (requireNamespace("rmoriebricklayer", quietly = TRUE)) {
+if ("llmstat" \%in\% getNamespaceExports("rmoriebricklayer")) {
   old <- Sys.getenv(c("OLLAMA_HOST", "MORIE_LLM_BASE_URL"), unset = NA)
   Sys.setenv(OLLAMA_HOST = "off", MORIE_LLM_BASE_URL = "off")
   if (!nrow(subset(rmoriebricklayer::llmstat(),

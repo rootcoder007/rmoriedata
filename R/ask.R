@@ -32,7 +32,7 @@
 #'
 #' # With no route set up the call returns a setup hint, not an error, and
 #' # reaches no network:
-#' if (requireNamespace("rmoriebricklayer", quietly = TRUE)) {
+#' if ("llmstat" %in% getNamespaceExports("rmoriebricklayer")) {
 #'   old <- Sys.getenv(c("OLLAMA_HOST", "MORIE_LLM_BASE_URL"), unset = NA)
 #'   Sys.setenv(OLLAMA_HOST = "off", MORIE_LLM_BASE_URL = "off")
 #'   if (!nrow(subset(rmoriebricklayer::llmstat(),
@@ -64,7 +64,7 @@ mdask <- function(question, model = NULL, route = NULL) {
     "from the catalogue that answer the question, and only those.",
     listing
   )
-  f <- rmoriebricklayer::llmask
+  f <- .rmd_bl("llmask")
   args <- list(question, model = model, syspro = system_prompt)
   have <- names(formals(f))
   if ("route" %in% have) args$route <- route

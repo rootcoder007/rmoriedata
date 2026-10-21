@@ -254,7 +254,7 @@ mddict <- function(slug) {
          call. = FALSE)
   }
   txt <- paste(readLines(f, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
-  out <- rmoriebricklayer::fromjs(txt)
+  out <- .rmd_bl("fromjs")(txt)
   class(out) <- c(class, "list")
   out
 }
@@ -283,7 +283,7 @@ mddict <- function(slug) {
          "in the package: the installed data store has been re-signed. ",
          "Reinstall rmoriedata.", call. = FALSE)
   }
-  ok <- rmoriebricklayer::cpsvrf(rmoriebricklayer::csha256(bytes),
+  ok <- .rmd_bl("cpsvrf")(.rmd_bl("csha256")(bytes),
                                          sig, pub)
   if (!isTRUE(ok)) {
     stop("rmoriedata's checksum manifest does not verify against the ",
@@ -307,7 +307,7 @@ mddict <- function(slug) {
     stop(sprintf("'%s' is not in rmoriedata's signed manifest.", rel),
          call. = FALSE)
   }
-  got <- rmoriebricklayer::sha256file(file.path(.rmoriedata_extdata(), rel))
+  got <- .rmd_bl("sha256file")(file.path(.rmoriedata_extdata(), rel))
   if (!identical(got, row$sha256[1L])) {
     stop(sprintf(paste0("rmoriedata's bundled file '%s' does not match the ",
                         "signed manifest (expected sha256 %s, got %s): the ",
@@ -353,7 +353,7 @@ mdverify <- function() {
   m$ok <- vapply(seq_len(nrow(m)), function(i) {
     f <- file.path(ed, m$path[i])
     file.exists(f) &&
-      identical(rmoriebricklayer::sha256file(f), m$sha256[i])
+      identical(.rmd_bl("sha256file")(f), m$sha256[i])
   }, TRUE)
   # the manifest, its signature and the public key are the trust machinery, not data
   present <- list.files(ed, recursive = TRUE)
@@ -363,7 +363,7 @@ mdverify <- function() {
     fx <- file.path(ed, extra)
     m <- rbind(m, data.frame(
       path = extra, bytes = file.size(fx),
-      sha256 = vapply(fx, rmoriebricklayer::sha256file, character(1), USE.NAMES = FALSE),
+      sha256 = vapply(fx, .rmd_bl("sha256file"), character(1), USE.NAMES = FALSE),
       listed = FALSE, ok = FALSE, stringsAsFactors = FALSE
     )[names(m)])
   }

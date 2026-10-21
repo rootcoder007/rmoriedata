@@ -4,7 +4,10 @@
   rmoriebricklayer 1.0.0: `morie_data_load()` is `mdload()`, `morie_dp_laplace_count()` is
   `dplapcnt()`, `load_chicago_data()` is `chiload()`, `quasi_identifiers` is `qids`, and so on.
   Each help page gives the full form of its short name. The old names are not kept.
-* Needs rmoriebricklayer 1.0.0 or later, and calls it by its new names.
+* Works with rmoriebricklayer 0.5.1 or later and calls its 1.0.0 names when they are there.
+  Signing in (`hostlogin()`), `mdask()` and the downloads that carry the data key need
+  rmoriebricklayer 1.0.0; with an older one they say so, and attaching rmoriedata prints a
+  one-line note on how to update.
 * The citation gives the CRAN DOI and the r-universe page, and the author's given names in
   full ("Ruhela VS").
 

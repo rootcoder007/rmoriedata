@@ -13,10 +13,11 @@ test_that("mdsha matches the FIPS 180-4 standard vectors", {
 })
 
 test_that("rmoriedata uses the SAME shared core as rmoriebricklayer (not a copy)", {
+  skip_if_old_bricklayer()
   # If LinkingTo resolved to the shared kernels, these are byte-identical.
   expect_equal(
     mdsha("provenance"),
-    rmoriebricklayer::csha256("provenance")
+    .rmd_bl("csha256")("provenance")
   )
   expect_equal(
     mdmean(c(2, 4, 4, 4, 5, 5, 7, 9)),

@@ -18,6 +18,7 @@ test_that(".rmd_dl refuses file:// and plain http before sending any header", {
 })
 
 test_that(".rmd_dl hands every argument to bricklayer's transport, file:// off", {
+  skip_if_old_bricklayer()
   seen <- NULL
   local_mocked_bindings(
     bldl = function(...) {
