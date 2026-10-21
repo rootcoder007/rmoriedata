@@ -55,7 +55,7 @@ Rscript -e 'if (!requireNamespace("pak", quietly = TRUE)) install.packages("pak"
 Rscript -e 'repos <- c("https://rootcoder007.r-universe.dev", "https://cloud.r-project.org"); install.packages("remotes", repos = repos); remotes::install_github("rootcoder007/rmoriedata", repos = repos, upgrade = "always")'
 ```
 
-On macOS, CRAN's R (from <https://cloud.r-project.org/bin/macosx/>) installs
+On macOS, CRAN's R (from <https://CRAN.R-project.org/bin/macosx/>) installs
 r-universe's prebuilt binaries in seconds. Homebrew's R cannot use them, so
 there every package is compiled from source.
 
@@ -64,9 +64,9 @@ there every package is compiled from source.
 The 175 databases (716 tables on 2026-10-13) the MORIE project materialises from
 BigQuery public datasets and the survey, court and justice data its ledger uses are served
 from the edge and opened by the MORIE key: `hostlogin()` signs in with GitHub or
-an emailed code, or ask at <https://www.rmorie.com/access/>; the terms are at
-<https://www.rmorie.com/data-license/>. The ICPSR, NCVS 38604 and a2aj tables open once you
-accept their terms at <https://data.rmorie.com/terms>. rmoriedata is
+an emailed code, or ask at `www.rmorie.com/access/`; the terms are at
+`www.rmorie.com/data-license/`. The ICPSR, NCVS 38604 and a2aj tables open once you
+accept their terms at `data.rmorie.com/terms`. rmoriedata is
 self-sufficient: store the key once, then load any `db/table` key. The endpoint comes from a
 signed services document the packages verify before use, so it can change without a release.
 

@@ -52,8 +52,7 @@ LazyData: true
 LazyDataCompression: xz
 Config/testthat/edition: 3
 URL: https://rootcoder007.github.io/rmoriedata/,
-    https://github.com/rootcoder007/rmoriedata,
-    https://www.rmorie.com
+    https://github.com/rootcoder007/rmoriedata
 BugReports: https://github.com/rootcoder007/rmoriedata/issues
 biocViews:
   Software,

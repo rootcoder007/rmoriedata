@@ -221,7 +221,7 @@ hostcat <- function(refresh = FALSE) {
 #' @param token,email,code,openbro Passed to
 #'   \code{rmoriebricklayer::dlogin()}: a key you already hold
 #'   (keys are personal: sign in with GitHub or an emailed code, or ask at
-#'   \url{https://www.rmorie.com/access/}), or an email address (a one-time code is
+#'   \code{www.rmorie.com/access/}), or an email address (a one-time code is
 #'   sent; pass it as \code{code} in a non-interactive session). With neither,
 #'   the GitHub device flow runs. The service address comes from the signed
 #'   services document (\code{rmoriebricklayer::svcs()}).
