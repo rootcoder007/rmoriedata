@@ -2,7 +2,7 @@
 
 Computes the SHA256 digest of every file rmoriedata bundles in
 `inst/extdata`, using the shared provenance layer
-([`sha256file`](https://rootcoder007.github.io/rmorie-bricklayer/reference/sha256file.html)),
+([`rmoriebricklayer::sha256file()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/sha256file.html)),
 and compares each with the digest the signed manifest records for it
 (`in_manifest`). For the full check, signature included, use
 [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md);
