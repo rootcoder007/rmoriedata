@@ -35,6 +35,9 @@ SEXP C_rmd_gzip_decompress(SEXP x, SEXP size) {
     if (TYPEOF(x) != RAWSXP) Rf_error("gzip: expected a raw vector");
     double want = asReal(size);
     if (!R_FINITE(want) || want < 0) Rf_error("gzip: bad uncompressed size");
+    /* checked before allocating, as in snappy.c: deflate expands at most 1032 to 1, and avail_out is 32-bit */
+    if (want > 4294967295.0 || want > (double) XLENGTH(x) * 1032.0 + 1024.0)
+        Rf_error("gzip: page states %.0f bytes, more than %.0f compressed bytes can hold", want, (double) XLENGTH(x));
     SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) want));
     z_stream s;
     memset(&s, 0, sizeof s);

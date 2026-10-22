@@ -36,6 +36,20 @@ test_that("snappy rejects truncated, flipped and random inputs with an R error",
   expect_true(any(outcomes == "error"))
   expect_error(snappy_dec(as.raw(c(0xff, 0xff, 0xff, 0xff, 0x0f))), "expected")
   expect_error(snappy_dec(raw(0)), "length header")
+  # a header claiming terabytes: the allocation itself aborted CRAN gcc-ASAN (2026-10-22)
+  terabytes <- as.raw(c(0x88, 0x96, 0xbd, 0xf7, 0xd0, 0x05, 0x01, 0x02))
+  expect_error(snappy_dec(terabytes), "length header")
+  four_gib <- as.raw(c(0xff, 0xff, 0xff, 0xff, 0x0f, 0x00, 0x41))
+  expect_error(snappy_dec(four_gib), "can hold")
+  expect_error(snappy_dec(as.raw(c(0x80, 0x80, 0x04, 0x00, 0x41))), "can hold")
+})
+
+test_that("gzip refuses a stated size its input cannot hold, before allocating", {
+  gz <- .Call(rmoriedata:::C_rmd_gzip_compress, charToRaw("abc"))
+  expect_identical(.Call(rmoriedata:::C_rmd_gzip_decompress, gz, 3), charToRaw("abc"))
+  expect_error(.Call(rmoriedata:::C_rmd_gzip_decompress, gz, 2^31), "can hold")
+  expect_error(.Call(rmoriedata:::C_rmd_gzip_decompress, gz, 2^40), "can hold")
+  expect_error(.Call(rmoriedata:::C_rmd_gzip_decompress, gz, -1), "bad uncompressed size")
 })
 
 test_that("gzip rejects truncated, flipped and random inputs with an R error", {

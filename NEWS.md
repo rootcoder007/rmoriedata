@@ -1,3 +1,12 @@
+# rmoriedata 0.4.1
+
+* The Snappy and gzip page decoders check the size a file claims before allocating it. A
+  damaged or hostile header asking for more than the compressed bytes can hold (a Snappy
+  stream expands at most 64 bytes per 3, deflate about 1032 to 1, and both sizes are 32-bit)
+  is now an R error up front. Before, R was asked for the full amount first: an ordinary build
+  then failed with an error, but the address-sanitizer build CRAN runs (gcc-ASAN) aborted the
+  test run.
+
 # rmoriedata 0.4.0
 
 * Short names, without underscores, for every exported function and argument, matching

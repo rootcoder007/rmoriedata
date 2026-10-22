@@ -175,7 +175,7 @@ a reviewer pushback. Splitting the data out keeps `rmorie` lean
 
 If you use rmoriedata in your research, please cite the software:
 
-> Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie Package.* R package version 0.4.0. doi:10.32614/CRAN.package.rmoriedata. https://rootcoder007.r-universe.dev/rmoriedata
+> Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie Package.* R package version 0.4.1. doi:10.32614/CRAN.package.rmoriedata. https://rootcoder007.r-universe.dev/rmoriedata
 
 BibTeX (or run `citation("rmoriedata")` after installation for the entry
 stamped with the exact installed version, sourced from `inst/CITATION`):

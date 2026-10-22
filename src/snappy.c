@@ -102,12 +102,18 @@ SEXP C_rmd_snappy_decompress(SEXP x) {
     const unsigned char *ip = RAW(x), *end = ip + XLENGTH(x);
     uint64_t n = 0; int shift = 0;
     while (1) {
-        if (ip >= end || shift > 35) Rf_error("snappy: bad length header");
+        if (ip >= end || shift > 28) Rf_error("snappy: bad length header");
         unsigned char c = *ip++;
         n |= (uint64_t) (c & 127) << shift;
         if (!(c & 128)) break;
         shift += 7;
     }
+    /* checked before allocating: a hostile header must not reach the allocator (a sanitizer build
+       aborts on a request it cannot satisfy instead of letting R raise an error) */
+    uint64_t room = (uint64_t) (end - ip);
+    if (n > 0xFFFFFFFFu || n > room * 64 / 3 + 64)
+        Rf_error("snappy: expected %llu bytes, more than %llu compressed bytes can hold",
+                 (unsigned long long) n, (unsigned long long) room);
     SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) n));
     unsigned char *o = RAW(out);
     uint64_t pos = 0;
