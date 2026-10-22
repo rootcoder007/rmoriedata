@@ -9,16 +9,21 @@
 
 .rmd_bl <- function(name) {
   ex <- .rmd_bl_exports()
-  if (name %in% ex) return(getExportedValue("rmoriebricklayer", name))
-  old <- .rmd_bl_old[name]
-  if (!is.na(old) && old %in% ex) return(getExportedValue("rmoriebricklayer", old))
-  stop(sprintf("this needs rmoriebricklayer 1.0.0 or later (installed: %s): %s",
-               format(utils::packageVersion("rmoriebricklayer")),
+  if (name %in% ex) return(.rmd_bl_get(name))
+  old <- unname(.rmd_bl_old[name])
+  if (!is.na(old) && old %in% ex) return(.rmd_bl_get(old))
+  # a development build between the rename and the old names' return can report 1.0.0 and
+  # still lack a name, so the message names the function as well as the release
+  stop(sprintf(paste("this needs rmoriebricklayer 1.0.0 or later, a release with %s()",
+                     "(installed: %s): %s"),
+               name, format(utils::packageVersion("rmoriebricklayer")),
                "install.packages(\"rmoriebricklayer\")"), call. = FALSE)
 }
 
-# the installed rmoriebricklayer's exports, named so a test can stand in another release
+# the installed rmoriebricklayer's exports, and one of its functions: named so a test can
+# stand in any release without depending on the one installed
 .rmd_bl_exports <- function() getNamespaceExports("rmoriebricklayer")
+.rmd_bl_get <- function(name) getExportedValue("rmoriebricklayer", name)
 
 # The note shown when rmoriedata is attached with a rmoriebricklayer older than 1.0.0: an
 # install that already had 0.5.1 keeps it, since it meets the minimum.

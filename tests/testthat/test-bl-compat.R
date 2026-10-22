@@ -1,16 +1,29 @@
 test_that(".rmd_bl: the 1.0.0 function, else the 0.5.1 one, else what is needed", {
-  # names both releases export (1.0.0 keeps 0.5.x names as aliases): runs on either
-  bl <- function(name) getExportedValue("rmoriebricklayer", name)
-  # the name asked for, when the installed release has it
-  local_mocked_bindings(.rmd_bl_exports = function() "sha256_file")
-  expect_identical(.rmd_bl("sha256_file"), bl("sha256_file"))
+  # both the export list and the fetch are stood in, so the test is the same on every
+  # rmoriebricklayer installed (0.5.x, 1.0.x, or a development build between them)
+  fetched <- character()
+  local_mocked_bindings(.rmd_bl_get = function(name) {
+    fetched <<- c(fetched, name)
+    structure(function() name, fn = name)
+  })
+  # the name asked for, when the release has it
+  local_mocked_bindings(.rmd_bl_exports = function() c("sha256file", "sha256_file"))
+  expect_identical(attr(.rmd_bl("sha256file"), "fn"), "sha256file")
   # a 1.0.0 name on a release that has only the 0.5.1 one: the older function
   local_mocked_bindings(.rmd_bl_exports = function() "sha256_file")
-  expect_identical(.rmd_bl("sha256file"), bl("sha256_file"))
-  # neither: a sentence naming the release that has it
+  expect_identical(attr(.rmd_bl("sha256file"), "fn"), "sha256_file")
+  expect_identical(fetched, c("sha256file", "sha256_file"))
+  # neither: a sentence naming the release and the function, and nothing fetched
   local_mocked_bindings(.rmd_bl_exports = function() character())
-  expect_error(.rmd_bl("llmask"), "needs rmoriebricklayer 1.0.0 or later")
+  expect_error(.rmd_bl("llmask"),
+               "needs rmoriebricklayer 1.0.0 or later, a release with llmask")
   expect_error(.rmd_bl("sha256file"), "needs rmoriebricklayer 1.0.0 or later")
+  expect_length(fetched, 2L)
+})
+
+test_that(".rmd_bl_get fetches from the installed rmoriebricklayer", {
+  ex <- getNamespaceExports("rmoriebricklayer")
+  expect_identical(.rmd_bl_get(ex[1]), getExportedValue("rmoriebricklayer", ex[1]))
 })
 
 test_that("the fetch seam hands bricklayer its four arguments by position", {
