@@ -9,6 +9,11 @@
   error up front. Before, R was asked for the full amount first: an
   ordinary build then failed with an error, but the address-sanitizer
   build CRAN runs (gcc-ASAN) aborted the test run.
+- A function missing from the installed rmoriebricklayer is now named in
+  the message that asks for an update, and the test of the old-name
+  fallback no longer depends on which rmoriebricklayer is installed (a
+  development build between the 1.0.0 rename and the return of the old
+  names failed it).
 
 ## rmoriedata 0.4.0
 

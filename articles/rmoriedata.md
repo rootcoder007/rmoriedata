@@ -172,21 +172,21 @@ set.seed(1)
 
 # A private count of records matching a predicate.
 dplapcnt(truecnt = 42, epsilon = 1.0)
-#> [1] 41
+#> [1] 46
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, dplapcnt(42, epsilon = 1.0)))
-#> [1] 42.0445
+#> [1] 41.999
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.4972016
+#> [1] 0.4927858
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, dplaphist(counts, epsilon = 1.0)))
-#> [1] 24998     1
+#> [1] 24999     1
 ```
 
 ## 5. Re-identification risk
