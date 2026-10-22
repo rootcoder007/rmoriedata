@@ -208,7 +208,7 @@ trigger a reviewer pushback. Splitting the data out keeps `rmorie` lean
 If you use rmoriedata in your research, please cite the software:
 
 > Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie
-> Package.* R package version 0.4.0.
+> Package.* R package version 0.4.1.
 > <doi:10.32614/CRAN.package.rmoriedata>.
 > <https://rootcoder007.r-universe.dev/rmoriedata>
 

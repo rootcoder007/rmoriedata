@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -34,7 +34,11 @@
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.4.0" id="rmoriedata-040">rmoriedata 0.4.0<a class="anchor" aria-label="anchor" href="#rmoriedata-040"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.4.1" id="rmoriedata-041">rmoriedata 0.4.1<a class="anchor" aria-label="anchor" href="#rmoriedata-041"></a></h2>
+<ul><li>The Snappy and gzip page decoders check the size a file claims before allocating it. A damaged or hostile header asking for more than the compressed bytes can hold (a Snappy stream expands at most 64 bytes per 3, deflate about 1032 to 1, and both sizes are 32-bit) is now an R error up front. Before, R was asked for the full amount first: an ordinary build then failed with an error, but the address-sanitizer build CRAN runs (gcc-ASAN) aborted the test run.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.0" id="rmoriedata-040">rmoriedata 0.4.0<a class="anchor" aria-label="anchor" href="#rmoriedata-040"></a></h2><p class="text-muted">CRAN release: 2026-10-21</p>
 <ul><li>Short names, without underscores, for every exported function and argument, matching rmoriebricklayer 1.0.0: <code>morie_data_load()</code> is <code><a href="../reference/mdload.html">mdload()</a></code>, <code>morie_dp_laplace_count()</code> is <code><a href="../reference/dplapcnt.html">dplapcnt()</a></code>, <code>load_chicago_data()</code> is <code><a href="../reference/chiload.html">chiload()</a></code>, <code>quasi_identifiers</code> is <code>qids</code>, and so on. Each help page gives the full form of its short name. The old names are not kept.</li>
 <li>Works with rmoriebricklayer 0.5.1 or later and calls its 1.0.0 names when they are there. Signing in (<code><a href="../reference/hostcat.html">hostlogin()</a></code>), <code><a href="../reference/mdask.html">mdask()</a></code> and the downloads that carry the data key need rmoriebricklayer 1.0.0; with an older one they say so, and attaching rmoriedata prints a one-line note on how to update.</li>
 <li>The citation gives the CRAN DOI and the r-universe page, and the author’s given names in full (“Ruhela VS”).</li>
