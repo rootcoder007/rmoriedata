@@ -60,4 +60,4 @@ biocViews:
 Config/roxygen2/version: 8.0.0
 Roxygen: list(markdown = TRUE)
 Remotes:
-    rmoriebricklayer=rootcoder007/rmorie-bricklayer@v1.0.0
+    rmoriebricklayer=rootcoder007/rmorie-bricklayer@*release
