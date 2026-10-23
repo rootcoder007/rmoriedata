@@ -20,7 +20,7 @@ RUN apt-get update \
 COPY DESCRIPTION /pkg/DESCRIPTION
 RUN R -e "options(repos = c('https://rootcoder007.r-universe.dev', 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); \
           install.packages('remotes'); \
-          ok <- tryCatch({ remotes::install_github('rootcoder007/rmorie-bricklayer@v0.5.12', upgrade = 'never'); TRUE }, error = function(e) { message(conditionMessage(e)); FALSE }); \
+          ok <- tryCatch({ remotes::install_github('rootcoder007/rmorie-bricklayer@v1.0.2', upgrade = 'never'); TRUE }, error = function(e) { message(conditionMessage(e)); FALSE }); \
           if (!ok || !requireNamespace('rmoriebricklayer', quietly = TRUE)) install.packages('rmoriebricklayer'); \
           stopifnot(requireNamespace('rmoriebricklayer', quietly = TRUE)); \
           remotes::install_deps('/pkg', dependencies = c('Depends', 'Imports', 'LinkingTo'))"
