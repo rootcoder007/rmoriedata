@@ -25,6 +25,10 @@
 .rmd_bl_exports <- function() getNamespaceExports("rmoriebricklayer")
 .rmd_bl_get <- function(name) getExportedValue("rmoriebricklayer", name)
 
+# R CMD check before R 4.6 counts an Imports package as used only through `::` or an
+# import, not through getExportedValue(); yoy() has the same name in 0.5.1 and 1.0.0
+.rmd_bl_ref <- function() rmoriebricklayer::yoy
+
 # The note shown when rmoriedata is attached with a rmoriebricklayer older than 1.0.0: an
 # install that already had 0.5.1 keeps it, since it meets the minimum.
 .rmd_bl_note <- function(v) {
