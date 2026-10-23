@@ -14,6 +14,8 @@
   fallback no longer depends on which rmoriebricklayer is installed (a
   development build between the 1.0.0 rename and the return of the old
   names failed it).
+- `R CMD check` on R before 4.6 no longer notes rmoriebricklayer as an
+  unused import.
 
 ## rmoriedata 0.4.0
 

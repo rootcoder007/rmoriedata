@@ -56,16 +56,16 @@ Least Significant Bits for Differential Privacy, CCS.
 ``` r
 # A single noised release of a true count of 42 (different every call).
 dplapcnt(truecnt = 42, epsilon = 1.0)
-#> [1] 43
+#> [1] 40
 
 # Smaller epsilon = stronger privacy = more noise.
 dplapcnt(42, epsilon = 0.1)
-#> [1] 33
+#> [1] 36
 dplapcnt(42, epsilon = 5.0)
 #> [1] 42
 
 # The mechanism is unbiased: averaging many releases returns about the truth
 # (for illustration; releasing many answers spends many epsilons).
 mean(replicate(500, dplapcnt(42, epsilon = 1.0)))
-#> [1] 42.046
+#> [1] 42.056
 ```
