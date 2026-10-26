@@ -2,6 +2,8 @@
 
 ## rmoriedata 0.4.1
 
+CRAN release: 2026-10-23
+
 - The Snappy and gzip page decoders check the size a file claims before
   allocating it. A damaged or hostile header asking for more than the
   compressed bytes can hold (a Snappy stream expands at most 64 bytes
