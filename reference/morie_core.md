@@ -49,7 +49,7 @@ stopifnot(mdsha("record-42") == expected)
 
 # Fingerprint a whole object by hashing its serialization.
 mdsha(serialize(list(a = 1, b = "x"), NULL))
-#> [1] "abf3149d8418cb5aff681febf06d66e362c42b3b4b1a3e196a1398aa08d60f4f"
+#> [1] "0868b672eeb21ba79d0478942b4a667d55460e855144c49ff948eb80d09dede5"
 
 ## ---- mdmean(): fast length-1 mean --------------------------
 mdmean(1:10) # 5.5
