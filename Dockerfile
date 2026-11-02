@@ -2,7 +2,7 @@
 # into a reproducible R environment. The package carries a small C layer
 # (the native Parquet reader with its snappy and zlib codecs), so the image
 # needs zlibs headers besides libcurls for rmoriebricklayer.
-FROM rocker/r-ver:4.6.1
+FROM rocker/r-ver:4.6.2
 
 WORKDIR /pkg
 
