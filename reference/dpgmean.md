@@ -57,11 +57,11 @@ Privacy: Analytical Calibration and Optimal Denoising, ICML.
 ``` r
 x <- runif(1000, 0, 1)
 dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.5064118
+#> [1] 0.5022813
 mean(x) # the true mean, for comparison
 #> [1] 0.5060361
 
 # Wider bounds raise sensitivity, so the same epsilon adds more noise.
 dpgmean(x, lower = -5, upper = 5, epsilon = 1.0)
-#> [1] 0.5410586
+#> [1] 0.512201
 ```
