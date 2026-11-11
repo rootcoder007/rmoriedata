@@ -33,12 +33,6 @@
            error = function(e) NULL)
 }
 
-.rmd_access_hint <- function() {
-  svc <- .rmd_services_data()
-  sprintf("keys are personal: sign in with GitHub or an emailed code, or ask at %s",
-          svc$request_access %||% "https://www.rmorie.com/access/")
-}
-
 .rmd_data_url <- function() {
   env <- sub("/+$", "", trimws(Sys.getenv("MORIE_DATA_URL", unset = "")))
   if (nzchar(env)) return(env)
@@ -69,11 +63,6 @@
   for (d in m$datasets) if (identical(d$key, key)) return(d$bytes_gz)
   NULL
 }
-
-# The tables whose source licence asks more than attribution (ICPSR studies, the NCVS
-# 38604 extract, the a2aj case law): data.rmorie.com opens them once the terms are
-# accepted.
-.rmd_restricted <- function(key) grepl("^(icpsr_|ncvs_38604|a2aj_)", key)
 
 # The SHA-256 the manifest lists for a table (NA when it lists none, NULL when the table
 # is not listed); `refresh` fetches the manifest again first.
@@ -148,11 +137,6 @@
     stop(label, " is not served by data.rmorie.com: ICPSR's terms do not allow ",
          "redistribution; download it from ICPSR (https://www.icpsr.umich.edu)",
          call. = FALSE)
-  }
-  if (grepl("403|Forbidden", msg) && .rmd_restricted(label)) {
-    stop(label, " is a restricted table (its source asks more than a citation): ",
-         "read and accept the terms at https://data.rmorie.com/terms, signed in ",
-         "with your key, then ask again.", call. = FALSE)
   }
   if (grepl("401|403|Unauthorized|Forbidden", msg) && keyless) {
     stop("data.rmorie.com asked for a key for ", label, ": run ",
@@ -296,8 +280,8 @@ hostcat <- function(refresh = FALSE) {
 #'   services document (\code{rmoriebricklayer::svcs()}).
 #' @param ... Passed to \code{rmoriebricklayer::dlogin()}: the
 #'   data access terms and who is asking, which a new key needs
-#'   (\code{accter}, \code{name}, \code{affiliation}, \code{purpose},
-#'   \code{restricted}, \code{supnm}, \code{suprole},
+#'   (\code{accter}, \code{name}, \code{affil}, \code{purp},
+#'   \code{restr}, \code{supnm}, \code{suprole},
 #'   \code{supemail}); what is not given is asked at the console.
 #' @export
 hostlogin <- function(token = NULL, email = NULL, code = NULL,

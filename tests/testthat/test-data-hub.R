@@ -135,18 +135,18 @@ test_that("a table failing the manifest's SHA-256 is deleted after a refresh", {
                "not listed in the manifest")
 })
 
-test_that("a restricted table refused with 403 says where to accept the terms", {
-  expect_true(rmoriedata:::.rmd_restricted("icpsr_21600/ds0001"))
-  expect_true(rmoriedata:::.rmd_restricted("ncvs_38604/incidents"))
-  expect_false(rmoriedata:::.rmd_restricted("chicago_crime/incidents"))
+test_that("a table refused with 403 names the stored key, not a terms sign-in", {
+  # no table is behind accepted terms any more (the tables open without sign-in,
+  # and ICPSR studies answer 410): a 403 with a key sent means the key was refused
   withr::local_envvar(MORIE_HOSTED_KEY = "sk-x",
                       MORIE_DATA_URL = "https://data.example.test")
   testthat::local_mocked_bindings(.rmd_dl = function(...) stop("answered HTTP 403"),
                                   .package = "rmoriedata")
-  expect_error(rmoriedata:::.rmd_data_get("/icpsr_21600/ds0001.csv.gz", tempfile()),
-               "icpsr_21600/ds0001 is a restricted table.*https://data.rmorie.com/terms")
+  expect_error(rmoriedata:::.rmd_data_get("/a2aj_onca/onca_meta.csv.gz", tempfile()),
+               "rejected the stored key")
   expect_error(rmoriedata:::.rmd_data_get("/chicago_crime/incidents.csv.gz", tempfile()),
                "rejected the stored key")
+  expect_false(exists(".rmd_restricted", asNamespace("rmoriedata"), inherits = FALSE))
 })
 
 test_that("a refused table says why: ICPSR (410), a key asked for, a key rejected", {

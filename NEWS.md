@@ -3,6 +3,7 @@
 * Works with rmoriebricklayer 1.1.0 and 1.1.1 (where `yoy()` is renamed `yoychg()`): rmoriedata no longer refers to `yoy()`.
 * `hostload()` downloads a table larger than twice the part size (option `rmoriedata.dpart`, 90 MB by default) in byte-range parts, each kept once whole, so a broken connection costs at most one part and running it again resumes; the joined file is checked against the manifest SHA-256.
 * `hostcat()` and `hostload()` need no sign-in; a key stored earlier is still sent. ICPSR studies are no longer served by data.rmorie.com (ICPSR's terms do not allow redistribution); asking for one says where to get it.
+* `hostlogin()`'s help names the arguments `rmoriebricklayer::dlogin()` takes (`affil`, `purp`, `restr`; it listed `affiliation`, `purpose`, `restricted`). A table refused with 403 is reported as a key asked for or refused: no table sits behind accepted terms any more.
 
 # rmoriedata 0.4.1
 

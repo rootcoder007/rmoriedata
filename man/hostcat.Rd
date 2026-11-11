@@ -31,8 +31,8 @@ services document (\code{rmoriebricklayer::svcs()}).}
 
 \item{...}{Passed to \code{rmoriebricklayer::dlogin()}: the
 data access terms and who is asking, which a new key needs
-(\code{accter}, \code{name}, \code{affiliation}, \code{purpose},
-\code{restricted}, \code{supnm}, \code{suprole},
+(\code{accter}, \code{name}, \code{affil}, \code{purp},
+\code{restr}, \code{supnm}, \code{suprole},
 \code{supemail}); what is not given is asked at the console.}
 
 \item{key}{A \code{db/table} key from the catalog.}

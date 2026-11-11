@@ -3,6 +3,8 @@
 test_that("hostlogin passes the terms and profile arguments through", {
   skip_if_old_bricklayer()
   seen <- NULL
+  # the argument names dlogin() really has, read before it is mocked
+  real <- names(formals(rmoriebricklayer::dlogin))
   testthat::local_mocked_bindings(
     dlogin = function(...) {
       seen <<- list(...)
@@ -10,13 +12,19 @@ test_that("hostlogin passes the terms and profile arguments through", {
     },
     .package = "rmoriebricklayer")
   key <- hostlogin(
-    openbro = FALSE, accept_terms = TRUE, name = "Ada Lovelace",
-    purpose = "Course project on court delays in Ontario.", restricted = TRUE,
-    supervisor_name = "Dr B", supervisor_role = "chair",
-    supervisor_email = "b@uni.example")
+    openbro = FALSE, accter = TRUE, name = "Ada Lovelace",
+    purp = "Course project on court delays in Ontario.", restr = TRUE,
+    supnm = "Dr B", suprole = "chair",
+    supemail = "b@uni.example")
   expect_identical(key, "sk-k")
-  expect_true(seen$accept_terms)
-  expect_identical(seen[c("name", "supervisor_role", "supervisor_email")],
-                   list(name = "Ada Lovelace", supervisor_role = "chair",
-                        supervisor_email = "b@uni.example"))
+  expect_true(seen$accter)
+  expect_identical(seen[c("name", "suprole", "supemail")],
+                   list(name = "Ada Lovelace", suprole = "chair",
+                        supemail = "b@uni.example"))
+  # every name passed on, and every name the help page lists, is one dlogin() takes
+  expect_identical(setdiff(names(seen), real), character())
+  expect_identical(
+    setdiff(c("accter", "name", "affil", "purp", "restr", "supnm", "suprole", "supemail"),
+            real),
+    character())
 })
