@@ -169,7 +169,8 @@
 .rmd_part_bytes <- function() {
   v <- getOption("rmoriedata.dpart", 90 * 2^20)
   if (!(is.numeric(v) && length(v) == 1L && is.finite(v) && v >= 2^20)) {
-    stop("option rmoriedata.dpart must be a number of bytes, at least 1 MB", call. = FALSE)
+    stop("option rmoriedata.dpart must be a number of bytes, at least 1 MB",
+         call. = FALSE)
   }
   v
 }

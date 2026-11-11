@@ -167,12 +167,12 @@ test_that("a refused table says why: ICPSR (410), a key asked for, a key rejecte
   key <- "sk-x"
   expect_error(.rmd_data_get("/fec/t.csv.gz", dest), "rejected the stored key")
   fail <- NULL
-  hdrs <- NULL
   key <- NULL
+  st <- new.env()
   testthat::local_mocked_bindings(.rmd_dl = function(url, dest, headers = NULL, ...) {
-    hdrs <<- headers
+    st$hdrs <- headers
     invisible(dest)
   })
   expect_identical(.rmd_data_get("/fec/t.csv.gz", dest), dest)
-  expect_false("Authorization" %in% names(hdrs))
+  expect_false("Authorization" %in% names(st$hdrs))
 })
