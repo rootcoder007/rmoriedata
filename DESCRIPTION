@@ -35,7 +35,7 @@ Depends:
 Imports:
   stats,
   utils,
-  rmoriebricklayer (>= 1.1.1)
+  rmoriebricklayer (>= 1.1.0)
 LinkingTo:
   rmoriebricklayer
 Suggests:
@@ -60,4 +60,4 @@ biocViews:
 Config/roxygen2/version: 8.0.0
 Roxygen: list(markdown = TRUE)
 Remotes:
-    rmoriebricklayer=rootcoder007/rmorie-bricklayer@ropensci-checks
+    rmoriebricklayer=rootcoder007/rmorie-bricklayer@v1.1.0
