@@ -1,5 +1,6 @@
-# Curated datasets at data.rmorie.com, opened by the MORIE key that rmorie,
-# morie or rmoriebricklayer store in $XDG_CONFIG_HOME/morie/credentials.json.
+# Curated datasets at data.rmorie.com, with no sign-in; a MORIE key that rmorie,
+# morie or rmoriebricklayer stored earlier in $XDG_CONFIG_HOME/morie/credentials.json
+# is still sent.
 # The same tables the other packages pull; a manifest lists every table with
 # its rows, columns, SHA-256 and the BigQuery public dataset it was built from.
 
@@ -286,9 +287,9 @@ hostcat <- function(refresh = FALSE) {
 
 #' @rdname hostcat
 #' @param token,email,code,openbro Passed to
-#'   \code{rmoriebricklayer::dlogin()}: a key you already hold
-#'   (keys are personal: sign in with GitHub or an emailed code, or ask at
-#'   \code{www.rmorie.com/access/}), or an email address (a one-time code is
+#'   \code{rmoriebricklayer::dlogin()}: a key you already hold (no
+#'   longer needed for the tables, which open without sign-in), or an email
+#'   address (a one-time code is
 #'   sent; pass it as \code{code} in a non-interactive session). With neither,
 #'   the GitHub device flow runs. The service address comes from the signed
 #'   services document (\code{rmoriebricklayer::svcs()}).

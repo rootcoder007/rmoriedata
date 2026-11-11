@@ -57,8 +57,8 @@ mdask <- function(question, model = NULL, route = NULL) {
     " The bundled catalogue (slug: kind, rows): ",
     paste(sprintf("%s: %s, %s", cat_tbl$slug, cat_tbl$kind, rows), collapse = "; "),
     ". Load one with mdload(\"<slug>\"); hostcat() ",
-    "lists the tables at data.rmorie.com (they need the data key: ",
-    "hostlogin()).")
+    "lists the tables at data.rmorie.com and hostload(\"db/table\") ",
+    "opens one (no sign-in).")
   system_prompt <- paste0(
     "You are helping explore the datasets bundled in rmoriedata. Name the tables ",
     "from the catalogue that answer the question, and only those.",

@@ -22,9 +22,9 @@ hostload(key, refresh = FALSE)
 \item{refresh}{Fetch again even when a day-old copy is cached.}
 
 \item{token, email, code, openbro}{Passed to
-\code{rmoriebricklayer::dlogin()}: a key you already hold
-(keys are personal: sign in with GitHub or an emailed code, or ask at
-\code{www.rmorie.com/access/}), or an email address (a one-time code is
+\code{rmoriebricklayer::dlogin()}: a key you already hold (no
+longer needed for the tables, which open without sign-in), or an email
+address (a one-time code is
 sent; pass it as \code{code} in a non-interactive session). With neither,
 the GitHub device flow runs. The service address comes from the signed
 services document (\code{rmoriebricklayer::svcs()}).}
