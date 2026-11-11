@@ -40,6 +40,8 @@
 <code><a href="../reference/hostcat.html">hostload()</a></code> downloads a table larger than twice the part size (option <code>rmoriedata.dpart</code>, 90 MB by default) in byte-range parts, each kept once whole, so a broken connection costs at most one part and running it again resumes; the joined file is checked against the manifest SHA-256.</li>
 <li>
 <code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> need no sign-in; a key stored earlier is still sent. ICPSR studies are no longer served by data.rmorie.com (ICPSR’s terms do not allow redistribution); asking for one says where to get it.</li>
+<li>
+<code><a href="../reference/hostcat.html">hostlogin()</a></code>’s help names the arguments <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code> takes (<code>affil</code>, <code>purp</code>, <code>restr</code>; it listed <code>affiliation</code>, <code>purpose</code>, <code>restricted</code>). A table refused with 403 is reported as a key asked for or refused: no table sits behind accepted terms any more.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.1" id="rmoriedata-041">rmoriedata 0.4.1<a class="anchor" aria-label="anchor" href="#rmoriedata-041"></a></h2><p class="text-muted">CRAN release: 2026-10-23</p>

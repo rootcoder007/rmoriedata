@@ -50,8 +50,8 @@ hostload(key, refresh = FALSE)
   Passed to
   [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html):
   the data access terms and who is asking, which a new key needs
-  (`accter`, `name`, `affiliation`, `purpose`, `restricted`, `supnm`,
-  `suprole`, `supemail`); what is not given is asked at the console.
+  (`accter`, `name`, `affil`, `purp`, `restr`, `supnm`, `suprole`,
+  `supemail`); what is not given is asked at the console.
 
 - key:
 

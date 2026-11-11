@@ -16,6 +16,12 @@
   need no sign-in; a key stored earlier is still sent. ICPSR studies are
   no longer served by data.rmorie.com (ICPSR’s terms do not allow
   redistribution); asking for one says where to get it.
+- [`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)’s
+  help names the arguments
+  [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html)
+  takes (`affil`, `purp`, `restr`; it listed `affiliation`, `purpose`,
+  `restricted`). A table refused with 403 is reported as a key asked for
+  or refused: no table sits behind accepted terms any more.
 
 ## rmoriedata 0.4.1
 
