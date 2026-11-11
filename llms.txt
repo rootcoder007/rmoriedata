@@ -67,21 +67,15 @@ lists them and `hostload("db/table")` opens one, checked against the
 SHA-256 its manifest lists; a large table comes down in parts that
 resume. Each table keeps its source’s licence; the terms are at
 `www.rmorie.com/data-license/`. ICPSR studies are not served there
-(ICPSR’s terms do not allow redistribution). rmoriedata is
-self-sufficient: store the key once, then load any `db/table` key. The
-endpoint comes from a signed services document the packages verify
-before use, so it can change without a release.
+(ICPSR’s terms do not allow redistribution). The endpoint comes from a
+signed services document the packages verify before use, so it can
+change without a release.
 
 ``` r
 
-hostlogin(token = "...")         # the key from rmorie.com/access; login() (GitHub) and login(email = ) still work
 cat_ <- hostcat()            # key, rows, columns, source dataset
 df <- hostload("fec_cm_2020/fec_cm_2020")
 ```
-
-The key lands in the credentials file that rmorie, morie and
-rmoriebricklayer read too, so one key serves every MORIE package. It
-opens the tables only; it is never a language model.
 
 ## Asking a language model
 
