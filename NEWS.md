@@ -1,6 +1,7 @@
 # rmoriedata 0.4.2
 
 * Needs rmoriebricklayer 1.1.1, where `yoy()` is renamed `yoychg()`.
+* `hostload()` downloads a table larger than twice the part size (option `rmoriedata.dpart`, 90 MB by default) in byte-range parts, each kept once whole, so a broken connection costs at most one part and running it again resumes; the joined file is checked against the manifest SHA-256.
 * `hostcat()` and `hostload()` need no sign-in; a key stored earlier is still sent. ICPSR studies are no longer served by data.rmorie.com (ICPSR's terms do not allow redistribution); asking for one says where to get it.
 
 # rmoriedata 0.4.1
