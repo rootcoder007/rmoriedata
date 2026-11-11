@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,6 +33,14 @@
       <small>Source: <a href="https://github.com/rootcoder007/rmoriedata/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.4.2" id="rmoriedata-042">rmoriedata 0.4.2<a class="anchor" aria-label="anchor" href="#rmoriedata-042"></a></h2>
+<ul><li>Works with rmoriebricklayer 1.1.0 and 1.1.1 (where <code>yoy()</code> is renamed <code>yoychg()</code>): rmoriedata no longer refers to <code>yoy()</code>.</li>
+<li>
+<code><a href="../reference/hostcat.html">hostload()</a></code> downloads a table larger than twice the part size (option <code>rmoriedata.dpart</code>, 90 MB by default) in byte-range parts, each kept once whole, so a broken connection costs at most one part and running it again resumes; the joined file is checked against the manifest SHA-256.</li>
+<li>
+<code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> need no sign-in; a key stored earlier is still sent. ICPSR studies are no longer served by data.rmorie.com (ICPSR’s terms do not allow redistribution); asking for one says where to get it.</li>
+</ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.1" id="rmoriedata-041">rmoriedata 0.4.1<a class="anchor" aria-label="anchor" href="#rmoriedata-041"></a></h2><p class="text-muted">CRAN release: 2026-10-23</p>
 <ul><li>The Snappy and gzip page decoders check the size a file claims before allocating it. A damaged or hostile header asking for more than the compressed bytes can hold (a Snappy stream expands at most 64 bytes per 3, deflate about 1032 to 1, and both sizes are 32-bit) is now an R error up front. Before, R was asked for the full amount first: an ordinary build then failed with an error, but the address-sanitizer build CRAN runs (gcc-ASAN) aborted the test run.</li>

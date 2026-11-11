@@ -1,5 +1,22 @@
 # Changelog
 
+## rmoriedata 0.4.2
+
+- Works with rmoriebricklayer 1.1.0 and 1.1.1 (where `yoy()` is renamed
+  `yoychg()`): rmoriedata no longer refers to `yoy()`.
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  downloads a table larger than twice the part size (option
+  `rmoriedata.dpart`, 90 MB by default) in byte-range parts, each kept
+  once whole, so a broken connection costs at most one part and running
+  it again resumes; the joined file is checked against the manifest
+  SHA-256.
+- [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  need no sign-in; a key stored earlier is still sent. ICPSR studies are
+  no longer served by data.rmorie.com (ICPSR’s terms do not allow
+  redistribution); asking for one says where to get it.
+
 ## rmoriedata 0.4.1
 
 CRAN release: 2026-10-23

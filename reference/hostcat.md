@@ -4,12 +4,11 @@ Beyond the open data this package ships, the MORIE project keeps more
 than 160 databases materialised from Google BigQuery public datasets
 (Chicago crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA,
 Hacker News, Ethereum, World Bank, ...) and serves their tables from the
-edge. They open with the MORIE key that rmorie, morie or
-rmoriebricklayer store (`rmorie login`, `rmorie::morie_llm_login()`,
-[`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html)).
-`hostcat()` returns every table with its key, description, rows and
-BigQuery source (the manifest is kept for a day); `hostload("db/table")`
-returns one table, cached under the package cache directory
+edge. They need no sign-in; a MORIE key stored earlier by rmorie, morie
+or rmoriebricklayer is still sent. `hostcat()` returns every table with
+its key, description, rows and BigQuery source (the manifest is kept for
+a day); `hostload("db/table")` returns one table, cached under the
+package cache directory
 ([`tempdir()`](https://rdrr.io/r/base/tempfile.html) unless
 `options(rmoriedata.cache_dir = )` names a persistent one).
 
@@ -39,11 +38,11 @@ hostload(key, refresh = FALSE)
 
   Passed to
   [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html):
-  a key you already hold (keys are personal: sign in with GitHub or an
-  emailed code, or ask at `www.rmorie.com/access/`), or an email address
-  (a one-time code is sent; pass it as `code` in a non-interactive
-  session). With neither, the GitHub device flow runs. The service
-  address comes from the signed services document
+  a key you already hold (no longer needed for the tables, which open
+  without sign-in), or an email address (a one-time code is sent; pass
+  it as `code` in a non-interactive session). With neither, the GitHub
+  device flow runs. The service address comes from the signed services
+  document
   ([`rmoriebricklayer::svcs()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/svcs.html)).
 
 - ...:

@@ -3,9 +3,8 @@
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-open with the MORIE key that rmorie, morie or rmoriebricklayer store
-(rmorie login, rmorie::morie_llm_login(),
-rmoriebricklayer::dlogin()).
+need no sign-in; a MORIE key stored earlier by rmorie, morie or
+rmoriebricklayer is still sent.
 hostcat() returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 hostload("db/table") returns one table, cached under
@@ -14,9 +13,8 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta property="og:de
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-open with the MORIE key that rmorie, morie or rmoriebricklayer store
-(rmorie login, rmorie::morie_llm_login(),
-rmoriebricklayer::dlogin()).
+need no sign-in; a MORIE key stored earlier by rmorie, morie or
+rmoriebricklayer is still sent.
 hostcat() returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 hostload("db/table") returns one table, cached under
@@ -29,7 +27,7 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta property="og:im
 
     <a class="navbar-brand me-2" href="../index.html">rmoriedata</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.4.2</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,9 +59,8 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta property="og:im
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-open with the MORIE key that rmorie, morie or rmoriebricklayer store
-(<code>rmorie login</code>, <code>rmorie::morie_llm_login()</code>,
-<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code>).
+need no sign-in; a MORIE key stored earlier by rmorie, morie or
+rmoriebricklayer is still sent.
 <code>hostcat()</code> returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 <code>hostload("db/table")</code> returns one table, cached under
@@ -96,9 +93,9 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
 
 <dt id="arg-token-email-code-openbro">token, email, code, openbro<a class="anchor" aria-label="anchor" href="#arg-token-email-code-openbro"></a></dt>
 <dd><p>Passed to
-<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code>: a key you already hold
-(keys are personal: sign in with GitHub or an emailed code, or ask at
-<code>www.rmorie.com/access/</code>), or an email address (a one-time code is
+<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code>: a key you already hold (no
+longer needed for the tables, which open without sign-in), or an email
+address (a one-time code is
 sent; pass it as <code>code</code> in a non-interactive session). With neither,
 the GitHub device flow runs. The service address comes from the signed
 services document (<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/svcs.html" class="external-link">rmoriebricklayer::svcs()</a></code>).</p></dd>
