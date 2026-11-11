@@ -22,7 +22,7 @@ test_that(".rmd_bl: the 1.0.0 function, else the 0.5.1 one, else what is needed"
 })
 
 test_that(".rmd_bl_ref names a function every rmoriebricklayer release has", {
-  expect_identical(.rmd_bl_ref(), getExportedValue("rmoriebricklayer", "yoy"))
+  expect_identical(.rmd_bl_ref(), getExportedValue("rmoriebricklayer", "yoychg"))
 })
 
 test_that(".rmd_bl_get fetches from the installed rmoriebricklayer", {

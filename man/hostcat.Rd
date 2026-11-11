@@ -49,9 +49,8 @@ Beyond the open data this package ships, the MORIE project keeps more than 160
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-open with the MORIE key that rmorie, morie or rmoriebricklayer store
-(\code{rmorie login}, \code{rmorie::morie_llm_login()},
-\code{rmoriebricklayer::dlogin()}).
+need no sign-in; a MORIE key stored earlier by rmorie, morie or
+rmoriebricklayer is still sent.
 \code{hostcat()} returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 \code{hostload("db/table")} returns one table, cached under

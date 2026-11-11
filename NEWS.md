@@ -1,3 +1,8 @@
+# rmoriedata 0.4.2
+
+* Needs rmoriebricklayer 1.1.1, where `yoy()` is renamed `yoychg()`.
+* `hostcat()` and `hostload()` need no sign-in; a key stored earlier is still sent. ICPSR studies are no longer served by data.rmorie.com (ICPSR's terms do not allow redistribution); asking for one says where to get it.
+
 # rmoriedata 0.4.1
 
 * The Snappy and gzip page decoders check the size a file claims before allocating it. A
