@@ -6,7 +6,9 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
                       MORIE_DATA_URL = "https://data.example.test")
   withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
   expect_null(.rmd_hosted_key())
-  expect_error(hostcat(), "MORIE key")
+  # no key: nothing is refused locally, the request goes out (to a .test name
+  # that never resolves)
+  expect_error(hostcat(), "data.example.test")
   dir.create(file.path(cfg, "morie"), recursive = TRUE)
   writeLines('{"hosted_key": "sk-good", "hosted_user": "me"}',
              file.path(cfg, "morie", "credentials.json"))
