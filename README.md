@@ -77,7 +77,7 @@ df <- hostload("fec_cm_2020/fec_cm_2020")
 
 ## Asking a language model
 
-`ask()` puts a question about the datasets to a language model you bring: a
+`mdask()` puts a question about the datasets to a language model you bring: a
 provider's key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, Mistral and
 more, each from its usual variable), an Ollama server, or an OpenAI-compatible
 server of your own. The model gets the catalogue and every function of
@@ -85,8 +85,8 @@ rmoriedata and rmoriebricklayer, with tools to read their help.
 
 ```r
 Sys.setenv(ANTHROPIC_API_KEY = "...")          # or mdllmconf(anthropic.key = "...")
-ask("which tables cover police stops?")
-ask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
+mdask("which tables cover police stops?")
+mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 ```
 
 ## Quick start
