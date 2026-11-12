@@ -1,5 +1,6 @@
 # rmoriedata (development version)
 
+* Needs rmoriebricklayer 1.1.1 or later.
 * A key stored earlier goes to data.rmorie.com only: with `MORIE_DATA_URL` set to another address, `hostcat()` and `hostload()` send no key there (with a message), as `rmoriebricklayer::dload()` does. The manifest and services fields are read by exact name.
 
 # rmoriedata 0.4.2
