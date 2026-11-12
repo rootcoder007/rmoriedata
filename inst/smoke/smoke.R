@@ -4,7 +4,7 @@ if (nzchar(tree)) suppressPackageStartupMessages(pkgload::load_all(tree, quiet =
 home <- tempfile("rmd-smoke-"); dir.create(home); setwd(home)
 Sys.setenv(HOME = home, XDG_CONFIG_HOME = file.path(home, "cfg"))
 key <- Sys.getenv("MORIE_SMOKE_KEY", "")
-Sys.unsetenv("MORIE_HOSTED_KEY")  # the key reaches the hub only through hostlogin()
+Sys.unsetenv("MORIE_HOSTED_KEY")  # no key until hostlogin() stores one
 options(timeout = 600, rmoriedata.cache_dir = file.path(home, "cache"))
 check <- function(cond, what) if (!isTRUE(cond)) stop(what, call. = FALSE)
 cases <- list(
@@ -17,11 +17,13 @@ cases <- list(
   verify = function() { v <- mdverify(); check(is.data.frame(v) && nrow(v) > 100 && all(v$ok) && isTRUE(attr(v, "signature")), "mdverify: every file must match its SHA-256 and the signature must hold") },
   dictionary = function() { d <- mddict(mdcat()$slug[1]); check(!is.null(d), "dictionary") },
   hosted = function() {
-    if (!nzchar(key)) { check(inherits(try(hostcat(), silent = TRUE), "try-error"), "no key must error clearly"); return(message("  hosted: SKIP (no key)")) }
+    # the tables open without a key: a clean user lists and loads one before any login
+    cat_ <- hostcat(); check(nrow(cat_) > 100 && "chicago_crime/incidents" %in% cat_$key, "hosted catalog without a key")
+    df <- hostload("fec_cm_2020/fec_cm_2020"); check(nrow(df) > 1000, "hosted load without a key")
+    if (!nzchar(key)) return(message("  hosted: login SKIP (no key)"))
     check(identical(hostlogin(token = key, openbro = FALSE), key), "login(token=) must return the key")
     check(file.exists(file.path(home, "cfg", "morie", "credentials.json")), "login must write the shared credentials file")
-    cat_ <- hostcat(); check(nrow(cat_) > 100 && "chicago_crime/incidents" %in% cat_$key, "hosted catalog")
-    df <- hostload("fec_cm_2020/fec_cm_2020"); check(nrow(df) > 1000, "hosted load")
+    df <- hostload("fec_cm_2020/fec_cm_2020", refresh = TRUE); check(nrow(df) > 1000, "hosted load with the stored key")
   },
   ask = function() {
     # a runner has no language model of its own: with none set up, ask must say how to bring one
