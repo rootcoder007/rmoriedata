@@ -140,7 +140,12 @@ test_that("a table refused with 403 names the stored key, not a terms sign-in", 
   # and ICPSR studies answer 410): a 403 with a key sent means the key was refused
   withr::local_envvar(MORIE_HOSTED_KEY = "sk-x",
                       MORIE_DATA_URL = "https://data.example.test")
+  # the services document names that address, so the stored key is sent there
   testthat::local_mocked_bindings(.rmd_dl = function(...) stop("answered HTTP 403"),
+                                  .rmd_services_data = function() {
+                                    list(mode = "key",
+                                         base_url = "https://data.example.test")
+                                  },
                                   .package = "rmoriedata")
   expect_error(rmoriedata:::.rmd_data_get("/a2aj_onca/onca_meta.csv.gz", tempfile()),
                "rejected the stored key")
@@ -175,4 +180,31 @@ test_that("a refused table says why: ICPSR (410), a key asked for, a key rejecte
   })
   expect_identical(.rmd_data_get("/fec/t.csv.gz", dest), dest)
   expect_false("Authorization" %in% names(st$hdrs))
+})
+
+test_that("the stored key goes only to the services document's address", {
+  withr::local_envvar(MORIE_HOSTED_KEY = "sk-x",
+                      MORIE_DATA_URL = "https://elsewhere.example.test")
+  st <- new.env()
+  testthat::local_mocked_bindings(
+    .rmd_services_data = function() {
+      list(mode = "key", base_url = "https://data.example.test")
+    },
+    .rmd_hosted_size = function(path) NULL,
+    .rmd_dl = function(url, dest, headers = NULL, ...) {
+      st$url <- url
+      st$hdrs <- headers
+      invisible(dest)
+    }
+  )
+  dest <- withr::local_tempfile()
+  expect_message(.rmd_data_get("/fec/t.csv.gz", dest), "the stored key is not sent")
+  expect_false("Authorization" %in% names(st$hdrs))
+  expect_identical(st$url, "https://elsewhere.example.test/fec/t.csv.gz")
+  # data.rmorie.com serves a table without a key only to a package User-Agent
+  expect_match(st$hdrs[["User-Agent"]],
+               "^(rmoriebricklayer|rmoriedata|rmorie|morie)/[0-9]")
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test/")
+  expect_silent(.rmd_data_get("/fec/t.csv.gz", dest))
+  expect_identical(st$hdrs[["Authorization"]], "Bearer sk-x")
 })

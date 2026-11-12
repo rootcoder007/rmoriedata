@@ -18,7 +18,7 @@
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
   d <- tryCatch(.rmd_bl("fromjs")(txt),
                 error = function(e) NULL)
-  key <- d$hosted_key
+  key <- if (is.list(d)) d[["hosted_key"]]
   if (is.character(key) && length(key) == 1L && nzchar(key)) key else NULL
 }
 
@@ -29,7 +29,7 @@
 .rmd_services_data <- function() {
   ns <- asNamespace("rmoriebricklayer")
   if (!exists("svcs", envir = ns, inherits = FALSE)) return(NULL)
-  tryCatch(get("svcs", envir = ns)(offline = TRUE)$data,
+  tryCatch(get("svcs", envir = ns)(offline = TRUE)[["data"]],
            error = function(e) NULL)
 }
 
@@ -38,11 +38,27 @@
   if (nzchar(env)) return(env)
   svc <- .rmd_services_data()
   if (is.null(svc)) return("https://data.rmorie.com")
-  if (!identical(svc$mode, "key") || !nzchar(svc$base_url %||% "")) {
+  if (!identical(svc[["mode"]], "key") || !nzchar(svc[["base_url"]] %||% "")) {
     stop("the curated-data service is not available right now (see ",
-         svc$request_access %||% "https://www.rmorie.com/access/", ")", call. = FALSE)
+         svc[["request_access"]] %||% "https://www.rmorie.com/access/", ")",
+         call. = FALSE)
   }
-  svc$base_url
+  svc[["base_url"]]
+}
+
+# The stored key, or NULL: sent only to the address of the signed services document,
+# as rmoriebricklayer's dload() does. A key issued by data.rmorie.com does not follow
+# MORIE_DATA_URL to another host.
+.rmd_data_key <- function() {
+  key <- .rmd_hosted_key()
+  env <- sub("/+$", "", trimws(Sys.getenv("MORIE_DATA_URL", unset = "")))
+  if (is.null(key) || !nzchar(env)) return(key)
+  svc <- .rmd_services_data()
+  doc <- if (is.null(svc)) "https://data.rmorie.com" else svc[["base_url"]] %||% ""
+  if (nzchar(doc) && identical(env, sub("/+$", "", doc))) return(key)
+  message("MORIE_DATA_URL=", env, " is not the curated-data address of the services ",
+          "document; the stored key is not sent to it")
+  NULL
 }
 
 .rmd_data_cache_dir <- function() {
@@ -60,7 +76,7 @@
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
   m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE),
                 error = function(e) NULL)
-  for (d in m$datasets) if (identical(d$key, key)) return(d$bytes_gz)
+  for (d in m[["datasets"]]) if (identical(d[["key"]], key)) return(d[["bytes_gz"]])
   NULL
 }
 
@@ -71,9 +87,9 @@
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
   m <- .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
-  for (d in m$datasets) {
-    if (identical(d$key, key)) {
-      s <- d$sha256
+  for (d in m[["datasets"]]) {
+    if (identical(d[["key"]], key)) {
+      s <- d[["sha256"]]
       ok <- is.character(s) && length(s) == 1L && nzchar(s)
       return(if (ok) tolower(s) else NA_character_)
     }
@@ -109,8 +125,8 @@
 }
 
 .rmd_data_get <- function(path, dest, timeout = 600) {
-  # the open tables need no key; a stored one is still sent
-  key <- .rmd_hosted_key()
+  # the open tables need no key; a stored one is still sent (to the services address)
+  key <- .rmd_data_key()
   old <- options(timeout = max(getOption("timeout", 60), timeout))
   on.exit(options(old), add = TRUE)
   hdr <- c(if (!is.null(key)) c(Authorization = paste("Bearer", key)),
@@ -248,13 +264,13 @@ hostcat <- function(refresh = FALSE) {
   if (refresh || !fresh) .rmd_data_get("/manifest.json", p, timeout = 60)
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
   m <- .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
-  ds <- m$datasets
+  ds <- m[["datasets"]]
   if (!length(ds)) {
     return(data.frame(key = character(), name = character(), rows = integer(),
                       source = character(), stringsAsFactors = FALSE))
   }
   pick <- function(d, what) {
-    v <- if (identical(what, "name")) d$meta$description else d[[what]]
+    v <- if (identical(what, "name")) d[["meta"]][["description"]] else d[[what]]
     if (is.null(v) || !length(v)) "" else as.character(v)[[1L]]
   }
   data.frame(
@@ -265,7 +281,9 @@ hostcat <- function(refresh = FALSE) {
       s <- pick(d, "source")
       if (nzchar(s)) s else pick(d, "key")
     }, ""),
-    rows = vapply(ds, function(d) as.integer(if (is.null(d$rows)) NA else d$rows), 1L),
+    rows = vapply(ds, function(d) {
+      as.integer(if (is.null(d[["rows"]])) NA else d[["rows"]])
+    }, 1L),
     source = vapply(ds, pick, "", what = "source"),
     stringsAsFactors = FALSE)
 }
