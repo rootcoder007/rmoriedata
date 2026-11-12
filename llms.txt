@@ -10,7 +10,7 @@ base-R helpers. Its core job remains the `inst/extdata/` files used by
 Install the current release from r-universe (prebuilt binaries for macOS
 and Windows), which can be newer than CRAN. rmoriebricklayer, its
 companion, is named too, so an older copy already installed is replaced:
-rmoriedata needs rmoriebricklayer 1.0.0 or later.
+rmoriedata needs rmoriebricklayer 1.1.1 or later.
 
 With [pak](https://pak.r-lib.org) (progress bars, parallel downloads,
 compiler output hidden unless a build fails, and the named packages
@@ -79,18 +79,19 @@ df <- hostload("fec_cm_2020/fec_cm_2020")
 
 ## Asking a language model
 
-`ask()` puts a question about the datasets to a language model you
-bring: a provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter,
-Groq, Mistral and more, each from its usual variable), an Ollama server,
-or an OpenAI-compatible server of your own. The model gets the catalogue
-and every function of rmoriedata and rmoriebricklayer, with tools to
-read their help.
+[`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
+puts a question about the datasets to a language model you bring: a
+provider’s key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq,
+Mistral and more, each from its usual variable), an Ollama server, or an
+OpenAI-compatible server of your own. The model gets the catalogue and
+every function of rmoriedata and rmoriebricklayer, with tools to read
+their help.
 
 ``` r
 
 Sys.setenv(ANTHROPIC_API_KEY = "...")          # or mdllmconf(anthropic.key = "...")
-ask("which tables cover police stops?")
-ask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
+mdask("which tables cover police stops?")
+mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 ```
 
 ## Quick start
@@ -202,7 +203,7 @@ trigger a reviewer pushback. Splitting the data out keeps `rmorie` lean
 If you use rmoriedata in your research, please cite the software:
 
 > Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie
-> Package.* R package version 0.4.2.
+> Package.* R package version 0.4.3.
 > <doi:10.32614/CRAN.package.rmoriedata>.
 > <https://rootcoder007.r-universe.dev/rmoriedata>
 

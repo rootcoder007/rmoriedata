@@ -176,17 +176,17 @@ dplapcnt(truecnt = 42, epsilon = 1.0)
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, dplapcnt(42, epsilon = 1.0)))
-#> [1] 42.0095
+#> [1] 41.988
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.4998689
+#> [1] 0.4976944
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, dplaphist(counts, epsilon = 1.0)))
-#> [1] 24997     0
+#> [1] 25001     0
 ```
 
 ## 5. Re-identification risk
