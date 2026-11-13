@@ -65,3 +65,28 @@ test_that("a footer row count above the cap is refused before allocation", {
   on.exit(options(old))
   expect_error(morie_read_parquet(f), "cap")
 })
+
+test_that("deeply nested thrift lists and maps are refused, not a stack overflow", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  # 5000 list headers, each a one-element list of lists (0x19)
+  writeBin(c(charToRaw("PAR1"), as.raw(rep(0x19, 5000)), as.raw(c(0x88, 0x13, 0, 0)),
+             charToRaw("PAR1")), f)
+  expect_error(morie_read_parquet(f), "parquet: metadata nested deeper than 64 levels",
+               fixed = TRUE)
+  e <- .pq_reader(c(as.raw(rep(c(0x01, 0xbb), 100)), raw(4)))
+  expect_error(.pq_map(e), "parquet: metadata nested deeper than 64 levels", fixed = TRUE)
+})
+
+test_that("a stray base-R error while parsing is reported as a damaged file", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  morie_write_parquet(data.frame(a = 1:3), f)
+  testthat::local_mocked_bindings(.pq_read_footer = function(con, size) {
+    stop("subscript out of bounds")
+  })
+  expect_error(morie_read_parquet(f),
+               "parquet: the file is damaged (subscript out of bounds)", fixed = TRUE)
+  testthat::local_mocked_bindings(.pq_read_footer = function(con, size) {
+    stop("parquet: footer length 9 does not fit", call. = FALSE)
+  })
+  expect_error(morie_read_parquet(f), "^parquet: footer length 9 does not fit$")
+})

@@ -68,3 +68,28 @@ test_that("a file added to the store is reported, not ignored", {
   ck <- mdsums()
   expect_true(all(ck$in_manifest[ck$path %in% v$path[v$listed]]))
 })
+
+test_that("refresh = TRUE checks a file again: a change mid-session is refused", {
+  ed <- system.file("extdata", package = "rmoriedata")
+  tmp <- file.path(tempfile("store-"), "extdata")
+  dir.create(tmp, recursive = TRUE)
+  src <- list.files(ed, full.names = TRUE)
+  file.copy(src[!grepl("[.]sqlite$", src)], tmp, recursive = TRUE)
+  withr::local_options(rmoriedata.store = tmp)
+  withr::defer(rmoriedata:::.rmoriedata_reset_cache())
+  rmoriedata:::.rmoriedata_reset_cache()
+  tb <- mdcat()
+  tb <- tb[tb$kind == "table" & !grepl("gz$", tb$source_path), ]
+  slug <- tb$slug[1L]
+  expect_s3_class(mdload(slug), "data.frame")
+  expect_s3_class(mdload(slug, format = "parquet"), "data.frame")
+  f <- file.path(tmp, tb$source_path[1L])
+  writeLines(c(readLines(f, warn = FALSE), "tampered,row"), f)
+  pq <- file.path(tmp, tb$parquet_path[1L])
+  b <- readBin(pq, "raw", file.size(pq))
+  b[10] <- xor(b[10], as.raw(1))
+  writeBin(b, pq)
+  # no reset of the session cache here: the file was verified once already
+  expect_error(mdload(slug, refresh = TRUE), "does not match")
+  expect_error(mdload(slug, refresh = TRUE, format = "parquet"), "does not match")
+})

@@ -158,7 +158,16 @@
   )
 }
 
+# A list or map holds values that may be lists, maps or structs again: the same
+# depth cap as .pq_struct, or 5000 nested list headers overflow R's stack.
+.pq_deeper <- function(e) {
+  e$depth <- e$depth + 1L
+  if (e$depth > 64L) stop("parquet: metadata nested deeper than 64 levels", call. = FALSE)
+}
+
 .pq_list <- function(e) {
+  .pq_deeper(e)
+  on.exit(e$depth <- e$depth - 1L)
   h <- .pq_byte(e)
   size <- bitwShiftR(h, 4L)
   etype <- bitwAnd(h, 15L)
@@ -175,6 +184,8 @@
 }
 
 .pq_map <- function(e) {
+  .pq_deeper(e)
+  on.exit(e$depth <- e$depth - 1L)
   size <- .pq_varint(e)
   if (size == 0) {
     return(list())
@@ -197,9 +208,8 @@
 }
 
 .pq_struct <- function(e) {
-  e$depth <- e$depth + 1L
+  .pq_deeper(e)
   on.exit(e$depth <- e$depth - 1L)
-  if (e$depth > 64L) stop("parquet: metadata nested deeper than 64 levels", call. = FALSE)
   out <- list()
   fid <- 0L
   repeat {
@@ -793,11 +803,29 @@
 #' @param path Path to a `.parquet` file.
 #' @param columns Optional character vector of column names to decode;
 #'   the rest are skipped entirely.
-#' @return A `data.frame`.
+#' @return A `data.frame`. A damaged file is an error that starts with
+#'   `parquet:`.
 #' @keywords internal
 morie_read_parquet <- function(path, columns = NULL) {
   size <- file.info(path)$size
   if (is.na(size)) stop("no such file: ", path, call. = FALSE)
+  # A check the reader makes says what is wrong; anything else a damaged footer or
+  # page trips over (a NULL field, an index past the end) is said to be damage too.
+  tryCatch(.pq_read(path, columns, size), error = function(e) {
+    m <- conditionMessage(e)
+    if (grepl(.pq_own_re, m) || grepl("^cannot allocate", m)) stop(e)
+    stop("parquet: the file is damaged (", m, ")", call. = FALSE)
+  })
+}
+
+# The reader's own error messages, passed on as they are.
+.pq_own_re <- paste0("^(parquet: |not a parquet file|snappy: |gzip: |crc32: ",
+                     "|unknown thrift ",
+                     "|FIXED_LEN_BYTE_ARRAY |unsupported physical |data page v2 ",
+                     "|compression codec |BIT_PACKED |dictionary-encoded |encoding ",
+                     "|nested schema |repeated column |no such column|footer says )")
+
+.pq_read <- function(path, columns, size) {
   con <- file(path, "rb")
   on.exit(close(con), add = TRUE)
 
@@ -1034,6 +1062,12 @@ morie_read_parquet <- function(path, columns = NULL) {
 #' @param path Destination path.
 #' @param compression `"gzip"` (default; zlib level 9), `"snappy"`, or `NULL`
 #'   for uncompressed pages.
+#' @details A `POSIXct` column is written as a Parquet TIMESTAMP (milliseconds
+#'   since 1970-01-01 UTC). The format stores the instant but not a time zone,
+#'   so it reads back as the same instant in UTC: a column in
+#'   `America/Chicago` comes back with `tz = "UTC"`. Set the zone again with
+#'   `attr(x, "tzone") <- "America/Chicago"`, or keep an ISO 8601 text column
+#'   beside it, as `chiload()`'s `date_iso` does.
 #' @return `path`, invisibly.
 #' @keywords internal
 morie_write_parquet <- function(df, path, compression = "gzip") {

@@ -13,7 +13,8 @@ morie_read_parquet(path, columns = NULL)
 the rest are skipped entirely.}
 }
 \value{
-A \code{data.frame}.
+A \code{data.frame}. A damaged file is an error that starts with
+\verb{parquet:}.
 }
 \description{
 Native Parquet reader: no nanoparquet, no arrow. Handles the v1

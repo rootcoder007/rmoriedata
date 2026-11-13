@@ -88,7 +88,8 @@ mdcat <- function() {
 #' copy unless `refresh = TRUE`.
 #'
 #' @param slug Dataset slug; see the `slug` column of [mdcat()].
-#' @param refresh Re-read the file even if a cached copy exists.
+#' @param refresh Re-read the file, and check it against the signed manifest
+#'   again, even if a cached copy exists.
 #' @param format `"csv"` (default) or `"parquet"`: which shipped copy to
 #'   read. Both give the same data frame.
 #' @return A data frame.
@@ -119,6 +120,12 @@ mdload <- function(slug, refresh = FALSE,
     }
     stop(sprintf("No dataset '%s'. See mdcat() for valid slugs.",
                  slug), call. = FALSE)
+  }
+  if (isTRUE(refresh)) {
+    # re-read means re-verified: a file changed since its first check is caught
+    v <- .rmoriedata_cache[["_verified"]]
+    assign("_verified", setdiff(v, c(row$source_path[1L], row$parquet_path[1L])),
+           envir = .rmoriedata_cache)
   }
   if (format == "parquet") {
     rel <- row$parquet_path[1L]

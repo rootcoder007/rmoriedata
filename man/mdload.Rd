@@ -9,7 +9,8 @@ mdload(slug, refresh = FALSE, format = c("csv", "parquet"))
 \arguments{
 \item{slug}{Dataset slug; see the \code{slug} column of \code{\link[=mdcat]{mdcat()}}.}
 
-\item{refresh}{Re-read the file even if a cached copy exists.}
+\item{refresh}{Re-read the file, and check it against the signed manifest
+again, even if a cached copy exists.}
 
 \item{format}{\code{"csv"} (default) or \code{"parquet"}: which shipped copy to
 read. Both give the same data frame.}

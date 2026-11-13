@@ -23,4 +23,12 @@ for uncompressed pages.}
 Native Parquet writer: single row group, PLAIN encoding, all columns
 OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.
 }
+\details{
+A \code{POSIXct} column is written as a Parquet TIMESTAMP (milliseconds
+since 1970-01-01 UTC). The format stores the instant but not a time zone,
+so it reads back as the same instant in UTC: a column in
+\code{America/Chicago} comes back with \code{tz = "UTC"}. Set the zone again with
+\code{attr(x, "tzone") <- "America/Chicago"}, or keep an ISO 8601 text column
+beside it, as \code{chiload()}'s \code{date_iso} does.
+}
 \keyword{internal}
