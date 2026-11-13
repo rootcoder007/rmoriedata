@@ -94,8 +94,9 @@ catalogue.</li>
 </h2>
 <p>Every bundled table ships as a CSV with a bundled column schema,
 listed in a SHA-256 manifest that is signed with the package’s XMSS key
-and verified on load (see ). <code><a href="../reference/mdcat.html">mdcat()</a></code> lists what’s there,
-with row/column counts and the original source path.</p>
+and verified on load (see section 3, Data integrity, and
+<code><a href="../reference/mdverify.html">?mdverify</a></code>). <code><a href="../reference/mdcat.html">mdcat()</a></code> lists what’s there, with
+row/column counts and the original source path.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">cat</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/mdcat.html">mdcat</a></span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">cat</span><span class="op">$</span><span class="va">kind</span><span class="op">)</span></span>
@@ -222,21 +223,21 @@ and is a network call, so it isn’t run here.)</p>
 <span></span>
 <span><span class="co"># A private count of records matching a predicate.</span></span>
 <span><span class="fu"><a href="../reference/dplapcnt.html">dplapcnt</a></span><span class="op">(</span>truecnt <span class="op">=</span> <span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 42</span></span>
+<span><span class="co">#&gt; [1] 43</span></span>
 <span></span>
 <span><span class="co"># The mechanism is unbiased -- averaging many releases recovers the truth.</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">replicate</a></span><span class="op">(</span><span class="fl">2000</span>, <span class="fu"><a href="../reference/dplapcnt.html">dplapcnt</a></span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 42.014</span></span>
+<span><span class="co">#&gt; [1] 41.961</span></span>
 <span></span>
 <span><span class="co"># A private mean of bounded data.</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">1000</span>, <span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/dpgmean.html">dpgmean</a></span><span class="op">(</span><span class="va">x</span>, lower <span class="op">=</span> <span class="fl">0</span>, upper <span class="op">=</span> <span class="fl">1</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 0.5003747</span></span>
+<span><span class="co">#&gt; [1] 0.5047442</span></span>
 <span></span>
 <span><span class="co"># A private histogram straight from tabulated data.</span></span>
 <span><span class="va">counts</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html" class="external-link">as.integer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">comp</span><span class="op">$</span><span class="va">year</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fu"><a href="../reference/dplaphist.html">dplaphist</a></span><span class="op">(</span><span class="va">counts</span>, epsilon <span class="op">=</span> <span class="fl">1.0</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 25003     0</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 24999     0</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="re-identification-risk">5. Re-identification risk<a class="anchor" aria-label="anchor" href="#re-identification-risk"></a>

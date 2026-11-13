@@ -67,9 +67,13 @@ lists them and `hostload("db/table")` opens one, checked against the
 SHA-256 its manifest lists; a large table comes down in parts that
 resume. Each table keeps its source’s licence; the terms are at
 `www.rmorie.com/data-license/`. ICPSR studies are not served there
-(ICPSR’s terms do not allow redistribution). The endpoint comes from a
-signed services document the packages verify before use, so it can
-change without a release.
+(ICPSR’s terms do not allow redistribution):
+[`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+leaves them out and
+[`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+refuses them before any request. The endpoint comes from a signed
+services document the packages verify before use, so it can change
+without a release.
 
 ``` r
 

@@ -11,6 +11,33 @@
   send no key there (with a message), as
   [`rmoriebricklayer::dload()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dmnf.html)
   does. The manifest and services fields are read by exact name.
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  checks every table against the manifest’s SHA-256 again, whatever the
+  field is called (`sha256_gz`, `sha256` or `sha`, as rmoriebricklayer
+  reads it): 0.4.3 read `sha256` only, so 631 tables listed with
+  `sha256_gz` were used unchecked and a modified cached copy loaded. A
+  digest field that is not a SHA-256 is an error, and a table listed
+  without any digest loads with a warning, once per session.
+- Tables whose source terms do not allow redistribution (the ICPSR
+  studies, the NCVS 38604 extract among them, and any table the manifest
+  marks restricted) are left out of
+  [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
+  with a message counting them, and
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  refuses them before any request. The A2AJ case law is an ordinary open
+  table.
+- The messages for a refused download no longer suggest signing in: the
+  tables need no key.
+- [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md),
+  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md)
+  and
+  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
+  refuse an infinite `epsilon` in words; `dplapcnt(5, Inf)` stopped with
+  “missing value where TRUE/FALSE needed”.
+- The signing test writes its XMSS used-index record to a temporary
+  file, not to `~/.config/R/rmoriebricklayer`.
+- The vignette’s reference to the integrity checks is no longer empty.
 
 ## rmoriedata 0.4.2
 

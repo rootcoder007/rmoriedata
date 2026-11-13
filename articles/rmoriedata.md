@@ -19,7 +19,8 @@ The package has four surfaces:
 
 Every bundled table ships as a CSV with a bundled column schema, listed
 in a SHA-256 manifest that is signed with the package’s XMSS key and
-verified on load (see ).
+verified on load (see section 3, Data integrity, and
+[`?mdverify`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)).
 [`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md)
 lists what’s there, with row/column counts and the original source path.
 
@@ -172,21 +173,21 @@ set.seed(1)
 
 # A private count of records matching a predicate.
 dplapcnt(truecnt = 42, epsilon = 1.0)
-#> [1] 42
+#> [1] 43
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, dplapcnt(42, epsilon = 1.0)))
-#> [1] 42.014
+#> [1] 41.961
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.5003747
+#> [1] 0.5047442
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, dplaphist(counts, epsilon = 1.0)))
-#> [1] 25003     0
+#> [1] 24999     0
 ```
 
 ## 5. Re-identification risk

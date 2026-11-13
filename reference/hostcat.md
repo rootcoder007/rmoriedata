@@ -1,13 +1,20 @@
 # Curated datasets at data.rmorie.com
 
-Beyond the open data this package ships, the MORIE project keeps more
-than 160 databases materialised from Google BigQuery public datasets
-(Chicago crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA,
-Hacker News, Ethereum, World Bank, ...) and serves their tables from the
-edge. They need no sign-in; a MORIE key stored earlier by rmorie, morie
-or rmoriebricklayer is still sent. `hostcat()` returns every table with
-its key, description, rows and BigQuery source (the manifest is kept for
-a day); `hostload("db/table")` returns one table, cached under the
+Beyond the open data this package ships, the MORIE project keeps
+databases materialised from Google BigQuery public datasets (Chicago
+crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
+Ethereum, World Bank, ...) and serves their tables from the edge. They
+need no sign-in; a MORIE key stored earlier by rmorie, morie or
+rmoriebricklayer is still sent. `hostcat()` returns every table with its
+key, description, rows and BigQuery source (the manifest is kept for a
+day); tables whose source terms do not allow redistribution (ICPSR
+studies, among them the NCVS 38604 extract, and any table the manifest
+marks restricted) are not served: they are left out, with a message
+counting them, and `hostload()` refuses them before any request.
+`hostload()` checks each table against the SHA-256 the manifest lists
+for it (`sha256_gz`, `sha256` or `sha`) and refuses a file that does not
+match; a table listed without any digest is used with a warning, once
+per session. `hostload("db/table")` returns one table, cached under the
 package cache directory
 ([`tempdir()`](https://rdrr.io/r/base/tempfile.html) unless
 `options(rmoriedata.cache_dir = )` names a persistent one).
@@ -50,8 +57,8 @@ hostload(key, refresh = FALSE)
   Passed to
   [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html):
   the data access terms and who is asking, which a new key needs
-  (`accter`, `name`, `affil`, `purp`, `restr`, `supnm`, `suprole`,
-  `supemail`); what is not given is asked at the console.
+  (`accter`, `name`, `affil`, `purp`); what is not given is asked at the
+  console.
 
 - key:
 

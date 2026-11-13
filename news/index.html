@@ -37,6 +37,14 @@
 <h2 class="pkg-version" data-toc-text="0.4.3" id="rmoriedata-043">rmoriedata 0.4.3<a class="anchor" aria-label="anchor" href="#rmoriedata-043"></a></h2>
 <ul><li>Needs rmoriebricklayer 1.1.1 or later.</li>
 <li>A key stored earlier goes to data.rmorie.com only: with <code>MORIE_DATA_URL</code> set to another address, <code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> send no key there (with a message), as <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dmnf.html" class="external-link">rmoriebricklayer::dload()</a></code> does. The manifest and services fields are read by exact name.</li>
+<li>
+<code><a href="../reference/hostcat.html">hostload()</a></code> checks every table against the manifest’s SHA-256 again, whatever the field is called (<code>sha256_gz</code>, <code>sha256</code> or <code>sha</code>, as rmoriebricklayer reads it): 0.4.3 read <code>sha256</code> only, so 631 tables listed with <code>sha256_gz</code> were used unchecked and a modified cached copy loaded. A digest field that is not a SHA-256 is an error, and a table listed without any digest loads with a warning, once per session.</li>
+<li>Tables whose source terms do not allow redistribution (the ICPSR studies, the NCVS 38604 extract among them, and any table the manifest marks restricted) are left out of <code><a href="../reference/hostcat.html">hostcat()</a></code>, with a message counting them, and <code><a href="../reference/hostcat.html">hostload()</a></code> refuses them before any request. The A2AJ case law is an ordinary open table.</li>
+<li>The messages for a refused download no longer suggest signing in: the tables need no key.</li>
+<li>
+<code><a href="../reference/dplapcnt.html">dplapcnt()</a></code>, <code><a href="../reference/dplaphist.html">dplaphist()</a></code>, <code><a href="../reference/dpgmean.html">dpgmean()</a></code> and <code><a href="../reference/dpbudget.html">dpbudget()</a></code> refuse an infinite <code>epsilon</code> in words; <code>dplapcnt(5, Inf)</code> stopped with “missing value where TRUE/FALSE needed”.</li>
+<li>The signing test writes its XMSS used-index record to a temporary file, not to <code>~/.config/R/rmoriebricklayer</code>.</li>
+<li>The vignette’s reference to the integrity checks is no longer empty.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.2" id="rmoriedata-042">rmoriedata 0.4.2<a class="anchor" aria-label="anchor" href="#rmoriedata-042"></a></h2><p class="text-muted">CRAN release: 2026-11-12</p>
