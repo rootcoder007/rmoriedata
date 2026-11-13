@@ -96,8 +96,10 @@ test_that("a damaged hosted table (a short row) is refused and its copy removed"
     .package = "rmoriedata"
   )
   dest <- file.path(rmoriedata:::.rmd_data_cache_dir(), "chicago_crime__incidents.csv.gz")
-  expect_error(hostload("chicago_crime/incidents"),
-               "did not parse.*damaged copy was removed")
+  # listed without a digest: used with a warning (once per session), then refused
+  expect_warning(expect_error(hostload("chicago_crime/incidents"),
+                              "did not parse.*damaged copy was removed"),
+                 "without a SHA-256")
   expect_false(file.exists(dest))
 })
 
@@ -207,4 +209,175 @@ test_that("the stored key goes only to the services document's address", {
   withr::local_envvar(MORIE_DATA_URL = "https://data.example.test/")
   expect_silent(.rmd_data_get("/fec/t.csv.gz", dest))
   expect_identical(st$hdrs[["Authorization"]], "Bearer sk-x")
+})
+
+# A manifest and a served table for the tests below: `fields` are the entry's
+# digest fields, `extra` more entries. The table is the bytes of `served`.
+hub_fixture <- function(fields, extra = list()) {
+  served <- withr::local_tempfile(fileext = ".csv.gz", .local_envir = parent.frame())
+  con <- gzfile(served, "w")
+  writeLines(c("REF_DATE,VALUE", "2020,1", "2021,2"), con)
+  close(con)
+  ent <- c(list(key = "statcan_health/tbl_1", rows = 2), fields)
+  m <- list(datasets = c(list(ent), extra))
+  list(served = served, manifest = rmoriebricklayer::tojs(m, auto_unbox = TRUE))
+}
+
+hub_mock <- function(fx, calls_env, envir = parent.frame()) {
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(path, dest, timeout = 600) {
+      calls_env$calls <- c(calls_env$calls, path)
+      if (path == "/manifest.json") {
+        writeLines(fx$manifest, dest)
+      } else {
+        file.copy(fx$served, dest, overwrite = TRUE)
+      }
+      invisible(dest)
+    },
+    .package = "rmoriedata", .env = envir
+  )
+}
+
+hub_tamper <- function(key) {
+  f <- file.path(rmoriedata:::.rmd_data_cache_dir(),
+                 paste0(gsub("/", "__", key, fixed = TRUE), ".csv.gz"))
+  con <- gzfile(f, "w")
+  writeLines(c("REF_DATE,VALUE", "2020,999999", "2021,2"), con)
+  close(con)
+  f
+}
+
+test_that("a table listed only with sha256_gz is verified, tampering refused (RD-H1)", {
+  withr::local_envvar(MORIE_HOSTED_KEY = NA, MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  fx <- hub_fixture(list())
+  dig <- rmoriebricklayer::sha256file(fx$served)
+  # the digest under each of the three names bricklayer reads, alone
+  for (f in c("sha256_gz", "sha256", "sha")) {
+    fx <- hub_fixture(stats::setNames(list(dig), f))
+    st <- new.env()
+    hub_mock(fx, st)
+    withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+    df <- expect_no_warning(hostload("statcan_health/tbl_1"))
+    expect_identical(df$VALUE, c(1L, 2L))
+    p <- hub_tamper("statcan_health/tbl_1")
+    expect_error(hostload("statcan_health/tbl_1"),
+                 paste0("does not match the manifest's SHA-256 .*", substr(dig, 1L, 12L)))
+    expect_false(file.exists(p))
+  }
+  # sha256_gz is read first, and a "sha256:" prefix is accepted
+  fx <- hub_fixture(list(sha256_gz = paste0("sha256:", toupper(dig)),
+                         sha256 = strrep("0", 64)))
+  st <- new.env()
+  hub_mock(fx, st)
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  expect_identical(hostload("statcan_health/tbl_1")$VALUE, c(1L, 2L))
+  # a digest field that is not a digest is an error, not "no digest"
+  fx <- hub_fixture(list(sha256_gz = "not-a-digest"))
+  hub_mock(fx, st)
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  expect_error(hostload("statcan_health/tbl_1"),
+               "the manifest's sha256_gz for statcan_health/tbl_1 is not a SHA-256")
+  fx <- hub_fixture(list(sha256_gz = list(dig, dig)))
+  hub_mock(fx, st)
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  expect_error(hostload("statcan_health/tbl_1"), "is not a SHA-256 hex digest")
+})
+
+test_that("a table listed without a digest loads with one warning per session", {
+  withr::local_envvar(MORIE_HOSTED_KEY = NA, MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  rm(list = ls(rmoriedata:::.rmd_nodigest), envir = rmoriedata:::.rmd_nodigest)
+  fx <- hub_fixture(list())
+  st <- new.env()
+  hub_mock(fx, st)
+  expect_warning(df <- hostload("statcan_health/tbl_1"),
+                 "statcan_health/tbl_1 is listed in the manifest .* without a SHA-256")
+  expect_identical(df$VALUE, c(1L, 2L))
+  expect_no_warning(hostload("statcan_health/tbl_1"))
+  rm(list = ls(rmoriedata:::.rmd_nodigest), envir = rmoriedata:::.rmd_nodigest)
+})
+
+test_that("tables whose terms forbid redistribution are not listed (RD-M1)", {
+  withr::local_envvar(MORIE_HOSTED_KEY = NA, MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  one <- function(k, ...) list(key = k, rows = 1, ...)
+  fx <- hub_fixture(list(), extra = list(
+    one("icpsr_21600/ds0001"), one("icpsr_34562/ds0002"), one("ncvs_38604/incident"),
+    one("a2aj_onca/onca_decisions_meta"),
+    one("justice_open/t1", meta = list(access = "open")),
+    one("other/marked", meta = list(access = "restricted")),
+    one("other/flagged", restricted = TRUE)
+  ))
+  st <- new.env()
+  hub_mock(fx, st)
+  expect_message(cat_ <- hostcat(),
+                 paste("^5 tables are not served: their source terms do not",
+                       "allow redistribution"))
+  expect_identical(cat_$key, c("statcan_health/tbl_1", "a2aj_onca/onca_decisions_meta",
+                               "justice_open/t1"))
+  # an ICPSR key stops before any request, the manifest included
+  st$calls <- NULL
+  for (k in c("icpsr_21600/ds0001", "ncvs_38604/incident", "icpsr_99/new")) {
+    msg <- paste0(k, " is not served by data.rmorie.com: ICPSR's terms do not allow ",
+                  "redistribution; download it from ICPSR")
+    expect_error(hostload(k), msg, fixed = TRUE)
+  }
+  expect_null(st$calls)
+  # a table the manifest marks: the manifest is read, the table never requested
+  expect_error(hostload("other/marked"),
+               "other/marked is not served by data.rmorie.com: its source")
+  expect_error(hostload("other/flagged", refresh = TRUE), "other/flagged is not served")
+  expect_false(any(grepl("^/other/", st$calls)))
+  # A2AJ case law is an ordinary open table
+  expect_warning(expect_identical(nrow(hostload("a2aj_onca/onca_decisions_meta")), 2L),
+                 "without a SHA-256")
+  expect_true("/a2aj_onca/onca_decisions_meta.csv.gz" %in% st$calls)
+  # one table: the singular
+  fx1 <- hub_fixture(list(), extra = list(one("icpsr_21600/ds0001")))
+  hub_mock(fx1, st)
+  expect_message(hostcat(refresh = TRUE), "^1 table is not served: its source terms")
+})
+
+test_that("a manifest fetched again after a mismatch decides: marked, or no digest", {
+  withr::local_envvar(MORIE_HOSTED_KEY = NA, MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  rm(list = ls(rmoriedata:::.rmd_nodigest), envir = rmoriedata:::.rmd_nodigest)
+  fx <- hub_fixture(list())
+  dig <- rmoriebricklayer::sha256file(fx$served)
+  # first manifest: the table with its digest; the one fetched again after the
+  # mismatch: `then`
+  for (then in list(list(meta = list(access = "restricted")), list())) {
+    withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+    st <- new.env()
+    st$n <- 0L
+    testthat::local_mocked_bindings(
+      .rmd_data_get = function(path, dest, timeout = 600) {
+        if (path == "/manifest.json") {
+          st$n <- st$n + 1L
+          e <- c(list(key = "statcan_health/tbl_1"),
+                 if (st$n == 1L) list(sha256_gz = dig) else then)
+          writeLines(rmoriebricklayer::tojs(list(datasets = list(e)), auto_unbox = TRUE),
+                     dest)
+        } else {
+          file.copy(fx$served, dest, overwrite = TRUE)
+        }
+        invisible(dest)
+      },
+      .package = "rmoriedata"
+    )
+    hostload("statcan_health/tbl_1")
+    hub_tamper("statcan_health/tbl_1")
+    if (length(then)) {
+      expect_error(hostload("statcan_health/tbl_1"),
+                   "statcan_health/tbl_1 is not served by data.rmorie.com")
+    } else {
+      expect_warning(df <- hostload("statcan_health/tbl_1"), "without a SHA-256")
+      expect_identical(df$VALUE, c(999999L, 2L))
+    }
+  }
+  rm(list = ls(rmoriedata:::.rmd_nodigest), envir = rmoriedata:::.rmd_nodigest)
 })

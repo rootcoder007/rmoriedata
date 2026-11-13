@@ -83,23 +83,96 @@
 # The SHA-256 the manifest lists for a table (NA when it lists none, NULL when the table
 # is not listed); `refresh` fetches the manifest again first.
 .rmd_manifest_sha <- function(key, refresh = FALSE) {
-  hostcat(refresh = refresh)  # fetches the manifest when stale or asked
-  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
-  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
-  for (d in m[["datasets"]]) {
-    if (identical(d[["key"]], key)) {
-      s <- d[["sha256"]]
-      ok <- is.character(s) && length(s) == 1L && nzchar(s)
-      return(if (ok) tolower(s) else NA_character_)
-    }
+  d <- .rmd_manifest_entry(key, refresh)
+  if (is.null(d)) return(NULL)
+  if (.rmd_unserved(d)) .rmd_unserved_stop(key)
+  .rmd_entry_sha(d, key)
+}
+
+# The digest of one manifest entry, read as rmoriebricklayer reads it: the field
+# is sha256_gz, sha256 or sha, first present wins (631 tables carry only sha256_gz;
+# reading sha256 alone used them unchecked). NA when none is present; a field that
+# is present but not a SHA-256 hex digest is an error, never "no digest".
+.rmd_entry_sha <- function(d, key) {
+  for (f in c("sha256_gz", "sha256", "sha")) {
+    s <- d[[f]]
+    if (is.null(s)) next
+    s <- if (is.character(s) && length(s) == 1L) sub("^sha256:", "", s) else NA
+    if (!is.na(s) && grepl("^[0-9a-fA-F]{64}$", s)) return(tolower(s))
+    stop(sprintf("the manifest's %s for %s is not a SHA-256 hex digest", f, key),
+         call. = FALSE)
+  }
+  NA_character_
+}
+
+# The manifest's entry for a table, or NULL when it is not listed.
+.rmd_manifest_entry <- function(key, refresh = FALSE) {
+  for (d in .rmd_manifest(refresh)[["datasets"]]) {
+    if (identical(d[["key"]], key)) return(d)
   }
   NULL
 }
 
+# The manifest, fetched when the cached copy is over a day old or `refresh`.
+.rmd_manifest <- function(refresh = FALSE) {
+  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
+  age <- if (file.exists(p)) {
+    as.numeric(difftime(Sys.time(), file.mtime(p), units = "secs"))
+  } else {
+    Inf
+  }
+  if (refresh || age >= 86400) .rmd_data_get("/manifest.json", p, timeout = 60)
+  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
+  .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
+}
+
+# Tables data.rmorie.com does not serve: their source terms do not allow
+# redistribution (ICPSR studies, the NCVS 38604 extract among them). This is the
+# one list; a table the manifest itself marks (`access` other than "open" or
+# "public", or `restricted: true`, on the entry or in its `meta`) is treated the
+# same. They are left out of hostcat() and refused before any request.
+.rmd_unserved_re <- "^(icpsr_|ncvs_38604)"
+
+.rmd_unserved <- function(d) {
+  k <- d[["key"]]
+  if (is.character(k) && length(k) == 1L && grepl(.rmd_unserved_re, k)) return(TRUE)
+  for (x in list(d, d[["meta"]])) {
+    if (!is.list(x)) next
+    a <- x[["access"]]
+    if (is.character(a) && length(a) == 1L && !tolower(a) %in% c("open", "public")) {
+      return(TRUE)
+    }
+    if (isTRUE(x[["restricted"]])) return(TRUE)
+  }
+  FALSE
+}
+
+.rmd_unserved_stop <- function(key) {
+  if (grepl(.rmd_unserved_re, key)) {
+    stop(key, " is not served by data.rmorie.com: ICPSR's terms do not allow ",
+         "redistribution; download it from ICPSR (https://www.icpsr.umich.edu)",
+         call. = FALSE)
+  }
+  stop(key, " is not served by data.rmorie.com: its source terms do not allow ",
+       "redistribution; download it from its source (see hostcat())", call. = FALSE)
+}
+
+# Once per session and table: a table the manifest lists without any digest is
+# used, but not silently.
+.rmd_nodigest <- new.env(parent = emptyenv())
+
+.rmd_warn_nodigest <- function(key) {
+  if (!isTRUE(.rmd_nodigest[[key]])) {
+    assign(key, TRUE, envir = .rmd_nodigest)
+    warning(key, " is listed in the manifest of data.rmorie.com without a ",
+            "SHA-256: it is used unverified", call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
 # A downloaded table is used only when it matches the manifest's SHA-256 (fetched again
 # once before a mismatch is called a damaged or tampered file); a table the manifest
-# lists without a digest is used as it is.
+# lists without a digest is used with a warning (once per session).
 .rmd_check_sha <- function(key, dest) {
   unlisted <- function() {
     unlink(dest)
@@ -107,12 +180,12 @@
   }
   want <- .rmd_manifest_sha(key)
   if (is.null(want)) unlisted()
-  if (is.na(want)) return(invisible(TRUE))
+  if (is.na(want)) return(.rmd_warn_nodigest(key))
   have <- tolower(.rmd_bl("sha256file")(dest))
   if (!identical(have, want)) {
     want <- .rmd_manifest_sha(key, refresh = TRUE)
     if (is.null(want)) unlisted()
-    if (is.na(want)) return(invisible(TRUE))
+    if (is.na(want)) return(.rmd_warn_nodigest(key))
   }
   if (!identical(have, want)) {
     unlink(dest)
@@ -155,12 +228,12 @@
          call. = FALSE)
   }
   if (grepl("401|403|Unauthorized|Forbidden", msg) && keyless) {
-    stop("data.rmorie.com asked for a key for ", label, ": run ",
-         "hostlogin(token = ) once, or update the package.", call. = FALSE)
+    stop("data.rmorie.com asked for a key for ", label, ": the tables need no ",
+         "sign-in; update the package, or try again later.", call. = FALSE)
   }
   if (grepl("401|403|Unauthorized|Forbidden", msg)) {
-    stop("the curated-data service rejected the stored key; store a valid one with ",
-         "hostlogin(token = ) or sign in again.", call. = FALSE)
+    stop("the curated-data service rejected the stored key; the tables need no key: ",
+         "remove it with rmoriebricklayer::dlogout().", call. = FALSE)
   }
   stop("data.rmorie.com: ", msg, call. = FALSE)
 }
@@ -233,6 +306,14 @@
 #' rmoriebricklayer is still sent.
 #' \code{hostcat()} returns every table with its key,
 #' description, rows and BigQuery source (the manifest is kept for a day);
+#' tables whose source terms do not allow redistribution (ICPSR studies,
+#' among them the NCVS 38604 extract, and any table the manifest marks
+#' restricted) are not served: they are left out, with a message counting
+#' them, and \code{hostload()} refuses them before any request.
+#' \code{hostload()} checks each table against the SHA-256 the manifest
+#' lists for it (\code{sha256_gz}, \code{sha256} or \code{sha}) and refuses
+#' a file that does not match; a table listed without any digest is used
+#' with a warning, once per session.
 #' \code{hostload("db/table")} returns one table, cached under
 #' the package cache directory (\code{tempdir()} unless
 #' \code{options(rmoriedata.cache_dir = )} names a persistent one).
@@ -254,17 +335,15 @@ hostcat <- function(refresh = FALSE) {
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE", call. = FALSE)
   }
-  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
-  age <- if (file.exists(p)) {
-    as.numeric(difftime(Sys.time(), file.mtime(p), units = "secs"))
-  } else {
-    Inf
+  ds <- .rmd_manifest(refresh)[["datasets"]]
+  off <- vapply(ds, .rmd_unserved, NA)
+  if (any(off)) {
+    message(sprintf(
+      ngettext(sum(off), "%d table is not served: its source terms do not",
+               "%d tables are not served: their source terms do not"),
+      sum(off)), " allow redistribution")
+    ds <- ds[!off]
   }
-  fresh <- age < 86400
-  if (refresh || !fresh) .rmd_data_get("/manifest.json", p, timeout = 60)
-  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
-  ds <- m[["datasets"]]
   if (!length(ds)) {
     return(data.frame(key = character(), name = character(), rows = integer(),
                       source = character(), stringsAsFactors = FALSE))
@@ -298,9 +377,8 @@ hostcat <- function(refresh = FALSE) {
 #'   services document (\code{rmoriebricklayer::svcs()}).
 #' @param ... Passed to \code{rmoriebricklayer::dlogin()}: the
 #'   data access terms and who is asking, which a new key needs
-#'   (\code{accter}, \code{name}, \code{affil}, \code{purp},
-#'   \code{restr}, \code{supnm}, \code{suprole},
-#'   \code{supemail}); what is not given is asked at the console.
+#'   (\code{accter}, \code{name}, \code{affil}, \code{purp}); what is
+#'   not given is asked at the console.
 #' @export
 hostlogin <- function(token = NULL, email = NULL, code = NULL,
                                     openbro = interactive(), ...) {
@@ -318,6 +396,11 @@ hostload <- function(key, refresh = FALSE) {
   if (!ok) {
     stop("key must be db/table (see hostcat())", call. = FALSE)
   }
+  # a table that is not served is refused here, before any request: by its key
+  # (no network at all), or as the manifest marks it
+  if (grepl(.rmd_unserved_re, key)) .rmd_unserved_stop(key)
+  d <- .rmd_manifest_entry(key)
+  if (!is.null(d) && .rmd_unserved(d)) .rmd_unserved_stop(key)
   parts <- strsplit(key, "/", fixed = TRUE)[[1L]]
   dest <- file.path(.rmd_data_cache_dir(),
                     paste0(gsub("/", "__", key, fixed = TRUE), ".csv.gz"))

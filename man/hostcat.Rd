@@ -31,9 +31,8 @@ services document (\code{rmoriebricklayer::svcs()}).}
 
 \item{...}{Passed to \code{rmoriebricklayer::dlogin()}: the
 data access terms and who is asking, which a new key needs
-(\code{accter}, \code{name}, \code{affil}, \code{purp},
-\code{restr}, \code{supnm}, \code{suprole},
-\code{supemail}); what is not given is asked at the console.}
+(\code{accter}, \code{name}, \code{affil}, \code{purp}); what is
+not given is asked at the console.}
 
 \item{key}{A \code{db/table} key from the catalog.}
 }
@@ -53,6 +52,14 @@ need no sign-in; a MORIE key stored earlier by rmorie, morie or
 rmoriebricklayer is still sent.
 \code{hostcat()} returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
+tables whose source terms do not allow redistribution (ICPSR studies,
+among them the NCVS 38604 extract, and any table the manifest marks
+restricted) are not served: they are left out, with a message counting
+them, and \code{hostload()} refuses them before any request.
+\code{hostload()} checks each table against the SHA-256 the manifest
+lists for it (\code{sha256_gz}, \code{sha256} or \code{sha}) and refuses
+a file that does not match; a table listed without any digest is used
+with a warning, once per session.
 \code{hostload("db/table")} returns one table, cached under
 the package cache directory (\code{tempdir()} unless
 \code{options(rmoriedata.cache_dir = )} names a persistent one).
