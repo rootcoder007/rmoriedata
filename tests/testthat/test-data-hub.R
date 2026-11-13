@@ -340,6 +340,11 @@ test_that("tables whose terms forbid redistribution are not listed (RD-M1)", {
   fx1 <- hub_fixture(list(), extra = list(one("icpsr_21600/ds0001")))
   hub_mock(fx1, st)
   expect_message(hostcat(refresh = TRUE), "^1 table is not served: its source terms")
+  # nothing left out (as the live manifest is now): no note at all
+  fx0 <- hub_fixture(list(), extra = list(one("a2aj_onca/onca_decisions_meta")))
+  hub_mock(fx0, st)
+  expect_no_message(cat0 <- hostcat(refresh = TRUE))
+  expect_identical(nrow(cat0), 2L)
 })
 
 test_that("a manifest fetched again after a mismatch decides: marked, or no digest", {
