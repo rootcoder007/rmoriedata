@@ -1,5 +1,6 @@
 # rmoriedata 0.4.3
 
+* Extreme arguments are refused in words: `k` or `l` of `Inf` or above the integer range in `kanonvrf()` and `ldivvrf()`, an `epsilon` above 2^20 in the counting mechanisms (both stopped with "missing value where TRUE/FALSE needed"), a `slug` that is not one name in `mddict()`. `mdsha()` takes one string (it hashed only the first of several) and hashes it as UTF-8 whatever encoding it is marked with.
 * `dplapcnt()`, `dplaphist()` and `dpgmean()` draw fresh random bytes in a forked worker (`parallel::mclapply()`): the workers inherited the parent's buffer of random bytes and released identical noise, so the difference of two releases was the exact true difference.
 * `chiclr()` deletes only what `chiload()` wrote (the `<type>_full.parquet` files, their checksum files and unfinished writes): it removed everything in the cache directory, subfolders and the hosted-table cache included.
 * `cellsupp()` refuses a table of three or more dimensions (it was flattened to one column and suppressed against the wrong margins). `ldivvrf()` counts a class's values in one pass: 200,000 classes took minutes.

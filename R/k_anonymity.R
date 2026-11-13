@@ -89,7 +89,7 @@ kanonvrf <- function(data, qids, k = 5) {
     )
   }
   if (length(k) != 1L || !is.numeric(k) || is.na(k) ||
-    k < 1 || k != as.integer(k)) {
+    k < 1 || k > .Machine$integer.max || k != as.integer(k)) {
     stop("`k` must be a single positive integer.", call. = FALSE)
   }
   k <- as.integer(k)
@@ -198,7 +198,7 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
     )
   }
   if (length(l) != 1L || !is.numeric(l) || is.na(l) ||
-    l < 1 || l != as.integer(l)) {
+    l < 1 || l > .Machine$integer.max || l != as.integer(l)) {
     stop("`l` must be a single positive integer.", call. = FALSE)
   }
   l <- as.integer(l)

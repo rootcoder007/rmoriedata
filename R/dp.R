@@ -79,6 +79,10 @@
 # epsilon as the rational s / t, rounded DOWN (never more budget than asked for).
 .morie_dp_rational <- function(epsilon) {
   t <- 2^20
+  if (epsilon > t) {
+    stop("`epsilon` is above 2^20, the largest this sampler represents ",
+         "(and no privacy at all).", call. = FALSE)
+  }
   s <- floor(epsilon * t)
   if (s < 1) {
     stop("`epsilon` is below 2^-20, the smallest this sampler represents.",

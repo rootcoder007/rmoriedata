@@ -222,6 +222,9 @@ mdpath <- function(slug, format = c("parquet", "csv")) {
 #' substr(d, 1, 60)
 #' @export
 mddict <- function(slug) {
+  if (!is.character(slug) || length(slug) != 1L || is.na(slug) || !nzchar(slug)) {
+    stop("`slug` must be a single name from mdcat().", call. = FALSE)
+  }
   cat <- mdcat()
   row <- cat[cat$slug == slug & cat$kind == "dictionary", , drop = FALSE]
   if (!nrow(row)) {

@@ -246,3 +246,24 @@ test_that("cellsupp refuses a table of three or more dimensions", {
   expect_error(cellsupp(NULL), "must be 2-dimensional")
   expect_silent(cellsupp(matrix(c(20, 30, 40, 50), 2)))
 })
+
+test_that("extreme arguments are refused in the package's own words", {
+  df <- data.frame(a = c(1, 1, 2), s = c("x", "y", "z"))
+  for (big in list(Inf, 1e10, 2^60)) {
+    expect_error(kanonvrf(df, "a", k = big), "`k` must be a single positive integer")
+    expect_error(ldivvrf(df, "a", "s", l = big), "`l` must be a single positive integer")
+  }
+  expect_error(dplapcnt(5, .Machine$double.xmax), "above 2\\^20")
+  expect_error(dplapcnt(5, 1e300), "above 2\\^20")
+  expect_true(is.numeric(dplapcnt(5, 64)))
+  expect_error(mdsha(c("abc", "zzz")), "single string")
+  expect_error(mdsha(list(1, 2)), "single string")
+  expect_error(mdsha(NA), "single string")
+  a <- "caf\u00e9"
+  b <- iconv(a, "UTF-8", "latin1")
+  expect_identical(mdsha(a), mdsha(b))
+  expect_identical(mdsha("abc"), mdsha(charToRaw("abc")))
+  for (bad in list(NA, c("a", "b"), data.frame(), 1, "")) {
+    expect_error(mddict(bad), "`slug` must be a single name")
+  }
+})

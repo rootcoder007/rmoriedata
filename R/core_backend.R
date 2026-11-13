@@ -43,7 +43,13 @@ NULL
 #' @rdname morie_core
 #' @export
 mdsha <- function(x) {
-  if (!is.raw(x)) x <- as.character(x)
+  if (!is.raw(x)) {
+    # one string, hashed as UTF-8 whatever encoding it is marked with
+    if (!is.atomic(x) || length(x) != 1L || is.na(x)) {
+      stop("`x` must be a raw vector or a single string.", call. = FALSE)
+    }
+    x <- enc2utf8(as.character(x))
+  }
   .Call(C_morie_core_sha256, x)
 }
 
