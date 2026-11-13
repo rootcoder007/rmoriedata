@@ -12,8 +12,7 @@ them: \code{\link[=mdcat]{mdcat()}} lists the bundled tables and
 \code{\link[=mdload]{mdload()}} loads one; \code{\link[=siuload]{siuload()}},
 \code{\link[=chiload]{chiload()}}, \code{\link[=cihitbls]{cihitbls()}} and \code{\link[=cihiget]{cihiget()}}
 read their datasets, \code{\link[=mdverify]{mdverify()}} checks the bundle's
-checksums; \code{\link[=hostlogin]{hostlogin()}},
-\code{\link[=hostcat]{hostcat()}} and \code{\link[=hostload]{hostload()}} reach the
+checksums; \code{\link[=hostcat]{hostcat()}} and \code{\link[=hostload]{hostload()}} reach the
 tables served at data.rmorie.com; \code{\link[=mdask]{mdask()}} asks a language model about
 the catalogue; and the differential-privacy and k-anonymity helpers
 release aggregates safely. The raw files are also at

@@ -2,43 +2,19 @@
 % Please edit documentation in R/data_hub.R
 \name{hostcat}
 \alias{hostcat}
-\alias{hostlogin}
 \alias{hostload}
 \title{Curated datasets at data.rmorie.com}
 \usage{
 hostcat(refresh = FALSE)
-
-hostlogin(
-  token = NULL,
-  email = NULL,
-  code = NULL,
-  openbro = interactive(),
-  ...
-)
 
 hostload(key, refresh = FALSE)
 }
 \arguments{
 \item{refresh}{Fetch again even when a day-old copy is cached.}
 
-\item{token, email, code, openbro}{Passed to
-\code{rmoriebricklayer::dlogin()}: a key you already hold (no
-longer needed for the tables, which open without sign-in), or an email
-address (a one-time code is
-sent; pass it as \code{code} in a non-interactive session). With neither,
-the GitHub device flow runs. The service address comes from the signed
-services document (\code{rmoriebricklayer::svcs()}).}
-
-\item{...}{Passed to \code{rmoriebricklayer::dlogin()}: the
-data access terms and who is asking, which a new key needs
-(\code{accter}, \code{name}, \code{affil}, \code{purp}); what is
-not given is asked at the console.}
-
 \item{key}{A \code{db/table} key from the catalog.}
 }
 \value{
-\code{hostlogin()}: the key, invisibly, after storing it
-in the shared credentials file.
 \code{hostcat()}: a data frame with \code{key},
 \code{name}, \code{rows} and \code{source};
 \code{hostload()}: the table as a data frame.
@@ -48,8 +24,8 @@ Beyond the open data this package ships, the MORIE project keeps
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-need no sign-in; a MORIE key stored earlier by rmorie, morie or
-rmoriebricklayer is still sent.
+need no sign-in and no key; a key that an earlier version of rmorie,
+morie or rmoriebricklayer stored is not read and never sent.
 \code{hostcat()} returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,

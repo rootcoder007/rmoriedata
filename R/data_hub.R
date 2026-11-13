@@ -1,26 +1,7 @@
-# Curated datasets at data.rmorie.com, with no sign-in; a MORIE key that rmorie,
-# morie or rmoriebricklayer stored earlier in $XDG_CONFIG_HOME/morie/credentials.json
-# is still sent.
+# Curated datasets at data.rmorie.com: no sign-in and no key. A key that an
+# earlier version stored is not read and never sent.
 # The same tables the other packages pull; a manifest lists every table with
 # its rows, columns, SHA-256 and the BigQuery public dataset it was built from.
-
-.rmd_credentials_path <- function() {
-  base <- trimws(Sys.getenv("XDG_CONFIG_HOME", unset = ""))
-  if (!nzchar(base)) base <- file.path(path.expand("~"), ".config")
-  file.path(base, "morie", "credentials.json")
-}
-
-.rmd_hosted_key <- function() {
-  env <- trimws(Sys.getenv("MORIE_HOSTED_KEY", unset = ""))
-  if (nzchar(env)) return(env)
-  p <- .rmd_credentials_path()
-  if (!file.exists(p)) return(NULL)
-  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  d <- tryCatch(.rmd_bl("fromjs")(txt),
-                error = function(e) NULL)
-  key <- if (is.list(d)) d[["hosted_key"]]
-  if (is.character(key) && length(key) == 1L && nzchar(key)) key else NULL
-}
 
 # The data service, as the signed services document at rmorie.com describes it
 # (read through rmoriebricklayer when it has svcs(); an older
@@ -49,18 +30,6 @@
 # The stored key, or NULL: sent only to the address of the signed services document,
 # as rmoriebricklayer's dload() does. A key issued by data.rmorie.com does not follow
 # MORIE_DATA_URL to another host.
-.rmd_data_key <- function() {
-  key <- .rmd_hosted_key()
-  env <- sub("/+$", "", trimws(Sys.getenv("MORIE_DATA_URL", unset = "")))
-  if (is.null(key) || !nzchar(env)) return(key)
-  svc <- .rmd_services_data()
-  doc <- if (is.null(svc)) "https://data.rmorie.com" else svc[["base_url"]] %||% ""
-  if (nzchar(doc) && identical(env, sub("/+$", "", doc))) return(key)
-  message("MORIE_DATA_URL=", env, " is not the curated-data address of the services ",
-          "document; the stored key is not sent to it")
-  NULL
-}
-
 .rmd_data_cache_dir <- function() {
   d <- file.path(.rmd_cache_dir(), "hosted")
   dir.create(d, recursive = TRUE, showWarnings = FALSE)
@@ -198,12 +167,10 @@
 }
 
 .rmd_data_get <- function(path, dest, timeout = 600) {
-  # the open tables need no key; a stored one is still sent (to the services address)
-  key <- .rmd_data_key()
+  # the tables need no key, and none is sent: only the package's User-Agent
   old <- options(timeout = max(getOption("timeout", 60), timeout))
   on.exit(options(old), add = TRUE)
-  hdr <- c(if (!is.null(key)) c(Authorization = paste("Bearer", key)),
-           "User-Agent" = "rmoriedata/1 (+https://rmorie.com)")
+  hdr <- c("User-Agent" = "rmoriedata/1 (+https://rmorie.com)")
   label <- sub("\\.csv\\.gz$", "", sub("^/", "", path))
   size <- .rmd_hosted_size(path)
   part <- .rmd_part_bytes()
@@ -215,25 +182,21 @@
             label = label, size = size),
     error = function(e) e, warning = function(w) w
   )
-  if (inherits(rc, "condition")) .rmd_data_failed(rc, label, is.null(key))
+  if (inherits(rc, "condition")) .rmd_data_failed(rc, label)
   invisible(dest)
 }
 
 # Says why a download from data.rmorie.com failed.
-.rmd_data_failed <- function(rc, label, keyless) {
+.rmd_data_failed <- function(rc, label) {
   msg <- conditionMessage(rc)
   if (grepl("\\b410\\b|Gone", msg)) {
     stop(label, " is not served by data.rmorie.com: ICPSR's terms do not allow ",
          "redistribution; download it from ICPSR (https://www.icpsr.umich.edu)",
          call. = FALSE)
   }
-  if (grepl("401|403|Unauthorized|Forbidden", msg) && keyless) {
-    stop("data.rmorie.com asked for a key for ", label, ": the tables need no ",
-         "sign-in; update the package, or try again later.", call. = FALSE)
-  }
   if (grepl("401|403|Unauthorized|Forbidden", msg)) {
-    stop("the curated-data service rejected the stored key; the tables need no key: ",
-         "remove it with rmoriebricklayer::dlogout().", call. = FALSE)
+    stop("data.rmorie.com refused ", label, ": the tables need no sign-in; ",
+         "update the package, or try again later.", call. = FALSE)
   }
   stop("data.rmorie.com: ", msg, call. = FALSE)
 }
@@ -271,7 +234,7 @@
       error = function(e) e, warning = function(w) w
     )
     if (inherits(rc, "condition")) {
-      .rmd_data_failed(rc, label, !("Authorization" %in% names(hdr)))
+      .rmd_data_failed(rc, label)
     }
     if (!identical(file.size(pfile[i]), want)) {
       got <- file.size(pfile[i])
@@ -302,8 +265,8 @@
 #' databases materialised from Google BigQuery public datasets (Chicago
 #' crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 #' Ethereum, World Bank, ...) and serves their tables from the edge. They
-#' need no sign-in; a MORIE key stored earlier by rmorie, morie or
-#' rmoriebricklayer is still sent.
+#' need no sign-in and no key; a key that an earlier version of rmorie,
+#' morie or rmoriebricklayer stored is not read and never sent.
 #' \code{hostcat()} returns every table with its key,
 #' description, rows and BigQuery source (the manifest is kept for a day);
 #' tables whose source terms do not allow redistribution (ICPSR studies,
@@ -320,9 +283,7 @@
 #'
 #' @param refresh Fetch again even when a day-old copy is cached.
 #' @param key A \code{db/table} key from the catalog.
-#' @return \code{hostlogin()}: the key, invisibly, after storing it
-#'   in the shared credentials file.
-#'   \code{hostcat()}: a data frame with \code{key},
+#' @return \code{hostcat()}: a data frame with \code{key},
 #'   \code{name}, \code{rows} and \code{source};
 #'   \code{hostload()}: the table as a data frame.
 #' @examples
@@ -365,27 +326,6 @@ hostcat <- function(refresh = FALSE) {
     }, 1L),
     source = vapply(ds, pick, "", what = "source"),
     stringsAsFactors = FALSE)
-}
-
-#' @rdname hostcat
-#' @param token,email,code,openbro Passed to
-#'   \code{rmoriebricklayer::dlogin()}: a key you already hold (no
-#'   longer needed for the tables, which open without sign-in), or an email
-#'   address (a one-time code is
-#'   sent; pass it as \code{code} in a non-interactive session). With neither,
-#'   the GitHub device flow runs. The service address comes from the signed
-#'   services document (\code{rmoriebricklayer::svcs()}).
-#' @param ... Passed to \code{rmoriebricklayer::dlogin()}: the
-#'   data access terms and who is asking, which a new key needs
-#'   (\code{accter}, \code{name}, \code{affil}, \code{purp}); what is
-#'   not given is asked at the console.
-#' @export
-hostlogin <- function(token = NULL, email = NULL, code = NULL,
-                                    openbro = interactive(), ...) {
-  key <- .rmd_bl("dlogin")(token = token, email = email,
-                                                code = code,
-                                                openbro = openbro, ...)
-  invisible(key)
 }
 
 #' @rdname hostcat

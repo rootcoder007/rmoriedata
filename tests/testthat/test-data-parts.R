@@ -61,7 +61,6 @@ test_that("only a table more than twice the part size goes in parts", {
   expect_identical(.rmd_part_bytes(), 90 * 2^20)
   st$called <- NULL
   testthat::local_mocked_bindings(
-    .rmd_hosted_key = function() NULL,
     .rmd_hosted_size = function(path) 300 * 2^20,
     .rmd_get_parts = function(path, dest, hdr, label, size, part, timeout) {
       st$called <- c(size, part)

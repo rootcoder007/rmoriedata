@@ -7,8 +7,7 @@
 #' [mdload()] loads one; [siuload()],
 #' [chiload()], [cihitbls()] and [cihiget()]
 #' read their datasets, [mdverify()] checks the bundle's
-#' checksums; [hostlogin()],
-#' [hostcat()] and [hostload()] reach the
+#' checksums; [hostcat()] and [hostload()] reach the
 #' tables served at data.rmorie.com; [mdask()] asks a language model about
 #' the catalogue; and the differential-privacy and k-anonymity helpers
 #' release aggregates safely. The raw files are also at

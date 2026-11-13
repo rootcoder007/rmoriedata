@@ -1,18 +1,18 @@
-# data.rmorie.com: key from the shared credentials file, manifest cache, table cache.
+# data.rmorie.com: no key is read or sent; manifest cache, table cache.
 
-test_that("hosted catalog and load use the shared MORIE key and cache locally", {
+test_that("hosted catalog and load need no key and cache locally", {
   cfg <- withr::local_tempdir()
   withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA,
                       MORIE_DATA_URL = "https://data.example.test")
   withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
-  expect_null(.rmd_hosted_key())
   # no key: nothing is refused locally, the request goes out (to a .test name
   # that never resolves)
   expect_error(hostcat(), "data.example.test")
+  # a credentials file left by an earlier version changes nothing
   dir.create(file.path(cfg, "morie"), recursive = TRUE)
   writeLines('{"hosted_key": "sk-good", "hosted_user": "me"}',
              file.path(cfg, "morie", "credentials.json"))
-  expect_equal(.rmd_hosted_key(), "sk-good")
+  expect_false(exists(".rmd_hosted_key", asNamespace("rmoriedata"), inherits = FALSE))
   calls <- character()
   # the table as served, and its digest in the manifest
   served <- tempfile(fileext = ".csv.gz")
@@ -50,31 +50,6 @@ test_that("hosted catalog and load use the shared MORIE key and cache locally", 
   hostload("chicago_crime/incidents")
   expect_equal(sum(calls == "/chicago_crime/incidents.csv.gz"), 1L)
   expect_error(hostload("nokey"), "db/table")
-})
-
-test_that("hostlogin stores a key via rmoriebricklayer; the hub reads it", {
-  skip_if_old_bricklayer()
-  cfg <- withr::local_tempdir()
-  withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA)
-  seen <- NULL
-  local_mocked_bindings(
-    dlogin = function(token = NULL, email = NULL, code = NULL,
-                                    openbro = FALSE, ...) {
-      seen <<- list(token = token, email = email, code = code)
-      dir.create(file.path(cfg, "morie"), recursive = TRUE, showWarnings = FALSE)
-      writeLines('{"hosted_key": "sk-from-login"}',
-                 file.path(cfg, "morie", "credentials.json"))
-      invisible("sk-from-login")
-    },
-    .package = "rmoriebricklayer"
-  )
-  expect_identical(hostlogin(token = "sk-from-login"), "sk-from-login")
-  expect_identical(seen$token, "sk-from-login")
-  expect_identical(.rmd_hosted_key(), "sk-from-login")
-  hostlogin(email = "someone@example.org", code = "123456",
-                          openbro = FALSE)
-  expect_identical(seen$email, "someone@example.org")
-  expect_identical(seen$code, "123456")
 })
 
 test_that("a damaged hosted table (a short row) is refused and its copy removed", {
@@ -137,12 +112,11 @@ test_that("a table failing the manifest's SHA-256 is deleted after a refresh", {
                "not listed in the manifest")
 })
 
-test_that("a table refused with 403 names the stored key, not a terms sign-in", {
-  # no table is behind accepted terms any more (the tables open without sign-in,
-  # and ICPSR studies answer 410): a 403 with a key sent means the key was refused
+test_that("a table refused with 403 says no sign-in is needed, with or without an old key", {
+  # no table is behind a key or accepted terms (ICPSR studies answer 410): a 403
+  # is the service's refusal, and no stored key is involved
   withr::local_envvar(MORIE_HOSTED_KEY = "sk-x",
                       MORIE_DATA_URL = "https://data.example.test")
-  # the services document names that address, so the stored key is sent there
   testthat::local_mocked_bindings(.rmd_dl = function(...) stop("answered HTTP 403"),
                                   .rmd_services_data = function() {
                                     list(mode = "key",
@@ -150,18 +124,16 @@ test_that("a table refused with 403 names the stored key, not a terms sign-in", 
                                   },
                                   .package = "rmoriedata")
   expect_error(rmoriedata:::.rmd_data_get("/a2aj_onca/onca_meta.csv.gz", tempfile()),
-               "rejected the stored key")
+               "refused a2aj_onca/onca_meta: the tables need no sign-in")
   expect_error(rmoriedata:::.rmd_data_get("/chicago_crime/incidents.csv.gz", tempfile()),
-               "rejected the stored key")
+               "refused chicago_crime/incidents: the tables need no sign-in")
   expect_false(exists(".rmd_restricted", asNamespace("rmoriedata"), inherits = FALSE))
 })
 
-test_that("a refused table says why: ICPSR (410), a key asked for, a key rejected", {
+test_that("a refused table says why: ICPSR (410), or that no sign-in is needed", {
   fail <- "bldl: https://data.example.test/x answered HTTP 410"
-  key <- NULL
   testthat::local_mocked_bindings(
     .rmd_data_url = function() "https://data.example.test",
-    .rmd_hosted_key = function() key,
     .rmd_hosted_size = function(path) NULL,
     .rmd_dl = function(...) stop(fail, call. = FALSE)
   )
@@ -170,11 +142,8 @@ test_that("a refused table says why: ICPSR (410), a key asked for, a key rejecte
                "icpsr_9/t is not served by data.rmorie.com: ICPSR's terms")
   fail <- "bldl: https://data.example.test/x answered HTTP 401"
   expect_error(.rmd_data_get("/fec/t.csv.gz", dest),
-               "data.rmorie.com asked for a key for fec/t")
-  key <- "sk-x"
-  expect_error(.rmd_data_get("/fec/t.csv.gz", dest), "rejected the stored key")
+               "data.rmorie.com refused fec/t: the tables need no sign-in")
   fail <- NULL
-  key <- NULL
   st <- new.env()
   testthat::local_mocked_bindings(.rmd_dl = function(url, dest, headers = NULL, ...) {
     st$hdrs <- headers
@@ -184,8 +153,11 @@ test_that("a refused table says why: ICPSR (410), a key asked for, a key rejecte
   expect_false("Authorization" %in% names(st$hdrs))
 })
 
-test_that("the stored key goes only to the services document's address", {
-  withr::local_envvar(MORIE_HOSTED_KEY = "sk-x",
+test_that("no key is ever sent: not one in the environment, not one stored earlier", {
+  cfg <- withr::local_tempdir()
+  dir.create(file.path(cfg, "morie"), recursive = TRUE)
+  writeLines('{"hosted_key": "sk-stored"}', file.path(cfg, "morie", "credentials.json"))
+  withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = "sk-x",
                       MORIE_DATA_URL = "https://elsewhere.example.test")
   st <- new.env()
   testthat::local_mocked_bindings(
@@ -200,15 +172,16 @@ test_that("the stored key goes only to the services document's address", {
     }
   )
   dest <- withr::local_tempfile()
-  expect_message(.rmd_data_get("/fec/t.csv.gz", dest), "the stored key is not sent")
+  expect_silent(.rmd_data_get("/fec/t.csv.gz", dest))
   expect_false("Authorization" %in% names(st$hdrs))
   expect_identical(st$url, "https://elsewhere.example.test/fec/t.csv.gz")
-  # data.rmorie.com serves a table without a key only to a package User-Agent
+  # data.rmorie.com serves a table only to a package User-Agent
   expect_match(st$hdrs[["User-Agent"]],
                "^(rmoriebricklayer|rmoriedata|rmorie|morie)/[0-9]")
   withr::local_envvar(MORIE_DATA_URL = "https://data.example.test/")
   expect_silent(.rmd_data_get("/fec/t.csv.gz", dest))
-  expect_identical(st$hdrs[["Authorization"]], "Bearer sk-x")
+  expect_false("Authorization" %in% names(st$hdrs))
+  expect_false(any(grepl("sk-", unlist(st$hdrs), fixed = TRUE)))
 })
 
 # A manifest and a served table for the tests below: `fields` are the entry's

@@ -33,7 +33,6 @@ reference:
       - mdcat
       - mdload
       - hostcat
-      - hostlogin
       - mdpath
       - mddict
       - mdsums
