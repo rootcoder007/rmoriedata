@@ -202,3 +202,15 @@ test_that("a non-finite count is refused in words, with no coercion warning", {
   expect_true(is.finite(dplapcnt(2^40, 1)))
   expect_error(dplapcnt(1e300, 1), "must not exceed 2\\^53")
 })
+
+test_that("an infinite epsilon is refused in words before any draw (RD-L1)", {
+  # Inf passed the old check and stopped inside the gcd loop with R's own
+  # error about a missing value in a condition
+  msg <- "`epsilon` must be a single positive number."
+  expect_error(dplapcnt(5, Inf), msg, fixed = TRUE)
+  expect_error(dplaphist(c(1, 2), Inf), msg, fixed = TRUE)
+  expect_error(dpgmean(1:5, 0, 5, epsilon = Inf, delta = 1e-5), msg, fixed = TRUE)
+  expect_error(dpbudget(Inf), msg, fixed = TRUE)
+  expect_error(dplapcnt(5, -Inf), msg, fixed = TRUE)
+  expect_error(dplapcnt(5, NaN), msg, fixed = TRUE)
+})

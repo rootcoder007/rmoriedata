@@ -141,7 +141,8 @@
 #' # a second release at epsilon = 1.5 would exceed the remaining 1
 #' try(dplapcnt(42, epsilon = 1.5, budget = b))
 dpbudget <- function(epsilon, delta = 0) {
-  if (length(epsilon) != 1L || !is.numeric(epsilon) || is.na(epsilon) || epsilon <= 0) {
+  if (length(epsilon) != 1L || !is.numeric(epsilon) || !is.finite(epsilon) ||
+      epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   if (length(delta) != 1L || !is.numeric(delta) || is.na(delta) ||
@@ -261,8 +262,8 @@ dplapcnt <- function(truecnt, epsilon, budget = NULL) {
          "the representation and the release would equal the true count.",
          call. = FALSE)
   }
-  if (length(epsilon) != 1L || is.na(epsilon) ||
-    !is.numeric(epsilon) || epsilon <= 0) {
+  if (length(epsilon) != 1L || !is.numeric(epsilon) ||
+    !is.finite(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   q <- .morie_dp_rational(epsilon)
@@ -307,7 +308,7 @@ dplaphist <- function(counts, epsilon, budget = NULL) {
          call. = FALSE)
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||
-    is.na(epsilon) || epsilon <= 0) {
+    !is.finite(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   q <- .morie_dp_rational(epsilon)
@@ -365,7 +366,7 @@ dpgmean <- function(x, lower, upper, epsilon, delta = 1e-6,
     )
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||
-    is.na(epsilon) || epsilon <= 0) {
+    !is.finite(epsilon) || epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
   }
   if (length(delta) != 1L || !is.numeric(delta) ||

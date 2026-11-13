@@ -5,6 +5,9 @@
 * `hostload()` checks every table against the manifest's SHA-256 again, whatever the field is called (`sha256_gz`, `sha256` or `sha`, as rmoriebricklayer reads it): 0.4.3 read `sha256` only, so 631 tables listed with `sha256_gz` were used unchecked and a modified cached copy loaded. A digest field that is not a SHA-256 is an error, and a table listed without any digest loads with a warning, once per session.
 * Tables whose source terms do not allow redistribution (the ICPSR studies, the NCVS 38604 extract among them, and any table the manifest marks restricted) are left out of `hostcat()`, with a message counting them, and `hostload()` refuses them before any request. The A2AJ case law is an ordinary open table.
 * The messages for a refused download no longer suggest signing in: the tables need no key.
+* `dplapcnt()`, `dplaphist()`, `dpgmean()` and `dpbudget()` refuse an infinite `epsilon` in words; `dplapcnt(5, Inf)` stopped with "missing value where TRUE/FALSE needed".
+* The signing test writes its XMSS used-index record to a temporary file, not to `~/.config/R/rmoriebricklayer`.
+* The vignette's reference to the integrity checks is no longer empty.
 
 # rmoriedata 0.4.2
 

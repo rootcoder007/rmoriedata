@@ -9,6 +9,9 @@ test_that("the shipped signing key matches the root pinned in code", {
 test_that("a re-signed store with a foreign key is refused", {
   skip_if_old_bricklayer()
   skip_if_not_installed("rmoriebricklayer")
+  # the signature's used-index record goes to a temporary file, not the
+  # checking user's ~/.config/R/rmoriebricklayer
+  withr::local_envvar(RMBL_XMSS_INDEX_FILE = withr::local_tempfile())
   src <- system.file("extdata", package = "rmoriedata")
   tmp <- file.path(tempdir(), "rd_forged")
   dir.create(tmp, showWarnings = FALSE)
