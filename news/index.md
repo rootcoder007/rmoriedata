@@ -2,6 +2,29 @@
 
 ## rmoriedata 0.4.3
 
+- [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
+  and
+  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md)
+  draw fresh random bytes in a forked worker
+  ([`parallel::mclapply()`](https://rdrr.io/r/parallel/mclapply.html)):
+  the workers inherited the parent’s buffer of random bytes and released
+  identical noise, so the difference of two releases was the exact true
+  difference.
+- [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
+  deletes only what
+  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
+  wrote (the `<type>_full.parquet` files, their checksum files and
+  unfinished writes): it removed everything in the cache directory,
+  subfolders and the hosted-table cache included.
+- [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
+  refuses a table of three or more dimensions (it was flattened to one
+  column and suppressed against the wrong margins).
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
+  counts a class’s values in one pass: 200,000 classes took minutes.
+- A refused download reads the status the server answered: a table whose
+  name holds 401 or 403 no longer turns a 404 into “need no sign-in”,
+  and a 410 names ICPSR only for an ICPSR table.
 - Needs rmoriebricklayer 1.1.1 or later.
 - `hostlogin()` is gone, and no key is read or sent: every table at
   data.rmorie.com is open, so the sign-in asked for a name, a reason and

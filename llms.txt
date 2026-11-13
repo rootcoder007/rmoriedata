@@ -110,7 +110,7 @@ head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
 iucr <- mdload("chicago_iucr_codes")
 
 # Release a private count, then check a table for re-identification risk.
-dplapcnt(true_count = 42, epsilon = 1.0)
+dplapcnt(truecnt = 42, epsilon = 1.0)
 df <- data.frame(age = c(25, 25, 25, 40), sex = c("F", "F", "F", "M"))
 kanonvrf(df, c("age", "sex"), k = 2)$summary
 ```

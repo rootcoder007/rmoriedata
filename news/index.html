@@ -35,7 +35,14 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="rmoriedata-043">rmoriedata 0.4.3<a class="anchor" aria-label="anchor" href="#rmoriedata-043"></a></h2>
-<ul><li>Needs rmoriebricklayer 1.1.1 or later.</li>
+<ul><li>
+<code><a href="../reference/dplapcnt.html">dplapcnt()</a></code>, <code><a href="../reference/dplaphist.html">dplaphist()</a></code> and <code><a href="../reference/dpgmean.html">dpgmean()</a></code> draw fresh random bytes in a forked worker (<code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mclapply()</a></code>): the workers inherited the parent’s buffer of random bytes and released identical noise, so the difference of two releases was the exact true difference.</li>
+<li>
+<code><a href="../reference/chiclr.html">chiclr()</a></code> deletes only what <code><a href="../reference/chiload.html">chiload()</a></code> wrote (the <code>&lt;type&gt;_full.parquet</code> files, their checksum files and unfinished writes): it removed everything in the cache directory, subfolders and the hosted-table cache included.</li>
+<li>
+<code><a href="../reference/cellsupp.html">cellsupp()</a></code> refuses a table of three or more dimensions (it was flattened to one column and suppressed against the wrong margins). <code><a href="../reference/ldivvrf.html">ldivvrf()</a></code> counts a class’s values in one pass: 200,000 classes took minutes.</li>
+<li>A refused download reads the status the server answered: a table whose name holds 401 or 403 no longer turns a 404 into “need no sign-in”, and a 410 names ICPSR only for an ICPSR table.</li>
+<li>Needs rmoriebricklayer 1.1.1 or later.</li>
 <li>
 <code>hostlogin()</code> is gone, and no key is read or sent: every table at data.rmorie.com is open, so the sign-in asked for a name, a reason and an email or GitHub account for nothing. <code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> work as before. A key that an earlier version stored stays in its file, unread. The manifest and services fields are read by exact name.</li>
 <li>
