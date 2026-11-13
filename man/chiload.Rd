@@ -19,15 +19,21 @@ chiload(
 
 \item{as}{Return format: \code{"data.frame"} (default), \code{"tibble"}, or
 \code{"parquet_path"} (writes a Parquet file under \code{tempdir()}
-and returns its path; nothing is written to the user's home).}
+and returns its path; nothing is written to the user's home). Parquet
+keeps no time zone, so \code{date} reads back as the same instant in
+UTC; \code{date_iso} keeps the local time and offset.}
 
 \item{full}{If \code{TRUE}, fetch the complete dataset from Socrata (network,
 large) instead of the bundled sample; a complete fetch is cached as
-Parquet (see Description).}
+Parquet (see Description). The result has the bundled sample's columns,
+in its order and with its types, derived from Socrata's export as the
+sample was.}
 
-\item{mirror}{Optional base URL of an r-universe/drat mirror to try before
-Socrata (offline-friendly fallback). Defaults to
-\code{getOption("rmoriedata.mirror")}. The mirror's
+\item{mirror}{Optional base URL of an r-universe/drat mirror, or a local
+directory, to try before Socrata (offline-friendly fallback). Defaults to
+\code{getOption("rmoriedata.mirror")}. A URL is downloaded over https
+and checked against \code{<type>_full.parquet.sha256} when the mirror
+has one; if the mirror fails, Socrata is used. The mirror's
 \code{<type>_full.parquet} must use snappy or no compression and
 data pages v1: the package's own reader supports nothing else.}
 

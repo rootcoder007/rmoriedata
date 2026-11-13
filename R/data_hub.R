@@ -31,9 +31,7 @@
 # as rmoriebricklayer's dload() does. A key issued by data.rmorie.com does not follow
 # MORIE_DATA_URL to another host.
 .rmd_data_cache_dir <- function() {
-  d <- file.path(.rmd_cache_dir(), "hosted")
-  dir.create(d, recursive = TRUE, showWarnings = FALSE)
-  d
+  .rmd_mkdir(file.path(.rmd_cache_dir(), "hosted"))
 }
 
 .rmd_hosted_size <- function(path) {
@@ -90,9 +88,29 @@
   } else {
     Inf
   }
-  if (refresh || age >= 86400) .rmd_data_get("/manifest.json", p, timeout = 60)
+  fresh <- refresh || age >= 86400
+  if (fresh) .rmd_data_get("/manifest.json", p, timeout = 60)
+  m <- .rmd_manifest_parse(p)
+  if (!is.list(m) && !fresh) {
+    # a damaged cached copy is treated as absent: fetched again, once
+    message("rmoriedata: the cached manifest of data.rmorie.com could not be read; ",
+            "fetching it again")
+    .rmd_data_get("/manifest.json", p, timeout = 60)
+    m <- .rmd_manifest_parse(p)
+  }
+  if (!is.list(m)) {
+    stop("data.rmorie.com sent a manifest that could not be read (", m, "); ",
+         "try again later", call. = FALSE)
+  }
+  m
+}
+
+# The parsed manifest, or the reason it does not parse (a string).
+.rmd_manifest_parse <- function(p) {
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  .rmd_bl("fromjs")(txt, simplifyVector = FALSE)
+  m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE), error = function(e) e)
+  if (inherits(m, "error")) return(conditionMessage(m))
+  if (is.list(m)) m else "not a JSON object"
 }
 
 # Tables data.rmorie.com does not serve: their source terms do not allow
@@ -229,6 +247,8 @@
   n <- length(starts)
   pdir <- paste0(dest, ".parts")
   dir.create(pdir, recursive = TRUE, showWarnings = FALSE)
+  # a failed run keeps the parts it finished, never an empty directory
+  on.exit(if (!length(list.files(pdir))) unlink(pdir, recursive = TRUE), add = TRUE)
   pfile <- file.path(pdir, sprintf("%05d", seq_len(n)))
   for (i in seq_len(n)) {
     a <- starts[i]
@@ -245,8 +265,23 @@
     if (inherits(rc, "condition")) {
       .rmd_data_failed(rc, label)
     }
-    if (!identical(file.size(pfile[i]), want)) {
-      got <- file.size(pfile[i])
+    got <- file.size(pfile[i])
+    if (!is.na(got) && got > want) {
+      # the server ignored the Range header and sent the whole file (HTTP 200):
+      # keep it when it is the whole file, else fetch it once in one piece
+      unlink(dest)
+      if (got != size || !file.rename(pfile[i], dest)) {
+        rc <- tryCatch(
+          .rmd_dl(paste0(.rmd_data_url(), path), dest, headers = hdr, label = label,
+                  size = size, timeout = timeout),
+          error = function(e) e, warning = function(w) w
+        )
+        if (inherits(rc, "condition")) .rmd_data_failed(rc, label)
+      }
+      unlink(pdir, recursive = TRUE)
+      return(invisible(dest))
+    }
+    if (!identical(got, want)) {
       unlink(pfile[i])
       stop(sprintf(paste("data.rmorie.com: part %d of %s came back with %.0f bytes,",
                          "not %.0f; run again to resume from that part"),

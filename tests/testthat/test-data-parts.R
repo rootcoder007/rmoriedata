@@ -70,3 +70,48 @@ test_that("only a table more than twice the part size goes in parts", {
   .rmd_data_get("/db/t.csv.gz", withr::local_tempfile())
   expect_identical(st$called, c(300 * 2^20, 90 * 2^20))
 })
+
+test_that("a server that answers a range with the whole file is used whole", {
+  set.seed(2)
+  bytes <- as.raw(sample(0:255, 5000, replace = TRUE))
+  st <- new.env()
+  st$n <- 0L
+  st$body <- bytes
+  testthat::local_mocked_bindings(
+    .rmd_data_url = function() "https://data.example.test",
+    .rmd_dl = function(url, dest, headers = NULL, ...) {
+      st$n <- st$n + 1L
+      st$range <- c(st$range, "Range" %in% names(headers))
+      writeBin(st$body, dest) # HTTP 200: the Range header is ignored
+      invisible(dest)
+    }
+  )
+  dest <- withr::local_tempfile()
+  .rmd_get_parts("/db/t.csv.gz", dest, c(`User-Agent` = "x"), "db/t", 5000, 1024, 60)
+  expect_identical(readBin(dest, "raw", 6000), bytes)
+  expect_identical(st$n, 1L)
+  expect_false(dir.exists(paste0(dest, ".parts")))
+  # a body longer than a part but not the size listed: fetched once in one piece
+  unlink(dest)
+  st$n <- 0L
+  st$range <- NULL
+  st$body <- c(bytes, bytes)
+  .rmd_get_parts("/db/t.csv.gz", dest, c(`User-Agent` = "x"), "db/t", 5000, 1024, 60)
+  expect_identical(st$range, c(TRUE, FALSE))
+  expect_identical(file.size(dest), 10000)
+  expect_false(dir.exists(paste0(dest, ".parts")))
+})
+
+test_that("a failed first part leaves no empty parts directory", {
+  testthat::local_mocked_bindings(
+    .rmd_data_url = function() "https://data.example.test",
+    .rmd_dl = function(url, dest, ...) {
+      writeBin(as.raw(1:10), dest)
+      invisible(dest)
+    }
+  )
+  dest <- withr::local_tempfile()
+  expect_error(.rmd_get_parts("/db/t.csv.gz", dest, character(), "db/t", 5000, 1024, 60),
+               "came back with 10 bytes")
+  expect_false(dir.exists(paste0(dest, ".parts")))
+})

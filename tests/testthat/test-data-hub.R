@@ -377,3 +377,34 @@ test_that("a refusal is read from the status answered, not from the table's name
   expect_match(f("could not resolve host", "fec/t410"),
                "^data.rmorie.com: could not resolve host$")
 })
+
+test_that("a damaged cached manifest is fetched again, once, and says so", {
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test")
+  p <- file.path(rmoriedata:::.rmd_data_cache_dir(), "manifest.json")
+  good <- paste0('{"datasets":[{"key":"db/t","rows":1,"sha256":"', strrep("a", 64),
+                 '","meta":{"description":"T"}}]}')
+  calls <- 0L
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(path, dest, timeout = 600) {
+      calls <<- calls + 1L
+      writeLines(good, dest)
+      invisible(dest)
+    })
+  for (damaged in c('{"datasets":[{"key":', "15")) {
+    writeLines(damaged, p)
+    calls <- 0L
+    expect_message(out <- hostcat(),
+                   "the cached manifest of data.rmorie.com could not be read")
+    expect_identical(out$key, "db/t")
+    expect_identical(calls, 1L)
+  }
+  writeLines('{"datasets":', p)
+  expect_message(d <- .rmd_manifest_entry("db/t"), "fetching it again")
+  expect_identical(d$key, "db/t")
+  # a manifest that is damaged as it arrives is an error in words, not a parser's
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(path, dest, timeout = 600) writeLines("{", dest))
+  expect_error(hostcat(refresh = TRUE),
+               "data.rmorie.com sent a manifest that could not be read")
+})

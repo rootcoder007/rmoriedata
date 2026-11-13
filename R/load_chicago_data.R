@@ -20,10 +20,14 @@
 #' @param type One of \code{"arrests"} or \code{"complaints"}.
 #' @param as Return format: \code{"data.frame"} (default), \code{"tibble"}, or
 #'   \code{"parquet_path"} (writes a Parquet file under \code{tempdir()}
-#'   and returns its path; nothing is written to the user's home).
+#'   and returns its path; nothing is written to the user's home). Parquet
+#'   keeps no time zone, so \code{date} reads back as the same instant in
+#'   UTC; \code{date_iso} keeps the local time and offset.
 #' @param full If \code{TRUE}, fetch the complete dataset from Socrata (network,
 #'   large) instead of the bundled sample; a complete fetch is cached as
-#'   Parquet (see Description).
+#'   Parquet (see Description). The result has the bundled sample's columns,
+#'   in its order and with its types, derived from Socrata's export as the
+#'   sample was.
 #' @param limit Optional row cap. For a \code{full = TRUE} fetch it is passed to
 #'   the Socrata \code{$limit} parameter (a bounded fetch skips the mirror
 #'   and is never written to the full-dataset cache); otherwise it keeps the
@@ -34,9 +38,11 @@
 #'   \code{limit} is set to \code{ceiling(total * fraction)} (of the bundled
 #'   sample's rows otherwise). Give either
 #'   \code{fraction} or \code{limit}, not both.
-#' @param mirror Optional base URL of an r-universe/drat mirror to try before
-#'   Socrata (offline-friendly fallback). Defaults to
-#'   \code{getOption("rmoriedata.mirror")}. The mirror's
+#' @param mirror Optional base URL of an r-universe/drat mirror, or a local
+#'   directory, to try before Socrata (offline-friendly fallback). Defaults to
+#'   \code{getOption("rmoriedata.mirror")}. A URL is downloaded over https
+#'   and checked against \code{<type>_full.parquet.sha256} when the mirror
+#'   has one; if the mirror fails, Socrata is used. The mirror's
 #'   \code{<type>_full.parquet} must use snappy or no compression and
 #'   data pages v1: the package's own reader supports nothing else.
 #' @param refresh If \code{TRUE}, ignore the cache of the
@@ -93,21 +99,28 @@ chiload <- function(type = c("arrests", "complaints"),
       call. = FALSE
     )
   }
-  if (!is.null(limit)) {
-    stopifnot(is.numeric(limit), length(limit) == 1L, limit >= 1)
+  for (a in c("full", "refresh")) {
+    v <- get(a)
+    if (!is.logical(v) || length(v) != 1L || is.na(v)) {
+      stop("`", a, "` must be TRUE or FALSE.", call. = FALSE)
+    }
   }
-  if (!is.null(fraction)) {
-    stopifnot(
-      is.numeric(fraction), length(fraction) == 1L,
-      fraction > 0, fraction <= 1
-    )
+  if (!is.null(limit) && !(is.numeric(limit) && length(limit) == 1L &&
+                           !is.na(limit) && limit >= 1 && limit == floor(limit) &&
+                           limit <= .Machine$integer.max)) {
+    stop("`limit` must be a whole number of rows from 1 to ",
+         .Machine$integer.max, ".", call. = FALSE)
+  }
+  if (!is.null(fraction) && !(is.numeric(fraction) && length(fraction) == 1L &&
+                              !is.na(fraction) && fraction > 0 && fraction <= 1)) {
+    stop("`fraction` must be one number above 0 and at most 1.", call. = FALSE)
   }
 
-  df <- if (isTRUE(full)) {
+  df <- if (full) {
     if (!is.null(fraction)) {
       limit <- max(1L, as.integer(ceiling(.rmd_full_count(type) * fraction)))
     }
-    .rmd_fetch_full(type, mirror, limit, refresh = isTRUE(refresh))
+    .rmd_shape(.rmd_fetch_full(type, mirror, limit, refresh = refresh), type)
   } else {
     # the bundled sample takes the same row cap (it was ignored without full = TRUE)
     s <- .rmd_sample(type)
@@ -138,8 +151,60 @@ chiload <- function(type = c("arrests", "complaints"),
   # the user asks for it.
   d <- getOption("rmoriedata.cache_dir", NULL)
   if (is.null(d) || !nzchar(d)) d <- file.path(tempdir(), "rmoriedata-cache")
-  dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  .rmd_mkdir(d)
+}
+
+# The directory, created when missing; an error naming it when it cannot be
+# created or written (a read-only directory, or a file in its place), before any
+# download blames the server for it.
+.rmd_mkdir <- function(d) {
+  if (!dir.exists(d)) dir.create(d, recursive = TRUE, showWarnings = FALSE)
+  if (!dir.exists(d) || file.access(d, 2L) != 0L) {
+    stop("rmoriedata: cannot write to the cache directory ", d,
+         "; name a writable one with options(rmoriedata.cache_dir = )", call. = FALSE)
+  }
   d
+}
+
+# The bundled sample's columns, in its order and types, from the raw Socrata
+# export, as data-raw/arrest_sample.R and data-raw/complaint_sample.R derive them.
+# A frame already in that shape (a mirror that serves it) is returned as it is.
+.rmd_shape <- function(raw, type) {
+  want <- names(.rmd_sample(type))
+  if (identical(names(raw), want)) return(raw)
+  n <- nrow(raw)
+  pick <- function(...) {
+    for (nm in c(...)) if (nm %in% names(raw)) return(as.character(raw[[nm]]))
+    rep(NA_character_, n)
+  }
+  int <- function(...) suppressWarnings(as.integer(pick(...)))
+  posix <- function(x) as.POSIXct(x, tz = "America/Chicago", format = "%Y-%m-%dT%H:%M:%S")
+  when <- posix(if (type == "arrests") pick("arrest_date", "date") else pick("date"))
+  iso <- format(when, "%Y-%m-%dT%H:%M:%S%z")
+  if (type == "arrests") {
+    data.frame(
+      case_number = pick("case_number", "case_no", "cb_no"),
+      date_iso = iso, date = when, race = pick("race"),
+      charge_type = pick("charge_1_type", "charge1type"),
+      charge_class = pick("charge_1_class", "charge1class"),
+      charge_desc = pick("charge_1_description", "charge1description"),
+      charge_statute = pick("charge_1_statute", "charge1statute"),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    data.frame(
+      case_number = pick("case_number"), date_iso = iso, date = when,
+      iucr = pick("iucr"), primary_type = pick("primary_type"),
+      description = pick("description"),
+      arrest = as.logical(pick("arrest")), domestic = as.logical(pick("domestic")),
+      beat = int("beat"), district = int("district"), ward = int("ward"),
+      community_area = int("community_area"), fbi_code = pick("fbi_code"),
+      year = int("year"),
+      latitude = suppressWarnings(as.numeric(pick("latitude"))),
+      longitude = suppressWarnings(as.numeric(pick("longitude"))),
+      stringsAsFactors = FALSE
+    )
+  }
 }
 
 #' Clear the cache of full Chicago datasets
@@ -206,7 +271,7 @@ chiclr <- function() {
   n <- if (bounded) as.integer(limit) else max(5000000, expected, na.rm = TRUE)
   urls <- c(
     if (!bounded && !is.null(mirror)) {
-      file.path(mirror, paste0(type, "_full.parquet"))
+      file.path(sub("/+$", "", mirror), paste0(type, "_full.parquet"))
     },
     .rmd_full_url(type, n)
   )
@@ -218,12 +283,13 @@ chiclr <- function() {
     df <- tryCatch(
       withCallingHandlers(
         if (grepl("\\.parquet$", u)) {
-          morie_read_parquet(u)
+          .rmd_mirror_read(u)
         } else {
           # fill = FALSE: a row with a field missing or one too many is a garbled
-          # export, an error here rather than a padded row in the cache
+          # export, an error here rather than a padded row in the cache. Every column
+          # as text: a number guessed from the first rows loses an IUCR's leading zero.
           utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE,
-                          encoding = "UTF-8", fill = FALSE)
+                          encoding = "UTF-8", fill = FALSE, colClasses = "character")
         },
         warning = function(w) {
           msg <<- c(msg, conditionMessage(w))
@@ -254,6 +320,32 @@ chiclr <- function() {
     "' data from mirror or Socrata:\n  ", paste(why, collapse = "\n  "),
     call. = FALSE
   )
+}
+
+# A mirror on the web is downloaded through the package's checked transport
+# (.rmd_dl(), rmoriebricklayer's bldl()) and checked against the SHA-256 in
+# `<file>.sha256` when the mirror serves one beside it; a local directory is read
+# in place. An error sends .rmd_fetch_full() on to Socrata.
+.rmd_mirror_read <- function(u) {
+  if (!grepl("^[A-Za-z][A-Za-z0-9+.-]*://", u)) return(morie_read_parquet(u))
+  f <- tempfile("mirror-", fileext = ".parquet")
+  side <- paste0(f, ".sha256")
+  on.exit(unlink(c(f, side)), add = TRUE)
+  .rmd_dl(u, f, label = basename(u))
+  want <- tryCatch({
+    .rmd_dl(paste0(u, ".sha256"), side, label = basename(side), quiet = TRUE)
+    tolower(sub("[[:space:]].*$", "", trimws(readLines(side, n = 1L, warn = FALSE))))
+  }, error = function(e) NA_character_, warning = function(w) NA_character_)
+  if (length(want) && !is.na(want)) {
+    if (!grepl("^[0-9a-f]{64}$", want)) {
+      stop("the mirror's ", basename(u), ".sha256 is not a SHA-256 digest", call. = FALSE)
+    }
+    have <- tolower(.rmd_bl("sha256file")(f))
+    if (!identical(have, want)) {
+      stop("the mirror's ", basename(u), " does not match its SHA-256", call. = FALSE)
+    }
+  }
+  morie_read_parquet(f)
 }
 
 .rmd_full_url <- function(type, n) {
