@@ -112,7 +112,7 @@ test_that("a table failing the manifest's SHA-256 is deleted after a refresh", {
                "not listed in the manifest")
 })
 
-test_that("a table refused with 403 says no sign-in is needed, with or without an old key", {
+test_that("a table refused with 403 says no sign-in is needed, old key or not", {
   # no table is behind a key or accepted terms (ICPSR studies answer 410): a 403
   # is the service's refusal, and no stored key is involved
   withr::local_envvar(MORIE_HOSTED_KEY = "sk-x",
