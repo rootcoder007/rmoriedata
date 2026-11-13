@@ -11,8 +11,10 @@ The cache directory, invisibly.
 }
 \description{
 Deletes the Parquet files that \code{chiload(full = TRUE)}
-wrote to the cache directory: \code{tempdir()} by default, or the
-directory named in \code{options(rmoriedata.cache_dir = )}.
+wrote to the cache directory (\code{tempdir()} by default, or the
+directory named in \code{options(rmoriedata.cache_dir = )}): the
+\code{<type>_full.parquet} files, their checksum files and any
+unfinished write. Nothing else in that directory is touched.
 }
 \examples{
 chiclr()

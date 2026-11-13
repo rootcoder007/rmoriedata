@@ -214,3 +214,21 @@ test_that("an infinite epsilon is refused in words before any draw (RD-L1)", {
   expect_error(dplapcnt(5, -Inf), msg, fixed = TRUE)
   expect_error(dplapcnt(5, NaN), msg, fixed = TRUE)
 })
+
+test_that("a forked worker draws its own random bytes, not the parent's buffer", {
+  rng <- rmoriedata:::.morie_dp_rng
+  rmoriedata:::.morie_dp_bytes(8L)
+  # what a fork leaves behind: the parent's buffer and position, under another process id
+  rng$pid <- rng$pid + 1L
+  buf <- rng$buf
+  pos <- rng$pos
+  got <- rmoriedata:::.morie_dp_bytes(64L)
+  expect_identical(rng$pid, Sys.getpid())
+  expect_false(identical(got, as.integer(buf[pos:(pos + 63L)])))
+  skip_on_os("windows")
+  skip_if_not_installed("parallel")
+  dplapcnt(10, epsilon = 0.1)
+  out <- parallel::mclapply(1:4, function(i) rmoriedata:::.morie_dp_bytes(16L),
+                            mc.cores = 2L)
+  expect_identical(anyDuplicated(out), 0L)
+})

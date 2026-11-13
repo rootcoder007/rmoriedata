@@ -24,9 +24,13 @@
 .morie_dp_bytes <- function(n) {
   buf <- .morie_dp_rng$buf
   pos <- .morie_dp_rng$pos %||% 1L
-  if (is.null(buf) || pos + n - 1L > length(buf)) {
+  # the buffer belongs to the process that drew it: a forked worker (parallel::mclapply)
+  # inherits a copy, and every worker would hand out the same bytes, so the same noise
+  pid <- Sys.getpid()
+  if (is.null(buf) || !identical(.morie_dp_rng$pid, pid) || pos + n - 1L > length(buf)) {
     buf <- .rmd_bl("rndbytes")(max(4096L, n))
     pos <- 1L
+    .morie_dp_rng$pid <- pid
   }
   .morie_dp_rng$buf <- buf
   .morie_dp_rng$pos <- pos + n

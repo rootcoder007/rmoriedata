@@ -164,3 +164,19 @@ test_that("the cache directory is tempdir() unless the user names one", {
   expect_identical(normalizePath(chiclr()), normalizePath(mine))
   expect_length(list.files(mine), 0L)
 })
+
+test_that("chiclr() removes only what chiload() wrote and leaves the rest", {
+  mine <- withr::local_tempdir()
+  withr::local_options(rmoriedata.cache_dir = mine)
+  own <- file.path(mine, c("arrests_full.parquet", "arrests_full.parquet.sha256",
+                           "crimes_full.parquet", "write-ab12.parquet"))
+  keep <- file.path(mine, c("notes.txt", "my_full.parquet.bak", ".hidden"))
+  dir.create(file.path(mine, "hosted", "fec"), recursive = TRUE)
+  dir.create(file.path(mine, "odd_full.parquet"))
+  for (f in c(own, keep, file.path(mine, "hosted", "fec", "t.csv.gz"))) writeLines("x", f)
+  chiclr()
+  expect_false(any(file.exists(own)))
+  expect_true(all(file.exists(keep)))
+  expect_true(file.exists(file.path(mine, "hosted", "fec", "t.csv.gz")))
+  expect_true(dir.exists(file.path(mine, "odd_full.parquet")))
+})

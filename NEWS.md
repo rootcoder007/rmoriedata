@@ -1,5 +1,9 @@
 # rmoriedata 0.4.3
 
+* `dplapcnt()`, `dplaphist()` and `dpgmean()` draw fresh random bytes in a forked worker (`parallel::mclapply()`): the workers inherited the parent's buffer of random bytes and released identical noise, so the difference of two releases was the exact true difference.
+* `chiclr()` deletes only what `chiload()` wrote (the `<type>_full.parquet` files, their checksum files and unfinished writes): it removed everything in the cache directory, subfolders and the hosted-table cache included.
+* `cellsupp()` refuses a table of three or more dimensions (it was flattened to one column and suppressed against the wrong margins). `ldivvrf()` counts a class's values in one pass: 200,000 classes took minutes.
+* A refused download reads the status the server answered: a table whose name holds 401 or 403 no longer turns a 404 into "need no sign-in", and a 410 names ICPSR only for an ICPSR table.
 * Needs rmoriebricklayer 1.1.1 or later.
 * `hostlogin()` is gone, and no key is read or sent: every table at data.rmorie.com is open, so the sign-in asked for a name, a reason and an email or GitHub account for nothing. `hostcat()` and `hostload()` work as before. A key that an earlier version stored stays in its file, unread. The manifest and services fields are read by exact name.
 * `hostload()` checks every table against the manifest's SHA-256 again, whatever the field is called (`sha256_gz`, `sha256` or `sha`, as rmoriebricklayer reads it): 0.4.3 read `sha256` only, so 631 tables listed with `sha256_gz` were used unchecked and a modified cached copy loaded. A digest field that is not a SHA-256 is an error, and a table listed without any digest loads with a warning, once per session.

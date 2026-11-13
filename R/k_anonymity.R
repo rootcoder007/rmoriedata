@@ -210,9 +210,10 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
   # a missing sensitive value is the absence of a value, not a second one: a class whose
   # only known value is "HIV" has diversity 1 however many rows withhold it
   known <- !is.na(sens)
-  diversity_tbl$.diversity <- vapply(seq_len(nrow(cls$keys)), function(g) {
-    length(unique(sens[cls$id == g & known]))
-  }, integer(1))
+  # distinct (class, value) pairs counted once per class: one pass, not a scan per class
+  sk <- sens[known]
+  pair <- unique(data.frame(g = cls$id[known], s = match(sk, unique(sk))))
+  diversity_tbl$.diversity <- tabulate(pair$g, nbins = nrow(cls$keys))
   min_div <- if (nrow(diversity_tbl) == 0L) 0L else min(diversity_tbl$.diversity)
 
   violating <- diversity_tbl[diversity_tbl$.diversity < l, , drop = FALSE]
@@ -326,12 +327,13 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
     stop("`retcomp` must be TRUE or FALSE.", call. = FALSE)
   }
 
+  # before as.matrix(), which turns a 3-way array or table into one column
+  if (is.null(tbl) || (!is.data.frame(tbl) && length(dim(tbl)) > 2L)) {
+    stop("`tbl` must be 2-dimensional.", call. = FALSE)
+  }
   m <- as.matrix(tbl)
   if (!is.numeric(m)) {
     stop("`tbl` must be a numeric matrix or table.", call. = FALSE)
-  }
-  if (length(dim(m)) != 2L) {
-    stop("`tbl` must be 2-dimensional.", call. = FALSE)
   }
 
   primary <- !is.na(m) & m > 0 & m < threshold

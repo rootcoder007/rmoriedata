@@ -189,12 +189,21 @@
 # Says why a download from data.rmorie.com failed.
 .rmd_data_failed <- function(rc, label) {
   msg <- conditionMessage(rc)
-  if (grepl("\\b410\\b|Gone", msg)) {
+  # the status the server answered, not digits that happen to sit in the table's own name
+  # (statcan_indigenous/tbl_41100401 is a real key)
+  code <- sub("^.*(answered HTTP|HTTP status was|HTTP error|HTTP)[ '\"]*([0-9]{3})\\b.*$",
+              "\\2", msg)
+  if (identical(code, msg)) code <- ""
+  if (identical(code, "410") && grepl(.rmd_unserved_re, label)) {
     stop(label, " is not served by data.rmorie.com: ICPSR's terms do not allow ",
          "redistribution; download it from ICPSR (https://www.icpsr.umich.edu)",
          call. = FALSE)
   }
-  if (grepl("401|403|Unauthorized|Forbidden", msg)) {
+  if (identical(code, "410")) {
+    stop(label, " is no longer served by data.rmorie.com: its source does not allow ",
+         "redistribution; get it from its source.", call. = FALSE)
+  }
+  if (code %in% c("401", "403")) {
     stop("data.rmorie.com refused ", label, ": the tables need no sign-in; ",
          "update the package, or try again later.", call. = FALSE)
   }

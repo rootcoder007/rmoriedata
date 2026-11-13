@@ -219,3 +219,30 @@ test_that("cell_suppress input validation", {
     "numeric matrix or table"
   )
 })
+
+test_that("ldivvrf counts each class's distinct known values as a per-class scan would", {
+  set.seed(11)
+  n <- 4000L
+  df <- data.frame(a = sample(40L, n, TRUE), b = sample(letters[1:6], n, TRUE),
+                   s = sample(c(0.3, 0.1 + 0.2, 1, NA, 7), n, TRUE))
+  got <- ldivvrf(df, c("a", "b"), "s", l = 2)
+  cls <- rmoriedata:::.morie_qi_classes(df[, c("a", "b")])
+  ref <- vapply(seq_len(nrow(cls$keys)), function(g) {
+    length(unique(df$s[cls$id == g & !is.na(df$s)]))
+  }, integer(1))
+  expect_identical(got$min_diversity, min(ref))
+  expect_identical(nrow(got$violating_classes), sum(ref < 2L))
+  # a class whose values are all missing has diversity 0
+  one <- data.frame(a = c(1, 1, 2), s = c(NA, NA, "x"))
+  expect_identical(ldivvrf(one, "a", "s", l = 1)$min_diversity, 0L)
+  # many classes: one pass
+  big <- data.frame(a = seq_len(60000L), s = 1L)
+  expect_lt(system.time(ldivvrf(big, "a", "s", l = 1))[["elapsed"]], 20)
+})
+
+test_that("cellsupp refuses a table of three or more dimensions", {
+  expect_error(cellsupp(array(1:8, c(2, 2, 2))), "must be 2-dimensional")
+  expect_error(cellsupp(table(c(1, 2), c(1, 2), c(1, 2))), "must be 2-dimensional")
+  expect_error(cellsupp(NULL), "must be 2-dimensional")
+  expect_silent(cellsupp(matrix(c(20, 30, 40, 50), 2)))
+})

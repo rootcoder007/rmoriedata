@@ -359,3 +359,21 @@ test_that("a manifest fetched again after a mismatch decides: marked, or no dige
   }
   rm(list = ls(rmoriedata:::.rmd_nodigest), envir = rmoriedata:::.rmd_nodigest)
 })
+
+test_that("a refusal is read from the status answered, not from the table's name", {
+  f <- function(msg, label) {
+    tryCatch(.rmd_data_failed(simpleError(msg), label), error = conditionMessage)
+  }
+  k <- "statcan_indigenous/tbl_41100401"
+  u <- paste0("bldl: https://data.rmorie.com/", k, ".csv.gz answered HTTP ")
+  expect_match(f(paste0(u, "404"), k), "^data.rmorie.com: bldl: ")
+  expect_match(f(paste0(u, "500"), "statcan_indigenous/tbl_41100403"),
+               "^data.rmorie.com: bldl: ")
+  expect_match(f(paste0(u, "403"), k), "need no sign-in")
+  expect_match(f(paste0(u, "401"), "fec/t"), "need no sign-in")
+  expect_match(f(paste0(u, "410"), "fec/t"),
+               "fec/t is no longer served .* its source does not allow")
+  expect_match(f(paste0(u, "410"), "icpsr_9/t"), "ICPSR's terms")
+  expect_match(f("could not resolve host", "fec/t410"),
+               "^data.rmorie.com: could not resolve host$")
+})

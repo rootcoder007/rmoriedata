@@ -145,8 +145,10 @@ chiload <- function(type = c("arrests", "complaints"),
 #' Clear the cache of full Chicago datasets
 #'
 #' Deletes the Parquet files that \code{chiload(full = TRUE)}
-#' wrote to the cache directory: \code{tempdir()} by default, or the
-#' directory named in \code{options(rmoriedata.cache_dir = )}.
+#' wrote to the cache directory (\code{tempdir()} by default, or the
+#' directory named in \code{options(rmoriedata.cache_dir = )}): the
+#' \code{<type>_full.parquet} files, their checksum files and any
+#' unfinished write. Nothing else in that directory is touched.
 #'
 #' @return The cache directory, invisibly.
 #' @examples
@@ -154,8 +156,11 @@ chiload <- function(type = c("arrests", "complaints"),
 #' @export
 chiclr <- function() {
   d <- .rmd_cache_dir()
-  unlink(list.files(d, full.names = TRUE, all.files = TRUE, no.. = TRUE),
-         recursive = TRUE)
+  # only what chiload() wrote: the directory is the user's, and the hosted tables
+  # are cached under it too
+  mine <- list.files(d, pattern = "_full\\.parquet(\\.sha256)?$|^write-.*\\.parquet$",
+                     full.names = TRUE, all.files = TRUE)
+  unlink(mine[!dir.exists(mine)])
   invisible(d)
 }
 
