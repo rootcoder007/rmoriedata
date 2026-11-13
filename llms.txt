@@ -248,7 +248,6 @@ analysis functions consume.
 - [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
   : Load a bundled dataset by slug
 - [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
-  [`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   : Curated datasets at data.rmorie.com
 - [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md)

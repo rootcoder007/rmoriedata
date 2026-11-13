@@ -15,7 +15,6 @@ and
 read their datasets,
 [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
 checks the bundle's checksums;
-[`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
 [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
 and
 [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)

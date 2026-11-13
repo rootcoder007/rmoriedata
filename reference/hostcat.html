@@ -3,8 +3,8 @@
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-need no sign-in; a MORIE key stored earlier by rmorie, morie or
-rmoriebricklayer is still sent.
+need no sign-in and no key; a key that an earlier version of rmorie,
+morie or rmoriebricklayer stored is not read and never sent.
 hostcat() returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
@@ -21,8 +21,8 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta property="og:de
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-need no sign-in; a MORIE key stored earlier by rmorie, morie or
-rmoriebricklayer is still sent.
+need no sign-in and no key; a key that an earlier version of rmorie,
+morie or rmoriebricklayer stored is not read and never sent.
 hostcat() returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
@@ -75,8 +75,8 @@ options(rmoriedata.cache_dir = ) names a persistent one).'><meta property="og:im
 databases materialised from Google BigQuery public datasets (Chicago
 crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 Ethereum, World Bank, ...) and serves their tables from the edge. They
-need no sign-in; a MORIE key stored earlier by rmorie, morie or
-rmoriebricklayer is still sent.
+need no sign-in and no key; a key that an earlier version of rmorie,
+morie or rmoriebricklayer stored is not read and never sent.
 <code>hostcat()</code> returns every table with its key,
 description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
@@ -96,14 +96,6 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">hostcat</span><span class="op">(</span>refresh <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">hostlogin</span><span class="op">(</span></span>
-<span>  token <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  email <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  code <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  openbro <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/interactive.html" class="external-link">interactive</a></span><span class="op">(</span><span class="op">)</span>,</span>
-<span>  <span class="va">...</span></span>
-<span><span class="op">)</span></span>
-<span></span>
 <span><span class="fu">hostload</span><span class="op">(</span><span class="va">key</span>, refresh <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -115,32 +107,13 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
 <dd><p>Fetch again even when a day-old copy is cached.</p></dd>
 
 
-<dt id="arg-token-email-code-openbro">token, email, code, openbro<a class="anchor" aria-label="anchor" href="#arg-token-email-code-openbro"></a></dt>
-<dd><p>Passed to
-<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code>: a key you already hold (no
-longer needed for the tables, which open without sign-in), or an email
-address (a one-time code is
-sent; pass it as <code>code</code> in a non-interactive session). With neither,
-the GitHub device flow runs. The service address comes from the signed
-services document (<code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/svcs.html" class="external-link">rmoriebricklayer::svcs()</a></code>).</p></dd>
-
-
-<dt id="arg--">...<a class="anchor" aria-label="anchor" href="#arg--"></a></dt>
-<dd><p>Passed to <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code>: the
-data access terms and who is asking, which a new key needs
-(<code>accter</code>, <code>name</code>, <code>affil</code>, <code>purp</code>); what is
-not given is asked at the console.</p></dd>
-
-
 <dt id="arg-key">key<a class="anchor" aria-label="anchor" href="#arg-key"></a></dt>
 <dd><p>A <code>db/table</code> key from the catalog.</p></dd>
 
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p><code>hostlogin()</code>: the key, invisibly, after storing it
-in the shared credentials file.
-<code>hostcat()</code>: a data frame with <code>key</code>,
+    <p><code>hostcat()</code>: a data frame with <code>key</code>,
 <code>name</code>, <code>rows</code> and <code>source</code>;
 <code>hostload()</code>: the table as a data frame.</p>
     </div>

@@ -3,14 +3,14 @@
 ## rmoriedata 0.4.3
 
 - Needs rmoriebricklayer 1.1.1 or later.
-- A key stored earlier goes to data.rmorie.com only: with
-  `MORIE_DATA_URL` set to another address,
+- `hostlogin()` is gone, and no key is read or sent: every table at
+  data.rmorie.com is open, so the sign-in asked for a name, a reason and
+  an email or GitHub account for nothing.
   [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   and
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
-  send no key there (with a message), as
-  [`rmoriebricklayer::dload()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dmnf.html)
-  does. The manifest and services fields are read by exact name.
+  work as before. A key that an earlier version stored stays in its
+  file, unread. The manifest and services fields are read by exact name.
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   checks every table against the manifest’s SHA-256 again, whatever the
   field is called (`sha256_gz`, `sha256` or `sha`, as rmoriebricklayer
@@ -57,8 +57,7 @@ CRAN release: 2026-11-12
   need no sign-in; a key stored earlier is still sent. ICPSR studies are
   no longer served by data.rmorie.com (ICPSR’s terms do not allow
   redistribution); asking for one says where to get it.
-- [`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)’s
-  help names the arguments
+- `hostlogin()`’s help names the arguments
   [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html)
   takes (`affil`, `purp`, `restr`; it listed `affiliation`, `purpose`,
   `restricted`). A table refused with 403 is reported as a key asked for
@@ -97,8 +96,7 @@ CRAN release: 2026-10-21
   `quasi_identifiers` is `qids`, and so on. Each help page gives the
   full form of its short name. The old names are not kept.
 - Works with rmoriebricklayer 0.5.1 or later and calls its 1.0.0 names
-  when they are there. Signing in
-  ([`hostlogin()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)),
+  when they are there. Signing in (`hostlogin()`),
   [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
   and the downloads that carry the data key need rmoriebricklayer 1.0.0;
   with an older one they say so, and attaching rmoriedata prints a

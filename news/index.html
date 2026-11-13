@@ -36,7 +36,8 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="rmoriedata-043">rmoriedata 0.4.3<a class="anchor" aria-label="anchor" href="#rmoriedata-043"></a></h2>
 <ul><li>Needs rmoriebricklayer 1.1.1 or later.</li>
-<li>A key stored earlier goes to data.rmorie.com only: with <code>MORIE_DATA_URL</code> set to another address, <code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> send no key there (with a message), as <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dmnf.html" class="external-link">rmoriebricklayer::dload()</a></code> does. The manifest and services fields are read by exact name.</li>
+<li>
+<code>hostlogin()</code> is gone, and no key is read or sent: every table at data.rmorie.com is open, so the sign-in asked for a name, a reason and an email or GitHub account for nothing. <code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> work as before. A key that an earlier version stored stays in its file, unread. The manifest and services fields are read by exact name.</li>
 <li>
 <code><a href="../reference/hostcat.html">hostload()</a></code> checks every table against the manifest’s SHA-256 again, whatever the field is called (<code>sha256_gz</code>, <code>sha256</code> or <code>sha</code>, as rmoriebricklayer reads it): 0.4.3 read <code>sha256</code> only, so 631 tables listed with <code>sha256_gz</code> were used unchecked and a modified cached copy loaded. A digest field that is not a SHA-256 is an error, and a table listed without any digest loads with a warning, once per session.</li>
 <li>Tables whose source terms do not allow redistribution (the ICPSR studies, the NCVS 38604 extract among them, and any table the manifest marks restricted) are left out of <code><a href="../reference/hostcat.html">hostcat()</a></code>, with a message counting them, and <code><a href="../reference/hostcat.html">hostload()</a></code> refuses them before any request. The A2AJ case law is an ordinary open table.</li>
@@ -54,7 +55,7 @@
 <li>
 <code><a href="../reference/hostcat.html">hostcat()</a></code> and <code><a href="../reference/hostcat.html">hostload()</a></code> need no sign-in; a key stored earlier is still sent. ICPSR studies are no longer served by data.rmorie.com (ICPSR’s terms do not allow redistribution); asking for one says where to get it.</li>
 <li>
-<code><a href="../reference/hostcat.html">hostlogin()</a></code>’s help names the arguments <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code> takes (<code>affil</code>, <code>purp</code>, <code>restr</code>; it listed <code>affiliation</code>, <code>purpose</code>, <code>restricted</code>). A table refused with 403 is reported as a key asked for or refused: no table sits behind accepted terms any more.</li>
+<code>hostlogin()</code>’s help names the arguments <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html" class="external-link">rmoriebricklayer::dlogin()</a></code> takes (<code>affil</code>, <code>purp</code>, <code>restr</code>; it listed <code>affiliation</code>, <code>purpose</code>, <code>restricted</code>). A table refused with 403 is reported as a key asked for or refused: no table sits behind accepted terms any more.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.1" id="rmoriedata-041">rmoriedata 0.4.1<a class="anchor" aria-label="anchor" href="#rmoriedata-041"></a></h2><p class="text-muted">CRAN release: 2026-10-23</p>
@@ -66,7 +67,7 @@
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.0" id="rmoriedata-040">rmoriedata 0.4.0<a class="anchor" aria-label="anchor" href="#rmoriedata-040"></a></h2><p class="text-muted">CRAN release: 2026-10-21</p>
 <ul><li>Short names, without underscores, for every exported function and argument, matching rmoriebricklayer 1.0.0: <code>morie_data_load()</code> is <code><a href="../reference/mdload.html">mdload()</a></code>, <code>morie_dp_laplace_count()</code> is <code><a href="../reference/dplapcnt.html">dplapcnt()</a></code>, <code>load_chicago_data()</code> is <code><a href="../reference/chiload.html">chiload()</a></code>, <code>quasi_identifiers</code> is <code>qids</code>, and so on. Each help page gives the full form of its short name. The old names are not kept.</li>
-<li>Works with rmoriebricklayer 0.5.1 or later and calls its 1.0.0 names when they are there. Signing in (<code><a href="../reference/hostcat.html">hostlogin()</a></code>), <code><a href="../reference/mdask.html">mdask()</a></code> and the downloads that carry the data key need rmoriebricklayer 1.0.0; with an older one they say so, and attaching rmoriedata prints a one-line note on how to update.</li>
+<li>Works with rmoriebricklayer 0.5.1 or later and calls its 1.0.0 names when they are there. Signing in (<code>hostlogin()</code>), <code><a href="../reference/mdask.html">mdask()</a></code> and the downloads that carry the data key need rmoriebricklayer 1.0.0; with an older one they say so, and attaching rmoriedata prints a one-line note on how to update.</li>
 <li>The citation gives the CRAN DOI and the r-universe page, and the author’s given names in full (“Ruhela VS”).</li>
 </ul></div>
     <div class="section level2">
