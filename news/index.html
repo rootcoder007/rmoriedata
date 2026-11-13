@@ -35,7 +35,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="rmoriedata-043">rmoriedata 0.4.3<a class="anchor" aria-label="anchor" href="#rmoriedata-043"></a></h2>
-<ul><li>
+<ul><li>Extreme arguments are refused in words: <code>k</code> or <code>l</code> of <code>Inf</code> or above the integer range in <code><a href="../reference/kanonvrf.html">kanonvrf()</a></code> and <code><a href="../reference/ldivvrf.html">ldivvrf()</a></code>, an <code>epsilon</code> above 2^20 in the counting mechanisms (both stopped with “missing value where TRUE/FALSE needed”), a <code>slug</code> that is not one name in <code><a href="../reference/mddict.html">mddict()</a></code>. <code><a href="../reference/morie_core.html">mdsha()</a></code> takes one string (it hashed only the first of several) and hashes it as UTF-8 whatever encoding it is marked with.</li>
+<li>
 <code><a href="../reference/dplapcnt.html">dplapcnt()</a></code>, <code><a href="../reference/dplaphist.html">dplaphist()</a></code> and <code><a href="../reference/dpgmean.html">dpgmean()</a></code> draw fresh random bytes in a forked worker (<code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mclapply()</a></code>): the workers inherited the parent’s buffer of random bytes and released identical noise, so the difference of two releases was the exact true difference.</li>
 <li>
 <code><a href="../reference/chiclr.html">chiclr()</a></code> deletes only what <code><a href="../reference/chiload.html">chiload()</a></code> wrote (the <code>&lt;type&gt;_full.parquet</code> files, their checksum files and unfinished writes): it removed everything in the cache directory, subfolders and the hosted-table cache included.</li>

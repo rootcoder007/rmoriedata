@@ -2,6 +2,18 @@
 
 ## rmoriedata 0.4.3
 
+- Extreme arguments are refused in words: `k` or `l` of `Inf` or above
+  the integer range in
+  [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
+  and
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md),
+  an `epsilon` above 2^20 in the counting mechanisms (both stopped with
+  “missing value where TRUE/FALSE needed”), a `slug` that is not one
+  name in
+  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md).
+  [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  takes one string (it hashed only the first of several) and hashes it
+  as UTF-8 whatever encoding it is marked with.
 - [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
   [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
   and
