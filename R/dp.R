@@ -324,7 +324,10 @@ dplaphist <- function(counts, epsilon, budget = NULL) {
   noise <- vapply(seq_along(counts), function(i) {
     .morie_dp_dlaplace1(q[["s"]], q[["t"]])
   }, numeric(1))
-  as.numeric(counts) + noise
+  out <- as.numeric(counts) + noise
+  # names, dims and a table's labels stay with the counts
+  attributes(out) <- attributes(counts)
+  out
 }
 
 #' Differentially-private mean via the analytic Gaussian mechanism

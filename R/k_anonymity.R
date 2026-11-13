@@ -245,7 +245,7 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
 
 #' Cell suppression with complementary suppression and a recoverability audit
 #'
-#' Suppresses (sets to `NA`) every count below `threshold`, then, when
+#' Suppresses (sets to `NA`) every positive count below `threshold`, then, when
 #' `retcomp = TRUE`, hides further cells until no suppressed
 #' value can be solved exactly from the table's row and column totals, which
 #' a published table normally carries.
@@ -271,7 +271,10 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
 #' a wide interval needs an interval audit (linear programming) on top.
 #'
 #' Only finite numeric cells are eligible for suppression. \code{NA} cells
-#' in the input pass through unchanged and are treated as unpublished.
+#' in the input pass through unchanged and are treated as unpublished. A zero
+#' cell is published as it is: the threshold rule protects the few
+#' contributors of a small cell, and a zero has none. Negative counts are
+#' refused.
 #'
 #' @param tbl A numeric matrix or 2-D table of counts. Will be coerced to
 #'   matrix; row/column names are preserved.
@@ -334,6 +337,9 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
   m <- as.matrix(tbl)
   if (!is.numeric(m)) {
     stop("`tbl` must be a numeric matrix or table.", call. = FALSE)
+  }
+  if (any(m < 0, na.rm = TRUE)) {
+    stop("`tbl` must hold counts: it has a negative cell.", call. = FALSE)
   }
 
   primary <- !is.na(m) & m > 0 & m < threshold
@@ -422,11 +428,12 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
     outer(seq_len(ncol(m)), idx[, 2L], "==") * 1
   )
   A <- A[rowSums(A) > 0, , drop = FALSE]
-  r0 <- qr(A)$rank
-  for (c in seq_len(nh)) {
-    e <- numeric(nh)
-    e[c] <- 1
-    if (qr(rbind(A, e))$rank == r0) out[idx[c, 1L], idx[c, 2L]] <- TRUE
-  }
+  # One factorisation for every hidden cell (it was one qr() per cell): with Q an
+  # orthonormal basis of the row space, e_c lies in it iff its projection keeps
+  # the whole length, sum(Q[c, ]^2) == 1. For a cell off the row space a cycle of
+  # hidden cells through it puts sum(Q[c, ]^2) at most 1 - 1/nh: far from 1e-7.
+  q <- qr(t(A))
+  Q <- qr.Q(q)[, seq_len(q$rank), drop = FALSE]
+  out[idx[rowSums(Q^2) > 1 - 1e-7, , drop = FALSE]] <- TRUE
   out
 }

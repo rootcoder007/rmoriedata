@@ -232,3 +232,14 @@ test_that("a forked worker draws its own random bytes, not the parent's buffer",
                             mc.cores = 2L)
   expect_identical(anyDuplicated(out), 0L)
 })
+
+test_that("dplaphist keeps names, dims and a table's labels", {
+  v <- dplaphist(c(a = 3, b = 4), epsilon = 1)
+  expect_identical(names(v), c("a", "b"))
+  tb <- table(c("x", "y", "y"), c("p", "q", "q"))
+  out <- dplaphist(tb, epsilon = 1)
+  expect_identical(dim(out), dim(tb))
+  expect_identical(dimnames(out), dimnames(tb))
+  expect_s3_class(out, "table")
+  expect_identical(names(dplaphist(table(c("u", "v")), 1)), c("u", "v"))
+})

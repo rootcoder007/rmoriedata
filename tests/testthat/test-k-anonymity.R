@@ -267,3 +267,75 @@ test_that("extreme arguments are refused in the package's own words", {
     expect_error(mddict(bad), "`slug` must be a single name")
   }
 })
+
+# The recoverability audit as 0.4.3 shipped it, one qr() per hidden cell: the
+# reference the one-factorisation audit must agree with, cell for cell.
+old_recoverable <- function(m, hidden) {
+  out <- matrix(FALSE, nrow(m), ncol(m), dimnames = dimnames(m))
+  idx <- which(hidden, arr.ind = TRUE)
+  if (!nrow(idx)) return(out)
+  nh <- nrow(idx)
+  A <- rbind(
+    outer(seq_len(nrow(m)), idx[, 1L], "==") * 1,
+    outer(seq_len(ncol(m)), idx[, 2L], "==") * 1
+  )
+  A <- A[rowSums(A) > 0, , drop = FALSE]
+  r0 <- qr(A)$rank
+  for (c in seq_len(nh)) {
+    e <- numeric(nh)
+    e[c] <- 1
+    if (qr(rbind(A, e))$rank == r0) out[idx[c, 1L], idx[c, 2L]] <- TRUE
+  }
+  out
+}
+
+cellsupp_same_as_old <- function(n, maxdim, seed) {
+  set.seed(seed)
+  bad <- character()
+  for (i in seq_len(n)) {
+    r <- sample(2:maxdim, 1L)
+    k <- sample(2:maxdim, 1L)
+    p <- runif(1L, 0.03, 0.5)
+    m <- matrix(ifelse(runif(r * k) < p, sample(0:4, r * k, TRUE),
+                       sample(5:200, r * k, TRUE)), r, k)
+    rc <- i %% 4L != 0L
+    h <- matrix(runif(r * k) < runif(1L, 0.1, 0.7), r, k)
+    new <- cellsupp(m, 5, rc)
+    old <- testthat::with_mocked_bindings(cellsupp(m, 5, rc),
+                                          .morie_recoverable = old_recoverable)
+    if (!identical(new, old) ||
+        !identical(.morie_recoverable(m, h), old_recoverable(m, h))) {
+      bad <- c(bad, sprintf("table %d (%dx%d)", i, r, k))
+    }
+  }
+  bad
+}
+
+test_that("the one-factorisation audit suppresses what the per-cell audit did", {
+  expect_identical(cellsupp_same_as_old(40L, 12L, 7L), character())
+})
+
+test_that("the audit agrees with the per-cell audit on 200 tables up to 30x30", {
+  skip_on_cran()
+  expect_identical(cellsupp_same_as_old(200L, 30L, 20261113L), character())
+})
+
+test_that("a 60x60 table with 1,400 small cells is suppressed in seconds", {
+  skip_on_cran()
+  set.seed(3)
+  m <- matrix(sample(c(1:4, 5:200), 3600, TRUE, prob = c(rep(3, 4), rep(0.1, 196))), 60)
+  # one qr() per hidden cell ran for over 17 minutes here
+  t <- system.time(res <- cellsupp(m))[["elapsed"]]
+  expect_lt(t, 30)
+  expect_true(res$protected)
+})
+
+test_that("cellsupp publishes zero cells and refuses negative counts", {
+  tbl <- matrix(c(0, 40, 57, 80, 10, 10, 90, 5, 5), nrow = 3, byrow = TRUE)
+  res <- cellsupp(tbl, threshold = 5)
+  expect_identical(res$n_primary, 0L)
+  expect_identical(res$suppressed[1L, 1L], 0)
+  expect_error(cellsupp(matrix(c(-1, 40, 57, 80), 2)),
+               "`tbl` must hold counts: it has a negative cell.", fixed = TRUE)
+  expect_error(cellsupp(NULL), "`tbl` must be 2-dimensional.", fixed = TRUE)
+})

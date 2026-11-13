@@ -34,7 +34,7 @@ recoverable. Test this before publishing.}
 }
 }
 \description{
-Suppresses (sets to \code{NA}) every count below \code{threshold}, then, when
+Suppresses (sets to \code{NA}) every positive count below \code{threshold}, then, when
 \code{retcomp = TRUE}, hides further cells until no suppressed
 value can be solved exactly from the table's row and column totals, which
 a published table normally carries.
@@ -61,7 +61,10 @@ non-negativity can narrow; a table whose hidden values must stay inside
 a wide interval needs an interval audit (linear programming) on top.
 
 Only finite numeric cells are eligible for suppression. \code{NA} cells
-in the input pass through unchanged and are treated as unpublished.
+in the input pass through unchanged and are treated as unpublished. A zero
+cell is published as it is: the threshold rule protects the few
+contributors of a small cell, and a zero has none. Negative counts are
+refused.
 }
 \examples{
 tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60),
