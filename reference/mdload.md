@@ -24,7 +24,8 @@ mdload(slug, refresh = FALSE, format = c("csv", "parquet"))
 
 - refresh:
 
-  Re-read the file even if a cached copy exists.
+  Re-read the file, and check it against the signed manifest again, even
+  if a cached copy exists.
 
 - format:
 

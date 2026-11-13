@@ -1,9 +1,9 @@
 # Cell suppression with complementary suppression and a recoverability audit
 
-Suppresses (sets to `NA`) every count below `threshold`, then, when
-`retcomp = TRUE`, hides further cells until no suppressed value can be
-solved exactly from the table's row and column totals, which a published
-table normally carries.
+Suppresses (sets to `NA`) every positive count below `threshold`, then,
+when `retcomp = TRUE`, hides further cells until no suppressed value can
+be solved exactly from the table's row and column totals, which a
+published table normally carries.
 
 ## Usage
 
@@ -93,7 +93,10 @@ non-negativity can narrow; a table whose hidden values must stay inside
 a wide interval needs an interval audit (linear programming) on top.
 
 Only finite numeric cells are eligible for suppression. `NA` cells in
-the input pass through unchanged and are treated as unpublished.
+the input pass through unchanged and are treated as unpublished. A zero
+cell is published as it is: the threshold rule protects the few
+contributors of a small cell, and a zero has none. Negative counts are
+refused.
 
 ## Examples
 

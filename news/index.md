@@ -2,6 +2,55 @@
 
 ## rmoriedata 0.4.3
 
+- `chiload(full = TRUE)` returns the bundled sample’s columns, in its
+  order and with its types (16 columns for complaints and 8 for arrests,
+  with `date_iso` and a `POSIXct` `date`), derived from Socrata’s export
+  the way the samples were: it returned Socrata’s raw 22 or 24 columns.
+  Socrata’s export is read as text first, so an IUCR code keeps its
+  leading zero.
+- `chiload(mirror = )` with a URL downloads `<type>_full.parquet` from
+  the mirror over the package’s checked https transport, and checks it
+  against `<type>_full.parquet.sha256` when the mirror has one; a mirror
+  that fails or does not match falls back to Socrata. A URL was taken
+  for a missing local file, so the mirror was never used.
+- [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
+  checks its arguments in words: `limit` must be a whole number from 1
+  to 2147483647 (`Inf` and `1e10` failed with a coercion error),
+  `fraction` a number above 0 and at most 1, and `full` and `refresh`
+  `TRUE` or `FALSE` (`full = "yes"` or `NA` silently returned the
+  sample).
+- [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
+  checks which hidden cells the totals determine with one factorisation
+  for all of them, not one per cell: a 50x50 table took 152 seconds and
+  a 60x60 table did not finish in 17 minutes; both now take well under a
+  second, with the same cells suppressed. Negative counts are refused,
+  and the help says that zero cells are published as they are.
+- `mdload(slug, refresh = TRUE)` checks the file against the signed
+  manifest again: a bundled file changed after its first load in a
+  session was still returned.
+- A cached `hosted/manifest.json` that does not parse is fetched again,
+  once, with a message; it blocked
+  [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and `hostload(refresh = TRUE)` until it was a day old.
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  takes a large table whole when the server answers a byte-range request
+  with the whole file, instead of failing on every run, and a failed run
+  leaves no empty `.parts` directory.
+- A cache directory that cannot be written (read-only, or a file in its
+  place) is an error naming that directory; it was reported as a failure
+  of data.rmorie.com.
+- [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
+  keeps the names and dimensions of its counts, so a
+  [`table()`](https://rdrr.io/r/base/table.html)’s labels stay on the
+  release.
+- The Parquet reader reports any damaged file with a `parquet:` message:
+  about 4% of corrupt files stopped with a base-R message such as
+  “subscript out of bounds”, and a footer of 5000 nested lists
+  overflowed the stack. Its help, and
+  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)’s,
+  say that a `POSIXct` column reads back in UTC (the same instant):
+  Parquet keeps no time zone.
 - Extreme arguments are refused in words: `k` or `l` of `Inf` or above
   the integer range in
   [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)

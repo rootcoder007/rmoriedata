@@ -23,4 +23,4 @@ morie_read_parquet(path, columns = NULL)
 
 ## Value
 
-A `data.frame`.
+A `data.frame`. A damaged file is an error that starts with `parquet:`.

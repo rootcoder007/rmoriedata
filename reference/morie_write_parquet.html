@@ -69,6 +69,15 @@ for uncompressed pages.</p></dd>
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>path</code>, invisibly.</p>
     </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A <code>POSIXct</code> column is written as a Parquet TIMESTAMP (milliseconds
+since 1970-01-01 UTC). The format stores the instant but not a time zone,
+so it reads back as the same instant in UTC: a column in
+<code>America/Chicago</code> comes back with <code>tz = "UTC"</code>. Set the zone again with
+<code>attr(x, "tzone") &lt;- "America/Chicago"</code>, or keep an ISO 8601 text column
+beside it, as <code><a href="chiload.html">chiload()</a></code>'s <code>date_iso</code> does.</p>
+    </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

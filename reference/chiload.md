@@ -39,21 +39,27 @@ chiload(
   Return format: `"data.frame"` (default), `"tibble"`, or
   `"parquet_path"` (writes a Parquet file under
   [`tempdir()`](https://rdrr.io/r/base/tempfile.html) and returns its
-  path; nothing is written to the user's home).
+  path; nothing is written to the user's home). Parquet keeps no time
+  zone, so `date` reads back as the same instant in UTC; `date_iso`
+  keeps the local time and offset.
 
 - full:
 
   If `TRUE`, fetch the complete dataset from Socrata (network, large)
   instead of the bundled sample; a complete fetch is cached as Parquet
-  (see Description).
+  (see Description). The result has the bundled sample's columns, in its
+  order and with its types, derived from Socrata's export as the sample
+  was.
 
 - mirror:
 
-  Optional base URL of an r-universe/drat mirror to try before Socrata
-  (offline-friendly fallback). Defaults to
-  `getOption("rmoriedata.mirror")`. The mirror's `<type>_full.parquet`
-  must use snappy or no compression and data pages v1: the package's own
-  reader supports nothing else.
+  Optional base URL of an r-universe/drat mirror, or a local directory,
+  to try before Socrata (offline-friendly fallback). Defaults to
+  `getOption("rmoriedata.mirror")`. A URL is downloaded over https and
+  checked against `<type>_full.parquet.sha256` when the mirror has one;
+  if the mirror fails, Socrata is used. The mirror's
+  `<type>_full.parquet` must use snappy or no compression and data pages
+  v1: the package's own reader supports nothing else.
 
 - limit:
 
@@ -125,8 +131,7 @@ file.exists(pq)
 # `fraction = 0.001` takes a share of the dataset (0.1% of all rows)
 # instead of a row count; the live total is looked up first.
 big <- try(chiload("complaints", full = TRUE, limit = 200))
-#> Error : could not fetch full Chicago 'complaints' data from mirror or Socrata:
-#>   https://data.cityofchicago.org/resource/ijzp-q8t2.csv?$limit=200: cannot open URL 'https://data.cityofchicago.org/resource/ijzp-q8t2.csv?$limit=200': HTTP status was '503 Service Unavailable'
 if (!inherits(big, "try-error")) nrow(big)
+#> [1] 200
 # }
 ```

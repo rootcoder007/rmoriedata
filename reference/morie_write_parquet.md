@@ -29,3 +29,14 @@ morie_write_parquet(df, path, compression = "gzip")
 ## Value
 
 `path`, invisibly.
+
+## Details
+
+A `POSIXct` column is written as a Parquet TIMESTAMP (milliseconds since
+1970-01-01 UTC). The format stores the instant but not a time zone, so
+it reads back as the same instant in UTC: a column in `America/Chicago`
+comes back with `tz = "UTC"`. Set the zone again with
+`attr(x, "tzone") <- "America/Chicago"`, or keep an ISO 8601 text column
+beside it, as
+[`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)'s
+`date_iso` does.

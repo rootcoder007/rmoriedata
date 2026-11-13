@@ -89,19 +89,25 @@ the recommended bridge for Python (<code>pandas.read_parquet</code>).</p>
 <dt id="arg-as">as<a class="anchor" aria-label="anchor" href="#arg-as"></a></dt>
 <dd><p>Return format: <code>"data.frame"</code> (default), <code>"tibble"</code>, or
 <code>"parquet_path"</code> (writes a Parquet file under <code><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempdir()</a></code>
-and returns its path; nothing is written to the user's home).</p></dd>
+and returns its path; nothing is written to the user's home). Parquet
+keeps no time zone, so <code>date</code> reads back as the same instant in
+UTC; <code>date_iso</code> keeps the local time and offset.</p></dd>
 
 
 <dt id="arg-full">full<a class="anchor" aria-label="anchor" href="#arg-full"></a></dt>
 <dd><p>If <code>TRUE</code>, fetch the complete dataset from Socrata (network,
 large) instead of the bundled sample; a complete fetch is cached as
-Parquet (see Description).</p></dd>
+Parquet (see Description). The result has the bundled sample's columns,
+in its order and with its types, derived from Socrata's export as the
+sample was.</p></dd>
 
 
 <dt id="arg-mirror">mirror<a class="anchor" aria-label="anchor" href="#arg-mirror"></a></dt>
-<dd><p>Optional base URL of an r-universe/drat mirror to try before
-Socrata (offline-friendly fallback). Defaults to
-<code>getOption("rmoriedata.mirror")</code>. The mirror's
+<dd><p>Optional base URL of an r-universe/drat mirror, or a local
+directory, to try before Socrata (offline-friendly fallback). Defaults to
+<code>getOption("rmoriedata.mirror")</code>. A URL is downloaded over https
+and checked against <code>&lt;type&gt;_full.parquet.sha256</code> when the mirror
+has one; if the mirror fails, Socrata is used. The mirror's
 <code>&lt;type&gt;_full.parquet</code> must use snappy or no compression and
 data pages v1: the package's own reader supports nothing else.</p></dd>
 
@@ -178,9 +184,8 @@ no <span class="pkg">arrow</span> install is required.</p>
 <span class="r-in"><span><span class="co"># `fraction = 0.001` takes a share of the dataset (0.1% of all rows)</span></span></span>
 <span class="r-in"><span><span class="co"># instead of a row count; the live total is looked up first.</span></span></span>
 <span class="r-in"><span><span class="va">big</span> <span class="op">&lt;-</span> <span class="kw"><a href="https://rdrr.io/r/base/try.html" class="external-link">try</a></span><span class="op">(</span><span class="fu">chiload</span><span class="op">(</span><span class="st">"complaints"</span>, full <span class="op">=</span> <span class="cn">TRUE</span>, limit <span class="op">=</span> <span class="fl">200</span><span class="op">)</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> Error : could not fetch full Chicago 'complaints' data from mirror or Socrata:</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span>   https://data.cityofchicago.org/resource/ijzp-q8t2.csv?$limit=200: cannot open URL 'https://data.cityofchicago.org/resource/ijzp-q8t2.csv?$limit=200': HTTP status was '503 Service Unavailable'</span>
 <span class="r-in"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/class.html" class="external-link">inherits</a></span><span class="op">(</span><span class="va">big</span>, <span class="st">"try-error"</span><span class="op">)</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">big</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 200</span>
 <span class="r-in"><span><span class="co"># }</span></span></span>
 </code></pre></div>
     </div>
