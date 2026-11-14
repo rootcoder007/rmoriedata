@@ -69,7 +69,7 @@ privacy the ledger does not show.
 ``` r
 b <- dpbudget(epsilon = 2)
 dplapcnt(42, epsilon = 1, budget = b)
-#> [1] 42
+#> [1] 41
 dpspent(b)
 #> $epsilon
 #> [1] 2
