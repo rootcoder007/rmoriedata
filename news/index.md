@@ -51,6 +51,17 @@
   all parts are kept and the next run downloads only what is missing.
   Two sessions joining the same table at once each write a file of their
   own instead of sharing one.
+- R sessions downloading the same hosted table at once take turns on an
+  operating-system lock that the system releases when its holder exits
+  or is killed, so it is never left stale: one session downloads, checks
+  the table against the manifest’s SHA-256 and only then moves it into
+  place in one step, and the others wait and use it. The sessions shared
+  one `.parts` folder and could delete or overwrite each other’s parts,
+  and an unchecked table sat under its final name until its checksum was
+  read. A download that is cut short or killed still resumes from the
+  parts it finished. The manifest is written under a name of its own and
+  renamed, so sessions fetching it at once no longer write into one
+  file.
 - The Parquet writer refuses matrix, data frame and `integer64` columns,
   naming them: a matrix column was written with more values than rows,
   which other readers cut short. Dates and times are written down to the
