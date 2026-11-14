@@ -178,14 +178,18 @@ chiload <- function(type = c("arrests", "complaints"),
     for (nm in c(...)) if (nm %in% names(raw)) return(as.character(raw[[nm]]))
     rep(NA_character_, n)
   }
-  int <- function(...) suppressWarnings(as.integer(pick(...)))
-  posix <- function(x) as.POSIXct(x, tz = "America/Chicago", format = "%Y-%m-%dT%H:%M:%S")
-  when <- posix(if (type == "arrests") pick("arrest_date", "date") else pick("date"))
-  iso <- format(when, "%Y-%m-%dT%H:%M:%S%z")
-  if (type == "arrests") {
+  # an empty field of the CSV export is a missing value; any other text must read as
+  # the sample's type (.rmd_retype() below), not turn into NA or a rounded number
+  num <- function(...) {
+    x <- pick(...)
+    x[!is.na(x) & !nzchar(trimws(x))] <- NA_character_
+    x
+  }
+  when <- num(if (type == "arrests") c("arrest_date", "date") else "date")
+  df <- if (type == "arrests") {
     data.frame(
       case_number = pick("case_number", "case_no", "cb_no"),
-      date_iso = iso, date = when, race = pick("race"),
+      date_iso = NA_character_, date = when, race = pick("race"),
       charge_type = pick("charge_1_type", "charge1type"),
       charge_class = pick("charge_1_class", "charge1class"),
       charge_desc = pick("charge_1_description", "charge1description"),
@@ -194,23 +198,27 @@ chiload <- function(type = c("arrests", "complaints"),
     )
   } else {
     data.frame(
-      case_number = pick("case_number"), date_iso = iso, date = when,
+      case_number = pick("case_number"), date_iso = NA_character_, date = when,
       iucr = pick("iucr"), primary_type = pick("primary_type"),
       description = pick("description"),
-      arrest = as.logical(pick("arrest")), domestic = as.logical(pick("domestic")),
-      beat = int("beat"), district = int("district"), ward = int("ward"),
-      community_area = int("community_area"), fbi_code = pick("fbi_code"),
-      year = int("year"),
-      latitude = suppressWarnings(as.numeric(pick("latitude"))),
-      longitude = suppressWarnings(as.numeric(pick("longitude"))),
+      arrest = num("arrest"), domestic = num("domestic"),
+      beat = num("beat"), district = num("district"), ward = num("ward"),
+      community_area = num("community_area"), fbi_code = pick("fbi_code"),
+      year = num("year"), latitude = num("latitude"), longitude = num("longitude"),
       stringsAsFactors = FALSE
     )
   }
+  df <- .rmd_retype(df, .rmd_sample(type), type, "Socrata's export")
+  df$date_iso <- format(df$date, "%Y-%m-%dT%H:%M:%S%z")
+  df
 }
 
 # Each column of `raw` coerced to the type of the same column of the sample `s`; a
-# column whose values do not all survive the coercion is an error naming it.
-.rmd_retype <- function(raw, s, type) {
+# column whose values do not all survive the coercion is an error naming it: a
+# value that would change (text "1.5" read as the integer 1, 2 as TRUE) is refused,
+# not rounded.
+.rmd_retype <- function(raw, s, type,
+                        src = sprintf("the mirror's %s_full.parquet", type)) {
   for (nm in names(s)) {
     x <- raw[[nm]]
     to <- s[[nm]]
@@ -219,27 +227,66 @@ chiload <- function(type = c("arrests", "complaints"),
         if (inherits(x, "POSIXct")) {
           x
         } else if (is.character(x)) {
-          as.POSIXct(x, tz = "America/Chicago",
-                     tryFormats = c("%Y-%m-%dT%H:%M:%OS", "%Y-%m-%d %H:%M:%OS"))
+          .rmd_ptime(x)
         }
       } else if (is.character(to)) {
         if (is.atomic(x)) as.character(x)
       } else if (is.atomic(x) && !is.object(x)) {
-        switch(typeof(to), integer = as.integer(x), double = as.numeric(x),
-               logical = as.logical(x))
+        .rmd_exact(x, typeof(to))
       }
     ), error = function(e) NULL)
-    lost <- is.null(y) || length(y) != length(x) || any(is.na(y) & !is.na(x)) ||
-      (is.integer(to) && is.numeric(x) && any(y != x, na.rm = TRUE))
+    lost <- is.null(y) || length(y) != length(x) || any(is.na(y) & !is.na(x))
     if (lost) {
-      stop(sprintf(paste0("the mirror's %s_full.parquet has a column `%s` that cannot ",
-                          "be read as the sample's %s"),
-                   type, nm, class(to)[[1L]]), call. = FALSE)
+      stop(sprintf("%s has a column `%s` that cannot be read as the sample's %s",
+                   src, nm, class(to)[[1L]]), call. = FALSE)
     }
     if (inherits(to, "POSIXct")) attr(y, "tzone") <- attr(to, "tzone")
     raw[[nm]] <- y
   }
   raw
+}
+
+# `x` (logical, numeric or text) as `type` ("integer", "double" or "logical"), with NA
+# for every value that does not convert exactly: a fraction or a number past the
+# integer range for an integer, anything but 0 or 1 (or text true/false) for a logical.
+.rmd_exact <- function(x, type) {
+  if (type == "logical") {
+    if (is.logical(x)) return(x)
+    if (is.character(x)) return(as.logical(x))
+    return(ifelse(x %in% c(0, 1), x == 1, NA))
+  }
+  d <- as.numeric(x)
+  if (type == "double") return(d)
+  ok <- !is.na(d) & d == trunc(d) & abs(d) <= .Machine$integer.max
+  d[!ok] <- NA
+  as.integer(d)
+}
+
+# ISO 8601 text as POSIXct. A time with an offset or "Z" is that instant (strptime
+# ignores the zone, which read 10:00Z as 10:00 in Chicago, five hours off); one
+# without is Chicago local time, as Socrata's floating timestamps are. Anything else,
+# trailing text included, is NA.
+.rmd_ptime <- function(x) {
+  re <- paste0("^([0-9]{4}-[0-9]{2}-[0-9]{2})[T ]",
+               "([0-9]{2}:[0-9]{2}:[0-9]{2}(\\.[0-9]+)?)",
+               "(Z|[+-][0-9]{2}(:?[0-9]{2})?)?$")
+  ok <- !is.na(x) & grepl(re, x)
+  out <- rep(NA_real_, length(x))
+  local <- paste(sub(re, "\\1", x[ok]), sub(re, "\\2", x[ok]))
+  zone <- sub(re, "\\4", x[ok])
+  fmt <- "%Y-%m-%d %H:%M:%OS"
+  # the wall clock read in UTC, less the offset; or, with no offset, in Chicago
+  utc <- as.numeric(as.POSIXct(local, tz = "UTC", format = fmt))
+  chi <- as.numeric(as.POSIXct(local, tz = "America/Chicago", format = fmt))
+  digits <- gsub("[^0-9]", "", zone) # "", "05", "0530"
+  hh <- suppressWarnings(as.numeric(substr(digits, 1L, 2L)))
+  mm <- suppressWarnings(as.numeric(substr(digits, 3L, 4L)))
+  mm[is.na(mm)] <- 0
+  sgn <- ifelse(startsWith(zone, "-"), -1, 1)
+  off <- ifelse(nzchar(digits), sgn * (hh * 3600 + mm * 60), 0)
+  off[nzchar(digits) & (hh > 23 | mm > 59)] <- NA
+  out[ok] <- ifelse(nzchar(zone), utc - off, chi)
+  as.POSIXct(out, origin = "1970-01-01", tz = "America/Chicago")
 }
 
 #' Clear the cache of full Chicago datasets

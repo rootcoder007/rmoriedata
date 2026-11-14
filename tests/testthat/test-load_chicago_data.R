@@ -360,3 +360,58 @@ test_that("a mirror with the sample's column names is given the sample's types",
   testthat::local_mocked_bindings(.rmd_fetch_full = function(...) bad)
   expect_error(chiload("complaints", full = TRUE), "column `ward`", fixed = TRUE)
 })
+
+test_that("an offset time is that instant; a value that does not fit is refused", {
+  s <- data.frame(beat = 1L,
+                  date = as.POSIXct("2024-01-01 10:00:00", tz = "America/Chicago"),
+                  arrest = TRUE)
+  r <- function(beat = "2", date = "2024-06-01T10:00:00Z", arrest = "true") {
+    .rmd_retype(data.frame(beat = beat, date = date, arrest = arrest,
+                           stringsAsFactors = FALSE), s, "complaints")
+  }
+  at <- as.numeric(as.POSIXct("2024-06-01 10:00:00", tz = "UTC"))
+  for (d in c("2024-06-01T10:00:00Z", "2024-06-01T10:00:00+00:00",
+              "2024-06-01 10:00:00+0000", "2024-06-01T05:00:00-05:00",
+              "2024-06-01T05:00:00-05", "2024-06-01T15:30:00+05:30")) {
+    got <- r(date = d)$date
+    expect_identical(as.numeric(got), at, info = d)
+    expect_identical(attr(got, "tzone"), "America/Chicago", info = d)
+  }
+  expect_identical(as.numeric(r(date = "2024-06-01T10:00:00.25Z")$date), at + 0.25)
+  # no offset: Chicago's wall clock, as Socrata's floating times are
+  expect_identical(format(r(date = "2024-06-01T10:00:00")$date, "%H:%M %Z"), "10:00 CDT")
+  expect_identical(format(r(date = "2024-01-05 00:00:00")$date, "%H:%M %Z"), "00:00 CST")
+  expect_identical(r(arrest = 0)$arrest, FALSE)
+  expect_identical(r(arrest = "false")$arrest, FALSE)
+  expect_identical(r(beat = "1225")$beat, 1225L)
+  expect_identical(r(beat = 7)$beat, 7L)
+  refused <- function(col, ...) {
+    expect_error(r(...), sprintf("has a column `%s` that cannot be read as", col),
+                 fixed = TRUE)
+  }
+  refused("beat", beat = "1.5")
+  refused("beat", beat = 1.5)
+  refused("beat", beat = "3000000000")
+  refused("beat", beat = "12 a")
+  refused("arrest", arrest = 2)
+  refused("arrest", arrest = "2")
+  refused("arrest", arrest = "yes")
+  refused("date", date = "2024-06-01T10:00:00 junk")
+  refused("date", date = "2024-06-01T10:00:00+25:00")
+  refused("date", date = "2024-02-30T10:00:00")
+  refused("date", date = "2024-06-01")
+  # Socrata's export goes the same way: an empty field is NA, a stray value an error
+  raw <- raw_complaints()
+  raw$ward[1L] <- "27.5"
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) raw)
+  expect_error(chiload("complaints", full = TRUE),
+               "Socrata's export has a column `ward` that cannot be read as",
+               fixed = TRUE)
+  raw <- raw_complaints()
+  raw$date[2L] <- "2026-01-05T06:00:00Z"
+  raw$arrest[2L] <- ""
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) raw)
+  got <- chiload("complaints", full = TRUE)
+  expect_identical(got$date_iso[2L], "2026-01-05T00:00:00-0600")
+  expect_identical(got$arrest, c(FALSE, NA))
+})
