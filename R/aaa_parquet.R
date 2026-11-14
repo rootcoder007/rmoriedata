@@ -1,11 +1,14 @@
 # Native Apache Parquet reader and writer for R.
 #
-# VENDORED COPY. Identical to the file of the same name in
-# morie/r-package/morie/R and r-morie-oss/R except that the two entry
-# points are internal here: rmorie Imports rmoriedata, so rmoriedata
-# cannot Import rmorie without a dependency cycle, and exporting the
-# same names from both would mask on the search path. Fix bugs in all
-# three copies.
+# VENDORED COPY. The same code as R/aaa_parquet.R in rmorie, which the
+# R-arm sync copies into morie/r-package/morie/R, with the same C codecs
+# (src/snappy.c, src/gzip.c, src/zstd.c). What differs, on purpose: here
+# the two entry points are internal (rmorie Imports rmoriedata, so
+# rmoriedata cannot Import rmorie without a dependency cycle, and
+# exporting the same names from both would mask on the search path);
+# there every function carries roxygen and the entry points are exported,
+# and that reader also reads three-level LIST columns of a primitive type,
+# which this one refuses. Fix bugs in all three copies.
 #
 # The R side of the family read and wrote Parquet through nanoparquet::
 # (11 read calls and 5 write calls in rmoriedata alone). This file
