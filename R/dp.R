@@ -138,7 +138,7 @@
 #'
 #' A budget is an in-memory ledger held by the R process that created it.
 #' A forked worker (for example under [parallel::mclapply()] or
-#' [parallel::mcparallel()]) gets its own copy, so its spending would never
+#' `parallel::mcparallel()`) gets its own copy, so its spending would never
 #' reach the parent and every worker could spend the whole budget again.
 #' A release charged to a budget from any process other than the one that
 #' created it is therefore refused with an error. Spend a budget in the

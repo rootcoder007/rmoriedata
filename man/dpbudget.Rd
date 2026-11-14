@@ -26,7 +26,7 @@ before any noise is drawn. A hundred releases at \code{epsilon = 1} spend
 \details{
 A budget is an in-memory ledger held by the R process that created it.
 A forked worker (for example under \code{\link[parallel:mclapply]{parallel::mclapply()}} or
-\code{\link[parallel:mcparallel]{parallel::mcparallel()}}) gets its own copy, so its spending would never
+\code{parallel::mcparallel()}) gets its own copy, so its spending would never
 reach the parent and every worker could spend the whole budget again.
 A release charged to a budget from any process other than the one that
 created it is therefore refused with an error. Spend a budget in the
