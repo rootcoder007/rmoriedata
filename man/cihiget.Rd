@@ -25,8 +25,7 @@ Resolves a CIHI table from the bundled catalogue and downloads it to
 \code{dest}, falling back to the Internet Archive snapshot if the live
 CIHI URL has rotated or been removed. The download + fallback runs
 through \pkg{rmoriebricklayer}'s shared C++/libcurl foundation
-(\code{blfetch()}), the same engine \pkg{rmorie} and
-\pkg{morie} use -- one implementation across the ecosystem.
+(\code{blfetch()}).
 }
 \examples{
 # Offline: inspect the catalogue to choose a `which` argument.

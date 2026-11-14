@@ -1,7 +1,7 @@
 # Data store: one CSV per table under inst/extdata, a catalog and a
 # column schema beside them.
 #
-# Every table ships once, as the CSV that rmorie reads by file name.
+# Every table ships once, as a CSV.
 # mdload() reads that CSV and applies the column names and
 # classes recorded in `_schema.csv`, so the result is typed the way the
 # retired parquet copies were, and it keeps the result in a session cache

@@ -12,9 +12,10 @@ knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
 library(rmoriedata)
 ```
 
-`rmoriedata` bundles the open-data fixtures used across the `rmorie`
-ecosystem and ships a small set of analyst-facing helpers for releasing
-aggregate statistics without re-identification risk. Everything shown here
+`rmoriedata` is a toolkit for disclosure control of aggregate releases:
+differential privacy, k-anonymity and l-diversity checks, and cell
+suppression audited against the margins. It also bundles open datasets to
+use them on. Everything shown here
 runs **offline** against data that installs with the package -- no network
 required.
 
@@ -23,7 +24,8 @@ The package has four surfaces:
 1. **A bundled dataset store** you browse and load by slug.
 2. **Named loaders** for the Chicago crime samples, the Ontario SIU
    director's-report corpus, and the CIHI data-table catalogue.
-3. **Differential-privacy mechanisms** (`morie_dp_*`).
+3. **Differential-privacy mechanisms** (`dplapcnt`, `dplaphist`,
+   `dpgmean`, with the budget kept by `dpbudget`).
 4. **Re-identification-risk verifiers** (`kanonvrf`,
    `ldivvrf`, `cellsupp`).
 

@@ -68,75 +68,46 @@ On macOS, CRAN's R (from <https://CRAN.R-project.org/bin/macosx/>) installs
 r-universe's prebuilt binaries in seconds. Homebrew's R cannot use them, so
 there every package is compiled from source.
 
-## Curated tables at data.rmorie.com
-
-The tables the MORIE project materialises from BigQuery public datasets, Statistics
-Canada and the survey, court and justice data its ledger uses are served from the edge
-with no sign-in: `hostcat()` lists them and `hostload("db/table")` opens one, checked
-against the SHA-256 its manifest lists; a large table comes down in parts that resume.
-Each table keeps its source's licence; the terms are at `www.rmorie.com/data-license/`.
-ICPSR studies are not served there (ICPSR's terms do not allow redistribution): `hostcat()`
-leaves them out and `hostload()` refuses them before any request. The endpoint
-comes from a signed services document the packages verify before use, so it can change without
-a release.
-
-```r
-cat_ <- hostcat()            # key, rows, columns, source dataset
-df <- hostload("fec_cm_2020/fec_cm_2020")
-```
-
-## Asking a language model
-
-`mdask()` puts a question about the datasets to a language model you bring: a
-provider's key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, Mistral and
-more, each from its usual variable), an Ollama server, or an OpenAI-compatible
-server of your own. The model gets the catalogue and every function of
-rmoriedata and rmoriebricklayer, with tools to read their help.
-
-```r
-Sys.setenv(ANTHROPIC_API_KEY = "...")          # or mdllmconf(anthropic.key = "...")
-mdask("which tables cover police stops?")
-mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
-```
-
 ## Quick start
 
 ```r
 library(rmoriedata)
 
-# Browse and load a bundled table by slug.
-cat <- mdcat()
-head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
-iucr <- mdload("chicago_iucr_codes")
-
 # Release a private count, then check a table for re-identification risk.
 dplapcnt(truecnt = 42, epsilon = 1.0)
 df <- data.frame(age = c(25, 25, 25, 40), sex = c("F", "F", "F", "M"))
 kanonvrf(df, c("age", "sex"), k = 2)$summary
+cellsupp(matrix(c(120, 3, 47, 88), 2), threshold = 5)$protected
+
+# Browse and load a bundled table by slug.
+cat <- mdcat()
+head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+iucr <- mdload("chicago_iucr_codes")
 ```
 
 See `vignette("rmoriedata")` for the full tour.
 
 ## Functions
 
-A small, deliberate set of base-R helpers (the bulk of the package is still data):
-
-- **Data access** — `mdcat()`, `mdload()`,
-  `mddict()`, `mdsums()`; `mdverify()`
-  checks every bundled file against the signed manifest.
+- **Differential privacy** — `dplapcnt()`, `dplaphist()`, `dpgmean()`;
+  `dpbudget()` holds an epsilon (and delta) the releases draw down, and
+  `dpspent()` reports what has been spent.
+- **k-anonymity and l-diversity** — `kanonvrf()`, `ldivvrf()`.
+- **Cell suppression** — `cellsupp()`, with complementary suppression and an
+  exact recoverability audit.
+- **Bundled datasets and readers** — `mdcat()`, `mdload()`, `mdpath()`,
+  `mddict()`, `mdsums()`; `mdverify()` checks every bundled file against the
+  signed manifest.
 - **Ontario SIU director's reports** — `siuload()` returns the reviewed
   corpus (one row per report, French and English, with corrigenda applied).
 - **CIHI data tables** — `cihitbls()` lists the open workbooks and
   `cihiget()` downloads one (live, with a Wayback fallback).
 - **Chicago** — `chiload()` (below) and `chiclr()` for the
   cached full datasets.
-- **Differential privacy + re-identification risk** — `dplapcnt()`,
-  `dpgmean()`, `dplaphist()`,
-  `cellsupp()`, `kanonvrf()`, `ldivvrf()`;
-  `dpbudget()` holds an epsilon (and delta) the releases draw down, and
-  `dpspent()` reports what has been spent.
+- **Hosted tables** — `hostcat()` and `hostload()` (below).
 - **Shared compiled core** — `mdsha()` and `mdmean()` delegate
-  to the family's C core via `LinkingTo: rmoriebricklayer` (one source of truth).
+  to the C core of rmoriebricklayer via `LinkingTo` (one source of truth).
+- **Language model** — `mdask()` and `mdllmconf()` (below).
 
 ## Chicago sample data — R and Python
 
@@ -155,10 +126,12 @@ pq <- chiload("arrests", as = "parquet_path")  # Parquet for Python
 import pandas as pd
 df = pd.read_parquet(pq)                      # path printed by chiload
 
-# Or read the bundled .rda directly (no R install) — use the date_iso column,
-# since POSIXct does not roundtrip cleanly through pyreadr:
+# Or read the sample's .rda from the package source (data/complaint_sample.rda
+# in the source tarball or the GitHub repository; an installed package keeps it
+# in a lazy-load database instead) — use the date_iso column, since POSIXct
+# does not roundtrip cleanly through pyreadr:
 import pyreadr
-complaints = pyreadr.read_r("rmoriedata/data/complaint_sample.rda")["complaint_sample"]
+complaints = pyreadr.read_r("data/complaint_sample.rda")["complaint_sample"]
 ```
 
 Every bundled table also ships as Parquet: `mdpath("<slug>")` gives
@@ -166,15 +139,39 @@ the verified path, `pd.read_parquet()` reads it.
 
 **Recommended Python bridge:** the Parquet path (`as = "parquet_path"`) — typed,
 columnar, read natively by pandas/polars/duckdb with correct timestamps and no R
-runtime. `pyreadr` on the `.rda` works for quick read-only access but is slower
+runtime. `pyreadr` on the source `.rda` works for quick read-only access but is slower
 and mangles `POSIXct` (use `date_iso`).
 
-## Why a separate package?
+## Curated tables at data.rmorie.com
 
-CRAN packages have a 5 MB soft-cap on source tarball size. `rmorie`'s
-~6.4 MB of integrated fixtures would push it over that threshold and trigger
-a reviewer pushback. Splitting the data out keeps `rmorie` lean
-(~few hundred KB of code) and lets data ship at any size via r-universe.
+The tables the MORIE project materialises from BigQuery public datasets, Statistics
+Canada and the survey, court and justice data its ledger uses are served from the edge
+with no sign-in: `hostcat()` lists them and `hostload("db/table")` opens one, checked
+against the SHA-256 its manifest lists; a large table comes down in parts that resume.
+Each table keeps its source's licence; the terms are at `www.rmorie.com/data-license/`.
+ICPSR studies are not served there (ICPSR's terms do not allow redistribution): `hostcat()`
+leaves them out and `hostload()` refuses them before any request. The endpoint
+comes from a signed services document the packages verify before use, so it can change without
+a release.
+
+```r
+cat_ <- hostcat()            # key, name, rows, source dataset
+df <- hostload("fec_cm_2020/fec_cm_2020")
+```
+
+## Asking a language model
+
+`mdask()` puts a question about the datasets to a language model you bring: a
+provider's key (OpenAI, Anthropic, Google Gemini, OpenRouter, Groq, Mistral and
+more, each from its usual variable), an Ollama server, or an OpenAI-compatible
+server of your own. The model gets the catalogue and every function of
+rmoriedata and rmoriebricklayer, with tools to read their help.
+
+```r
+Sys.setenv(ANTHROPIC_API_KEY = "...")          # or mdllmconf(anthropic.key = "...")
+mdask("which tables cover police stops?")
+mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
+```
 
 ## Citation
 
@@ -200,6 +197,10 @@ machine-readable metadata GitHub's "Cite this repository" button uses.
 
 ## License
 
-AGPL-3.0-or-later. The fixtures themselves are public-domain or
-under permissive open-data licenses from their source portals; see
-the per-file headers in `inst/extdata/` for attribution.
+AGPL-3.0-or-later for the code. The bundled data are snapshots of public
+data, each under the licence or terms of use of the body that published it;
+the publisher and source of every table are named in its help page
+(`?complaint_sample`, `?arrest_sample`, `?siuload`, `?cihitbls`,
+`` ?`rmoriedata-victoria` ``), in the catalogue (`mdcat()`, from
+`inst/extdata/_catalog.csv`), and in the data-attribution section of
+`inst/NOTICE`.

@@ -4,7 +4,7 @@
 \alias{morie_core}
 \alias{mdsha}
 \alias{mdmean}
-\title{Shared C-core helpers (rmorie ecosystem backend)}
+\title{Shared C-core helpers}
 \usage{
 mdsha(x)
 
@@ -23,9 +23,8 @@ digest. \code{mdmean()} returns a length-1 numeric.
 Thin access to the compiled core that ships in
 \pkg{rmoriebricklayer}. rmoriedata links that core via
 \code{LinkingTo: rmoriebricklayer}, so these functions call the exact same
-kernels used across the rmorie family -- no duplicated C code. They
-back fast data-integrity hashing and summaries for the bundled
-datasets without requiring \pkg{rmorie}.
+kernels that package exports -- no duplicated C code. They back fast
+data-integrity hashing and summaries for the bundled datasets.
 }
 \examples{
 ## ---- mdsha(): 64-char lowercase hex digest --------------

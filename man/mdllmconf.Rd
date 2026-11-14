@@ -20,9 +20,8 @@ A data frame with one row per setting (\code{key}, \code{value},
 \description{
 The route \code{\link{mdask}()} takes and the address, key and model of each
 route (your own OpenAI-compatible server, each provider such as Anthropic or
-OpenAI, a local or LAN Ollama server), shared with \pkg{rmoriebricklayer},
-\pkg{rmorie} and
-the Python package morie. A thin front to
+OpenAI, a local or LAN Ollama server), shared with \pkg{rmoriebricklayer}
+and the packages built on it. A thin front to
 \code{rmoriebricklayer::llmcfg()}, which saves them in
 \code{~/.config/morie/llm.json} only when you pass a setting; from the
 shell, \code{rmbl config} and \code{rmbl config setup} do the same.

@@ -3,12 +3,12 @@
 Behavioural guidance for AI coding agents working in this repository.
 `CLAUDE.md` and `GEMINI.md` are thin pointers (`@AGENTS.md`).
 
-**rmoriedata** is the data + light-helper companion R package for
-[rmorie]. Its first job is disclosure control for aggregate releases; it also bundles open-data fixtures and has a
-small, deliberate set of analyst-facing helpers:
+**rmoriedata** is an R package for disclosure control of aggregate
+releases; it also bundles open datasets to use it on, and has a small,
+deliberate set of analyst-facing helpers:
 
-- **Differential privacy + re-identification risk** — `morie_dp_*`,
-  `kanonvrf`, `ldivvrf`,
+- **Differential privacy + re-identification risk** — `dplapcnt`,
+  `dplaphist`, `dpgmean`, `dpbudget`, `kanonvrf`, `ldivvrf`,
   `cellsupp` (base-R only).
 - **Shared C backend** — `mdsha()` / `mdmean()`
   delegate to the ecosystem's compiled core via
@@ -16,16 +16,13 @@ small, deliberate set of analyst-facing helpers:
   see [rmoriebricklayer]). `src/` exists for this and must stay a thin
   link to the core — do NOT reimplement numeric kernels here.
 
-Keep additions small and fixture-adjacent; heavy analysis belongs in
-rmorie, not here.
-
-[rmorie]: https://github.com/rootcoder007/rmorie
+Keep additions small: disclosure control and access to the bundled data.
+General-purpose analysis does not belong here.
 [rmoriebricklayer]: https://github.com/rootcoder007/rmorie-bricklayer
 
 ## License — AGPL-3.0-or-later
 
-Strong copyleft, matching morie + rmorie. See those repos' AGENTS.md
-for the full rationale. Short version:
+Strong copyleft. Short version:
 
 - Every R source file (there's only `R/zzz.R`) carries
   `# SPDX-License-Identifier: AGPL-3.0-or-later`. Preserve it.
@@ -42,9 +39,8 @@ with a comprehensive option set and an "other" escape.
 
 ### Ask before pushing — every push, every remote
 
-Particularly important: this package is referenced as a `Remotes:`
-target from rmorie's DESCRIPTION. A bad push here breaks rmorie's
-CI.
+Particularly important: other packages reference this one as a
+`Remotes:` target, and a bad push here breaks their CI.
 
 ### Don't guess; verify
 
@@ -66,8 +62,8 @@ documented upstream URL, license, and refresh script.
   license before adding a license note to a docstring. OTIS + CPADS
   were both falsely flagged as FOI/private — they are open.
 - **No bloat.** This package is intentionally small. If a fixture
-  would push it past ~5 MB, host it externally and add a fetcher
-  function in rmorie instead.
+  would push the package much past its current size, host it externally
+  (data.rmorie.com, read with `hostload()`) instead.
 
 ## Where things live
 

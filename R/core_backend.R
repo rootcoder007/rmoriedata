@@ -1,13 +1,12 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 
-#' Shared C-core helpers (rmorie ecosystem backend)
+#' Shared C-core helpers
 #'
 #' Thin access to the compiled core that ships in
 #' \pkg{rmoriebricklayer}. rmoriedata links that core via
 #' `LinkingTo: rmoriebricklayer`, so these functions call the exact same
-#' kernels used across the rmorie family -- no duplicated C code. They
-#' back fast data-integrity hashing and summaries for the bundled
-#' datasets without requiring \pkg{rmorie}.
+#' kernels that package exports -- no duplicated C code. They back fast
+#' data-integrity hashing and summaries for the bundled datasets.
 #'
 #' @param x For `mdsha()`, a length-1 character vector or a
 #'   raw vector. For `mdmean()`, a numeric vector (coerced with

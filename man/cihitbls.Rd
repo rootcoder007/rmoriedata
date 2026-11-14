@@ -30,9 +30,8 @@ Each row carries the table title, its direct \code{url}, and a
 stays retrievable even if CIHI rotates or removes the live file.
 }
 \details{
-Pair with \code{rmorie::morie_ingest_cihi_xlsx()} to download + parse
-any row (that helper tries \code{url} first and falls back to
-\code{wayback_url}). The Wayback snapshots were resolved with
+Download any row with \code{\link{cihiget}()}, which tries \code{url}
+first and falls back to \code{wayback_url}. The Wayback snapshots were resolved with
 \code{rmoriebricklayer::wbsnpurl()}.
 }
 \examples{

@@ -11,9 +11,8 @@
 #' \code{wayback_url} snapshot on the Internet Archive so the table
 #' stays retrievable even if CIHI rotates or removes the live file.
 #'
-#' Pair with \code{rmorie::morie_ingest_cihi_xlsx()} to download + parse
-#' any row (that helper tries \code{url} first and falls back to
-#' \code{wayback_url}). The Wayback snapshots were resolved with
+#' Download any row with \code{\link{cihiget}()}, which tries \code{url}
+#' first and falls back to \code{wayback_url}. The Wayback snapshots were resolved with
 #' \code{rmoriebricklayer::wbsnpurl()}.
 #'
 #' @param archonly If \code{TRUE}, drop rows with no Wayback
@@ -68,8 +67,7 @@ cihitbls <- function(archonly = FALSE) {
 #' \code{dest}, falling back to the Internet Archive snapshot if the live
 #' CIHI URL has rotated or been removed. The download + fallback runs
 #' through \pkg{rmoriebricklayer}'s shared C++/libcurl foundation
-#' (\code{blfetch()}), the same engine \pkg{rmorie} and
-#' \pkg{morie} use -- one implementation across the ecosystem.
+#' (\code{blfetch()}).
 #'
 #' @param which A row index into \code{cihitbls()}, or a
 #'   string matched (case-insensitively, as a substring) against table

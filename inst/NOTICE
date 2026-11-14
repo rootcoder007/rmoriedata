@@ -1,4 +1,4 @@
-rmoriedata -- Bundled open-data fixtures for rmorie
+rmoriedata -- Disclosure control for aggregate releases, with open datasets
 Copyright (C) 2026 Vansh Singh Ruhela <vsruhela@proton.me>
 
 This program is free software: you can redistribute it and/or modify
@@ -36,7 +36,7 @@ snapshots of public data, and each dataset remains under the licence or terms
 of use of the body that published it. They are redistributed here unchanged in
 content (reformatted to CSV and Parquet), and the source of every table is
 named in its documentation (?complaint_sample, ?arrest_sample,
-?load_siu_reports, ?load_cihi_data_tables, ?`rmoriedata-victoria` and the catalogue in
+?siuload, ?cihitbls, ?`rmoriedata-victoria` and the catalogue in
 inst/extdata/_catalog.csv). Publishers:
 
   - Ontario: the Ministry of the Solicitor General's correctional (OTIS)

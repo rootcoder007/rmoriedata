@@ -51,16 +51,16 @@
 #' not stated in the published reports and are empty throughout; they are
 #' kept so the table's shape matches the parser's schema.
 #'
-#' This is the machine-readable companion to the SIU parser and
-#' data-mining subsystem in \pkg{rmorie} / \pkg{morie} -- the first
-#' open-source pipeline for the SIU director's-report corpus, created
-#' by Vansh Singh Ruhela as part of the MORIE / MRM framework. The
-#' table is regenerated from the parser over the full public corpus;
-#' see \code{rmorie::morie_fetch_siu()} to rebuild it live.
+#' The table is the output of the SIU director's-report parser, the first
+#' open-source pipeline for this corpus, created by Vansh Singh Ruhela as
+#' part of the MORIE / MRM framework, regenerated over the full public
+#' corpus. The parser itself is in the rmorie package
+#' (\code{rmorie::morie_fetch_siu()} rebuilds the table live); nothing
+#' here needs it.
 #'
 #' This loader returns the corpus as text: every column is character and
 #' an empty cell is \code{""}, which is the form the SIU parser writes and
-#' \pkg{rmorie} reads back. The same table is also in the typed data
+#' reads back. The same table is also in the typed data
 #' store: \code{mdload("siu_directors_reports")} applies the
 #' bundled schema (integer \code{drid} and counts, \code{NA} for empty
 #' cells), so counts of missing values differ between the two entry
@@ -78,7 +78,7 @@
 #' @source Ontario Special Investigations Unit director's reports,
 #'   \url{https://www.siu.on.ca/en/directors_reports.php} (post-2018)
 #'   and the Ontario Government archive (pre-2018). Parsed with the
-#'   \pkg{rmorie} SIU subsystem.
+#'   MORIE SIU parser.
 #' @examples
 #' # Default: every parsed report, as a base data.frame.
 #' all <- siuload()

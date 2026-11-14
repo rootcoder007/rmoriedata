@@ -328,8 +328,8 @@
 #' databases materialised from Google BigQuery public datasets (Chicago
 #' crime, EPA air quality, US census, FEC, FDA, NOAA, NHTSA, Hacker News,
 #' Ethereum, World Bank, ...) and serves their tables from the edge. They
-#' need no sign-in and no key; a key that an earlier version of rmorie,
-#' morie or rmoriebricklayer stored is not read and never sent.
+#' need no sign-in and no key; a key that an earlier version of this or a
+#' related package stored is not read and never sent.
 #' \code{hostcat()} returns every table with its key,
 #' description, rows and BigQuery source (the manifest is kept for a day);
 #' tables whose source terms do not allow redistribution (ICPSR studies,

@@ -9,8 +9,6 @@ home:
   links:
     - text: Install from r-universe
       href: https://rootcoder007.r-universe.dev/rmoriedata
-    - text: Analysis package (rmorie)
-      href: https://github.com/rootcoder007/rmorie
     - text: Source on GitHub
       href: https://github.com/rootcoder007/rmoriedata
 
@@ -24,15 +22,37 @@ navbar:
       aria-label: r-universe
 
 reference:
-  - title: Bundled datasets
+  - title: Differential privacy
     desc: >
-      Discover, load, and inspect the packaged Canadian public-data tables
-      (OTIS carceral data, CIHI health tables, Chicago crime) that the rmorie
-      analysis functions consume.
+      Exact discrete Laplace noise for counts and histograms, the analytic
+      Gaussian mechanism for means, and a privacy budget the releases are
+      charged against.
+    contents:
+      - dplapcnt
+      - dplaphist
+      - dpgmean
+      - dpbudget
+      - dpspent
+  - title: k-anonymity and l-diversity
+    desc: >
+      Checks of a table's quasi-identifier classes before release.
+    contents:
+      - kanonvrf
+      - ldivvrf
+  - title: Cell suppression
+    desc: >
+      Primary and complementary suppression of small cells, audited for
+      exact recovery from the margins.
+    contents:
+      - cellsupp
+  - title: Bundled datasets and readers
+    desc: >
+      Discover, load, verify and inspect the bundled open-data tables
+      (Ontario correctional and use-of-force releases, SIU director's
+      reports, CIHI data tables, Chicago crime and others).
     contents:
       - mdcat
       - mdload
-      - hostcat
       - mdpath
       - mddict
       - mdsums
@@ -42,31 +62,6 @@ reference:
       - cihitbls
       - cihiget
       - siuload
-  - title: Differential privacy
-    desc: >
-      Calibrated-noise mechanisms (Laplace, Gaussian) for releasing
-      privacy-preserving counts, histograms, and means at a stated epsilon.
-    contents:
-      - dplapcnt
-      - dplaphist
-      - dpgmean
-      - dpbudget
-      - dpspent
-  - title: Statistical disclosure control
-    desc: >
-      Re-identification safeguards for microdata releases: k-anonymity and
-      l-diversity checks plus small-cell suppression.
-    contents:
-      - kanonvrf
-      - ldivvrf
-      - cellsupp
-  - title: Core utilities
-    desc: Shared primitives used across the package.
-    contents:
-      - mdmean
-      - mdsha
-      - mdask
-      - mdllmconf
   - title: Sample data objects
     desc: >
       Small documented data frames bundled for examples and tests
@@ -80,3 +75,16 @@ reference:
       mdload().
     contents:
       - rmoriedata-victoria
+  - title: Hosted tables
+    desc: >
+      Curated tables served at data.rmorie.com, checked against the
+      manifest's SHA-256.
+    contents:
+      - hostcat
+  - title: Core utilities and language model
+    desc: Shared compiled primitives, and questions about the catalogue.
+    contents:
+      - mdmean
+      - mdsha
+      - mdask
+      - mdllmconf
