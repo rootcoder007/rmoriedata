@@ -1,6 +1,11 @@
 # Every table ships twice, CSV and Parquet; the two copies must be the
 # same typed frame, and the Parquet path is what Python reads.
 
+# the tables whose Parquet copy holds the next double in a few values (mdload()'s help)
+last_bit <- c("tps_assault_sample", "samples_tps_assault_sample",
+              "vic_criminal_incidents", "vic_lga_criminal_incidents",
+              "vic_recorded_offences")
+
 test_that("the Parquet copy of every table equals the CSV copy", {
   cat <- mdcat()
   t <- cat[cat$kind == "table", ]
@@ -12,7 +17,19 @@ test_that("the Parquet copy of every table equals the CSV copy", {
     expect_identical(names(b), names(a), label = slug)
     expect_identical(vapply(b, function(z) class(z)[1L], ""),
                      vapply(a, function(z) class(z)[1L], ""), label = slug)
-    expect_equal(b, a, ignore_attr = TRUE, label = slug)
+    # the values are identical, except a few doubles of the five tables the help of
+    # mdload() names, which differ in the last binary digit only
+    for (j in names(a)) {
+      x <- unclass(a[[j]])
+      y <- unclass(b[[j]])
+      attributes(x) <- attributes(y) <- NULL
+      if (identical(x, y)) next
+      off <- which(!(x == y) | xor(is.na(x), is.na(y)))
+      lab <- paste(slug, j)
+      expect_true(slug %in% last_bit && is.double(x) && length(off) <= 2L, label = lab)
+      expect_identical(abs(x[off] - y[off]) <= 2^(floor(log2(abs(x[off]))) - 52),
+                       rep(TRUE, length(off)), label = lab)
+    }
   }
 })
 

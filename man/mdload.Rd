@@ -13,7 +13,15 @@ mdload(slug, refresh = FALSE, format = c("csv", "parquet"))
 again, even if a cached copy exists.}
 
 \item{format}{\code{"csv"} (default) or \code{"parquet"}: which shipped copy to
-read. Both give the same data frame.}
+read. Both give the same columns, with the same names and types, and the
+same values, with one exception: in the double columns of five tables
+(\code{tps_assault_sample} and its copy \code{samples_tps_assault_sample},
+\code{vic_criminal_incidents}, \code{vic_lga_criminal_incidents} and
+\code{vic_recorded_offences}) one or two values of the Parquet copy differ
+from the CSV's in the last binary digit (a relative difference below
+3e-16). The CSV text read back gives the double nearest to it; those
+Parquet copies were written from values computed before the CSV text
+was, and hold the next double.}
 }
 \value{
 A data frame.
