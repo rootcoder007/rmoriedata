@@ -66,7 +66,9 @@ Only known (non-`NA`) sensitive values count towards diversity: a class
 whose rows read `"HIV"`, `NA`, `NA` tells an adversary the attribute is
 HIV or withheld, which is diversity 1. Classes are formed as in
 [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
-with `NA` in a quasi-identifier as a level of its own.
+with `NA` in a quasi-identifier as a level of its own, and sensitive
+values are compared exactly in the same way (a factor level that is
+itself `NA` is withheld, not a value).
 
 ## Examples
 

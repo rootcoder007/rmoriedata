@@ -2,6 +2,61 @@
 
 ## rmoriedata 0.4.3
 
+- [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
+  and
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
+  compare every numeric column exactly, whatever its class: `difftime`,
+  [`I()`](https://rdrr.io/r/base/AsIs.html), `Date`, `POSIXct`,
+  `POSIXlt` and complex columns were compared to 15 significant digits,
+  so two distinct values (such as two times a microsecond apart) formed
+  one class and a violated k could be reported as satisfied. A
+  fractional `Date` is now compared by its stored value, not its printed
+  day. Columns that cannot be compared exactly (`bit64::integer64`, list
+  and matrix columns) are refused with an error naming them.
+- [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
+  and
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
+  build classes column by column, so strings holding control characters
+  can no longer join two different rows into one class, and a factor
+  level that is `NA` is missing while the string `"NA"` is a value (they
+  were one class). As a sensitive value, an `NA` factor level is
+  withheld and no longer counts towards diversity.
+- A privacy budget of `delta = 0` refuses every release with
+  `delta > 0`: a release at `delta = 5e-13` was accepted. The check of
+  the totals allows only floating-point rounding, relative to the
+  budget, and never a release more than twice what remains: a budget of
+  `epsilon = 1e-13` paid for a release at `1e-12`.
+- A privacy budget saved and read back in another R session is refused
+  even when that session has the same process ID, as every `Rscript`
+  started as a container’s entrypoint does: each budget carries a random
+  token drawn from the operating system when the package loads. Budgets
+  saved by earlier versions are refused too.
+  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)’s
+  help says that a release interrupted after it is charged stays
+  charged.
+- `chiload(full = TRUE)` reads a text time with an offset or `Z` (from a
+  mirror) as that instant: `2024-06-01T10:00:00Z` was read as 10:00 in
+  Chicago, five hours off. A value that does not fit its column’s type
+  is refused with an error naming the column, from a mirror and from
+  Socrata’s export alike: text `"1.5"` became the integer 1, `2` became
+  `TRUE`, and junk in Socrata’s numeric columns became `NA`.
+- The Zstandard decoder refuses a block whose sequence count of 0 is
+  followed by more bytes (libzstd does too), and reports one to three
+  stray bytes after the last frame as trailing data rather than as a
+  truncated frame. The zstd, gzip and Snappy decoders refuse, before
+  allocating, a size that this build of R cannot hold.
+- A hosted table downloaded in parts checks that every part is there and
+  readable before it joins any: a missing or unreadable part stopped
+  with a base-R warning after the earlier parts had been deleted; now
+  all parts are kept and the next run downloads only what is missing.
+  Two sessions joining the same table at once each write a file of their
+  own instead of sharing one.
+- The Parquet writer refuses matrix, data frame and `integer64` columns,
+  naming them: a matrix column was written with more values than rows,
+  which other readers cut short. Dates and times are written down to the
+  whole day and millisecond as R prints them, so a `Date` of -0.5
+  (printed 1969-12-31) no longer reads back as 1970-01-01, and dates or
+  times outside what Parquet holds, or infinite, are refused.
 - The Parquet reader reads ZSTD-compressed pages, such as those of files
   written with `compression = "zstd"` by nanoparquet, arrow or DuckDB,
   with no other package: the Zstandard decoder is in the package,

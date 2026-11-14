@@ -101,11 +101,18 @@ rarest records, which makes them the most re-identifiable, so they must
 meet the threshold like any other class. Every row is accounted for:
 the class sizes sum to <code>nrow(data)</code>. <code>NaN</code> counts as missing, in the
 same class as <code>NA</code>.</p>
-<p>Values are compared exactly. Two numbers (plain doubles) are in one
-class only when they are the same double, so <code>0.1 + 0.2</code> and <code>0.3</code>,
-which differ in the last bit, are two classes; <code>-0</code> and <code>0</code> are one.
-Integer, character, logical, factor and <code>Date</code> columns are compared by
-their values as printed (a factor by its level label).</p>
+<p>Values are compared exactly. Two numbers are in one class only when
+they are the same number in storage, whatever the column's class
+(plain double, <code>Date</code>, <code>POSIXct</code>, <code>difftime</code>, <code><a href="https://rdrr.io/r/base/AsIs.html" class="external-link">I()</a></code> and other classed
+numbers alike), so <code>0.1 + 0.2</code> and <code>0.3</code>, which differ in the last bit,
+are two classes, and so are two times a microsecond apart; <code>-0</code> and <code>0</code>
+are one. A complex number is compared by both parts. Integer, logical,
+character and raw columns are compared by value, a factor by its level
+label and a <code>POSIXlt</code> by the instant it names. A factor level that is
+itself <code>NA</code> is missing, and the string <code>"NA"</code> is a value, not a missing
+one. A column that cannot be compared exactly is refused with an error
+naming it: a <code>bit64::integer64</code> column (convert it with
+<code><a href="https://rdrr.io/r/base/character.html" class="external-link">as.character()</a></code>), a list column and a matrix column.</p>
     </div>
 
     <div class="section level2">

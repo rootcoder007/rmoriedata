@@ -68,11 +68,20 @@ meet the threshold like any other class. Every row is accounted for: the
 class sizes sum to `nrow(data)`. `NaN` counts as missing, in the same
 class as `NA`.
 
-Values are compared exactly. Two numbers (plain doubles) are in one
-class only when they are the same double, so `0.1 + 0.2` and `0.3`,
-which differ in the last bit, are two classes; `-0` and `0` are one.
-Integer, character, logical, factor and `Date` columns are compared by
-their values as printed (a factor by its level label).
+Values are compared exactly. Two numbers are in one class only when they
+are the same number in storage, whatever the column's class (plain
+double, `Date`, `POSIXct`, `difftime`,
+[`I()`](https://rdrr.io/r/base/AsIs.html) and other classed numbers
+alike), so `0.1 + 0.2` and `0.3`, which differ in the last bit, are two
+classes, and so are two times a microsecond apart; `-0` and `0` are one.
+A complex number is compared by both parts. Integer, logical, character
+and raw columns are compared by value, a factor by its level label and a
+`POSIXlt` by the instant it names. A factor level that is itself `NA` is
+missing, and the string `"NA"` is a value, not a missing one. A column
+that cannot be compared exactly is refused with an error naming it: a
+`bit64::integer64` column (convert it with
+[`as.character()`](https://rdrr.io/r/base/character.html)), a list
+column and a matrix column.
 
 ## Examples
 

@@ -86,7 +86,24 @@ created it is therefore refused with an error. Spend a budget in the
 process that created it; to release from workers, give each worker its
 own budget and account for the total yourself by composition (the
 epsilons and deltas of all workers add up). A budget saved and read
-back in another R session is refused in the same way.</p>
+back in another R session is refused in the same way, even one whose
+process has the same PID (in a container whose entrypoint is <code>Rscript</code>
+every session is PID 1): each budget carries a random token drawn from
+the operating system's CSPRNG when the package is loaded, and a release
+is charged only in the process, and the load of the package, that made
+the budget.</p>
+<p>A budget of <code>delta = 0</code> pays only for pure-DP releases: a release with
+any <code>delta &gt; 0</code> is refused. The totals are compared with a slack for
+floating-point rounding only, so that ten releases at <code>epsilon = 0.1</code>
+fit a budget of 1: the slack is <code>(n + 2)</code> units in the last place of
+the larger of the budget and the total, <code>n</code> being the number of
+releases (below a millionth of a millionth of the budget for 4,000
+releases), and a release more than twice what remains is refused
+whatever the slack.</p>
+<p>A release is charged before its noise is drawn. If it is interrupted
+or fails after that, the budget stays charged though nothing was
+released: the safe side, since a release that went out uncharged would
+spend privacy the ledger does not show.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

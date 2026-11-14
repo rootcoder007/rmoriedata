@@ -52,8 +52,9 @@ OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.</p>
 
 <dl><dt id="arg-df">df<a class="anchor" aria-label="anchor" href="#arg-df"></a></dt>
 <dd><p>A <code>data.frame</code> with at least one column. Factor columns are
-written as character; list, complex, raw and <code>difftime</code> columns are
-refused with an error naming the column. <code>NaN</code> in a numeric column is
+written as character; list, complex, raw, <code>difftime</code>, <code>integer64</code>,
+matrix and data frame columns are refused with an error naming the
+column. <code>NaN</code> in a numeric column is
 kept as <code>NaN</code>. Every string must be valid UTF-8 (marked, or unmarked in
 UTF-8 bytes), and column names must be unique.</p></dd>
 
@@ -73,9 +74,12 @@ for uncompressed pages.</p></dd>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>A <code>POSIXct</code> column is written as a Parquet TIMESTAMP (milliseconds
-since 1970-01-01 UTC). The format stores the instant but not a time zone,
-so it reads back as the same instant in UTC: a column in
+    <p>A <code>Date</code> column is written as a Parquet DATE (whole days) and a
+<code>POSIXct</code> column as a Parquet TIMESTAMP (whole milliseconds since
+1970-01-01 UTC), each taken down to the whole day or millisecond as R
+prints them, before 1970 too: a fractional <code>Date</code> of -0.5 (printed
+1969-12-31) is written as 1969-12-31. The format stores the instant
+but not a time zone, so it reads back as the same instant in UTC: a column in
 <code>America/Chicago</code> comes back with <code>tz = "UTC"</code>. Set the zone again with
 <code>attr(x, "tzone") &lt;- "America/Chicago"</code>, or keep an ISO 8601 text column
 beside it, as <code><a href="chiload.html">chiload()</a></code>'s <code>date_iso</code> does.</p>
