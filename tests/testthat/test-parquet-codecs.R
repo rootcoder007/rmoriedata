@@ -1,4 +1,5 @@
-# The Parquet page codecs (src/snappy.c, src/gzip.c): every codec round-trips,
+# The Parquet page codecs (src/snappy.c, src/gzip.c; src/zstd.c reads only, in
+# test-zstd.R): every codec round-trips,
 # the store is written with GZIP, and real compression happens.
 
 test_that("snappy compresses, round-trips, and handles runs and incompressible bytes", {
@@ -26,6 +27,7 @@ test_that("every codec writes a file that reads back identically", {
     rmoriedata:::morie_write_parquet(df, f, compression = cmp)
     expect_equal(rmoriedata:::morie_read_parquet(f), df, ignore_attr = TRUE)
   }
+  # the writer does not write ZSTD; the reader reads it (test-zstd.R)
   expect_error(rmoriedata:::morie_write_parquet(df, tempfile(), compression = "zstd"),
                "gzip")
 })

@@ -17,12 +17,14 @@
 # format v1.0, encodings PLAIN / RLE_DICTIONARY / RLE, SNAPPY
 # compression, physical types BYTE_ARRAY / INT32 / INT64 / BOOLEAN /
 # DOUBLE. FLOAT, INT96, FIXED_LEN_BYTE_ARRAY and uncompressed pages are
-# also handled. Nested and repeated columns are refused rather than
+# also handled. GZIP pages are read through zlib, and ZSTD pages
+# (read only) through src/zstd.c, a decoder written from RFC 8878.
+# Nested and repeated columns are refused rather than
 # guessed at, because decoding a repeated column as flat would return a
 # wrong row count instead of an error.
 #
 # References: parquet-format/parquet.thrift (field ids), the Thrift
-# compact protocol spec, and google/snappy/format_description.txt.
+# compact protocol spec, google/snappy/format_description.txt and RFC 8878.
 #
 # ponytail: pure R, no compiled code. The snappy tag loop and the RLE
 # bit-unpacker are the only hot spots; move those to src/ if a file
@@ -389,6 +391,7 @@
 .pqCUncompressed <- 0L
 .pqCSnappy <- 1L
 .pqCGzip <- 2L
+.pqCZstd <- 6L
 .pqRequired <- 0L
 .pqOptional <- 1L
 .pqRepeated <- 2L
@@ -687,11 +690,15 @@
       page <- .pq_snappy_decompress(raw_page)
     } else if (codec == .pqCGzip) {
       page <- .Call(C_rmd_gzip_decompress, raw_page, usize)
+    } else if (codec == .pqCZstd) {
+      # src/zstd.c: never writes past usize and fails unless the frames give
+      # exactly usize bytes
+      page <- .Call(C_rmd_zstd_decompress, raw_page, usize)
     } else if (codec == .pqCUncompressed) {
       page <- raw_page
     } else {
-      stop("compression codec ", codec, " not implemented; the store ",
-        "uses GZIP, SNAPPY or none",
+      stop("compression codec ", codec, " not implemented; the reader ",
+        "takes ZSTD, GZIP, SNAPPY or none",
         call. = FALSE
       )
     }
@@ -797,8 +804,10 @@
 #' Read a Parquet file
 #'
 #' Native Parquet reader: no nanoparquet, no arrow. Handles the v1
-#' format with PLAIN, RLE and dictionary encodings, GZIP, Snappy or no
-#' compression. Nested and repeated columns are refused.
+#' format with PLAIN, RLE and dictionary encodings, GZIP, Snappy, Zstandard
+#' (ZSTD) or no compression. ZSTD pages are read by a decoder in the package
+#' (RFC 8878, without dictionaries), so no other package is needed for them;
+#' the writer does not write ZSTD. Nested and repeated columns are refused.
 #'
 #' @param path Path to a `.parquet` file.
 #' @param columns Optional character vector of column names to decode;
@@ -833,7 +842,7 @@ morie_read_parquet <- function(path, columns = NULL) {
 }
 
 # The reader's own error messages, passed on with the `parquet: ` prefix.
-.pq_own_re <- paste0("^(not a parquet file|snappy: |gzip: |crc32: ",
+.pq_own_re <- paste0("^(not a parquet file|snappy: |gzip: |zstd: |crc32: ",
                      "|unknown thrift ",
                      "|FIXED_LEN_BYTE_ARRAY |unsupported physical |data page v2 ",
                      "|compression codec |BIT_PACKED |dictionary-encoded |encoding ",
