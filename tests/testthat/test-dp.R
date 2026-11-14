@@ -103,7 +103,11 @@ test_that("dplapcnt edge-case input validation", {
     dplapcnt(2^53 + 2, epsilon = 1.0),
     "must not exceed 2\\^53"
   )
-  expect_type(dplapcnt(2^53, epsilon = 1.0), "double")
+  # 2^53 + 1 rounds back to 2^53, so 2^53 itself cannot carry a unit of noise
+  expect_error(dplapcnt(2^53, epsilon = 1.0), "must not exceed 2\\^53")
+  expect_error(dplaphist(c(1, 2^53), epsilon = 1.0), "must not exceed 2\\^53")
+  expect_type(dplapcnt(2^53 - 1, epsilon = 1.0), "double")
+  expect_type(dplaphist(c(1, 2^53 - 1), epsilon = 1.0), "double")
 })
 
 test_that("dpgmean converges to the true mean", {
@@ -242,4 +246,37 @@ test_that("dplaphist keeps names, dims and a table's labels", {
   expect_identical(dimnames(out), dimnames(tb))
   expect_s3_class(out, "table")
   expect_identical(names(dplaphist(table(c("u", "v")), 1)), c("u", "v"))
+})
+
+test_that("a budget cannot be spent from a forked worker", {
+  skip_on_os("windows")
+  msg <- "a privacy budget cannot be spent from a forked worker"
+  b <- dpbudget(1, delta = 1e-3)
+  got <- parallel::mclapply(1:4, function(i) {
+    tryCatch(dplapcnt(10, 0.9, budget = b), error = conditionMessage)
+  }, mc.cores = 2)
+  expect_true(all(startsWith(unlist(got), msg)))
+  for (f in list(function() dplaphist(c(1, 2), 0.5, budget = b),
+                 function() dpgmean(c(0.2, 0.4), 0, 1, 0.5, 1e-4, budget = b))) {
+    job <- parallel::mcparallel(tryCatch(f(), error = conditionMessage))
+    expect_true(startsWith(parallel::mccollect(job)[[1L]], msg))
+  }
+  # nothing was spent, and the parent still spends its budget
+  expect_identical(dpspent(b)$releases, 0L)
+  expect_identical(dpspent(b)$spent_epsilon, 0)
+  expect_type(dplapcnt(10, 0.9, budget = b), "double")
+  expect_equal(dpspent(b)$spent_epsilon, 0.9)
+  # a worker's own budget is its own to spend
+  own <- parallel::mclapply(1:2, function(i) {
+    w <- dpbudget(1)
+    dplapcnt(10, 0.5, budget = w)
+    dpspent(w)$spent_epsilon
+  }, mc.cores = 2)
+  expect_identical(unlist(own), c(0.5, 0.5))
+  # a budget read back in another process is refused the same way
+  f <- tempfile(fileext = ".rds")
+  saveRDS(b, f)
+  job <- parallel::mcparallel(tryCatch(dplapcnt(1, 0.05, budget = readRDS(f)),
+                                       error = conditionMessage))
+  expect_true(startsWith(parallel::mccollect(job)[[1L]], msg))
 })

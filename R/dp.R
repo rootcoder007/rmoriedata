@@ -100,7 +100,7 @@
   a
 }
 
-# A standard normal from 53-bit CSPRNG uniforms (Box-Muller).
+# A standard normal from 47-bit CSPRNG uniforms (Box-Muller).
 .morie_dp_rnorm1 <- function() {
   u <- function() (.morie_dp_unif_int(2^47) + 0.5) / 2^47
   sqrt(-2 * log(u())) * cos(2 * pi * u())
@@ -136,6 +136,17 @@
 #' before any noise is drawn. A hundred releases at `epsilon = 1` spend
 #' `epsilon = 100`; a budget makes that visible and enforceable.
 #'
+#' A budget is an in-memory ledger held by the R process that created it.
+#' A forked worker (for example under [parallel::mclapply()] or
+#' [parallel::mcparallel()]) gets its own copy, so its spending would never
+#' reach the parent and every worker could spend the whole budget again.
+#' A release charged to a budget from any process other than the one that
+#' created it is therefore refused with an error. Spend a budget in the
+#' process that created it; to release from workers, give each worker its
+#' own budget and account for the total yourself by composition (the
+#' epsilons and deltas of all workers add up). A budget saved and read
+#' back in another R session is refused in the same way.
+#'
 #' @param epsilon Total epsilon available (positive).
 #' @param delta Total delta available (0 for pure DP only).
 #' @return An object of class `"dpbudget"` (an environment, so
@@ -163,6 +174,7 @@ dpbudget <- function(epsilon, delta = 0) {
   b$spent_epsilon <- 0
   b$spent_delta <- 0
   b$releases <- 0L
+  b$pid <- Sys.getpid()
   class(b) <- "dpbudget"
   b
 }
@@ -198,6 +210,14 @@ print.dpbudget <- function(x, ...) {
 .morie_dp_charge <- function(budget, epsilon, delta = 0) {
   if (is.null(budget)) return(invisible())
   .morie_dp_check_budget(budget)
+  # the ledger lives in this process: a forked child spends from its own copy,
+  # which the parent never sees, so a fork could spend the whole budget again
+  if (!identical(budget$pid, Sys.getpid())) {
+    stop("a privacy budget cannot be spent from a forked worker or another ",
+         "R process: spend it in the process that created it, or give each ",
+         "worker its own budget and account for the total by composition; ",
+         "nothing was released.", call. = FALSE)
+  }
   tol <- 1e-12
   if (budget$spent_epsilon + epsilon > budget$epsilon + tol ||
       budget$spent_delta + delta > budget$delta + tol) {
@@ -264,8 +284,9 @@ dplapcnt <- function(truecnt, epsilon, budget = NULL) {
     truecnt != floor(truecnt)) {
     stop("`truecnt` must be a single non-negative integer.", call. = FALSE)
   }
-  # above 2^53 a double cannot carry the count and a unit of noise distinctly
-  if (truecnt > 2^53) {
+  # from 2^53 up a double cannot carry the count and a unit of noise distinctly
+  # (2^53 + 1 rounds back to 2^53)
+  if (truecnt >= 2^53) {
     stop("`truecnt` must not exceed 2^53: the noise would be lost in ",
          "the representation and the release would equal the true count.",
          call. = FALSE)
@@ -310,7 +331,7 @@ dplaphist <- function(counts, epsilon, budget = NULL) {
       call. = FALSE
     )
   }
-  if (any(counts > 2^53)) {
+  if (any(counts >= 2^53)) {
     stop("`counts` must not exceed 2^53: the noise would be lost in ",
          "the representation and the release would equal the true counts.",
          call. = FALSE)

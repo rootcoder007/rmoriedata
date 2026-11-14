@@ -24,6 +24,8 @@
 * `dplapcnt()`, `dplaphist()`, `dpgmean()` and `dpbudget()` refuse an infinite `epsilon` in words; `dplapcnt(5, Inf)` stopped with "missing value where TRUE/FALSE needed".
 * The signing test writes its XMSS used-index record to a temporary file, not to `~/.config/R/rmoriebricklayer`.
 * The vignette's reference to the integrity checks is no longer empty.
+* A privacy budget from `dpbudget()` cannot be spent from a forked worker or another R process: `dplapcnt()`, `dplaphist()` and `dpgmean()` refuse it there with an error. Four workers under `parallel::mclapply()` each spent 0.9 from one budget of 1 and the parent recorded nothing; give each worker its own budget and add up the epsilons.
+* `dplapcnt()` and `dplaphist()` refuse a count of 2^53 itself: 2^53 + 1 rounds back to 2^53, so the release could equal the truth.
 
 # rmoriedata 0.4.2
 

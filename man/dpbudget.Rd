@@ -23,6 +23,18 @@ budget add up, and a release that would exceed the budget is refused
 before any noise is drawn. A hundred releases at \code{epsilon = 1} spend
 \code{epsilon = 100}; a budget makes that visible and enforceable.
 }
+\details{
+A budget is an in-memory ledger held by the R process that created it.
+A forked worker (for example under \code{\link[parallel:mclapply]{parallel::mclapply()}} or
+\code{\link[parallel:mcparallel]{parallel::mcparallel()}}) gets its own copy, so its spending would never
+reach the parent and every worker could spend the whole budget again.
+A release charged to a budget from any process other than the one that
+created it is therefore refused with an error. Spend a budget in the
+process that created it; to release from workers, give each worker its
+own budget and account for the total yourself by composition (the
+epsilons and deltas of all workers add up). A budget saved and read
+back in another R session is refused in the same way.
+}
 \examples{
 b <- dpbudget(epsilon = 2)
 dplapcnt(42, epsilon = 1, budget = b)
