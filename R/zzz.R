@@ -25,6 +25,8 @@
   # Imports: alone does not do -- so load its namespace (triggering its
   # useDynLib + registration) before any C call.
   requireNamespace("rmoriebricklayer", quietly = TRUE)
+  # the session token of dpbudget(), drawn now so every budget of this load shares it
+  try(.morie_dp_token(), silent = TRUE)
 }
 
 .onAttach <- function(libname, pkgname) {

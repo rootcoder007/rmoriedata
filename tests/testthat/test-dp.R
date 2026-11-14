@@ -280,3 +280,93 @@ test_that("a budget cannot be spent from a forked worker", {
                                        error = conditionMessage))
   expect_true(startsWith(parallel::mccollect(job)[[1L]], msg))
 })
+
+test_that("a pure-DP budget refuses any delta, and the slack is relative", {
+  b <- dpbudget(epsilon = 1, delta = 0)
+  expect_error(dpgmean(runif(100), 0, 1, epsilon = 0.5, delta = 5e-13, budget = b),
+               "the budget is for pure DP (delta 0); nothing was released", fixed = TRUE)
+  expect_identical(dpspent(b)$releases, 0L)
+  b <- dpbudget(epsilon = 1e-13, delta = 1e-6)
+  expect_error(dpgmean(runif(100), 0, 1, epsilon = 1e-12, delta = 1e-7, budget = b),
+               "exceeds the remaining budget")
+  b <- dpbudget(epsilon = 1, delta = 1e-12)
+  expect_error(dpgmean(runif(100), 0, 1, epsilon = 0.5, delta = 2e-12, budget = b),
+               "exceeds the remaining budget")
+  expect_identical(dpspent(b)$releases, 0L)
+  # rounding still fits: ten releases of 0.1 in 1, then 0.1 and 0.2 in 0.3
+  b <- dpbudget(1)
+  for (i in 1:10) dplapcnt(5, 0.1, budget = b)
+  expect_identical(dpspent(b)$releases, 10L)
+  expect_error(dplapcnt(5, 0.1, budget = b), "exceeds the remaining budget")
+  b <- dpbudget(0.3)
+  dplapcnt(1, 0.1, budget = b)
+  expect_type(dplapcnt(1, 0.2, budget = b), "double")
+  # the rule itself: a spent budget pays for nothing, not even within the slack
+  expect_false(.morie_dp_fits(1, 1e-16, 1, 3))
+  expect_false(.morie_dp_fits(0, 1e-12, 1e-13, 0))
+  expect_false(.morie_dp_fits(0, 5e-13, 0, 0))
+  expect_true(.morie_dp_fits(0, 0, 0, 0))
+  expect_true(.morie_dp_fits(0.1, 0.2, 0.3, 1))
+  expect_true(.morie_dp_fits(0.1 * 9, 0.1, 1, 9))
+})
+
+test_that("a budget carries this load's token: same PID, other token is refused", {
+  msg <- "a privacy budget cannot be spent from a forked worker or another R process"
+  tok <- .morie_dp_token()
+  expect_match(tok, "^[0-9a-f]{32}$")
+  b <- dpbudget(1)
+  expect_identical(b$token, tok)
+  # what another session with the same PID would bring: its own token, or none
+  b$token <- paste(rev(strsplit(tok, "")[[1L]]), collapse = "")
+  expect_error(dplapcnt(10, 0.5, budget = b), msg, fixed = TRUE)
+  rm("token", envir = b)
+  expect_error(dplapcnt(10, 0.5, budget = b), msg, fixed = TRUE)
+  expect_identical(dpspent(b)$releases, 0L)
+  # the token comes from the OS, so it neither follows nor moves set.seed()
+  withr::defer(.morie_dp_rng$token <- tok)
+  set.seed(42)
+  .morie_dp_rng$token <- NULL
+  t1 <- .morie_dp_token()
+  u <- runif(1)
+  set.seed(42)
+  .morie_dp_rng$token <- NULL
+  t2 <- .morie_dp_token()
+  expect_identical(runif(1), u)
+  expect_false(identical(t1, t2))
+})
+
+test_that("a budget saved in one PID namespace is refused in another with the same PID", {
+  skip_on_cran()
+  skip_on_os(c("windows", "mac", "solaris"))
+  us <- Sys.which("unshare")
+  skip_if(!nzchar(us), "no unshare")
+  rs <- file.path(R.home("bin"), "Rscript")
+  env <- c("R_TESTS=", "R_ENVIRON_USER=/dev/null", "R_PROFILE_USER=/dev/null",
+           paste0("R_LIBS=", paste(.libPaths(), collapse = .Platform$path.sep)))
+  run <- function(code) {
+    suppressWarnings(system2(us, c("--user", "--pid", "--fork", "--mount-proc", rs,
+                                   "-e", shQuote(code)),
+                             stdout = TRUE, stderr = TRUE, env = env))
+  }
+  skip_if(!identical(run("cat(Sys.getpid())"), "1"),
+          "unprivileged user and PID namespaces are not available")
+  f <- withr::local_tempfile(fileext = ".rds")
+  a <- run(sprintf(paste0("suppressMessages(library(rmoriedata)); ",
+                          "saveRDS(dpbudget(1), \"%s\"); cat(Sys.getpid())"), f))
+  expect_identical(a, "1")
+  b <- run(sprintf(paste0("suppressMessages(library(rmoriedata)); b <- readRDS(\"%s\"); ",
+                          "r <- tryCatch({dplapcnt(10, 1, budget = b); \"RELEASED\"}, ",
+                          "error = function(e) \"refused\"); ",
+                          "cat(Sys.getpid(), b$pid, r, dpspent(b)$releases)"), f))
+  expect_identical(b, "1 1 refused 0")
+})
+
+test_that("an interrupted release stays charged, with nothing released", {
+  b <- dpbudget(2)
+  testthat::local_mocked_bindings(
+    .morie_dp_dlaplace1 = function(s, t) stop("interrupted while drawing")
+  )
+  expect_error(dplaphist(c(1, 2), 1, budget = b), "interrupted while drawing")
+  expect_identical(dpspent(b)$releases, 1L)
+  expect_equal(dpspent(b)$spent_epsilon, 1)
+})

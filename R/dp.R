@@ -145,7 +145,26 @@
 #' process that created it; to release from workers, give each worker its
 #' own budget and account for the total yourself by composition (the
 #' epsilons and deltas of all workers add up). A budget saved and read
-#' back in another R session is refused in the same way.
+#' back in another R session is refused in the same way, even one whose
+#' process has the same PID (in a container whose entrypoint is `Rscript`
+#' every session is PID 1): each budget carries a random token drawn from
+#' the operating system's CSPRNG when the package is loaded, and a release
+#' is charged only in the process, and the load of the package, that made
+#' the budget.
+#'
+#' A budget of `delta = 0` pays only for pure-DP releases: a release with
+#' any `delta > 0` is refused. The totals are compared with a slack for
+#' floating-point rounding only, so that ten releases at `epsilon = 0.1`
+#' fit a budget of 1: the slack is `(n + 2)` units in the last place of
+#' the larger of the budget and the total, `n` being the number of
+#' releases (below a millionth of a millionth of the budget for 4,000
+#' releases), and a release more than twice what remains is refused
+#' whatever the slack.
+#'
+#' A release is charged before its noise is drawn. If it is interrupted
+#' or fails after that, the budget stays charged though nothing was
+#' released: the safe side, since a release that went out uncharged would
+#' spend privacy the ledger does not show.
 #'
 #' @param epsilon Total epsilon available (positive).
 #' @param delta Total delta available (0 for pure DP only).
@@ -175,6 +194,7 @@ dpbudget <- function(epsilon, delta = 0) {
   b$spent_delta <- 0
   b$releases <- 0L
   b$pid <- Sys.getpid()
+  b$token <- .morie_dp_token()
   class(b) <- "dpbudget"
   b
 }
@@ -211,16 +231,22 @@ print.dpbudget <- function(x, ...) {
   if (is.null(budget)) return(invisible())
   .morie_dp_check_budget(budget)
   # the ledger lives in this process: a forked child spends from its own copy,
-  # which the parent never sees, so a fork could spend the whole budget again
-  if (!identical(budget$pid, Sys.getpid())) {
+  # which the parent never sees, so a fork could spend the whole budget again. A
+  # fork shares the token, so the PID tells it apart; another session can have the
+  # same PID (PID namespaces, reuse), so the token tells that apart.
+  if (!identical(budget$pid, Sys.getpid()) ||
+      !identical(budget$token, .morie_dp_token())) {
     stop("a privacy budget cannot be spent from a forked worker or another ",
          "R process: spend it in the process that created it, or give each ",
          "worker its own budget and account for the total by composition; ",
          "nothing was released.", call. = FALSE)
   }
-  tol <- 1e-12
-  if (budget$spent_epsilon + epsilon > budget$epsilon + tol ||
-      budget$spent_delta + delta > budget$delta + tol) {
+  if (budget$delta == 0 && delta > 0) {
+    stop(sprintf(paste0("this release has delta %.3g, and the budget is for pure DP ",
+                        "(delta 0); nothing was released."), delta), call. = FALSE)
+  }
+  if (!.morie_dp_fits(budget$spent_epsilon, epsilon, budget$epsilon, budget$releases) ||
+      !.morie_dp_fits(budget$spent_delta, delta, budget$delta, budget$releases)) {
     stop(sprintf(paste0("this release (epsilon %.4g, delta %.3g) exceeds the ",
                         "remaining budget (epsilon %.4g, delta %.3g); nothing was ",
                         "released."),
@@ -231,6 +257,31 @@ print.dpbudget <- function(x, ...) {
   budget$spent_delta <- budget$spent_delta + delta
   budget$releases <- budget$releases + 1L
   invisible()
+}
+
+# Whether `amount` fits in `total` once `spent` is charged. The slack covers rounding
+# only: each of the n releases and the total was rounded to a double once (half an
+# ulp each) and each addition to the running sum rounds once more, so (n + 2) ulps of
+# the larger of total and spent + amount bound the error, 2.2e-16 * (n + 2)
+# relative. An amount more than twice what remains is refused whatever the slack, so
+# a budget that is spent, or a tiny one, never pays for a multiple of what is left.
+.morie_dp_fits <- function(spent, amount, total, n) {
+  if (amount == 0) return(TRUE)
+  left <- total - spent
+  slack <- (n + 2) * .Machine$double.eps * max(total, spent + amount)
+  amount <= left + slack && amount <= 2 * left
+}
+
+# A random token for this load of the package, from the OS CSPRNG
+# (rmoriebricklayer::rndbytes()): drawn from R's generator it would follow
+# set.seed(), and two sessions seeded alike, or started alike in containers,
+# would share it. A forked worker inherits it with the namespace, which is why the
+# PID is checked as well.
+.morie_dp_token <- function() {
+  if (is.null(.morie_dp_rng$token)) {
+    .morie_dp_rng$token <- paste(as.character(.rmd_bl("rndbytes")(16L)), collapse = "")
+  }
+  .morie_dp_rng$token
 }
 
 .morie_dp_check_budget <- function(budget) {
