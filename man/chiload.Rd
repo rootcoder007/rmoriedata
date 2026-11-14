@@ -27,7 +27,13 @@ UTC; \code{date_iso} keeps the local time and offset.}
 large) instead of the bundled sample; a complete fetch is cached as
 Parquet (see Description). The result has the bundled sample's columns,
 in its order and with its types, derived from Socrata's export as the
-sample was.}
+sample was. Text in Socrata's export is read as decimal numbers only
+(hexadecimal, \code{Inf} and numbers past the double range are not
+numbers here); a value that does not fit its column becomes \code{NA},
+with one warning per column that counts such values and shows the first.
+A mirror's or the cache's file in the sample's own columns must fit
+exactly, and is refused otherwise with an error naming the column and
+the file.}
 
 \item{mirror}{Optional base URL of an r-universe/drat mirror, or a local
 directory, to try before Socrata (offline-friendly fallback). Defaults to

@@ -27,7 +27,13 @@
 #'   large) instead of the bundled sample; a complete fetch is cached as
 #'   Parquet (see Description). The result has the bundled sample's columns,
 #'   in its order and with its types, derived from Socrata's export as the
-#'   sample was.
+#'   sample was. Text in Socrata's export is read as decimal numbers only
+#'   (hexadecimal, \code{Inf} and numbers past the double range are not
+#'   numbers here); a value that does not fit its column becomes \code{NA},
+#'   with one warning per column that counts such values and shows the first.
+#'   A mirror's or the cache's file in the sample's own columns must fit
+#'   exactly, and is refused otherwise with an error naming the column and
+#'   the file.
 #' @param limit Optional row cap. For a \code{full = TRUE} fetch it is passed to
 #'   the Socrata \code{$limit} parameter (a bounded fetch skips the mirror
 #'   and is never written to the full-dataset cache); otherwise it keeps the
@@ -172,7 +178,16 @@ chiload <- function(type = c("arrests", "complaints"),
 # the sample's types: a mirror that stores `date` as text would otherwise hand back text.
 .rmd_shape <- function(raw, type) {
   want <- names(.rmd_sample(type))
-  if (identical(names(raw), want)) return(.rmd_retype(raw, .rmd_sample(type), type))
+  # where the frame came from, for the messages (.rmd_fetch_full() records it)
+  src <- attr(raw, "rmd_src")
+  attr(raw, "rmd_src") <- NULL
+  # a frame in the sample's columns is a copy written in this package's shape and
+  # must be exact; one in Socrata's raw columns is Socrata's export (live, or as a
+  # mirror or the cache keeps it), whose stray values become NA with a warning
+  if (identical(names(raw), want)) {
+    return(.rmd_retype(raw, .rmd_sample(type), type,
+                       src %||% sprintf("the mirror's %s_full.parquet", type)))
+  }
   n <- nrow(raw)
   pick <- function(...) {
     for (nm in c(...)) if (nm %in% names(raw)) return(as.character(raw[[nm]]))
@@ -208,17 +223,22 @@ chiload <- function(type = c("arrests", "complaints"),
       stringsAsFactors = FALSE
     )
   }
-  df <- .rmd_retype(df, .rmd_sample(type), type, "Socrata's export")
+  df <- .rmd_retype(df, .rmd_sample(type), type, src %||% "Socrata's export",
+                    lenient = TRUE)
   df$date_iso <- format(df$date, "%Y-%m-%dT%H:%M:%S%z")
   df
 }
 
 # Each column of `raw` coerced to the type of the same column of the sample `s`; a
-# column whose values do not all survive the coercion is an error naming it: a
-# value that would change (text "1.5" read as the integer 1, 2 as TRUE) is refused,
-# not rounded.
+# column whose values do not all survive the coercion is an error naming it and the
+# source: a value that would change (text "1.5" read as the integer 1, 2 as TRUE,
+# "0x1A" as 26, "1e400" as Inf) is refused, not rounded. In Socrata's export
+# (`lenient`), which the package cannot correct, such values are NA instead, with
+# one warning per column that counts them and shows the first: one stray value no
+# longer refuses a download of millions of rows.
 .rmd_retype <- function(raw, s, type,
-                        src = sprintf("the mirror's %s_full.parquet", type)) {
+                        src = sprintf("the mirror's %s_full.parquet", type),
+                        lenient = FALSE) {
   for (nm in names(s)) {
     x <- raw[[nm]]
     to <- s[[nm]]
@@ -235,10 +255,17 @@ chiload <- function(type = c("arrests", "complaints"),
         .rmd_exact(x, typeof(to))
       }
     ), error = function(e) NULL)
-    lost <- is.null(y) || length(y) != length(x) || any(is.na(y) & !is.na(x))
-    if (lost) {
+    shape <- is.null(y) || length(y) != length(x)
+    gone <- if (shape) TRUE else is.na(y) & !is.na(x)
+    if (shape || (any(gone) && !lenient)) {
       stop(sprintf("%s has a column `%s` that cannot be read as the sample's %s",
                    src, nm, class(to)[[1L]]), call. = FALSE)
+    }
+    if (any(gone)) {
+      warning(sprintf(paste0("%s has %d value(s) in column `%s` that cannot be read ",
+                             "as the sample's %s (the first: \"%s\"); they are NA"),
+                      src, sum(gone), nm, class(to)[[1L]],
+                      as.character(x[which(gone)[[1L]]])), call. = FALSE)
     }
     if (inherits(to, "POSIXct")) attr(y, "tzone") <- attr(to, "tzone")
     raw[[nm]] <- y
@@ -255,11 +282,24 @@ chiload <- function(type = c("arrests", "complaints"),
     if (is.character(x)) return(as.logical(x))
     return(ifelse(x %in% c(0, 1), x == 1, NA))
   }
-  d <- as.numeric(x)
+  # text is read as decimal only: as.numeric() also takes hexadecimal ("0x1A" is
+  # 26), "Inf" and numbers past the double range ("1e400" is Inf). No column of
+  # the samples holds an infinite value, so one is refused.
+  d <- if (is.character(x)) .rmd_decimal(x) else as.numeric(x)
+  d[!is.na(d) & !is.finite(d)] <- NA
   if (type == "double") return(d)
   ok <- !is.na(d) & d == trunc(d) & abs(d) <= .Machine$integer.max
   d[!ok] <- NA
   as.integer(d)
+}
+
+# Decimal text as numbers, NA for anything else (hexadecimal, Inf, NaN, words).
+.rmd_decimal <- function(x) {
+  t <- trimws(x)
+  ok <- !is.na(t) & grepl("^[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?$", t)
+  out <- rep(NA_real_, length(x))
+  out[ok] <- as.numeric(t[ok])
+  out
 }
 
 # ISO 8601 text as POSIXct. A time with an offset or "Z" is that instant (strptime
@@ -346,7 +386,10 @@ chiclr <- function() {
   cache <- file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))
   if (!bounded && !isTRUE(refresh) && file.exists(cache)) {
     df <- .rmd_cache_read(cache)
-    if (!is.null(df)) return(df)
+    if (!is.null(df)) {
+      attr(df, "rmd_src") <- sprintf("the cached %s", basename(cache))
+      return(df)
+    }
     unlink(c(cache, paste0(cache, ".sha256"))) # damaged or unverified: fetch again
   }
   # The service's own row count decides whether a response is the complete
@@ -388,7 +431,8 @@ chiclr <- function() {
       }
     )
     if (is.null(df)) {
-      why <- c(why, paste0(u, ": ", if (length(msg)) msg[[1L]] else "no response"))
+      why <- c(why, paste0(u, ": ",
+                           if (length(msg)) .rmd_why(msg[[1L]]) else "no response"))
       next
     }
     bad <- .rmd_full_reject(df, if (bounded) NA_real_ else expected)
@@ -400,6 +444,11 @@ chiclr <- function() {
     # complete one, so the data is returned but not written across
     # sessions: a bad day stays confined to this session.
     if (!bounded && !is.na(expected)) try(.rmd_cache_write(df, cache), silent = TRUE)
+    attr(df, "rmd_src") <- if (grepl("\\.parquet$", u)) {
+      sprintf("the mirror's %s (%s)", basename(u), u)
+    } else {
+      "Socrata's export"
+    }
     return(df)
   }
   stop("could not fetch full Chicago '", type,

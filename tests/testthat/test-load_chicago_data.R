@@ -287,13 +287,15 @@ test_that("a mirror URL is downloaded, checked against its .sha256 and used", {
     .rmd_full_url = function(type, n) "file:///nonexistent/socrata.csv"
   )
   got <- .rmd_fetch_full("arrests", "https://mirror.example.test/cran/")
-  expect_identical(got, served)
+  # the frame carries where it came from, for chiload()'s messages
+  expect_match(attr(got, "rmd_src"), "^the mirror's arrests_full.parquet \\(https://")
+  expect_identical(got, served, ignore_attr = "rmd_src")
   u <- "https://mirror.example.test/cran/arrests_full.parquet"
   expect_identical(st$urls, c(u, paste0(u, ".sha256")))
   # no .sha256 beside it: used as it is
   st$sha <- NULL
   expect_identical(.rmd_fetch_full("arrests", "https://mirror.example.test/cran",
-                                   refresh = TRUE), served)
+                                   refresh = TRUE), served, ignore_attr = "rmd_src")
   # a digest that does not match: the mirror is skipped and Socrata asked
   st$sha <- strrep("0", 64)
   testthat::local_mocked_bindings(.rmd_full_url = function(type, n) {
@@ -400,13 +402,15 @@ test_that("an offset time is that instant; a value that does not fit is refused"
   refused("date", date = "2024-06-01T10:00:00+25:00")
   refused("date", date = "2024-02-30T10:00:00")
   refused("date", date = "2024-06-01")
-  # Socrata's export goes the same way: an empty field is NA, a stray value an error
+  # in Socrata's export an empty field is NA, and so is a stray value, with a warning
+  # that names the column: one bad value does not refuse the whole download
   raw <- raw_complaints()
   raw$ward[1L] <- "27.5"
   testthat::local_mocked_bindings(.rmd_fetch_full = function(...) raw)
-  expect_error(chiload("complaints", full = TRUE),
-               "Socrata's export has a column `ward` that cannot be read as",
-               fixed = TRUE)
+  expect_warning(got <- chiload("complaints", full = TRUE),
+                 "Socrata's export has 1 value(s) in column `ward` that cannot be read",
+                 fixed = TRUE)
+  expect_identical(got$ward, c(NA_integer_, NA_integer_))
   raw <- raw_complaints()
   raw$date[2L] <- "2026-01-05T06:00:00Z"
   raw$arrest[2L] <- ""
@@ -414,4 +418,54 @@ test_that("an offset time is that instant; a value that does not fit is refused"
   got <- chiload("complaints", full = TRUE)
   expect_identical(got$date_iso[2L], "2026-01-05T00:00:00-0600")
   expect_identical(got$arrest, c(FALSE, NA))
+})
+
+test_that("text is read as decimal only, finite, and errors name the source (N12)", {
+  expect_identical(.rmd_exact(c("0x1A", "26", " 7 ", "+3", "1e3"), "integer"),
+                   c(NA, 26L, 7L, 3L, 1000L))
+  expect_identical(.rmd_exact(c("1e400", "Inf", "-inf", "NaN", "0x10", "41.5", ".5"),
+                              "double"), c(NA, NA, NA, NA, NA, 41.5, 0.5))
+  expect_identical(.rmd_exact(c(Inf, 2), "double"), c(NA, 2))
+  s <- data.frame(beat = 1L, latitude = 41.5)
+  r <- function(...) {
+    .rmd_retype(data.frame(..., stringsAsFactors = FALSE), s, "complaints")
+  }
+  expect_error(r(beat = "0x1A", latitude = "1"), "column `beat`")
+  expect_error(r(beat = "1", latitude = "1e400"), "column `latitude`")
+  expect_error(r(beat = "1", latitude = "Inf"), "column `latitude`")
+  # a mirror's file in Socrata's raw columns is named as the mirror, not as Socrata
+  raw <- raw_complaints()
+  raw$beat[1L] <- "x"
+  attr(raw, "rmd_src") <- "the mirror's complaints_full.parquet (/m/x.parquet)"
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) raw)
+  expect_warning(chiload("complaints", full = TRUE),
+                 "the mirror's complaints_full.parquet (/m/x.parquet) has 1 value",
+                 fixed = TRUE)
+  # and one in the sample's columns is refused, naming the file it came from
+  s3 <- chiload("complaints", limit = 2)
+  s3$beat <- c("x", "1")
+  attr(s3, "rmd_src") <- "the cached complaints_full.parquet"
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) s3)
+  expect_error(chiload("complaints", full = TRUE),
+               "the cached complaints_full.parquet has a column `beat`", fixed = TRUE)
+})
+
+test_that("a stray value in a live export no longer refuses the download (lead 3)", {
+  # an export served as a file, through the same reader a live one goes through
+  raw <- raw_complaints()
+  raw$latitude[1L] <- "N/A"
+  f <- withr::local_tempfile(fileext = ".csv")
+  utils::write.csv(raw, f, row.names = FALSE)
+  testthat::local_mocked_bindings(
+    .rmd_full_count_or_na = function(type) NA_real_,
+    .rmd_full_url = function(type, n) f)
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  expect_warning(got <- chiload("complaints", full = TRUE),
+                 paste("Socrata's export has 1 value(s) in column `latitude` that",
+                       "cannot be read as the sample's numeric (the first: \"N/A\");",
+                       "they are NA"),
+                 fixed = TRUE)
+  expect_identical(nrow(got), 2L)
+  expect_identical(got$latitude, c(NA_real_, NA_real_))
+  expect_identical(got$beat, c(1225L, 2223L))
 })
