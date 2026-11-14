@@ -167,9 +167,35 @@ test_that("NaN survives, and frames Parquet cannot hold are refused in words", {
                "column .r. is of type raw")
   expect_error(morie_write_parquet(data.frame(t = as.difftime(1:2, units = "mins")), f),
                "column .t. is of type difftime")
+  m <- data.frame(id = 1:2)
+  m$m <- matrix(1:4, 2)
+  expect_error(morie_write_parquet(m, f), "column .m. is a matrix or array column")
+  m <- data.frame(id = 1:2)
+  m$d <- data.frame(u = 1:2, v = 3:4)
+  expect_error(morie_write_parquet(m, f), "column .d. is a data frame column")
+  i64 <- data.frame(b = structure(c(1, 2), class = "integer64"))
+  expect_error(morie_write_parquet(i64, f), "column .b. is of type integer64")
+  inf <- data.frame(d = structure(c(1, Inf), class = "Date"))
+  expect_error(morie_write_parquet(inf, f), "column .d. has a Date outside the range")
+  expect_error(morie_write_parquet(data.frame(t = .POSIXct(c(0, -Inf), tz = "UTC")), f),
+               "column .t. has a time that is infinite")
   expect_false(file.exists(f))
   expect_error(morie_read_parquet(file.path(tempdir(), "no-such.parquet")),
                "^parquet: no such file: ")
   writeBin(charToRaw("hello"), f)
   expect_error(morie_read_parquet(f), "^parquet: not a parquet file: ")
+})
+
+test_that("Dates and times before 1970 or with fractions keep the day and second", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  d <- structure(c(-0.5, -1, -1.5, 0.5, 19000.75, -719528.25), class = "Date")
+  morie_write_parquet(data.frame(d = d), f)
+  expect_identical(format(morie_read_parquet(f)$d), format(d))
+  expect_identical(as.numeric(morie_read_parquet(f)$d), floor(unclass(d)))
+  tt <- .POSIXct(c(-0.0004, -0.5, -1.25, 0.9996, 1.0005, -86400.0001, 1e9 + 0.123),
+                 tz = "UTC")
+  morie_write_parquet(data.frame(t = tt), f)
+  back <- morie_read_parquet(f)$t
+  expect_identical(format(back, "%Y-%m-%d %H:%M:%S"), format(tt, "%Y-%m-%d %H:%M:%S"))
+  expect_identical(as.numeric(back) * 1000, floor(as.numeric(tt) * 1000))
 })

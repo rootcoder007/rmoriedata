@@ -964,18 +964,37 @@ morie_read_parquet <- function(path, columns = NULL) {
 # ----------------------------------------------------------------- write
 
 .pq_infer <- function(v, name = "a column") {
+  # a matrix column holds several values per row: written flat it had more values
+  # than rows, which other readers cut short without a word
+  if (!is.null(dim(v))) {
+    stop("column ", sQuote(name), " is a ",
+         if (is.data.frame(v)) "data frame" else "matrix or array",
+         " column, with more than one value per row, which Parquet as written here ",
+         "cannot hold; split it into one column per value first.", call. = FALSE)
+  }
   # Date and POSIXct must keep their logical type on the way out.
   # Without this a column read as TIMESTAMP_MICROS was written back as a
   # bare DOUBLE of seconds: readable, but no longer a timestamp to any
   # other engine, and off by a factor of 1e6 from where it started.
   if (inherits(v, "Date")) {
+    if (any(abs(floor(unclass(v))) > .Machine$integer.max, na.rm = TRUE)) {
+      stop("column ", sQuote(name), " has a Date outside the range a Parquet DATE ",
+           "holds (2^31 days either side of 1970-01-01).", call. = FALSE)
+    }
     return(list(type = .pqInt32, converted = .pqCtDate))
   }
   if (inherits(v, "POSIXct")) {
+    if (any(abs(floor(as.numeric(v) * 1000)) >= 2^63, na.rm = TRUE)) {
+      stop("column ", sQuote(name), " has a time that is infinite or outside the ",
+           "range a Parquet TIMESTAMP holds (2^63 milliseconds either side of 1970).",
+           call. = FALSE)
+    }
     return(list(type = .pqInt64, converted = .pqCtTsMillis))
   }
   # written as text these would read back as a different type: refused, not converted
-  if (is.list(v) || is.complex(v) || is.raw(v) || inherits(v, "difftime")) {
+  # an integer64's bits are not a double's value: written as a DOUBLE it read back wrong
+  if (is.list(v) || is.complex(v) || is.raw(v) ||
+        inherits(v, c("difftime", "integer64"))) {
     stop("column ", sQuote(name), " is of type ",
          if (is.object(v)) class(v)[[1L]] else typeof(v),
          ", which Parquet as written here cannot hold; convert it first (for ",
@@ -993,12 +1012,16 @@ morie_read_parquet <- function(path, columns = NULL) {
   list(type = .pqByteArray, converted = .pqCtUtf8)
 }
 
+# Down to whole days and whole milliseconds, as R prints them: as.integer() cut
+# Date(-0.5), which prints as 1969-12-31, to day 0 (1970-01-01), and rounding moved
+# 23:59:59.9996 to the next day.
+# (.pq_infer() has refused values outside the range of either)
 .pq_prep_write <- function(v, inf) {
   if (inherits(v, "Date")) {
-    return(as.integer(unclass(v)))
+    return(as.integer(floor(unclass(v))))
   }
   if (inherits(v, "POSIXct")) {
-    return(round(as.numeric(v) * 1000))
+    return(floor(as.numeric(v) * 1000))
   }
   v
 }
@@ -1087,16 +1110,20 @@ morie_read_parquet <- function(path, columns = NULL) {
 #' OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.
 #'
 #' @param df A `data.frame` with at least one column. Factor columns are
-#'   written as character; list, complex, raw and `difftime` columns are
-#'   refused with an error naming the column. `NaN` in a numeric column is
+#'   written as character; list, complex, raw, `difftime`, `integer64`,
+#'   matrix and data frame columns are refused with an error naming the
+#'   column. `NaN` in a numeric column is
 #'   kept as `NaN`. Every string must be valid UTF-8 (marked, or unmarked in
 #'   UTF-8 bytes), and column names must be unique.
 #' @param path Destination path.
 #' @param compression `"gzip"` (default; zlib level 9), `"snappy"`, or `NULL`
 #'   for uncompressed pages.
-#' @details A `POSIXct` column is written as a Parquet TIMESTAMP (milliseconds
-#'   since 1970-01-01 UTC). The format stores the instant but not a time zone,
-#'   so it reads back as the same instant in UTC: a column in
+#' @details A `Date` column is written as a Parquet DATE (whole days) and a
+#'   `POSIXct` column as a Parquet TIMESTAMP (whole milliseconds since
+#'   1970-01-01 UTC), each taken down to the whole day or millisecond as R
+#'   prints them, before 1970 too: a fractional `Date` of -0.5 (printed
+#'   1969-12-31) is written as 1969-12-31. The format stores the instant
+#'   but not a time zone, so it reads back as the same instant in UTC: a column in
 #'   `America/Chicago` comes back with `tz = "UTC"`. Set the zone again with
 #'   `attr(x, "tzone") <- "America/Chicago"`, or keep an ISO 8601 text column
 #'   beside it, as `chiload()`'s `date_iso` does.
@@ -1153,6 +1180,12 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
       .pq_encode_levels(defs, 1L),
       .pq_encode_plain(present, inf$type, names_[k])
     )
+    # page sizes are 32-bit in the page header (and the codecs take no more)
+    if (length(body) > .Machine$integer.max) {
+      stop("column ", sQuote(names_[k]), " needs a page of more than the 2^31 - 1 ",
+           "bytes a Parquet page header can state; write the table in smaller ",
+           "pieces.", call. = FALSE)
+    }
     payload <- switch(as.character(codec),
                       "1" = .pq_snappy_compress(body),
                       "2" = .Call(C_rmd_gzip_compress, body),

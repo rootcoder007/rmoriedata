@@ -8,8 +8,9 @@ morie_write_parquet(df, path, compression = "gzip")
 }
 \arguments{
 \item{df}{A \code{data.frame} with at least one column. Factor columns are
-written as character; list, complex, raw and \code{difftime} columns are
-refused with an error naming the column. \code{NaN} in a numeric column is
+written as character; list, complex, raw, \code{difftime}, \code{integer64},
+matrix and data frame columns are refused with an error naming the
+column. \code{NaN} in a numeric column is
 kept as \code{NaN}. Every string must be valid UTF-8 (marked, or unmarked in
 UTF-8 bytes), and column names must be unique.}
 
@@ -26,9 +27,12 @@ Native Parquet writer: single row group, PLAIN encoding, all columns
 OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.
 }
 \details{
-A \code{POSIXct} column is written as a Parquet TIMESTAMP (milliseconds
-since 1970-01-01 UTC). The format stores the instant but not a time zone,
-so it reads back as the same instant in UTC: a column in
+A \code{Date} column is written as a Parquet DATE (whole days) and a
+\code{POSIXct} column as a Parquet TIMESTAMP (whole milliseconds since
+1970-01-01 UTC), each taken down to the whole day or millisecond as R
+prints them, before 1970 too: a fractional \code{Date} of -0.5 (printed
+1969-12-31) is written as 1969-12-31. The format stores the instant
+but not a time zone, so it reads back as the same instant in UTC: a column in
 \code{America/Chicago} comes back with \code{tz = "UTC"}. Set the zone again with
 \code{attr(x, "tzone") <- "America/Chicago"}, or keep an ISO 8601 text column
 beside it, as \code{chiload()}'s \code{date_iso} does.
