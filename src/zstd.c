@@ -48,7 +48,7 @@ enum {
     ZS_OK = 0, ZS_E_TRUNC, ZS_E_MAGIC, ZS_E_RESERVED, ZS_E_DICT, ZS_E_WINDOW,
     ZS_E_FCS, ZS_E_SIZE, ZS_E_CHECKSUM, ZS_E_BLOCKTYPE, ZS_E_BLOCKSIZE,
     ZS_E_LITERALS, ZS_E_HUFTABLE, ZS_E_HUFSTREAM, ZS_E_FSE, ZS_E_SEQ,
-    ZS_E_OFFSET, ZS_E_NOTABLE, ZS_E_EMPTY, ZS_E_N
+    ZS_E_OFFSET, ZS_E_NOTABLE, ZS_E_EMPTY, ZS_E_TRAIL, ZS_E_N
 };
 
 static const char *const zs_msgs[ZS_E_N] = {
@@ -70,7 +70,8 @@ static const char *const zs_msgs[ZS_E_N] = {
     "corrupt sequences section",
     "a match offset is beyond the window or before the start of the output",
     "a repeat or treeless mode has no earlier table",
-    "the input holds no frame"
+    "the input holds no frame",
+    "bytes after the last frame are not a frame"
 };
 
 static const char *zs_errmsg(int rc) {
@@ -521,7 +522,6 @@ static int zs_sequences(zs_work *w, const uint8_t *p, size_t n, const uint8_t *l
     uint8_t m;
     if (n < 1) return ZS_E_SEQ;
     if (p[0] == 0) {
-        if (n != 1) return ZS_E_SEQ;
         nseq = 0;
         ZS_T(ZT_SEQ_NONE);
     } else if (p[0] < 128) {
@@ -537,6 +537,9 @@ static int zs_sequences(zs_work *w, const uint8_t *p, size_t n, const uint8_t *l
         pos = 3;
         ZS_T(ZT_NSEQ3);
     }
+    /* no sequences: the section ends there, in either form of the count (0x00, or
+     * 0x80 0x00), as in libzstd; bytes after it are not part of the block */
+    if (nseq == 0 && pos != n) return ZS_E_SEQ;
     if (nseq > 0) {
         if (pos >= n) return ZS_E_SEQ;
         m = p[pos++];
@@ -796,6 +799,18 @@ static int zs_frame(zs_work *w, const uint8_t *src, size_t n, size_t *ip, zs_out
     return ZS_OK;
 }
 
+/* Whether the k < 4 bytes at p are the start of a frame's or a skippable frame's magic. */
+static int zs_magic_prefix(const uint8_t *p, size_t k) {
+    static const uint8_t zm[3] = {0x28, 0xB5, 0x2F}, sm[3] = {0x50, 0x2A, 0x4D};
+    size_t i;
+    int z = 1, s = 1;
+    for (i = 0; i < k; i++) {
+        if (p[i] != zm[i]) z = 0;
+        if ((i == 0 ? (p[i] & 0xF0) : p[i]) != sm[i]) s = 0;
+    }
+    return z || s;
+}
+
 /* Decompress all frames of src into dst, which must come out exactly cap
  * bytes long. work points at sizeof(zs_work) bytes, suitably aligned. */
 static int zs_decompress(const uint8_t *src, size_t n, uint8_t *dst, size_t cap, void *work) {
@@ -810,7 +825,8 @@ static int zs_decompress(const uint8_t *src, size_t n, uint8_t *dst, size_t cap,
     o.window = 0;
     while (ip < n) {
         uint32_t magic;
-        if (n - ip < 4) return ZS_E_TRUNC;
+        /* after a frame, 1 to 3 bytes are trailing data unless they begin a magic number */
+        if (n - ip < 4) return ip > 0 && !zs_magic_prefix(src + ip, n - ip) ? ZS_E_TRAIL : ZS_E_TRUNC;
         magic = (uint32_t) zs_le(src + ip, 4);
         if ((magic & 0xFFFFFFF0u) == 0x184D2A50u) {
             uint64_t sz;
@@ -850,6 +866,9 @@ SEXP C_rmd_zstd_decompress(SEXP x, SEXP size) {
     if (want > n * 32768.0 || want > 4503599627370496.0)
         Rf_error("zstd: page states %.0f bytes, more than %.0f compressed bytes can hold",
                  want, n);
+    /* before the cast: where R_xlen_t is 32 bits, a larger size is undefined behaviour */
+    if (want > (double) R_XLEN_T_MAX)
+        Rf_error("zstd: page states %.0f bytes, more than this R can allocate", want);
     out = PROTECT(allocVector(RAWSXP, (R_xlen_t) want));
     work = R_alloc(sizeof(zs_work), 1);
     rc = zs_decompress(RAW(x), (size_t) XLENGTH(x), RAW(out), (size_t) want, work);

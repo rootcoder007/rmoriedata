@@ -114,7 +114,28 @@ test_that("damaged and unsupported frames are refused in words", {
   expect_error(zdec(bad, zsize("short.zst")), "checksum mismatch")
   # garbage after the last frame
   expect_error(zdec(c(hello, charToRaw("junk")), 5), "bad magic number")
-  expect_error(zdec(c(hello, hx(1, 2)), 5), "truncated")
+  expect_error(zdec(c(hello, hx(1, 2)), 5), "bytes after the last frame are not a frame")
+  for (k in 1:3) {
+    expect_error(zdec(c(hello, charToRaw("junk")[seq_len(k)]), 5), "after the last frame",
+                 info = k)
+    # the start of another frame's magic number is a frame cut short
+    expect_error(zdec(c(hello, magic[seq_len(k)]), 5), "truncated", info = k)
+    skm <- hx(0x5a, 0x2a, 0x4d)[seq_len(k)]
+    expect_error(zdec(c(hello, skm), 5), "truncated", info = k)
+  }
+  expect_error(zdec(hx(1, 2), 5), "truncated")
+  # the audit's frames: trailing data after a frame (1 byte), and a compressed block
+  # whose sequence count of 0 is written in the 2-byte form (0x80 0x00) with 4 junk bytes
+  # after it, which libzstd refuses and which once decoded as "hello"
+  trail <- hx(0x28, 0xb5, 0x2f, 0xfd, 0x20, 0x01, 0x09, 0x00, 0x00, 0x41, 0x00)
+  expect_error(zdec(trail, 1), "after the last frame")
+  nseq0 <- hx(0x28, 0xb5, 0x2f, 0xfd, 0x00, 0x00, 0x65, 0x00, 0x00, 0x28, 0x68, 0x65,
+              0x6c, 0x6c, 0x6f, 0x80, 0x00, 0x4a, 0x55, 0x4e, 0x4b)
+  expect_error(zdec(nseq0, 5), "sequences section")
+  # the same block with the count in the 2-byte form and nothing after it decodes
+  ok <- nseq0[1:17]
+  ok[7] <- as.raw(0x45)
+  expect_identical(rawToChar(zdec(ok, 5)), "hello")
 })
 
 test_that("corrupt Huffman, FSE and sequence data is refused in words", {

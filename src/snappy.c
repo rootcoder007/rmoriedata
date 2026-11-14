@@ -58,6 +58,9 @@ SEXP C_rmd_snappy_compress(SEXP x) {
     if (TYPEOF(x) != RAWSXP) Rf_error("snappy: expected a raw vector");
     const unsigned char *src = RAW(x);
     size_t n = (size_t) XLENGTH(x);
+    /* the stream starts with the length, which a decoder reads as 32 bits */
+    if ((double) n > 4294967295.0)
+        Rf_error("snappy: a page of %.0f bytes is more than a Snappy stream can state", (double) n);
     /* worst case: varint + literals with a 3-byte header per 64 KiB + slack */
     size_t cap = 32 + n + n / 6 + 16;
     unsigned char *buf = (unsigned char *) R_alloc(cap, 1);
@@ -91,6 +94,7 @@ SEXP C_rmd_snappy_compress(SEXP x) {
         if (next_emit < blen) op = snp_literal(op, b + next_emit, blen - next_emit);
     }
     size_t outn = (size_t) (op - buf);
+    if ((double) outn > (double) R_XLEN_T_MAX) Rf_error("snappy: the compressed page is more than this R can allocate");
     SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) outn));
     memcpy(RAW(out), buf, outn);
     UNPROTECT(1);
@@ -114,6 +118,9 @@ SEXP C_rmd_snappy_decompress(SEXP x) {
     if (n > 0xFFFFFFFFu || n > room * 64 / 3 + 64)
         Rf_error("snappy: expected %llu bytes, more than %llu compressed bytes can hold",
                  (unsigned long long) n, (unsigned long long) room);
+    /* before the cast: where R_xlen_t is 32 bits, a larger size is undefined behaviour */
+    if ((double) n > (double) R_XLEN_T_MAX)
+        Rf_error("snappy: expected %llu bytes, more than this R can allocate", (unsigned long long) n);
     SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) n));
     unsigned char *o = RAW(out);
     uint64_t pos = 0;
