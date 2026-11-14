@@ -168,10 +168,11 @@ chiload <- function(type = c("arrests", "complaints"),
 
 # The bundled sample's columns, in its order and types, from the raw Socrata
 # export, as data-raw/arrest_sample.R and data-raw/complaint_sample.R derive them.
-# A frame already in that shape (a mirror that serves it) is returned as it is.
+# A frame that already has the sample's columns (a mirror that serves them) is given
+# the sample's types: a mirror that stores `date` as text would otherwise hand back text.
 .rmd_shape <- function(raw, type) {
   want <- names(.rmd_sample(type))
-  if (identical(names(raw), want)) return(raw)
+  if (identical(names(raw), want)) return(.rmd_retype(raw, .rmd_sample(type), type))
   n <- nrow(raw)
   pick <- function(...) {
     for (nm in c(...)) if (nm %in% names(raw)) return(as.character(raw[[nm]]))
@@ -207,13 +208,49 @@ chiload <- function(type = c("arrests", "complaints"),
   }
 }
 
+# Each column of `raw` coerced to the type of the same column of the sample `s`; a
+# column whose values do not all survive the coercion is an error naming it.
+.rmd_retype <- function(raw, s, type) {
+  for (nm in names(s)) {
+    x <- raw[[nm]]
+    to <- s[[nm]]
+    y <- tryCatch(suppressWarnings(
+      if (inherits(to, "POSIXct")) {
+        if (inherits(x, "POSIXct")) {
+          x
+        } else if (is.character(x)) {
+          as.POSIXct(x, tz = "America/Chicago",
+                     tryFormats = c("%Y-%m-%dT%H:%M:%OS", "%Y-%m-%d %H:%M:%OS"))
+        }
+      } else if (is.character(to)) {
+        if (is.atomic(x)) as.character(x)
+      } else if (is.atomic(x) && !is.object(x)) {
+        switch(typeof(to), integer = as.integer(x), double = as.numeric(x),
+               logical = as.logical(x))
+      }
+    ), error = function(e) NULL)
+    lost <- is.null(y) || length(y) != length(x) || any(is.na(y) & !is.na(x)) ||
+      (is.integer(to) && is.numeric(x) && any(y != x, na.rm = TRUE))
+    if (lost) {
+      stop(sprintf(paste0("the mirror's %s_full.parquet has a column `%s` that cannot ",
+                          "be read as the sample's %s"),
+                   type, nm, class(to)[[1L]]), call. = FALSE)
+    }
+    if (inherits(to, "POSIXct")) attr(y, "tzone") <- attr(to, "tzone")
+    raw[[nm]] <- y
+  }
+  raw
+}
+
 #' Clear the cache of full Chicago datasets
 #'
 #' Deletes the Parquet files that \code{chiload(full = TRUE)}
 #' wrote to the cache directory (\code{tempdir()} by default, or the
 #' directory named in \code{options(rmoriedata.cache_dir = )}): the
-#' \code{<type>_full.parquet} files, their checksum files and any
-#' unfinished write. Nothing else in that directory is touched.
+#' \code{arrests_full.parquet} and \code{complaints_full.parquet} files,
+#' their \code{.sha256} checksum files and any unfinished write
+#' (\code{write-*.parquet} and its \code{.sha256}). Nothing else in that
+#' directory is touched.
 #'
 #' @return The cache directory, invisibly.
 #' @examples
@@ -223,7 +260,9 @@ chiclr <- function() {
   d <- .rmd_cache_dir()
   # only what chiload() wrote: the directory is the user's, and the hosted tables
   # are cached under it too
-  mine <- list.files(d, pattern = "_full\\.parquet(\\.sha256)?$|^write-.*\\.parquet$",
+  own <- paste0("^(arrests|complaints)_full\\.parquet(\\.sha256)?$",
+                "|^write-.*\\.parquet(\\.sha256)?$")
+  mine <- list.files(d, pattern = own,
                      full.names = TRUE, all.files = TRUE)
   unlink(mine[!dir.exists(mine)])
   invisible(d)

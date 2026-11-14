@@ -110,8 +110,9 @@ siuload <- function(lang = c("all", "en", "fr"),
   as <- match.arg(as)
   format <- match.arg(format)
   rel <- "siu_directors_reports.csv.gz"
-  path <- system.file("extdata", rel, package = "rmoriedata")
-  if (!nzchar(path)) {
+  # the store the signed manifest is checked against, which is the one read
+  path <- file.path(.rmoriedata_extdata(), rel)
+  if (!file.exists(path)) {
     stop("bundled SIU director's-report corpus not found in rmoriedata",
       call. = FALSE
     )

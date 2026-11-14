@@ -21,8 +21,19 @@ against the manifest; this function checks all of them at once.
 }
 \details{
 A file present in the installed store but absent from the manifest is
-reported too, as a row with \code{listed = FALSE} and \code{ok = FALSE}: a file
-added to the store is as much a change as a file altered in it.
+reported too, hidden (dot) files included, as a row with
+\code{listed = FALSE} and \code{ok = FALSE}: a file added to the store is as much
+a change as a file altered in it.
+
+What is covered: every file under the package's \code{extdata} directory (or
+the directory named by \code{options(rmoriedata.store = )}), which holds
+every table, dictionary, catalog and Parquet copy that \code{\link[=mdload]{mdload()}},
+\code{\link[=mdpath]{mdpath()}}, \code{\link[=mddict]{mddict()}}, \code{\link[=siuload]{siuload()}} and \code{\link[=cihitbls]{cihitbls()}} read. What is not
+covered: the package's R code, its compiled code, and the two lazy-data
+objects \link{complaint_sample} and \link{arrest_sample} (stored in the package's
+\code{data} database, not in \code{extdata}); these are installed files of the
+package itself, which \code{tools::checkMD5sums("rmoriedata")} checks
+against the \code{MD5} file of a CRAN install.
 }
 \examples{
 v <- mdverify()

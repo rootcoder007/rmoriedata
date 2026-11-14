@@ -61,3 +61,20 @@ test_that("attaching with rmoriebricklayer older than 1.0.0 says what to update"
   local_mocked_bindings(.rmd_bl_note = function(v) NULL)
   expect_silent(.onAttach("", "rmoriedata"))
 })
+
+test_that("an implausible table size in the manifest is refused before any part", {
+  dir <- withr::local_tempdir()
+  local_mocked_bindings(.rmd_data_cache_dir = function() dir,
+                        .rmd_data_url = function() "https://data.example.test",
+                        .rmd_dl = function(...) stop("no request expected"))
+  man <- file.path(dir, "manifest.json")
+  for (v in c("1e17", "-5", "0", "1.5", "\"big\"", "[1, 2]")) {
+    writeLines(paste0("{\"datasets\": [{\"key\": \"db/t\", \"bytes_gz\": ", v, "}]}"),
+               man)
+    expect_error(.rmd_data_get("/db/t.csv.gz", tempfile()),
+                 "which is not a whole number from 1 to 2^40 (1 TiB)", fixed = TRUE,
+                 info = v)
+  }
+  writeLines('{"datasets": [{"key": "db/t", "bytes_gz": 1099511627776}]}', man)
+  expect_identical(.rmd_hosted_size("/db/t.csv.gz"), 2^40)
+})

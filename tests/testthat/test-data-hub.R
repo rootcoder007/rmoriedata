@@ -408,3 +408,16 @@ test_that("a damaged cached manifest is fetched again, once, and says so", {
   expect_error(hostcat(refresh = TRUE),
                "data.rmorie.com sent a manifest that could not be read")
 })
+
+test_that("hostload checks refresh as hostcat does, before any request", {
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(...) stop("no request expected"),
+    .rmd_manifest_entry = function(...) stop("no manifest expected"))
+  for (bad in list(NA, "yes", NULL, c(TRUE, FALSE), 1)) {
+    expect_error(hostload("db/t", refresh = bad), "`refresh` must be TRUE or FALSE",
+                 fixed = TRUE)
+    expect_error(hostcat(refresh = bad), "`refresh` must be TRUE or FALSE", fixed = TRUE)
+    expect_error(mdload("arsau_2023_uof_main_records", refresh = bad),
+                 "`refresh` must be TRUE or FALSE.", fixed = TRUE)
+  }
+})

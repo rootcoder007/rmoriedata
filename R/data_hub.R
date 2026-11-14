@@ -43,8 +43,27 @@
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
   m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE),
                 error = function(e) NULL)
-  for (d in m[["datasets"]]) if (identical(d[["key"]], key)) return(d[["bytes_gz"]])
+  for (d in m[["datasets"]]) {
+    if (identical(d[["key"]], key)) return(.rmd_size_ok(d[["bytes_gz"]], key))
+  }
   NULL
+}
+
+# The largest table size believed from a manifest (1 TiB): a size past it, or one that
+# is not a positive whole number, is a damaged manifest, not a plan for 10^9 parts.
+.rmd_size_cap <- 2^40
+
+.rmd_size_ok <- function(v, key) {
+  if (is.null(v)) return(NULL)
+  if (!(is.numeric(v) && length(v) == 1L && is.finite(v) && v >= 1 &&
+        v == floor(v) && v <= .rmd_size_cap)) {
+    stop(sprintf(paste0("the manifest of data.rmorie.com gives %s a size of %s bytes, ",
+                        "which is not a whole number from 1 to 2^40 (1 TiB); the ",
+                        "manifest is damaged: try again later, or run ",
+                        "hostcat(refresh = TRUE)"),
+                 key, paste(format(v), collapse = " ")), call. = FALSE)
+  }
+  v
 }
 
 # The SHA-256 the manifest lists for a table (NA when it lists none, NULL when the table
@@ -375,6 +394,9 @@ hostcat <- function(refresh = FALSE) {
 #' @rdname hostcat
 #' @export
 hostload <- function(key, refresh = FALSE) {
+  if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
+    stop("`refresh` must be TRUE or FALSE", call. = FALSE)
+  }
   ok <- is.character(key) && length(key) == 1L && grepl("/", key, fixed = TRUE) &&
     !startsWith(key, "/") && !endsWith(key, "/")
   if (!ok) {

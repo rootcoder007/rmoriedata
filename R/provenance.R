@@ -35,7 +35,8 @@
 #' }
 #' @export
 mdsums <- function() {
-  dir <- system.file("extdata", package = "rmoriedata")
+  # the store the manifest is read from (options(rmoriedata.store = ) or the install)
+  dir <- tryCatch(.rmoriedata_extdata(), error = function(e) "")
   empty <- data.frame(
     path = character(), file = character(), bytes = numeric(),
     sha256 = character(), in_manifest = logical(), stringsAsFactors = FALSE
@@ -43,7 +44,8 @@ mdsums <- function() {
   if (!nzchar(dir) || !dir.exists(dir)) {
     return(empty)
   }
-  files <- list.files(dir, full.names = TRUE, recursive = TRUE)
+  files <- list.files(dir, full.names = TRUE, recursive = TRUE, all.files = TRUE,
+                      no.. = TRUE)
   if (length(files) == 0L) {
     return(empty)
   }

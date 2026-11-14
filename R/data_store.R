@@ -104,6 +104,9 @@ mdload <- function(slug, refresh = FALSE,
     stop("`slug` must be a single dataset slug (character). ",
          "See mdcat() for valid slugs.", call. = FALSE)
   }
+  if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
+    stop("`refresh` must be TRUE or FALSE.", call. = FALSE)
+  }
   format <- match.arg(format)
   key <- paste0("table:", format, ":", slug)
   if (!isTRUE(refresh)) {
@@ -343,8 +346,19 @@ mddict <- function(slug) {
 #' against the manifest; this function checks all of them at once.
 #'
 #' A file present in the installed store but absent from the manifest is
-#' reported too, as a row with `listed = FALSE` and `ok = FALSE`: a file
-#' added to the store is as much a change as a file altered in it.
+#' reported too, hidden (dot) files included, as a row with
+#' `listed = FALSE` and `ok = FALSE`: a file added to the store is as much
+#' a change as a file altered in it.
+#'
+#' What is covered: every file under the package's `extdata` directory (or
+#' the directory named by `options(rmoriedata.store = )`), which holds
+#' every table, dictionary, catalog and Parquet copy that [mdload()],
+#' [mdpath()], [mddict()], [siuload()] and [cihitbls()] read. What is not
+#' covered: the package's R code, its compiled code, and the two lazy-data
+#' objects [complaint_sample] and [arrest_sample] (stored in the package's
+#' `data` database, not in `extdata`); these are installed files of the
+#' package itself, which `tools::checkMD5sums("rmoriedata")` checks
+#' against the `MD5` file of a CRAN install.
 #'
 #' @return A data frame with one row per manifest entry, then one per
 #'   unlisted file: `path`, `bytes`, `sha256` (the manifest digest, or the
@@ -366,7 +380,8 @@ mdverify <- function() {
       identical(.rmd_bl("sha256file")(f), m$sha256[i])
   }, TRUE)
   # the manifest, its signature and the public key are the trust machinery, not data
-  present <- list.files(ed, recursive = TRUE)
+  # hidden files too: a dot-file added to the store is as much a change as any other
+  present <- list.files(ed, recursive = TRUE, all.files = TRUE, no.. = TRUE)
   trust <- c("_checksums.csv", "_checksums.sig", "_signing_key.json")
   extra <- setdiff(present, c(m$path, trust))
   if (length(extra)) {

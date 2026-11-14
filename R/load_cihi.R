@@ -44,10 +44,9 @@ cihitbls <- function(archonly = FALSE) {
   if (!isTRUE(archonly) && !isFALSE(archonly)) {
     stop("`archonly` must be TRUE or FALSE.", call. = FALSE)
   }
-  path <- system.file("extdata", "cihi_data_tables.csv",
-    package = "rmoriedata"
-  )
-  if (!nzchar(path)) {
+  # the store the signed manifest is checked against, which is the one read
+  path <- file.path(.rmoriedata_extdata(), "cihi_data_tables.csv")
+  if (!file.exists(path)) {
     stop("bundled CIHI data-table catalogue not found in rmoriedata",
       call. = FALSE
     )

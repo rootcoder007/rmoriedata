@@ -169,8 +169,11 @@ test_that("chiclr() removes only what chiload() wrote and leaves the rest", {
   mine <- withr::local_tempdir()
   withr::local_options(rmoriedata.cache_dir = mine)
   own <- file.path(mine, c("arrests_full.parquet", "arrests_full.parquet.sha256",
-                           "crimes_full.parquet", "write-ab12.parquet"))
-  keep <- file.path(mine, c("notes.txt", "my_full.parquet.bak", ".hidden"))
+                           "complaints_full.parquet", "write-ab12.parquet",
+                           "write-ab12.parquet.sha256"))
+  # a user's own *_full.parquet is not chiload()'s: it was deleted (F3)
+  keep <- file.path(mine, c("notes.txt", "my_full.parquet.bak", ".hidden",
+                            "crimes_full.parquet", "myreport_full.parquet"))
   dir.create(file.path(mine, "hosted", "fec"), recursive = TRUE)
   dir.create(file.path(mine, "odd_full.parquet"))
   for (f in c(own, keep, file.path(mine, "hosted", "fec", "t.csv.gz"))) writeLines("x", f)
@@ -321,4 +324,39 @@ test_that("a cache directory that cannot be written is named, not blamed on the 
   withr::local_options(rmoriedata.cache_dir = d)
   expect_error(hostload("db/t"), paste0("cannot write to the cache directory ", d, ";"),
                fixed = TRUE)
+})
+
+test_that("a mirror with the sample's column names is given the sample's types", {
+  s <- chiload("complaints", limit = 3)
+  m <- s
+  m$date <- format(s$date, "%Y-%m-%dT%H:%M:%S")
+  m$year <- as.character(s$year)
+  m$arrest <- as.character(s$arrest)
+  m$latitude <- as.character(s$latitude)
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) m)
+  got <- chiload("complaints", full = TRUE)
+  expect_identical(lapply(got, class), lapply(s, class))
+  expect_identical(attr(got$date, "tzone"), attr(s$date, "tzone"))
+  expect_equal(got, s)
+  # a POSIXct in UTC, as Parquet reads a timestamp back, is the same instant
+  a <- chiload("arrests", limit = 3)
+  u <- a
+  attr(u$date, "tzone") <- "UTC"
+  u$date_iso <- factor(u$date_iso)
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) u)
+  expect_identical(chiload("arrests", full = TRUE), a)
+  # a column that cannot be read as the sample's type is refused, naming it
+  bad <- s
+  bad$beat <- c("x", "y", "z")
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) bad)
+  expect_error(chiload("complaints", full = TRUE),
+               "column `beat` that cannot be read as the sample's integer", fixed = TRUE)
+  bad <- s
+  bad$date <- c("yesterday", "today", "tomorrow")
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) bad)
+  expect_error(chiload("complaints", full = TRUE), "column `date`", fixed = TRUE)
+  bad <- s
+  bad$ward <- bad$ward + 0.5
+  testthat::local_mocked_bindings(.rmd_fetch_full = function(...) bad)
+  expect_error(chiload("complaints", full = TRUE), "column `ward`", fixed = TRUE)
 })
