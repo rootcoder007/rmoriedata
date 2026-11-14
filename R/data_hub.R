@@ -317,9 +317,22 @@
 # finished; each part is deleted once it is joined (the two together took
 # twice the table's size); and a write that fails is an error in words:
 # writeBin() only warns when the disk is full, and the short file then failed
-# its checksum as if it had been tampered with.
+# its checksum as if it had been tampered with. Every part is checked to be there
+# and readable before the first is joined, so a missing or unreadable part stops
+# the join with all parts kept, and the next run downloads only what is missing.
+# A part that goes missing during the join (another session joining the same
+# table deletes them too) is an error in words; the parts already joined are gone,
+# and the next run downloads them again. The file being written has a name of its
+# own per call: two sessions sharing "<dest>.join" wrote into one file.
 .rmd_join <- function(pfile, dest) {
-  tmp <- paste0(dest, ".join")
+  gone <- which(!file.exists(pfile) | file.access(pfile, 4L) != 0L)
+  if (length(gone)) {
+    stop(sprintf(paste0("cannot join the parts of %s: part %d (%s) is missing or ",
+                        "cannot be read; no part was joined or deleted. Run again ",
+                        "to download it."),
+                 basename(dest), gone[[1L]], pfile[[gone[[1L]]]]), call. = FALSE)
+  }
+  tmp <- tempfile(paste0(basename(dest), ".join"), tmpdir = dirname(dest))
   total <- sum(file.size(pfile))
   full <- function() {
     stop(sprintf(paste0("cannot join the parts of %s: the folder %s is full or cannot ",
@@ -333,8 +346,15 @@
     if (open) close(out)
     unlink(tmp)
   }, add = TRUE)
-  for (f in pfile) {
-    con <- file(f, "rb")
+  for (i in seq_along(pfile)) {
+    con <- tryCatch(file(pfile[[i]], "rb"), warning = function(w) NULL,
+                    error = function(e) NULL)
+    if (is.null(con)) {
+      stop(sprintf(paste0("cannot join the parts of %s: part %d (%s) went missing ",
+                          "or could not be read during the join; run again to ",
+                          "download what is missing."),
+                   basename(dest), i, pfile[[i]]), call. = FALSE)
+    }
     ok <- tryCatch({
       repeat {
         buf <- readBin(con, "raw", 2^24)
@@ -344,7 +364,7 @@
       TRUE
     }, warning = function(w) FALSE, error = function(e) FALSE, finally = close(con))
     if (!ok) full()
-    unlink(f)
+    unlink(pfile[[i]])
   }
   close(out)
   open <- FALSE

@@ -136,3 +136,57 @@ test_that("the join of the parts fails in words on a full disk, and frees the pa
   expect_false(file.exists(dest))
   expect_false(file.exists(paste0(dest, ".join")))
 })
+
+test_that("a missing or unreadable part stops the join before any part is deleted", {
+  d <- withr::local_tempdir()
+  p <- file.path(d, sprintf("%05d", 1:3))
+  mk <- function() for (i in 1:3) writeBin(as.raw(rep(i, 10)), p[i])
+  mk()
+  dest <- file.path(d, "t.gz")
+  unlink(p[3L])
+  expect_error(.rmd_join(p, dest),
+               "part 3 (.*) is missing or cannot be read; no part was joined or deleted")
+  expect_identical(file.exists(p), c(TRUE, TRUE, FALSE))
+  expect_false(file.exists(dest))
+  expect_length(list.files(d, pattern = "join"), 0L)
+  mk()
+  if (.Platform$OS.type == "unix") {
+    Sys.chmod(p[2L], "000")
+    if (file.access(p[2L], 4L) != 0L) {
+      expect_error(.rmd_join(p, dest), "part 2 (.*) is missing or cannot be read")
+      expect_true(all(file.exists(p)))
+    }
+    Sys.chmod(p[2L], "644")
+  }
+  .rmd_join(p, dest)
+  expect_identical(readBin(dest, "raw", 100L), as.raw(rep(1:3, each = 10)))
+  # a part that goes missing during the join is an error in words, not a base-R one
+  mk()
+  testthat::local_mocked_bindings(.rmd_write_raw = function(buf, out) {
+    unlink(p[3L])
+    writeBin(buf, out)
+  })
+  expect_error(.rmd_join(p, dest), "part 3 (.*) went missing or could not be read")
+  expect_length(list.files(d, pattern = "join"), 0L)
+})
+
+test_that("two joins of one table at once write into files of their own", {
+  d <- withr::local_tempdir()
+  pa <- file.path(d, c("a1", "a2"))
+  pb <- file.path(d, c("b1", "b2"))
+  for (i in 1:2) {
+    writeBin(as.raw(rep(i, 5)), pa[i])
+    writeBin(as.raw(rep(i + 10, 7)), pb[i])
+  }
+  dest <- file.path(d, "t.gz")
+  n <- 0L
+  testthat::local_mocked_bindings(.rmd_write_raw = function(buf, out) {
+    writeBin(buf, out)
+    n <<- n + 1L
+    # the other session joins the whole table while this one is half-way
+    if (n == 1L) .rmd_join(pb, dest)
+  })
+  .rmd_join(pa, dest)
+  expect_identical(readBin(dest, "raw", 100L), as.raw(rep(1:2, each = 5)))
+  expect_length(list.files(d, pattern = "join"), 0L)
+})
