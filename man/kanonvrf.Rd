@@ -38,7 +38,14 @@ its own: rows with an unrecorded ward, age band or race form their own
 classes and are counted, never dropped. Unrecorded values are often the
 rarest records, which makes them the most re-identifiable, so they must
 meet the threshold like any other class. Every row is accounted for:
-the class sizes sum to \code{nrow(data)}.
+the class sizes sum to \code{nrow(data)}. \code{NaN} counts as missing, in the
+same class as \code{NA}.
+
+Values are compared exactly. Two numbers (plain doubles) are in one
+class only when they are the same double, so \code{0.1 + 0.2} and \code{0.3},
+which differ in the last bit, are two classes; \code{-0} and \code{0} are one.
+Integer, character, logical, factor and \code{Date} columns are compared by
+their values as printed (a factor by its level label).
 }
 \examples{
 df <- data.frame(

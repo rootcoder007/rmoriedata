@@ -339,3 +339,67 @@ test_that("cellsupp publishes zero cells and refuses negative counts", {
                "`tbl` must hold counts: it has a negative cell.", fixed = TRUE)
   expect_error(cellsupp(NULL), "`tbl` must be 2-dimensional.", fixed = TRUE)
 })
+
+test_that("numeric quasi-identifiers are keyed exactly, not to 15 digits", {
+  r <- kanonvrf(data.frame(x = c(0.1 + 0.2, 0.3, 0.3, 0.3, 0.3)), "x", k = 2)
+  expect_false(r$satisfies)
+  expect_identical(r$min_class_size, 1L)
+  expect_identical(r$n_classes, 2L)
+  # -0 and 0 are one value; NaN is missing, with NA
+  z <- kanonvrf(data.frame(x = c(-0, 0, NaN, NA)), "x", k = 2)
+  expect_identical(z$n_classes, 2L)
+  expect_true(z$satisfies)
+  l <- ldivvrf(data.frame(q = c(1 / 3, 1 - 2 / 3, 1 / 3), s = c("a", "b", "c")),
+               "q", "s", l = 2)
+  expect_identical(l$n_classes, 2L)
+  expect_false(l$satisfies)
+  # brute force: a row's class is every row equal to it in every column, NA with NA
+  same <- function(a, b) (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
+  set.seed(7)
+  for (rep in 1:30) {
+    n <- sample(5:40, 1)
+    d <- data.frame(
+      dbl = sample(c(0.3, 0.1 + 0.2, 1 / 3, 1 - 2 / 3, 2 / 3, 1e-17, 0, -0, NA, NaN),
+                   n, TRUE),
+      int = sample(c(1:3, NA), n, TRUE),
+      chr = sample(c("a", "b", NA), n, TRUE),
+      fac = factor(sample(c("u", "v"), n, TRUE)),
+      lgl = sample(c(TRUE, FALSE, NA), n, TRUE),
+      dte = as.Date("2020-01-01") + sample(0:2, n, TRUE),
+      stringsAsFactors = FALSE
+    )
+    for (q in list("dbl", c("dbl", "int"), c("chr", "fac", "lgl"), c("dbl", "dte"),
+                   names(d))) {
+      sz <- vapply(seq_len(n), function(i) {
+        sum(Reduce(`&`, lapply(q, function(cn) same(d[[cn]][i], d[[cn]]))))
+      }, integer(1))
+      ncls <- sum(1 / sz)
+      got <- kanonvrf(d, q, k = 2)
+      expect_identical(got$min_class_size, min(sz), info = paste(q, collapse = ","))
+      expect_equal(got$n_classes, ncls, info = paste(q, collapse = ","))
+    }
+  }
+})
+
+test_that("cellsupp treats an NA cell as hidden and refuses non-counts in words", {
+  r <- cellsupp(matrix(c(3, NA, 10, 10), 2), 5)
+  expect_true(r$protected)
+  expect_identical(r$n_recoverable, 0L)
+  expect_identical(r$n_primary, 1L)
+  # the unpublished cell is neither a primary nor a complement
+  expect_false(r$complementary_mask[2, 1])
+  bare <- cellsupp(matrix(c(3, NA, 10, 10), 2), 5, retcomp = FALSE)
+  expect_false(bare$protected)
+  # an NA cell alone in its row and column is hidden but recoverable from the totals
+  one <- cellsupp(matrix(c(20, NA, 30, 40), 2), 5, retcomp = FALSE)
+  expect_false(one$protected)
+  expect_true(one$recoverable_mask[2, 1])
+  expect_true(cellsupp(matrix(c(20, NA, 30, 40), 2), 5)$protected)
+  expect_error(cellsupp(matrix(c(Inf, 1, 2, 3), 2)), "it has an infinite cell")
+  expect_error(cellsupp(matrix(c(-Inf, 1, 2, 3), 2)), "negative cell")
+  expect_error(cellsupp(matrix(c(1.5, 1, 2, 3), 2)), "not a whole number")
+  msg <- "`tbl` must be a numeric matrix or table."
+  expect_error(cellsupp(function() 1), msg, fixed = TRUE)
+  expect_error(cellsupp(new.env()), msg, fixed = TRUE)
+  expect_error(cellsupp(quote(x)), msg, fixed = TRUE)
+})

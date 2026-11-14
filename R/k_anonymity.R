@@ -6,9 +6,17 @@
 # rarest, so dropping them hides exactly the classes a verifier exists to catch.
 # Returns the class id per row and one row of keys per class (original values, NA
 # kept), in order of first appearance.
+# A plain double is keyed by its exact binary value (sprintf("%a")): as.character()
+# keeps 15 significant digits, so 0.1 + 0.2 and 0.3 used to share one class. -0 is
+# keyed as 0 (they compare equal); NaN is missing like NA. Integer, character,
+# logical, factor, Date and other classed columns keep their character form.
 .morie_qi_classes <- function(qi) {
   enc <- lapply(qi, function(col) {
-    v <- as.character(col)
+    v <- if (is.double(col) && !is.object(col)) {
+      sprintf("%a", col + 0) # + 0 turns -0 into 0
+    } else {
+      as.character(col)
+    }
     ifelse(is.na(col), "\001NA", paste0("\002", v))
   })
   key <- if (length(enc) == 1L) enc[[1L]] else do.call(paste, c(enc, sep = "\003"))
@@ -30,7 +38,14 @@
 #' classes and are counted, never dropped. Unrecorded values are often the
 #' rarest records, which makes them the most re-identifiable, so they must
 #' meet the threshold like any other class. Every row is accounted for:
-#' the class sizes sum to `nrow(data)`.
+#' the class sizes sum to `nrow(data)`. `NaN` counts as missing, in the
+#' same class as `NA`.
+#'
+#' Values are compared exactly. Two numbers (plain doubles) are in one
+#' class only when they are the same double, so `0.1 + 0.2` and `0.3`,
+#' which differ in the last bit, are two classes; `-0` and `0` are one.
+#' Integer, character, logical, factor and `Date` columns are compared by
+#' their values as printed (a factor by its level label).
 #'
 #' @param data data.frame.
 #' @param qids Character vector of column names.
@@ -270,11 +285,14 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
 #' non-negativity can narrow; a table whose hidden values must stay inside
 #' a wide interval needs an interval audit (linear programming) on top.
 #'
-#' Only finite numeric cells are eligible for suppression. \code{NA} cells
-#' in the input pass through unchanged and are treated as unpublished. A zero
-#' cell is published as it is: the threshold rule protects the few
-#' contributors of a small cell, and a zero has none. Negative counts are
-#' refused.
+#' Cells must be non-negative whole numbers or \code{NA}; infinite,
+#' fractional and negative cells are refused. \code{NA} cells in the input
+#' pass through unchanged and are treated as unpublished: they count as
+#' hidden in the audit (their values are not known to a reader) and receive
+#' complements like any hidden cell, but they are not counted as primary or
+#' complementary suppressions. A zero cell is published as it is: the
+#' threshold rule protects the few contributors of a small cell, and a zero
+#' has none.
 #'
 #' @param tbl A numeric matrix or 2-D table of counts. Will be coerced to
 #'   matrix; row/column names are preserved.
@@ -334,17 +352,28 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
   if (is.null(tbl) || (!is.data.frame(tbl) && length(dim(tbl)) > 2L)) {
     stop("`tbl` must be 2-dimensional.", call. = FALSE)
   }
-  m <- as.matrix(tbl)
+  # a function or an environment has no matrix form: as.matrix() errors in base R's words
+  m <- tryCatch(as.matrix(tbl), error = function(e) NULL)
   if (!is.numeric(m)) {
     stop("`tbl` must be a numeric matrix or table.", call. = FALSE)
   }
   if (any(m < 0, na.rm = TRUE)) {
     stop("`tbl` must hold counts: it has a negative cell.", call. = FALSE)
   }
+  if (any(is.infinite(m))) {
+    stop("`tbl` must hold counts: it has an infinite cell.", call. = FALSE)
+  }
+  if (any(m != floor(m), na.rm = TRUE)) {
+    stop("`tbl` must hold counts: it has a cell that is not a whole number.",
+         call. = FALSE)
+  }
 
-  primary <- !is.na(m) & m > 0 & m < threshold
-  hidden <- primary
-  if (retcomp && any(primary)) {
+  # an NA cell is unpublished: hidden from the reader like a suppressed one, so the
+  # audit must not use it as known, and it needs complements like any hidden cell
+  unpub <- is.na(m)
+  primary <- !unpub & m > 0 & m < threshold
+  hidden <- primary | unpub
+  if (retcomp && any(hidden)) {
     budget <- length(m)
     repeat {
       added <- FALSE
@@ -379,7 +408,7 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
       if (budget <= 0L) break
     }
   }
-  complementary <- hidden & !primary
+  complementary <- hidden & !primary & !unpub
   recoverable <- .morie_recoverable(m, hidden)
 
   suppressed <- m

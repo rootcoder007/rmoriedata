@@ -60,11 +60,14 @@ the feasible interval of each hidden cell, which bounds from
 non-negativity can narrow; a table whose hidden values must stay inside
 a wide interval needs an interval audit (linear programming) on top.
 
-Only finite numeric cells are eligible for suppression. \code{NA} cells
-in the input pass through unchanged and are treated as unpublished. A zero
-cell is published as it is: the threshold rule protects the few
-contributors of a small cell, and a zero has none. Negative counts are
-refused.
+Cells must be non-negative whole numbers or \code{NA}; infinite,
+fractional and negative cells are refused. \code{NA} cells in the input
+pass through unchanged and are treated as unpublished: they count as
+hidden in the audit (their values are not known to a reader) and receive
+complements like any hidden cell, but they are not counted as primary or
+complementary suppressions. A zero cell is published as it is: the
+threshold rule protects the few contributors of a small cell, and a zero
+has none.
 }
 \examples{
 tbl <- matrix(c(120, 3, 47, 88, 2, 99, 14, 51, 60),

@@ -25,6 +25,8 @@
 * The signing test writes its XMSS used-index record to a temporary file, not to `~/.config/R/rmoriebricklayer`.
 * The vignette's reference to the integrity checks is no longer empty.
 * A privacy budget from `dpbudget()` cannot be spent from a forked worker or another R process: `dplapcnt()`, `dplaphist()` and `dpgmean()` refuse it there with an error. Four workers under `parallel::mclapply()` each spent 0.9 from one budget of 1 and the parent recorded nothing; give each worker its own budget and add up the epsilons.
+* `kanonvrf()` and `ldivvrf()` compare numeric quasi-identifiers exactly: values that agree to 15 significant digits, such as `0.1 + 0.2` and `0.3`, were one class, so a class of one could be reported as a class of five. `-0` and `0` are one class, and `NaN` is missing with `NA`.
+* `cellsupp()` treats an `NA` cell as unpublished in its audit, as its help says, and gives it complements like any hidden cell: it was treated as known, so a hidden cell recoverable through it was reported as protected. Infinite and fractional counts are refused, and a function or an environment gets the package's "must be a numeric matrix or table" error.
 * `dplapcnt()` and `dplaphist()` refuse a count of 2^53 itself: 2^53 + 1 rounds back to 2^53, so the release could equal the truth.
 
 # rmoriedata 0.4.2
