@@ -803,23 +803,37 @@
 #' @param path Path to a `.parquet` file.
 #' @param columns Optional character vector of column names to decode;
 #'   the rest are skipped entirely.
-#' @return A `data.frame`. A damaged file is an error that starts with
-#'   `parquet:`.
+#' @return A `data.frame`. Every error the reader raises, a missing or
+#'   damaged file included, starts with `parquet:`; no base-R warning escapes
+#'   it (a value a damaged file makes R warn about is an error instead).
 #' @keywords internal
 morie_read_parquet <- function(path, columns = NULL) {
   size <- file.info(path)$size
-  if (is.na(size)) stop("no such file: ", path, call. = FALSE)
-  # A check the reader makes says what is wrong; anything else a damaged footer or
-  # page trips over (a NULL field, an index past the end) is said to be damage too.
-  tryCatch(.pq_read(path, columns, size), error = function(e) {
-    m <- conditionMessage(e)
-    if (grepl(.pq_own_re, m) || grepl("^cannot allocate", m)) stop(e)
-    stop("parquet: the file is damaged (", m, ")", call. = FALSE)
-  })
+  if (is.na(size)) stop("parquet: no such file: ", path, call. = FALSE)
+  # A check the reader makes says what is wrong, after the `parquet: ` every reader
+  # error starts with; anything else a damaged footer or page trips over (a NULL
+  # field, an index past the end) is said to be damage too. A base-R warning on the
+  # way (a count past the integer range, say) is damage as well, not a stray warning.
+  tryCatch(
+    withCallingHandlers(.pq_read(path, columns, size), warning = function(w) {
+      m <- conditionMessage(w)
+      if (!startsWith(m, "duplicate column names in ")) {
+        stop("parquet: the file is damaged (", m, ")", call. = FALSE)
+      }
+    }),
+    error = function(e) {
+      m <- conditionMessage(e)
+      if (startsWith(m, "parquet: ")) stop(e)
+      if (grepl(.pq_own_re, m) || grepl("^cannot allocate", m)) {
+        stop("parquet: ", m, call. = FALSE)
+      }
+      stop("parquet: the file is damaged (", m, ")", call. = FALSE)
+    }
+  )
 }
 
-# The reader's own error messages, passed on as they are.
-.pq_own_re <- paste0("^(parquet: |not a parquet file|snappy: |gzip: |crc32: ",
+# The reader's own error messages, passed on with the `parquet: ` prefix.
+.pq_own_re <- paste0("^(not a parquet file|snappy: |gzip: |crc32: ",
                      "|unknown thrift ",
                      "|FIXED_LEN_BYTE_ARRAY |unsupported physical |data page v2 ",
                      "|compression codec |BIT_PACKED |dictionary-encoded |encoding ",
@@ -940,7 +954,7 @@ morie_read_parquet <- function(path, columns = NULL) {
 
 # ----------------------------------------------------------------- write
 
-.pq_infer <- function(v) {
+.pq_infer <- function(v, name = "a column") {
   # Date and POSIXct must keep their logical type on the way out.
   # Without this a column read as TIMESTAMP_MICROS was written back as a
   # bare DOUBLE of seconds: readable, but no longer a timestamp to any
@@ -950,6 +964,13 @@ morie_read_parquet <- function(path, columns = NULL) {
   }
   if (inherits(v, "POSIXct")) {
     return(list(type = .pqInt64, converted = .pqCtTsMillis))
+  }
+  # written as text these would read back as a different type: refused, not converted
+  if (is.list(v) || is.complex(v) || is.raw(v) || inherits(v, "difftime")) {
+    stop("column ", sQuote(name), " is of type ",
+         if (is.object(v)) class(v)[[1L]] else typeof(v),
+         ", which Parquet as written here cannot hold; convert it first (for ",
+         "example with as.character() or as.numeric()).", call. = FALSE)
   }
   if (is.logical(v)) {
     return(list(type = .pqBoolean, converted = NULL))
@@ -1056,9 +1077,11 @@ morie_read_parquet <- function(path, columns = NULL) {
 #' Native Parquet writer: single row group, PLAIN encoding, all columns
 #' OPTIONAL. Output is read back unchanged by pyarrow and nanoparquet.
 #'
-#' @param df A `data.frame`. Factor columns are written as character;
-#'   every string must be valid UTF-8 (marked, or unmarked in UTF-8 bytes),
-#'   and column names must be unique.
+#' @param df A `data.frame` with at least one column. Factor columns are
+#'   written as character; list, complex, raw and `difftime` columns are
+#'   refused with an error naming the column. `NaN` in a numeric column is
+#'   kept as `NaN`. Every string must be valid UTF-8 (marked, or unmarked in
+#'   UTF-8 bytes), and column names must be unique.
 #' @param path Destination path.
 #' @param compression `"gzip"` (default; zlib level 9), `"snappy"`, or `NULL`
 #'   for uncompressed pages.
@@ -1088,12 +1111,19 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
 
   nrows <- nrow(df)
   names_ <- names(df)
+  # a file with no columns has a schema with no leaves, which no reader opens
+  if (!length(names_)) {
+    stop("a data frame with no columns cannot be written: a Parquet file needs ",
+         "at least one column.", call. = FALSE)
+  }
   if (anyDuplicated(names_)) {
     stop("duplicate column names: ",
          paste(sQuote(unique(names_[duplicated(names_)])), collapse = ", "),
          "; a Parquet reader cannot address them, and this one would ",
          "keep only the last.", call. = FALSE)
   }
+  # every column's type is settled (or refused) before the file is opened
+  infs <- lapply(seq_along(names_), function(k) .pq_infer(df[[k]], names_[k]))
   con <- file(path, "wb")
   on.exit(close(con), add = TRUE)
   writeBin(charToRaw("PAR1"), con)
@@ -1102,9 +1132,13 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
   chunks <- list()
   for (k in seq_along(names_)) {
     v <- df[[k]]
-    inf <- .pq_infer(v)
-    defs <- as.integer(!is.na(v))
-    present <- .pq_prep_write(v[!is.na(v)], inf)
+    inf <- infs[[k]]
+    # NaN is a value of a DOUBLE column, not a missing one: written as null it read
+    # back as NA
+    miss <- is.na(v)
+    if (inf$type == .pqDouble) miss <- miss & !is.nan(v)
+    defs <- as.integer(!miss)
+    present <- .pq_prep_write(v[!miss], inf)
 
     body <- c(
       .pq_encode_levels(defs, 1L),

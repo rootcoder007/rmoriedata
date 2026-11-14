@@ -32,6 +32,7 @@
 * `hostload()` and `mdload()` check `refresh` in words (`NA`, `"yes"`, `NULL` and `c(TRUE, FALSE)` gave base-R errors or acted as `TRUE`), and a table size in the hosted manifest that is not a whole number from 1 to 2^40 bytes is refused in words: an absurd size stopped in `seq()`.
 * `mdverify()` and `mdsums()` list hidden files in the store too, and the help of `mdverify()` says what it covers: every file of the data store, not the package code or the lazy-loaded `complaint_sample` and `arrest_sample`. `mdsums()`, `siuload()` and `cihitbls()` read the store named by `options(rmoriedata.store = )`, the one they verify; they used to read the installed copy.
 * `dplapcnt()` and `dplaphist()` refuse a count of 2^53 itself: 2^53 + 1 rounds back to 2^53, so the release could equal the truth.
+* The Parquet writer keeps `NaN` (it read back as `NA`), refuses a data frame with no columns, which its reader could not open, and refuses list, complex, raw and `difftime` columns in words, naming the column: they were written as text. Every error of the reader starts with `parquet:`, and a damaged file no longer lets a base-R warning such as "NAs introduced by coercion to integer range" escape before the error.
 
 # rmoriedata 0.4.2
 

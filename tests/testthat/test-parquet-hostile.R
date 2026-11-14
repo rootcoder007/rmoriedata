@@ -90,3 +90,86 @@ test_that("a stray base-R error while parsing is reported as a damaged file", {
   })
   expect_error(morie_read_parquet(f), "^parquet: footer length 9 does not fit$")
 })
+
+test_that("a mutation fuzzer: every refusal starts with parquet:, nothing else escapes", {
+  skip_on_cran()
+  withr::local_options(rmoriedata.parquet_max_rows = 1e5,
+                       rmoriedata.parquet_max_page_bytes = 2^20)
+  df <- data.frame(i = c(1L, NA, 3L, 2147483647L, -5L), x = c(0.5, NaN, NA, -1e300, 2),
+                   s = c("a", NA, "\u00e9t\u00e9", "", "zz"),
+                   b = c(TRUE, NA, FALSE, TRUE, TRUE),
+                   d = as.Date("2020-01-01") + 0:4, stringsAsFactors = FALSE)
+  bad <- character()
+  n <- 0L
+  for (codec in list("snappy", NULL, "gzip")) {
+    f <- tempfile(fileext = ".parquet")
+    morie_write_parquet(df, f, compression = codec)
+    bytes <- readBin(f, "raw", file.size(f))
+    set.seed(2026)
+    for (i in seq_len(700L)) {
+      m <- bytes
+      k <- i %% 4L
+      if (k == 0L) {
+        m <- m[seq_len(sample.int(length(m) - 1L, 1L))]
+      } else {
+        j <- sample.int(length(m), sample(1:3, 1L))
+        m[j] <- if (k == 1L) xor(m[j], as.raw(bitwShiftL(1L, sample.int(8L, 1L) - 1L)))
+                else if (k == 2L) as.raw(sample.int(256L, length(j), TRUE) - 1L)
+                else as.raw(c(0xff, 0x7f, 0x80, 0x00)[sample.int(4L, length(j), TRUE)])
+      }
+      g <- tempfile(fileext = ".parquet")
+      writeBin(m, g)
+      n <- n + 1L
+      res <- tryCatch(
+        withCallingHandlers(
+          {
+            morie_read_parquet(g)
+            "ok"
+          },
+          warning = function(w) {
+            bad <<- c(bad, paste("warning:", conditionMessage(w)))
+            invokeRestart("muffleWarning")
+          },
+          message = function(c) {
+            bad <<- c(bad, paste("message:", conditionMessage(c)))
+            invokeRestart("muffleMessage")
+          }),
+        error = function(e) conditionMessage(e))
+      if (!identical(res, "ok") && !startsWith(res, "parquet: ")) {
+        bad <- c(bad, paste("error:", res))
+      }
+      unlink(g)
+    }
+    unlink(f)
+  }
+  expect_gte(n, 2000L)
+  expect_identical(unique(bad), character())
+})
+
+test_that("NaN survives, and frames Parquet cannot hold are refused in words", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  for (codec in list("gzip", "snappy", NULL)) {
+    morie_write_parquet(data.frame(x = c(1, NaN, NA, -0)), f, compression = codec)
+    x <- morie_read_parquet(f)$x
+    expect_identical(is.nan(x), c(FALSE, TRUE, FALSE, FALSE))
+    expect_identical(is.na(x), c(FALSE, TRUE, TRUE, FALSE))
+  }
+  unlink(f)
+  expect_error(morie_write_parquet(data.frame(a = 1:3)[, 0], f),
+               "a data frame with no columns cannot be written", fixed = TRUE)
+  expect_false(file.exists(f))
+  l <- data.frame(a = 1:2)
+  l$v <- list(1, "b")
+  expect_error(morie_write_parquet(l, f), "column .v. is of type list")
+  expect_error(morie_write_parquet(data.frame(z = complex(real = 1:2)), f),
+               "column .z. is of type complex")
+  expect_error(morie_write_parquet(data.frame(r = as.raw(1:2)), f),
+               "column .r. is of type raw")
+  expect_error(morie_write_parquet(data.frame(t = as.difftime(1:2, units = "mins")), f),
+               "column .t. is of type difftime")
+  expect_false(file.exists(f))
+  expect_error(morie_read_parquet(file.path(tempdir(), "no-such.parquet")),
+               "^parquet: no such file: ")
+  writeBin(charToRaw("hello"), f)
+  expect_error(morie_read_parquet(f), "^parquet: not a parquet file: ")
+})
