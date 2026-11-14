@@ -319,8 +319,10 @@ test_that("a download killed half-way resumes from its parts in the next session
   hub_run(d, cache, log, file.path(d, "pid"), mode = "hang")
   hub_wait(file.path(d, "pid"))
   pid <- as.integer(readLines(file.path(d, "pid")))
-  # killed while it holds the lock and is writing the third part
-  expect_true(tools::pskill(pid, tools::SIGKILL))
+  # killed while it holds the lock and is writing the third part; Windows has
+  # no SIGKILL (it is NA there) and ends the process outright for any signal
+  sig <- if (.Platform$OS.type == "windows") tools::SIGTERM else tools::SIGKILL
+  expect_true(tools::pskill(pid, sig))
   hd <- file.path(cache, "hosted")
   expect_true(dir.exists(file.path(hd, "db__t.csv.gz.dl.parts")))
   expect_false(file.exists(file.path(hd, "db__t.csv.gz")))
