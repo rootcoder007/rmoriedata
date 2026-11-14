@@ -307,19 +307,57 @@
                    i, label, got, want), call. = FALSE)
     }
   }
-  out <- file(dest, "wb")
-  for (f in pfile) {
-    con <- file(f, "rb")
-    repeat {
-      buf <- readBin(con, "raw", 2^24)
-      if (!length(buf)) break
-      writeBin(buf, out)
-    }
-    close(con)
-  }
-  close(out)
+  .rmd_join(pfile, dest)
   unlink(pdir, recursive = TRUE)
   invisible(dest)
+}
+
+# Joins the parts of a download into `dest`. The file is written beside `dest`
+# and renamed when whole, so a join cut short leaves nothing that looks
+# finished; each part is deleted once it is joined (the two together took
+# twice the table's size); and a write that fails is an error in words:
+# writeBin() only warns when the disk is full, and the short file then failed
+# its checksum as if it had been tampered with.
+.rmd_join <- function(pfile, dest) {
+  tmp <- paste0(dest, ".join")
+  total <- sum(file.size(pfile))
+  full <- function() {
+    stop(sprintf(paste0("cannot join the parts of %s: the folder %s is full or cannot ",
+                        "be written (the file needs %.0f MB). Name a folder with room in ",
+                        "options(rmoriedata.cache_dir = ) and run again."),
+                 basename(dest), dirname(dest), total / 2^20), call. = FALSE)
+  }
+  out <- file(tmp, "wb")
+  open <- TRUE
+  on.exit({
+    if (open) close(out)
+    unlink(tmp)
+  }, add = TRUE)
+  for (f in pfile) {
+    con <- file(f, "rb")
+    ok <- tryCatch({
+      repeat {
+        buf <- readBin(con, "raw", 2^24)
+        if (!length(buf)) break
+        .rmd_write_raw(buf, out)
+      }
+      TRUE
+    }, warning = function(w) FALSE, error = function(e) FALSE, finally = close(con))
+    if (!ok) full()
+    unlink(f)
+  }
+  close(out)
+  open <- FALSE
+  if (!identical(as.numeric(file.size(tmp)), as.numeric(total))) full()
+  unlink(dest)
+  if (!file.rename(tmp, dest)) full()
+  invisible(dest)
+}
+
+# writeBin(), under a name the tests can replace.
+.rmd_write_raw <- function(buf, out) {
+  writeBin(buf, out)
+  invisible(NULL)
 }
 
 #' Curated datasets at data.rmorie.com

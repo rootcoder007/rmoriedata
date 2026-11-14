@@ -1,5 +1,6 @@
 # rmoriedata 0.4.3
 
+* A hosted table downloaded in parts no longer comes out damaged when the disk fills up while the parts are joined: the failed write is an error that names the folder and `options(rmoriedata.cache_dir = )`, where it was a short file that then failed its checksum. Each part is deleted once it is joined, so the download needs the table's size plus one part on disk, not twice the table's size.
 * The title, description and citation put the package's disclosure-control tools first (differential privacy, k-anonymity and l-diversity checks, cell suppression); the datasets follow. Nothing in the functions changes.
 * `chiload(full = TRUE)` returns the bundled sample's columns, in its order and with its types (16 columns for complaints and 8 for arrests, with `date_iso` and a `POSIXct` `date`), derived from Socrata's export the way the samples were: it returned Socrata's raw 22 or 24 columns. Socrata's export is read as text first, so an IUCR code keeps its leading zero.
 * `chiload(mirror = )` with a URL downloads `<type>_full.parquet` from the mirror over the package's checked https transport, and checks it against `<type>_full.parquet.sha256` when the mirror has one; a mirror that fails or does not match falls back to Socrata. A URL was taken for a missing local file, so the mirror was never used.
