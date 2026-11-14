@@ -1,5 +1,6 @@
 # rmoriedata 0.4.3
 
+* The title, description and citation put the package's disclosure-control tools first (differential privacy, k-anonymity and l-diversity checks, cell suppression); the datasets follow. Nothing in the functions changes.
 * `chiload(full = TRUE)` returns the bundled sample's columns, in its order and with its types (16 columns for complaints and 8 for arrests, with `date_iso` and a `POSIXct` `date`), derived from Socrata's export the way the samples were: it returned Socrata's raw 22 or 24 columns. Socrata's export is read as text first, so an IUCR code keeps its leading zero.
 * `chiload(mirror = )` with a URL downloads `<type>_full.parquet` from the mirror over the package's checked https transport, and checks it against `<type>_full.parquet.sha256` when the mirror has one; a mirror that fails or does not match falls back to Socrata. A URL was taken for a missing local file, so the mirror was never used.
 * `chiload()` checks its arguments in words: `limit` must be a whole number from 1 to 2147483647 (`Inf` and `1e10` failed with a coercion error), `fraction` a number above 0 and at most 1, and `full` and `refresh` `TRUE` or `FALSE` (`full = "yes"` or `NA` silently returned the sample).

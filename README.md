@@ -8,9 +8,18 @@
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL_v3-blue.svg)](https://spdx.org/licenses/AGPL-3.0-or-later.html)
 <!-- badges: end -->
 
-Integrated open-data fixtures for [rmorie](https://github.com/rootcoder007/rmorie),
-plus a small set of base-R helpers. Its core job remains the `inst/extdata/`
-files used by `rmorie`'s examples, vignettes, and tests.
+Disclosure control for aggregate releases, with open datasets to use it on.
+
+- **Differential privacy**: an exact discrete Laplace sampler for counts
+  (`dplapcnt()`, `dplaphist()`), the analytic Gaussian mechanism for means
+  (`dpgmean()`), and privacy-budget accounting (`dpbudget()`, `dpspent()`),
+  drawing on the operating system's random source.
+- **k-anonymity and l-diversity** checks (`kanonvrf()`, `ldivvrf()`).
+- **Cell suppression** audited for exact recovery from the margins
+  (`cellsupp()`).
+- **Open datasets**, bundled and checksummed, with the functions that read
+  and verify them (`mdcat()`, `mdload()`, `mdverify()`), and the curated
+  tables at data.rmorie.com (`hostcat()`, `hostload()`).
 
 ## Install
 
@@ -171,14 +180,14 @@ a reviewer pushback. Splitting the data out keeps `rmorie` lean
 
 If you use rmoriedata in your research, please cite the software:
 
-> Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie Package.* R package version 0.4.3. doi:10.32614/CRAN.package.rmoriedata. https://rootcoder007.r-universe.dev/rmoriedata
+> Ruhela, V. S. (2026). *rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets.* R package version 0.4.3. doi:10.32614/CRAN.package.rmoriedata. https://rootcoder007.r-universe.dev/rmoriedata
 
 BibTeX (or run `citation("rmoriedata")` after installation for the entry
 stamped with the exact installed version, sourced from `inst/CITATION`):
 
 ```bibtex
 @Manual{ruhela_rmoriedata_2026,
-  title  = {rmoriedata: Integrated Datasets for the rmorie Package},
+  title  = {rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets},
   author = {Ruhela, Vansh Singh},
   year   = {2026},
   doi    = {10.32614/CRAN.package.rmoriedata},

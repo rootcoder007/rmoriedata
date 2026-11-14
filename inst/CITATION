@@ -1,12 +1,11 @@
 citHeader(
-  "To cite rmoriedata in publications, please cite the software. ",
-  "It is part of the MORIE ecosystem; see also the 'morie' and 'rmorie' packages."
+  "To cite rmoriedata in publications, please cite the software."
 )
 
 bibentry(
   bibtype = "Manual",
   key     = "ruhela_rmoriedata_2026",
-  title   = "rmoriedata: Integrated Datasets for the rmorie Package",
+  title   = "rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets",
   author  = person(c("Vansh", "Singh"), "Ruhela",
                    comment = c(ORCID = "0009-0004-1750-3592")),
   year    = "2026",

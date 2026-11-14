@@ -4,7 +4,7 @@ Behavioural guidance for AI coding agents working in this repository.
 `CLAUDE.md` and `GEMINI.md` are thin pointers (`@AGENTS.md`).
 
 **rmoriedata** is the data + light-helper companion R package for
-[rmorie]. Its core job is bundled open-data fixtures, but it has grown a
+[rmorie]. Its first job is disclosure control for aggregate releases; it also bundles open-data fixtures and has a
 small, deliberate set of analyst-facing helpers:
 
 - **Differential privacy + re-identification risk** — `morie_dp_*`,

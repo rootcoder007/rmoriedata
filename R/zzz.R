@@ -1,16 +1,18 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
-#' rmoriedata: Bundled datasets for rmorie
+#' rmoriedata: Disclosure control for aggregate releases, with open datasets
 #'
-#' Open data fixtures for the rmorie package
-#' (https://github.com/rootcoder007/rmorie), with the functions that read
-#' them: [mdcat()] lists the bundled tables and
-#' [mdload()] loads one; [siuload()],
-#' [chiload()], [cihitbls()] and [cihiget()]
-#' read their datasets, [mdverify()] checks the bundle's
-#' checksums; [hostcat()] and [hostload()] reach the
-#' tables served at data.rmorie.com; [mdask()] asks a language model about
-#' the catalogue; and the differential-privacy and k-anonymity helpers
-#' release aggregates safely. The raw files are also at
+#' Tools for releasing aggregate statistics safely: differential privacy
+#' ([dplapcnt()] and [dplaphist()] for counts, [dpgmean()] for means, with
+#' the budget kept by [dpbudget()] and [dpspent()]), checks of k-anonymity
+#' and l-diversity ([kanonvrf()], [ldivvrf()]), and cell suppression audited
+#' for exact recovery from the margins ([cellsupp()]).
+#'
+#' Open datasets to use them on come with the package: [mdcat()] lists the
+#' bundled tables and [mdload()] loads one; [siuload()], [chiload()],
+#' [cihitbls()] and [cihiget()] read their datasets; [mdverify()] checks
+#' the bundle's checksums; [hostcat()] and [hostload()] reach the tables
+#' served at data.rmorie.com; and [mdask()] asks a language model about the
+#' catalogue. The raw files are also at
 #' `system.file("extdata", package = "rmoriedata")`.
 #'
 #' @keywords internal

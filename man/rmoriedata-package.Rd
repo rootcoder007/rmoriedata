@@ -4,18 +4,21 @@
 \name{rmoriedata-package}
 \alias{rmoriedata}
 \alias{rmoriedata-package}
-\title{rmoriedata: Bundled datasets for rmorie}
+\title{rmoriedata: Disclosure control for aggregate releases, with open datasets}
 \description{
-Open data fixtures for the rmorie package
-(https://github.com/rootcoder007/rmorie), with the functions that read
-them: \code{\link[=mdcat]{mdcat()}} lists the bundled tables and
-\code{\link[=mdload]{mdload()}} loads one; \code{\link[=siuload]{siuload()}},
-\code{\link[=chiload]{chiload()}}, \code{\link[=cihitbls]{cihitbls()}} and \code{\link[=cihiget]{cihiget()}}
-read their datasets, \code{\link[=mdverify]{mdverify()}} checks the bundle's
-checksums; \code{\link[=hostcat]{hostcat()}} and \code{\link[=hostload]{hostload()}} reach the
-tables served at data.rmorie.com; \code{\link[=mdask]{mdask()}} asks a language model about
-the catalogue; and the differential-privacy and k-anonymity helpers
-release aggregates safely. The raw files are also at
+Tools for releasing aggregate statistics safely: differential privacy
+(\code{\link[=dplapcnt]{dplapcnt()}} and \code{\link[=dplaphist]{dplaphist()}} for counts, \code{\link[=dpgmean]{dpgmean()}} for means, with
+the budget kept by \code{\link[=dpbudget]{dpbudget()}} and \code{\link[=dpspent]{dpspent()}}), checks of k-anonymity
+and l-diversity (\code{\link[=kanonvrf]{kanonvrf()}}, \code{\link[=ldivvrf]{ldivvrf()}}), and cell suppression audited
+for exact recovery from the margins (\code{\link[=cellsupp]{cellsupp()}}).
+}
+\details{
+Open datasets to use them on come with the package: \code{\link[=mdcat]{mdcat()}} lists the
+bundled tables and \code{\link[=mdload]{mdload()}} loads one; \code{\link[=siuload]{siuload()}}, \code{\link[=chiload]{chiload()}},
+\code{\link[=cihitbls]{cihitbls()}} and \code{\link[=cihiget]{cihiget()}} read their datasets; \code{\link[=mdverify]{mdverify()}} checks
+the bundle's checksums; \code{\link[=hostcat]{hostcat()}} and \code{\link[=hostload]{hostload()}} reach the tables
+served at data.rmorie.com; and \code{\link[=mdask]{mdask()}} asks a language model about the
+catalogue. The raw files are also at
 \code{system.file("extdata", package = "rmoriedata")}.
 }
 \seealso{

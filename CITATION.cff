@@ -1,6 +1,6 @@
 cff-version: 1.2.0
 message: "If you use rmoriedata in your research, please cite the software (see preferred-citation below)."
-title: "rmoriedata: Integrated Datasets for the rmorie Package"
+title: "rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets"
 authors:
   - family-names: "Ruhela"
     given-names: "Vansh Singh"
@@ -14,7 +14,7 @@ repository-code: "https://github.com/rootcoder007/rmoriedata"
 license: "AGPL-3.0-or-later"
 preferred-citation:
   type: software
-  title: "rmoriedata: Integrated Datasets for the rmorie Package"
+  title: "rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets"
   authors:
     - family-names: "Ruhela"
       given-names: "Vansh Singh"
