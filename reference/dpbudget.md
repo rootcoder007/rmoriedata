@@ -52,7 +52,7 @@ refused in the same way.
 ``` r
 b <- dpbudget(epsilon = 2)
 dplapcnt(42, epsilon = 1, budget = b)
-#> [1] 41
+#> [1] 42
 dpspent(b)
 #> $epsilon
 #> [1] 2
