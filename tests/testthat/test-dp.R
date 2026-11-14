@@ -370,3 +370,27 @@ test_that("an interrupted release stays charged, with nothing released", {
   expect_identical(dpspent(b)$releases, 1L)
   expect_equal(dpspent(b)$spent_epsilon, 1)
 })
+
+test_that("a copy of a budget made in this session is refused (N10)", {
+  msg <- "this budget is a copy (saved and read back, unserialized, or rebuilt)"
+  b <- dpbudget(1)
+  f <- withr::local_tempfile(fileext = ".rds")
+  saveRDS(b, f)
+  invisible(dplapcnt(1, 1, budget = b))
+  b2 <- readRDS(f)
+  expect_error(dplapcnt(1, 1, budget = b2), msg, fixed = TRUE)
+  b3 <- unserialize(serialize(b, NULL))
+  expect_error(dplaphist(c(1, 2), 0.5, budget = b3), msg, fixed = TRUE)
+  b4 <- structure(list2env(as.list.environment(b, all.names = TRUE)), class = "dpbudget")
+  expect_error(dpgmean(0.5, 0, 1, 0.5, budget = b4), msg, fixed = TRUE)
+  # nothing was charged to the copies, and the budget itself is spent
+  expect_identical(dpspent(b2)$releases, 0L)
+  expect_identical(dpspent(b)$spent_epsilon, 1)
+  expect_error(dplapcnt(1, 0.5, budget = b), "exceeds the remaining budget")
+  # another name for the same budget is the same ledger, not a copy
+  a <- dpbudget(2)
+  a2 <- a
+  invisible(dplapcnt(1, 1, budget = a2))
+  invisible(dplapcnt(1, 1, budget = a))
+  expect_identical(dpspent(a)$spent_epsilon, 2)
+})

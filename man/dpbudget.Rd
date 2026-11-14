@@ -40,6 +40,18 @@ the operating system's CSPRNG when the package is loaded, and a release
 is charged only in the process, and the load of the package, that made
 the budget.
 
+A copy of a budget made in the same session is refused too: one written
+with \code{\link[=saveRDS]{saveRDS()}} and read back with \code{\link[=readRDS]{readRDS()}}, passed through
+\code{\link[=serialize]{serialize()}} and \code{\link[=unserialize]{unserialize()}}, or rebuilt from its fields. The copy
+is a second ledger that would start from what the budget had spent when
+it was copied, so the two together could spend the budget twice; every
+budget is registered in the package when it is made, and only that
+object can be charged. Assigning a budget to another name (\code{b2 <- b})
+makes no copy: both names are the one ledger. What is not prevented:
+code that sets a budget's fields by hand, or that creates several
+budgets for one dataset. A budget is an accounting aid for honest code,
+not a defence against code that means to overspend.
+
 A budget of \code{delta = 0} pays only for pure-DP releases: a release with
 any \code{delta > 0} is refused. The totals are compared with a slack for
 floating-point rounding only, so that ten releases at \code{epsilon = 0.1}

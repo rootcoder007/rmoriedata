@@ -152,6 +152,18 @@
 #' is charged only in the process, and the load of the package, that made
 #' the budget.
 #'
+#' A copy of a budget made in the same session is refused too: one written
+#' with [saveRDS()] and read back with [readRDS()], passed through
+#' [serialize()] and [unserialize()], or rebuilt from its fields. The copy
+#' is a second ledger that would start from what the budget had spent when
+#' it was copied, so the two together could spend the budget twice; every
+#' budget is registered in the package when it is made, and only that
+#' object can be charged. Assigning a budget to another name (`b2 <- b`)
+#' makes no copy: both names are the one ledger. What is not prevented:
+#' code that sets a budget's fields by hand, or that creates several
+#' budgets for one dataset. A budget is an accounting aid for honest code,
+#' not a defence against code that means to overspend.
+#'
 #' A budget of `delta = 0` pays only for pure-DP releases: a release with
 #' any `delta > 0` is refused. The totals are compared with a slack for
 #' floating-point rounding only, so that ten releases at `epsilon = 0.1`
@@ -195,9 +207,19 @@ dpbudget <- function(epsilon, delta = 0) {
   b$releases <- 0L
   b$pid <- Sys.getpid()
   b$token <- .morie_dp_token()
+  b$id <- paste(as.character(.rmd_bl("rndbytes")(16L)), collapse = "")
   class(b) <- "dpbudget"
+  # ponytail: the registry keeps every budget of the session alive (a few hundred
+  # bytes each); a weak reference would let them go, and R has none at R level
+  assign(b$id, b, envir = .morie_dp_ledgers)
   b
 }
+
+# Every budget made in this load of the package, by its id. A copy of a budget
+# (readRDS() of a saved one, unserialize(), or one rebuilt from its fields) is a
+# different environment carrying the same id, and is refused: only the registered
+# object is the ledger.
+.morie_dp_ledgers <- new.env(parent = emptyenv())
 
 #' What a privacy budget has spent
 #'
@@ -240,6 +262,16 @@ print.dpbudget <- function(x, ...) {
          "R process: spend it in the process that created it, or give each ",
          "worker its own budget and account for the total by composition; ",
          "nothing was released.", call. = FALSE)
+  }
+  id <- budget$id
+  own <- if (is.character(id) && length(id) == 1L && !is.na(id) && nzchar(id)) {
+    get0(id, envir = .morie_dp_ledgers, inherits = FALSE)
+  }
+  if (!identical(own, budget)) {
+    stop("this budget is a copy (saved and read back, unserialized, or rebuilt) of ",
+         "one made in this session: a copy would start a second ledger and spend the ",
+         "budget twice. Charge the budget it was copied from; nothing was released.",
+         call. = FALSE)
   }
   if (budget$delta == 0 && delta > 0) {
     stop(sprintf(paste0("this release has delta %.3g, and the budget is for pure DP ",
