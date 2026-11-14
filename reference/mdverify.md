@@ -22,8 +22,28 @@ signature verified, and the function errors if it did not.
 ## Details
 
 A file present in the installed store but absent from the manifest is
-reported too, as a row with `listed = FALSE` and `ok = FALSE`: a file
-added to the store is as much a change as a file altered in it.
+reported too, hidden (dot) files included, as a row with
+`listed = FALSE` and `ok = FALSE`: a file added to the store is as much
+a change as a file altered in it.
+
+What is covered: every file under the package's `extdata` directory (or
+the directory named by `options(rmoriedata.store = )`), which holds
+every table, dictionary, catalog and Parquet copy that
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+[`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md),
+[`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md),
+[`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md)
+and
+[`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
+read. What is not covered: the package's R code, its compiled code, and
+the two lazy-data objects
+[complaint_sample](https://rootcoder007.github.io/rmoriedata/reference/complaint_sample.md)
+and
+[arrest_sample](https://rootcoder007.github.io/rmoriedata/reference/arrest_sample.md)
+(stored in the package's `data` database, not in `extdata`); these are
+installed files of the package itself, which
+`tools::checkMD5sums("rmoriedata")` checks against the `MD5` file of a
+CRAN install.
 
 ## Examples
 

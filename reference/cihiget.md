@@ -3,8 +3,7 @@
 Resolves a CIHI table from the bundled catalogue and downloads it to
 `dest`, falling back to the Internet Archive snapshot if the live CIHI
 URL has rotated or been removed. The download + fallback runs through
-rmoriebricklayer's shared C++/libcurl foundation (`blfetch()`), the same
-engine rmorie and morie use – one implementation across the ecosystem.
+rmoriebricklayer's shared C++/libcurl foundation (`blfetch()`).
 
 ## Usage
 

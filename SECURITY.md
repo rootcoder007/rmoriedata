@@ -1,11 +1,10 @@
 # Security policy & architecture
 
-`rmoriedata` is the **R companion data package** for
-[rmorie](https://github.com/rootcoder007/rmorie). AGPL-3.0-or-later.
-Distributed via r-universe today; CRAN submission planned alongside
-rmorie v1.0.0 alpha.
+`rmoriedata` is an R package for disclosure control of aggregate
+releases, with open datasets. AGPL-3.0-or-later. Distributed on CRAN and
+r-universe.
 
-This package ships only **bundled `.rda` / `.csv` fixtures** drawn from
+This package ships only **bundled `.rda` / `.csv` datasets** drawn from
 public Canadian + US open-data portals (TPS, OTIS, ARSAU, Chicago, NYC,
 Vancouver, Statistics Canada CODR, Montreal, Calgary, Ottawa, Edmonton).
 **No private, FOI-restricted, or agreement-only data is in this
@@ -111,8 +110,8 @@ are trusted; **the contents of this package are the asset**.
 **Out of scope:**
 
 - **Host-OS / R-runtime compromise.** Beyond our reach.
-- **Analytical conclusions drawn from the data.** Those live in rmorie /
-  morie / papers, not here.
+- **Analytical conclusions drawn from the data.** Those belong to the
+  analyses and papers that draw them, not here.
 - **Upstream portal availability.** If `data.ontario.ca` goes down, the
   bundled fixture is the user’s only copy until the portal returns; we
   make no SLA promise.
@@ -145,10 +144,8 @@ exposed at the API surface. The crypto that matters is:
   user can prove the bundled bytes existed at a given moment even if the
   GitHub Release is later deleted.
 
-For users who want to seal *their own* derivatives, the crypto stack in
-[rmorie](https://github.com/rootcoder007/rmorie) is available: X25519 +
-ML-KEM-768 KEX, Ed25519 + ML-DSA-65 signatures, ChaCha20-Poly1305 AEAD,
-Argon2id KDF — all libsodium + liboqs.
+Sealing *your own* derivatives is outside this package; use a dedicated
+cryptography library for it.
 
 ## Control mapping
 
@@ -252,7 +249,6 @@ ITSG-33: Treasury Board of Canada IT Security Guidance. NIST 800-53 Rev
 **Future**
 
 - RFC 3161 timestamping over the manifest from a Canadian TSA.
-- CRAN submission alongside rmorie v1.0.0 alpha.
 
 ------------------------------------------------------------------------
 

@@ -1,10 +1,10 @@
-# Shared C-core helpers (rmorie ecosystem backend)
+# Shared C-core helpers
 
 Thin access to the compiled core that ships in rmoriebricklayer.
 rmoriedata links that core via `LinkingTo: rmoriebricklayer`, so these
-functions call the exact same kernels used across the rmorie family – no
+functions call the exact same kernels that package exports – no
 duplicated C code. They back fast data-integrity hashing and summaries
-for the bundled datasets without requiring rmorie.
+for the bundled datasets.
 
 ## Usage
 

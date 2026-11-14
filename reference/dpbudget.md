@@ -28,6 +28,21 @@ dpbudget(epsilon, delta = 0)
 An object of class `"dpbudget"` (an environment, so charges persist
 across calls).
 
+## Details
+
+A budget is an in-memory ledger held by the R process that created it. A
+forked worker (for example under
+[`parallel::mclapply()`](https://rdrr.io/r/parallel/mclapply.html) or
+[`parallel::mcparallel()`](https://rdrr.io/r/parallel/mcparallel.html))
+gets its own copy, so its spending would never reach the parent and
+every worker could spend the whole budget again. A release charged to a
+budget from any process other than the one that created it is therefore
+refused with an error. Spend a budget in the process that created it; to
+release from workers, give each worker its own budget and account for
+the total yourself by composition (the epsilons and deltas of all
+workers add up). A budget saved and read back in another R session is
+refused in the same way.
+
 ## See also
 
 [`dpspent()`](https://rootcoder007.github.io/rmoriedata/reference/dpspent.md)
@@ -37,7 +52,7 @@ across calls).
 ``` r
 b <- dpbudget(epsilon = 2)
 dplapcnt(42, epsilon = 1, budget = b)
-#> [1] 40
+#> [1] 41
 dpspent(b)
 #> $epsilon
 #> [1] 2

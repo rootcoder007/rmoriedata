@@ -1,17 +1,18 @@
 # Getting started with rmoriedata
 
-`rmoriedata` bundles the open-data fixtures used across the `rmorie`
-ecosystem and ships a small set of analyst-facing helpers for releasing
-aggregate statistics without re-identification risk. Everything shown
-here runs **offline** against data that installs with the package – no
-network required.
+`rmoriedata` is a toolkit for disclosure control of aggregate releases:
+differential privacy, k-anonymity and l-diversity checks, and cell
+suppression audited against the margins. It also bundles open datasets
+to use them on. Everything shown here runs **offline** against data that
+installs with the package – no network required.
 
 The package has four surfaces:
 
 1.  **A bundled dataset store** you browse and load by slug.
 2.  **Named loaders** for the Chicago crime samples, the Ontario SIU
     director’s-report corpus, and the CIHI data-table catalogue.
-3.  **Differential-privacy mechanisms** (`morie_dp_*`).
+3.  **Differential-privacy mechanisms** (`dplapcnt`, `dplaphist`,
+    `dpgmean`, with the budget kept by `dpbudget`).
 4.  **Re-identification-risk verifiers** (`kanonvrf`, `ldivvrf`,
     `cellsupp`).
 
@@ -173,21 +174,21 @@ set.seed(1)
 
 # A private count of records matching a predicate.
 dplapcnt(truecnt = 42, epsilon = 1.0)
-#> [1] 44
+#> [1] 43
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, dplapcnt(42, epsilon = 1.0)))
-#> [1] 42.008
+#> [1] 41.9835
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.4923223
+#> [1] 0.5095013
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, dplaphist(counts, epsilon = 1.0)))
-#> [1] 24996     2
+#> [1] 24998     0
 ```
 
 ## 5. Re-identification risk

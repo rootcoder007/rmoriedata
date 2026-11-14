@@ -2,6 +2,12 @@
 
 ## rmoriedata 0.4.3
 
+- A hosted table downloaded in parts no longer comes out damaged when
+  the disk fills up while the parts are joined: the failed write is an
+  error that names the folder and `options(rmoriedata.cache_dir = )`,
+  where it was a short file that then failed its checksum. Each part is
+  deleted once it is joined, so the download needs the table’s size plus
+  one part on disk, not twice the table’s size.
 - The title, description and citation put the package’s
   disclosure-control tools first (differential privacy, k-anonymity and
   l-diversity checks, cell suppression); the datasets follow. Nothing in
@@ -102,7 +108,7 @@
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   checks every table against the manifest’s SHA-256 again, whatever the
   field is called (`sha256_gz`, `sha256` or `sha`, as rmoriebricklayer
-  reads it): 0.4.3 read `sha256` only, so 631 tables listed with
+  reads it): 0.4.2 read `sha256` only, so 631 tables listed with
   `sha256_gz` were used unchecked and a modified cached copy loaded. A
   digest field that is not a SHA-256 is an error, and a table listed
   without any digest loads with a warning, once per session.
@@ -126,6 +132,80 @@
 - The signing test writes its XMSS used-index record to a temporary
   file, not to `~/.config/R/rmoriebricklayer`.
 - The vignette’s reference to the integrity checks is no longer empty.
+- A privacy budget from
+  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
+  cannot be spent from a forked worker or another R process:
+  [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
+  and
+  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md)
+  refuse it there with an error. Four workers under
+  [`parallel::mclapply()`](https://rdrr.io/r/parallel/mclapply.html)
+  each spent 0.9 from one budget of 1 and the parent recorded nothing;
+  give each worker its own budget and add up the epsilons.
+- [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
+  and
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
+  compare numeric quasi-identifiers exactly: values that agree to 15
+  significant digits, such as `0.1 + 0.2` and `0.3`, were one class, so
+  a class of one could be reported as a class of five. `-0` and `0` are
+  one class, and `NaN` is missing with `NA`.
+- [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
+  treats an `NA` cell as unpublished in its audit, as its help says, and
+  gives it complements like any hidden cell: it was treated as known, so
+  a hidden cell recoverable through it was reported as protected.
+  Infinite and fractional counts are refused, and a function or an
+  environment gets the package’s “must be a numeric matrix or table”
+  error.
+- [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
+  deletes only `arrests_full.parquet`, `complaints_full.parquet`,
+  unfinished `write-*.parquet` files and their `.sha256` files: it
+  deleted any file ending in `_full.parquet` and left the `.sha256` of
+  an unfinished write.
+- `chiload(full = TRUE, mirror = )` gives a mirror’s table the bundled
+  sample’s types when its columns have the sample’s names (a `date`
+  stored as text came back as text), and refuses a column that cannot be
+  read as the sample’s type.
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+  check `refresh` in words (`NA`, `"yes"`, `NULL` and `c(TRUE, FALSE)`
+  gave base-R errors or acted as `TRUE`), and a table size in the hosted
+  manifest that is not a whole number from 1 to 2^40 bytes is refused in
+  words: an absurd size stopped in
+  [`seq()`](https://rdrr.io/r/base/seq.html).
+- [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  and
+  [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md)
+  list hidden files in the store too, and the help of
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  says what it covers: every file of the data store, not the package
+  code or the lazy-loaded `complaint_sample` and `arrest_sample`.
+  [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md),
+  [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md)
+  and
+  [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
+  read the store named by `options(rmoriedata.store = )`, the one they
+  verify; they used to read the installed copy.
+- [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md)
+  and
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
+  refuse a count of 2^53 itself: 2^53 + 1 rounds back to 2^53, so the
+  release could equal the truth.
+- The Parquet writer keeps `NaN` (it read back as `NA`), refuses a data
+  frame with no columns, which its reader could not open, and refuses
+  list, complex, raw and `difftime` columns in words, naming the column:
+  they were written as text. Every error of the reader starts with
+  `parquet:`, and a damaged file no longer lets a base-R warning such as
+  “NAs introduced by coercion to integer range” escape before the error.
+- The help pages, README, vignette and website describe the package by
+  its own purpose, disclosure control first and the datasets second, and
+  no longer as a companion of another package; the README’s function
+  list and the reference index follow that order. The README names the
+  real source of each table’s attribution, the right path for reading
+  the sample with `pyreadr` and the right
+  [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  columns, and drops an out-of-date note on package size.
 
 ## rmoriedata 0.4.2
 

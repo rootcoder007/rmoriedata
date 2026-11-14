@@ -13,9 +13,11 @@ morie_write_parquet(df, path, compression = "gzip")
 
 - df:
 
-  A `data.frame`. Factor columns are written as character; every string
-  must be valid UTF-8 (marked, or unmarked in UTF-8 bytes), and column
-  names must be unique.
+  A `data.frame` with at least one column. Factor columns are written as
+  character; list, complex, raw and `difftime` columns are refused with
+  an error naming the column. `NaN` in a numeric column is kept as
+  `NaN`. Every string must be valid UTF-8 (marked, or unmarked in UTF-8
+  bytes), and column names must be unique.
 
 - path:
 

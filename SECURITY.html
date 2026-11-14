@@ -35,8 +35,8 @@
 
 <div id="security-policy--architecture" class="section level1">
 
-<p><code>rmoriedata</code> is the <strong>R companion data package</strong> for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>. AGPL-3.0-or-later. Distributed via r-universe today; CRAN submission planned alongside rmorie v1.0.0 alpha.</p>
-<p>This package ships only <strong>bundled <code>.rda</code> / <code>.csv</code> fixtures</strong> drawn from public Canadian + US open-data portals (TPS, OTIS, ARSAU, Chicago, NYC, Vancouver, Statistics Canada CODR, Montreal, Calgary, Ottawa, Edmonton). <strong>No private, FOI-restricted, or agreement-only data is in this package.</strong> That property is the central security claim and the rest of this document explains how it is enforced.</p>
+<p><code>rmoriedata</code> is an R package for disclosure control of aggregate releases, with open datasets. AGPL-3.0-or-later. Distributed on CRAN and r-universe.</p>
+<p>This package ships only <strong>bundled <code>.rda</code> / <code>.csv</code> datasets</strong> drawn from public Canadian + US open-data portals (TPS, OTIS, ARSAU, Chicago, NYC, Vancouver, Statistics Canada CODR, Montreal, Calgary, Ottawa, Edmonton). <strong>No private, FOI-restricted, or agreement-only data is in this package.</strong> That property is the central security claim and the rest of this document explains how it is enforced.</p>
 <blockquote>
 <p><strong>Status (2026-05-26):</strong> repository scaffold exists; package contents are being staged in <a href="../rmoriedata-staging/"><code>/Volumes/VSR/rootcoderfiles/rmoriedata-staging/</code></a> in parallel. The SECURITY policy is being put in place ahead of the first public r-universe push so the conformance discipline is established from day one.</p>
 </blockquote>
@@ -101,7 +101,7 @@
 <ul><li>
 <strong>Host-OS / R-runtime compromise.</strong> Beyond our reach.</li>
 <li>
-<strong>Analytical conclusions drawn from the data.</strong> Those live in rmorie / morie / papers, not here.</li>
+<strong>Analytical conclusions drawn from the data.</strong> Those belong to the analyses and papers that draw them, not here.</li>
 <li>
 <strong>Upstream portal availability.</strong> If <code>data.ontario.ca</code> goes down, the bundled fixture is the user’s only copy until the portal returns; we make no SLA promise.</li>
 <li>
@@ -133,7 +133,7 @@
 <strong>SLSA L3 build provenance</strong> attestation from <a href="https://github.com/actions/attest-build-provenance" class="external-link"><code>actions/attest-build-provenance</code></a>; <code>gh attestation verify</code> confirms what tag built what bytes.</li>
 <li>
 <strong>(Roadmap)</strong> RFC 3161 timestamp from a Canadian TSA (<code>timestamp.entrust.net</code>) over each bundled-fixture manifest, so the user can prove the bundled bytes existed at a given moment even if the GitHub Release is later deleted.</li>
-</ul><p>For users who want to seal <em>their own</em> derivatives, the crypto stack in <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a> is available: X25519 + ML-KEM-768 KEX, Ed25519 + ML-DSA-65 signatures, ChaCha20-Poly1305 AEAD, Argon2id KDF — all libsodium + liboqs.</p>
+</ul><p>Sealing <em>your own</em> derivatives is outside this package; use a dedicated cryptography library for it.</p>
 </div>
 <div class="section level2">
 <h2 id="control-mapping">Control mapping<a class="anchor" aria-label="anchor" href="#control-mapping"></a></h2>
@@ -266,7 +266,6 @@
 <li>macOS / Windows binary-package signing once CRAN submission begins.</li>
 </ul><p><strong>Future</strong></p>
 <ul><li>RFC 3161 timestamping over the manifest from a Canadian TSA.</li>
-<li>CRAN submission alongside rmorie v1.0.0 alpha.</li>
 </ul><hr><p>Maintainer: <strong>Vansh Singh Ruhela</strong> (<a href="https://github.com/rootcoder007" class="external-link">rootcoder007</a>)  ·  <a href="mailto:vsruhela@proton.me" class="email">vsruhela@proton.me</a></p>
 </div>
 </div>

@@ -36,15 +36,15 @@
 <div id="agentsmd" class="section level1">
 
 <p>Behavioural guidance for AI coding agents working in this repository. <code>CLAUDE.md</code> and <code>GEMINI.md</code> are thin pointers (<code>@AGENTS.md</code>).</p>
-<p><strong>rmoriedata</strong> is the data + light-helper companion R package for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>. Its first job is disclosure control for aggregate releases; it also bundles open-data fixtures and has a small, deliberate set of analyst-facing helpers:</p>
+<p><strong>rmoriedata</strong> is an R package for disclosure control of aggregate releases; it also bundles open datasets to use it on, and has a small, deliberate set of analyst-facing helpers:</p>
 <ul><li>
-<strong>Differential privacy + re-identification risk</strong> — <code>morie_dp_*</code>, <code>kanonvrf</code>, <code>ldivvrf</code>, <code>cellsupp</code> (base-R only).</li>
+<strong>Differential privacy + re-identification risk</strong> — <code>dplapcnt</code>, <code>dplaphist</code>, <code>dpgmean</code>, <code>dpbudget</code>, <code>kanonvrf</code>, <code>ldivvrf</code>, <code>cellsupp</code> (base-R only).</li>
 <li>
-<strong>Shared C backend</strong> — <code><a href="reference/morie_core.html">mdsha()</a></code> / <code><a href="reference/morie_core.html">mdmean()</a></code> delegate to the ecosystem’s compiled core via <code>LinkingTo: rmoriebricklayer</code> (one shared copy of morie’s arithmetic; see <a href="https://github.com/rootcoder007/rmorie-bricklayer" class="external-link">rmoriebricklayer</a>). <code>src/</code> exists for this and must stay a thin link to the core — do NOT reimplement numeric kernels here.</li>
-</ul><p>Keep additions small and fixture-adjacent; heavy analysis belongs in rmorie, not here.</p>
+<strong>Shared C backend</strong> — <code><a href="reference/morie_core.html">mdsha()</a></code> / <code><a href="reference/morie_core.html">mdmean()</a></code> delegate to the ecosystem’s compiled core via <code>LinkingTo: rmoriebricklayer</code> (one shared copy of morie’s arithmetic; see [rmoriebricklayer]). <code>src/</code> exists for this and must stay a thin link to the core — do NOT reimplement numeric kernels here.</li>
+</ul><p>Keep additions small: disclosure control and access to the bundled data. General-purpose analysis does not belong here. [rmoriebricklayer]: <a href="https://github.com/rootcoder007/rmorie-bricklayer" class="external-link uri">https://github.com/rootcoder007/rmorie-bricklayer</a></p>
 <div class="section level2">
 <h2 id="license--agpl-30-or-later">License — AGPL-3.0-or-later<a class="anchor" aria-label="anchor" href="#license--agpl-30-or-later"></a></h2>
-<p>Strong copyleft, matching morie + rmorie. See those repos’ AGENTS.md for the full rationale. Short version:</p>
+<p>Strong copyleft. Short version:</p>
 <ul><li>Every R source file (there’s only <code>R/zzz.R</code>) carries <code># SPDX-License-Identifier: AGPL-3.0-or-later</code>. Preserve it.</li>
 <li>Bundled data files are released under the SAME license terms. Do NOT relabel <code>inst/extdata/*</code> as CC0, CC-BY, or anything else unless the upstream source explicitly grants it.</li>
 </ul></div>
@@ -56,7 +56,7 @@
 </div>
 <div class="section level3">
 <h3 id="ask-before-pushing--every-push-every-remote">Ask before pushing — every push, every remote<a class="anchor" aria-label="anchor" href="#ask-before-pushing--every-push-every-remote"></a></h3>
-<p>Particularly important: this package is referenced as a <code>Remotes:</code> target from rmorie’s DESCRIPTION. A bad push here breaks rmorie’s CI.</p>
+<p>Particularly important: other packages reference this one as a <code>Remotes:</code> target, and a bad push here breaks their CI.</p>
 </div>
 <div class="section level3">
 <h3 id="dont-guess-verify">Don’t guess; verify<a class="anchor" aria-label="anchor" href="#dont-guess-verify"></a></h3>
@@ -72,7 +72,7 @@
 <li>
 <strong>No false license claims.</strong> Check <code>data.ontario.ca</code> / <code>open.canada.ca</code> / <code>health-infobase</code> for the actual upstream license before adding a license note to a docstring. OTIS + CPADS were both falsely flagged as FOI/private — they are open.</li>
 <li>
-<strong>No bloat.</strong> This package is intentionally small. If a fixture would push it past ~5 MB, host it externally and add a fetcher function in rmorie instead.</li>
+<strong>No bloat.</strong> This package is intentionally small. If a fixture would push the package much past its current size, host it externally (data.rmorie.com, read with <code><a href="reference/hostcat.html">hostload()</a></code>) instead.</li>
 </ul></div>
 <div class="section level2">
 <h2 id="where-things-live">Where things live<a class="anchor" aria-label="anchor" href="#where-things-live"></a></h2>

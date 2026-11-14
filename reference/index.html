@@ -33,9 +33,92 @@
     </div>
 
     <div class="section level2">
-      <h2 id="bundled-datasets">Bundled datasets<a class="anchor" aria-label="anchor" href="#bundled-datasets"></a></h2>
+      <h2 id="differential-privacy">Differential privacy<a class="anchor" aria-label="anchor" href="#differential-privacy"></a></h2>
 
-      <div class="section-desc"><p>Discover, load, and inspect the packaged Canadian public-data tables (OTIS carceral data, CIHI health tables, Chicago crime) that the rmorie analysis functions consume.</p></div>
+      <div class="section-desc"><p>Exact discrete Laplace noise for counts and histograms, the analytic Gaussian mechanism for means, and a privacy budget the releases are charged against.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="dplapcnt.html">dplapcnt()</a></code>
+
+        </dt>
+        <dd>Differentially-private count via the discrete Laplace mechanism</dd>
+
+        <dt>
+
+          <code><a href="dplaphist.html">dplaphist()</a></code>
+
+        </dt>
+        <dd>Differentially-private histogram via the discrete Laplace mechanism</dd>
+
+        <dt>
+
+          <code><a href="dpgmean.html">dpgmean()</a></code>
+
+        </dt>
+        <dd>Differentially-private mean via the analytic Gaussian mechanism</dd>
+
+        <dt>
+
+          <code><a href="dpbudget.html">dpbudget()</a></code>
+
+        </dt>
+        <dd>A privacy budget that DP releases are charged against</dd>
+
+        <dt>
+
+          <code><a href="dpspent.html">dpspent()</a></code>
+
+        </dt>
+        <dd>What a privacy budget has spent</dd>
+      </dl></div><div class="section level2">
+      <h2 id="k-anonymity-and-l-diversity">k-anonymity and l-diversity<a class="anchor" aria-label="anchor" href="#k-anonymity-and-l-diversity"></a></h2>
+
+      <div class="section-desc"><p>Checks of a table’s quasi-identifier classes before release.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="kanonvrf.html">kanonvrf()</a></code>
+
+        </dt>
+        <dd>k-anonymity verification</dd>
+
+        <dt>
+
+          <code><a href="ldivvrf.html">ldivvrf()</a></code>
+
+        </dt>
+        <dd>l-diversity verification</dd>
+      </dl></div><div class="section level2">
+      <h2 id="cell-suppression">Cell suppression<a class="anchor" aria-label="anchor" href="#cell-suppression"></a></h2>
+
+      <div class="section-desc"><p>Primary and complementary suppression of small cells, audited for exact recovery from the margins.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="cellsupp.html">cellsupp()</a></code>
+
+        </dt>
+        <dd>Cell suppression with complementary suppression and a recoverability audit</dd>
+      </dl></div><div class="section level2">
+      <h2 id="bundled-datasets-and-readers">Bundled datasets and readers<a class="anchor" aria-label="anchor" href="#bundled-datasets-and-readers"></a></h2>
+
+      <div class="section-desc"><p>Discover, load, verify and inspect the bundled open-data tables (Ontario correctional and use-of-force releases, SIU director’s reports, CIHI data tables, Chicago crime and others).</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -55,13 +138,6 @@
 
         </dt>
         <dd>Load a bundled dataset by slug</dd>
-
-        <dt>
-
-          <code><a href="hostcat.html">hostcat()</a></code> <code><a href="hostcat.html">hostload()</a></code>
-
-        </dt>
-        <dd>Curated datasets at data.rmorie.com</dd>
 
         <dt>
 
@@ -126,110 +202,6 @@
         </dt>
         <dd>Load the Ontario SIU director's-report corpus</dd>
       </dl></div><div class="section level2">
-      <h2 id="differential-privacy">Differential privacy<a class="anchor" aria-label="anchor" href="#differential-privacy"></a></h2>
-
-      <div class="section-desc"><p>Calibrated-noise mechanisms (Laplace, Gaussian) for releasing privacy-preserving counts, histograms, and means at a stated epsilon.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="dplapcnt.html">dplapcnt()</a></code>
-
-        </dt>
-        <dd>Differentially-private count via the discrete Laplace mechanism</dd>
-
-        <dt>
-
-          <code><a href="dplaphist.html">dplaphist()</a></code>
-
-        </dt>
-        <dd>Differentially-private histogram via the discrete Laplace mechanism</dd>
-
-        <dt>
-
-          <code><a href="dpgmean.html">dpgmean()</a></code>
-
-        </dt>
-        <dd>Differentially-private mean via the analytic Gaussian mechanism</dd>
-
-        <dt>
-
-          <code><a href="dpbudget.html">dpbudget()</a></code>
-
-        </dt>
-        <dd>A privacy budget that DP releases are charged against</dd>
-
-        <dt>
-
-          <code><a href="dpspent.html">dpspent()</a></code>
-
-        </dt>
-        <dd>What a privacy budget has spent</dd>
-      </dl></div><div class="section level2">
-      <h2 id="statistical-disclosure-control">Statistical disclosure control<a class="anchor" aria-label="anchor" href="#statistical-disclosure-control"></a></h2>
-
-      <div class="section-desc"><p>Re-identification safeguards for microdata releases: k-anonymity and l-diversity checks plus small-cell suppression.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="kanonvrf.html">kanonvrf()</a></code>
-
-        </dt>
-        <dd>k-anonymity verification</dd>
-
-        <dt>
-
-          <code><a href="ldivvrf.html">ldivvrf()</a></code>
-
-        </dt>
-        <dd>l-diversity verification</dd>
-
-        <dt>
-
-          <code><a href="cellsupp.html">cellsupp()</a></code>
-
-        </dt>
-        <dd>Cell suppression with complementary suppression and a recoverability audit</dd>
-      </dl></div><div class="section level2">
-      <h2 id="core-utilities">Core utilities<a class="anchor" aria-label="anchor" href="#core-utilities"></a></h2>
-
-      <div class="section-desc"><p>Shared primitives used across the package.</p></div>
-
-      <dl></dl></div><div class="section level2">
-
-
-
-
-      <dl><dt>
-
-          <code><a href="morie_core.html">mdsha()</a></code> <code><a href="morie_core.html">mdmean()</a></code>
-
-        </dt>
-        <dd>Shared C-core helpers (rmorie ecosystem backend)</dd>
-
-        <dt>
-
-          <code><a href="mdask.html">mdask()</a></code>
-
-        </dt>
-        <dd>Ask a language model about the bundled datasets</dd>
-
-        <dt>
-
-          <code><a href="mdllmconf.html">mdllmconf()</a></code>
-
-        </dt>
-        <dd>Show or save the language-model settings</dd>
-      </dl></div><div class="section level2">
       <h2 id="sample-data-objects">Sample data objects<a class="anchor" aria-label="anchor" href="#sample-data-objects"></a></h2>
 
       <div class="section-desc"><p>Small documented data frames bundled for examples and tests (lazy-loaded via data()).</p></div>
@@ -268,6 +240,52 @@
 
         </dt>
         <dd>Victorian crime statistics (Crime Statistics Agency Victoria)</dd>
+      </dl></div><div class="section level2">
+      <h2 id="hosted-tables">Hosted tables<a class="anchor" aria-label="anchor" href="#hosted-tables"></a></h2>
+
+      <div class="section-desc"><p>Curated tables served at data.rmorie.com, checked against the manifest’s SHA-256.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="hostcat.html">hostcat()</a></code> <code><a href="hostcat.html">hostload()</a></code>
+
+        </dt>
+        <dd>Curated datasets at data.rmorie.com</dd>
+      </dl></div><div class="section level2">
+      <h2 id="core-utilities-and-language-model">Core utilities and language model<a class="anchor" aria-label="anchor" href="#core-utilities-and-language-model"></a></h2>
+
+      <div class="section-desc"><p>Shared compiled primitives, and questions about the catalogue.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="morie_core.html">mdsha()</a></code> <code><a href="morie_core.html">mdmean()</a></code>
+
+        </dt>
+        <dd>Shared C-core helpers</dd>
+
+        <dt>
+
+          <code><a href="mdask.html">mdask()</a></code>
+
+        </dt>
+        <dd>Ask a language model about the bundled datasets</dd>
+
+        <dt>
+
+          <code><a href="mdllmconf.html">mdllmconf()</a></code>
+
+        </dt>
+        <dd>Show or save the language-model settings</dd>
       </dl></div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>

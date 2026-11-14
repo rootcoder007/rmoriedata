@@ -70,7 +70,7 @@ flag.</p>
     <p>Ontario Special Investigations Unit director's reports,
 <a href="https://www.siu.on.ca/en/directors_reports.php" class="external-link">https://www.siu.on.ca/en/directors_reports.php</a> (post-2018)
 and the Ontario Government archive (pre-2018). Parsed with the
-<span class="pkg">rmorie</span> SIU subsystem.</p>
+MORIE SIU parser.</p>
     </div>
     <div class="section level2">
     <h2 id="arguments">Arguments<a class="anchor" aria-label="anchor" href="#arguments"></a></h2>
@@ -134,15 +134,15 @@ each with its own <code>drid</code>. Some schema columns (for example the raw
 times of injury and notification, evidence types, and weapons used) are
 not stated in the published reports and are empty throughout; they are
 kept so the table's shape matches the parser's schema.</p>
-<p>This is the machine-readable companion to the SIU parser and
-data-mining subsystem in <span class="pkg">rmorie</span> / <span class="pkg">morie</span> – the first
-open-source pipeline for the SIU director's-report corpus, created
-by Vansh Singh Ruhela as part of the MORIE / MRM framework. The
-table is regenerated from the parser over the full public corpus;
-see <code>rmorie::morie_fetch_siu()</code> to rebuild it live.</p>
+<p>The table is the output of the SIU director's-report parser, the first
+open-source pipeline for this corpus, created by Vansh Singh Ruhela as
+part of the MORIE / MRM framework, regenerated over the full public
+corpus. The parser itself is in the rmorie package
+(<code>rmorie::morie_fetch_siu()</code> rebuilds the table live); nothing
+here needs it.</p>
 <p>This loader returns the corpus as text: every column is character and
 an empty cell is <code>""</code>, which is the form the SIU parser writes and
-<span class="pkg">rmorie</span> reads back. The same table is also in the typed data
+reads back. The same table is also in the typed data
 store: <code>mdload("siu_directors_reports")</code> applies the
 bundled schema (integer <code>drid</code> and counts, <code>NA</code> for empty
 cells), so counts of missing values differ between the two entry

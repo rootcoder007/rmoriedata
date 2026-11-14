@@ -65,7 +65,14 @@ its own: rows with an unrecorded ward, age band or race form their own
 classes and are counted, never dropped. Unrecorded values are often the
 rarest records, which makes them the most re-identifiable, so they must
 meet the threshold like any other class. Every row is accounted for: the
-class sizes sum to `nrow(data)`.
+class sizes sum to `nrow(data)`. `NaN` counts as missing, in the same
+class as `NA`.
+
+Values are compared exactly. Two numbers (plain doubles) are in one
+class only when they are the same double, so `0.1 + 0.2` and `0.3`,
+which differ in the last bit, are two classes; `-0` and `0` are one.
+Integer, character, logical, factor and `Date` columns are compared by
+their values as printed (a factor by its level label).
 
 ## Examples
 

@@ -64,8 +64,9 @@ the rest are skipped entirely.</p></dd>
 </dl></div>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A <code>data.frame</code>. A damaged file is an error that starts with
-<code>parquet:</code>.</p>
+    <p>A <code>data.frame</code>. Every error the reader raises, a missing or
+damaged file included, starts with <code>parquet:</code>; no base-R warning escapes
+it (a value a damaged file makes R warn about is an error instead).</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

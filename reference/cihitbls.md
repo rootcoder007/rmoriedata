@@ -34,9 +34,10 @@ A `data.frame` with columns `title`, `url`, `wayback_url`.
 
 ## Details
 
-Pair with `rmorie::morie_ingest_cihi_xlsx()` to download + parse any row
-(that helper tries `url` first and falls back to `wayback_url`). The
-Wayback snapshots were resolved with
+Download any row with
+[`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md),
+which tries `url` first and falls back to `wayback_url`. The Wayback
+snapshots were resolved with
 [`rmoriebricklayer::wbsnpurl()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/wbsnpurl.html).
 
 ## Examples

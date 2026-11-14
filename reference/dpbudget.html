@@ -76,6 +76,19 @@ before any noise is drawn. A hundred releases at <code>epsilon = 1</code> spend
 charges persist across calls).</p>
     </div>
     <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A budget is an in-memory ledger held by the R process that created it.
+A forked worker (for example under <code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mclapply()</a></code> or
+<code><a href="https://rdrr.io/r/parallel/mcparallel.html" class="external-link">parallel::mcparallel()</a></code>) gets its own copy, so its spending would never
+reach the parent and every worker could spend the whole budget again.
+A release charged to a budget from any process other than the one that
+created it is therefore refused with an error. Spend a budget in the
+process that created it; to release from workers, give each worker its
+own budget and account for the total yourself by composition (the
+epsilons and deltas of all workers add up). A budget saved and read
+back in another R session is refused in the same way.</p>
+    </div>
+    <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>
     <div class="dont-index"><p><code><a href="dpspent.html">dpspent()</a></code></p></div>
     </div>
@@ -84,7 +97,7 @@ charges persist across calls).</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">dpbudget</span><span class="op">(</span>epsilon <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="dplapcnt.html">dplapcnt</a></span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1</span>, budget <span class="op">=</span> <span class="va">b</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 40</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41</span>
 <span class="r-in"><span><span class="fu"><a href="dpspent.html">dpspent</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $epsilon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>

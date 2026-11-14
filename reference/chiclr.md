@@ -3,8 +3,9 @@
 Deletes the Parquet files that `chiload(full = TRUE)` wrote to the cache
 directory ([`tempdir()`](https://rdrr.io/r/base/tempfile.html) by
 default, or the directory named in `options(rmoriedata.cache_dir = )`):
-the `<type>_full.parquet` files, their checksum files and any unfinished
-write. Nothing else in that directory is touched.
+the `arrests_full.parquet` and `complaints_full.parquet` files, their
+`.sha256` checksum files and any unfinished write (`write-*.parquet` and
+its `.sha256`). Nothing else in that directory is touched.
 
 ## Usage
 

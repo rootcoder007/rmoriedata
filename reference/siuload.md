@@ -21,8 +21,7 @@ siuload(
 
 Ontario Special Investigations Unit director's reports,
 <https://www.siu.on.ca/en/directors_reports.php> (post-2018) and the
-Ontario Government archive (pre-2018). Parsed with the rmorie SIU
-subsystem.
+Ontario Government archive (pre-2018). Parsed with the MORIE SIU parser.
 
 ## Arguments
 
@@ -86,15 +85,16 @@ notification, evidence types, and weapons used) are not stated in the
 published reports and are empty throughout; they are kept so the table's
 shape matches the parser's schema.
 
-This is the machine-readable companion to the SIU parser and data-mining
-subsystem in rmorie / morie – the first open-source pipeline for the SIU
-director's-report corpus, created by Vansh Singh Ruhela as part of the
-MORIE / MRM framework. The table is regenerated from the parser over the
-full public corpus; see `rmorie::morie_fetch_siu()` to rebuild it live.
+The table is the output of the SIU director's-report parser, the first
+open-source pipeline for this corpus, created by Vansh Singh Ruhela as
+part of the MORIE / MRM framework, regenerated over the full public
+corpus. The parser itself is in the rmorie package
+(`rmorie::morie_fetch_siu()` rebuilds the table live); nothing here
+needs it.
 
 This loader returns the corpus as text: every column is character and an
-empty cell is `""`, which is the form the SIU parser writes and rmorie
-reads back. The same table is also in the typed data store:
+empty cell is `""`, which is the form the SIU parser writes and reads
+back. The same table is also in the typed data store:
 `mdload("siu_directors_reports")` applies the bundled schema (integer
 `drid` and counts, `NA` for empty cells), so counts of missing values
 differ between the two entry points by construction; pick the typed

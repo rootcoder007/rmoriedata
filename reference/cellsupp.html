@@ -125,11 +125,14 @@ hidden values from below at nothing.</p>
 the feasible interval of each hidden cell, which bounds from
 non-negativity can narrow; a table whose hidden values must stay inside
 a wide interval needs an interval audit (linear programming) on top.</p>
-<p>Only finite numeric cells are eligible for suppression. <code>NA</code> cells
-in the input pass through unchanged and are treated as unpublished. A zero
-cell is published as it is: the threshold rule protects the few
-contributors of a small cell, and a zero has none. Negative counts are
-refused.</p>
+<p>Cells must be non-negative whole numbers or <code>NA</code>; infinite,
+fractional and negative cells are refused. <code>NA</code> cells in the input
+pass through unchanged and are treated as unpublished: they count as
+hidden in the audit (their values are not known to a reader) and receive
+complements like any hidden cell, but they are not counted as primary or
+complementary suppressions. A zero cell is published as it is: the
+threshold rule protects the few contributors of a small cell, and a zero
+has none.</p>
     </div>
 
     <div class="section level2">

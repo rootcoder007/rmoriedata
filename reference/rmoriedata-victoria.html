@@ -89,10 +89,8 @@ and Local Government Area.</p></dd>
 Strait Islander status breakdowns, as published.</p></dd>
 
 
-</dl><p>The workbooks are .xlsx. They were read with rmorie's native reader, so
-the bundled data comes through the same code path a user hits – no
-<span class="pkg">readxl</span> or <span class="pkg">openxlsx</span> dependency, and no second parser that
-could disagree with the first. Rebuild with
+</dl><p>The workbooks are .xlsx. They were read with a native .xlsx reader, with
+no <span class="pkg">readxl</span> or <span class="pkg">openxlsx</span> dependency. Rebuild with
 <code>data-raw/build_vic_tables.R</code>.</p>
 <p>Counts are as published by the CSA and are subject to its own
 revisions: figures for a given year change between releases as

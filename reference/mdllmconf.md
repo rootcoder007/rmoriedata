@@ -4,8 +4,8 @@ The route
 [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
 takes and the address, key and model of each route (your own
 OpenAI-compatible server, each provider such as Anthropic or OpenAI, a
-local or LAN Ollama server), shared with rmoriebricklayer, rmorie and
-the Python package morie. A thin front to
+local or LAN Ollama server), shared with rmoriebricklayer and the
+packages built on it. A thin front to
 [`rmoriebricklayer::llmcfg()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/llmcfg.html),
 which saves them in `~/.config/morie/llm.json` only when you pass a
 setting; from the shell, `rmbl config` and `rmbl config setup` do the

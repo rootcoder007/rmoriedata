@@ -78,6 +78,118 @@ On macOS, CRAN’s R (from <https://CRAN.R-project.org/bin/macosx/>)
 installs r-universe’s prebuilt binaries in seconds. Homebrew’s R cannot
 use them, so there every package is compiled from source.
 
+## Quick start
+
+``` r
+
+library(rmoriedata)
+
+# Release a private count, then check a table for re-identification risk.
+dplapcnt(truecnt = 42, epsilon = 1.0)
+df <- data.frame(age = c(25, 25, 25, 40), sex = c("F", "F", "F", "M"))
+kanonvrf(df, c("age", "sex"), k = 2)$summary
+cellsupp(matrix(c(120, 3, 47, 88), 2), threshold = 5)$protected
+
+# Browse and load a bundled table by slug.
+cat <- mdcat()
+head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
+iucr <- mdload("chicago_iucr_codes")
+```
+
+See
+[`vignette("rmoriedata")`](https://rootcoder007.github.io/rmoriedata/articles/rmoriedata.md)
+for the full tour.
+
+## Functions
+
+- **Differential privacy** —
+  [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md),
+  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md);
+  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
+  holds an epsilon (and delta) the releases draw down, and
+  [`dpspent()`](https://rootcoder007.github.io/rmoriedata/reference/dpspent.md)
+  reports what has been spent.
+- **k-anonymity and l-diversity** —
+  [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md).
+- **Cell suppression** —
+  [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md),
+  with complementary suppression and an exact recoverability audit.
+- **Bundled datasets and readers** —
+  [`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md),
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md),
+  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md),
+  [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md);
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  checks every bundled file against the signed manifest.
+- **Ontario SIU director’s reports** —
+  [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md)
+  returns the reviewed corpus (one row per report, French and English,
+  with corrigenda applied).
+- **CIHI data tables** —
+  [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
+  lists the open workbooks and
+  [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
+  downloads one (live, with a Wayback fallback).
+- **Chicago** —
+  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
+  (below) and
+  [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
+  for the cached full datasets.
+- **Hosted tables** —
+  [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  (below).
+- **Shared compiled core** —
+  [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  and
+  [`mdmean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  delegate to the C core of rmoriebricklayer via `LinkingTo` (one source
+  of truth).
+- **Language model** —
+  [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
+  and
+  [`mdllmconf()`](https://rootcoder007.github.io/rmoriedata/reference/mdllmconf.md)
+  (below).
+
+## Chicago sample data — R and Python
+
+Bundled samples (`complaint_sample`, `arrest_sample`) from the City of
+Chicago open data; the full datasets are fetched on demand and cached.
+
+``` r
+
+library(rmoriedata)
+data(complaint_sample)                       # bundled sample, offline
+crimes <- chiload("complaints", full = TRUE, limit = 200)  # the full data, first 200 rows
+# omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)
+pq <- chiload("arrests", as = "parquet_path")  # Parquet for Python
+```
+
+``` python
+import pandas as pd
+df = pd.read_parquet(pq)                      # path printed by chiload
+
+# Or read the sample's .rda from the package source (data/complaint_sample.rda
+# in the source tarball or the GitHub repository; an installed package keeps it
+# in a lazy-load database instead) — use the date_iso column, since POSIXct
+# does not roundtrip cleanly through pyreadr:
+import pyreadr
+complaints = pyreadr.read_r("data/complaint_sample.rda")["complaint_sample"]
+```
+
+Every bundled table also ships as Parquet: `mdpath("<slug>")` gives the
+verified path, `pd.read_parquet()` reads it.
+
+**Recommended Python bridge:** the Parquet path (`as = "parquet_path"`)
+— typed, columnar, read natively by pandas/polars/duckdb with correct
+timestamps and no R runtime. `pyreadr` on the source `.rda` works for
+quick read-only access but is slower and mangles `POSIXct` (use
+`date_iso`).
+
 ## Curated tables at data.rmorie.com
 
 The tables the MORIE project materialises from BigQuery public datasets,
@@ -98,7 +210,7 @@ without a release.
 
 ``` r
 
-cat_ <- hostcat()            # key, rows, columns, source dataset
+cat_ <- hostcat()            # key, name, rows, source dataset
 df <- hostload("fec_cm_2020/fec_cm_2020")
 ```
 
@@ -118,110 +230,6 @@ Sys.setenv(ANTHROPIC_API_KEY = "...")          # or mdllmconf(anthropic.key = ".
 mdask("which tables cover police stops?")
 mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 ```
-
-## Quick start
-
-``` r
-
-library(rmoriedata)
-
-# Browse and load a bundled table by slug.
-cat <- mdcat()
-head(cat[cat$kind == "table", c("slug", "n_rows", "n_cols")])
-iucr <- mdload("chicago_iucr_codes")
-
-# Release a private count, then check a table for re-identification risk.
-dplapcnt(truecnt = 42, epsilon = 1.0)
-df <- data.frame(age = c(25, 25, 25, 40), sex = c("F", "F", "F", "M"))
-kanonvrf(df, c("age", "sex"), k = 2)$summary
-```
-
-See
-[`vignette("rmoriedata")`](https://rootcoder007.github.io/rmoriedata/articles/rmoriedata.md)
-for the full tour.
-
-## Functions
-
-A small, deliberate set of base-R helpers (the bulk of the package is
-still data):
-
-- **Data access** —
-  [`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md),
-  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
-  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md),
-  [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md);
-  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
-  checks every bundled file against the signed manifest.
-- **Ontario SIU director’s reports** —
-  [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md)
-  returns the reviewed corpus (one row per report, French and English,
-  with corrigenda applied).
-- **CIHI data tables** —
-  [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
-  lists the open workbooks and
-  [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
-  downloads one (live, with a Wayback fallback).
-- **Chicago** —
-  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
-  (below) and
-  [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
-  for the cached full datasets.
-- **Differential privacy + re-identification risk** —
-  [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
-  [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md),
-  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md),
-  [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md),
-  [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
-  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md);
-  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
-  holds an epsilon (and delta) the releases draw down, and
-  [`dpspent()`](https://rootcoder007.github.io/rmoriedata/reference/dpspent.md)
-  reports what has been spent.
-- **Shared compiled core** —
-  [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
-  and
-  [`mdmean()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
-  delegate to the family’s C core via `LinkingTo: rmoriebricklayer` (one
-  source of truth).
-
-## Chicago sample data — R and Python
-
-Bundled samples (`complaint_sample`, `arrest_sample`) from the City of
-Chicago open data; the full datasets are fetched on demand and cached.
-
-``` r
-
-library(rmoriedata)
-data(complaint_sample)                       # bundled sample, offline
-crimes <- chiload("complaints", full = TRUE, limit = 200)  # the full data, first 200 rows
-# omit `limit` for the whole multi-million-row dataset (large: minutes and gigabytes)
-pq <- chiload("arrests", as = "parquet_path")  # Parquet for Python
-```
-
-``` python
-import pandas as pd
-df = pd.read_parquet(pq)                      # path printed by chiload
-
-# Or read the bundled .rda directly (no R install) — use the date_iso column,
-# since POSIXct does not roundtrip cleanly through pyreadr:
-import pyreadr
-complaints = pyreadr.read_r("rmoriedata/data/complaint_sample.rda")["complaint_sample"]
-```
-
-Every bundled table also ships as Parquet: `mdpath("<slug>")` gives the
-verified path, `pd.read_parquet()` reads it.
-
-**Recommended Python bridge:** the Parquet path (`as = "parquet_path"`)
-— typed, columnar, read natively by pandas/polars/duckdb with correct
-timestamps and no R runtime. `pyreadr` on the `.rda` works for quick
-read-only access but is slower and mangles `POSIXct` (use `date_iso`).
-
-## Why a separate package?
-
-CRAN packages have a 5 MB soft-cap on source tarball size. `rmorie`’s
-~6.4 MB of integrated fixtures would push it over that threshold and
-trigger a reviewer pushback. Splitting the data out keeps `rmorie` lean
-(~few hundred KB of code) and lets data ship at any size via r-universe.
 
 ## Citation
 
@@ -252,6 +260,15 @@ uses.
 
 ## License
 
-AGPL-3.0-or-later. The fixtures themselves are public-domain or under
-permissive open-data licenses from their source portals; see the
-per-file headers in `inst/extdata/` for attribution.
+AGPL-3.0-or-later for the code. The bundled data are snapshots of public
+data, each under the licence or terms of use of the body that published
+it; the publisher and source of every table are named in its help page
+([`?complaint_sample`](https://rootcoder007.github.io/rmoriedata/reference/complaint_sample.md),
+[`?arrest_sample`](https://rootcoder007.github.io/rmoriedata/reference/arrest_sample.md),
+[`?siuload`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md),
+[`?cihitbls`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md),
+[`` ?`rmoriedata-victoria` ``](https://rootcoder007.github.io/rmoriedata/reference/rmoriedata-victoria.md)),
+in the catalogue
+([`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md),
+from `inst/extdata/_catalog.csv`), and in the data-attribution section
+of `inst/NOTICE`.

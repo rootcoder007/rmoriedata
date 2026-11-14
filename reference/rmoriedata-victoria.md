@@ -47,10 +47,9 @@ Released under CC BY 4.0.
   Aboriginal and/or Torres Strait Islander status breakdowns, as
   published.
 
-The workbooks are .xlsx. They were read with rmorie's native reader, so
-the bundled data comes through the same code path a user hits – no
-readxl or openxlsx dependency, and no second parser that could disagree
-with the first. Rebuild with `data-raw/build_vic_tables.R`.
+The workbooks are .xlsx. They were read with a native .xlsx reader, with
+no readxl or openxlsx dependency. Rebuild with
+`data-raw/build_vic_tables.R`.
 
 Counts are as published by the CSA and are subject to its own revisions:
 figures for a given year change between releases as incidents are
