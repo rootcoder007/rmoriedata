@@ -214,13 +214,76 @@
   if (!is.null(size) && is.finite(size) && size > 2 * part) {
     return(.rmd_get_parts(path, dest, hdr, label, size, part, timeout))
   }
+  # written beside `dest` under a name of its own and renamed when whole: sessions
+  # fetching the manifest at once each write their own file, and none reads a half
+  tmp <- tempfile(paste0(basename(dest), ".get"), tmpdir = dirname(dest))
+  on.exit(unlink(tmp), add = TRUE)
   rc <- tryCatch(
-    .rmd_dl(paste0(.rmd_data_url(), path), dest, headers = hdr, timeout = timeout,
+    .rmd_dl(paste0(.rmd_data_url(), path), tmp, headers = hdr, timeout = timeout,
             label = label, size = size),
     error = function(e) e, warning = function(w) w
   )
   if (inherits(rc, "condition")) .rmd_data_failed(rc, label)
+  if (file.exists(tmp)) .rmd_move(tmp, dest)
   invisible(dest)
+}
+
+# Renames a finished file over `dest` (one step: a reader sees the old file or the
+# new one, never a half), or stops in words.
+.rmd_move <- function(from, dest) {
+  if (!suppressWarnings(file.rename(from, dest))) {
+    stop(sprintf(paste0("cannot move the downloaded %s into place as %s: the folder ",
+                        "cannot be written, or %s is in use"),
+                 basename(dest), dest, basename(dest)), call. = FALSE)
+  }
+  invisible(dest)
+}
+
+# Downloads a hosted table into `dest` for hostload(), one R session at a time.
+# Sessions downloading the same table take turns on an operating-system lock on
+# "<dest>.lock" (src/flock.c): the kernel releases it when its holder exits or is
+# killed, so it is never left stale, and no session has to guess whether another
+# is still alive. Under the lock the table is fetched to "<dest>.dl" (its parts in
+# "<dest>.dl.parts"; names only the holder uses, so they are fixed and a killed
+# download resumes from its parts), checked against the manifest's SHA-256, and
+# only then renamed over `dest`. A session that waited and finds a table finished
+# while it waited uses it. Join and download files left by a killed session are
+# removed: under the lock, no live session owns one.
+.rmd_fetch <- function(key, path, dest, refresh) {
+  before <- file.mtime(dest)
+  .rmd_locked(paste0(dest, ".lock"), key, function() {
+    now <- file.mtime(dest)
+    if (!is.na(now) && (!refresh || !identical(now, before))) {
+      return(.rmd_check_sha(key, dest))
+    }
+    tmp <- paste0(dest, ".dl")
+    left <- list.files(dirname(dest), full.names = TRUE)
+    stale <- startsWith(basename(left), paste0(basename(tmp), ".join")) |
+      startsWith(basename(left), paste0(basename(tmp), ".get"))
+    unlink(c(tmp, left[stale]))
+    on.exit(unlink(tmp), add = TRUE)
+    .rmd_data_get(path, tmp)
+    .rmd_check_sha(key, tmp)
+    .rmd_move(tmp, dest)
+  })
+  invisible(dest)
+}
+
+# Runs fn() holding the lock file `lock`, waiting (with one message) while another
+# R session holds it.
+.rmd_locked <- function(lock, label, fn) {
+  busy <- new.env()
+  said <- FALSE
+  repeat {
+    r <- .Call(C_rmd_flock_with, lock, fn, busy)
+    if (!identical(r, busy)) return(invisible(r))
+    if (!said) {
+      message("rmoriedata: another R session is downloading ", label,
+              "; waiting for it to finish")
+      said <- TRUE
+    }
+    Sys.sleep(0.1)
+  }
 }
 
 # Says why a download from data.rmorie.com failed.
@@ -320,10 +383,10 @@
 # its checksum as if it had been tampered with. Every part is checked to be there
 # and readable before the first is joined, so a missing or unreadable part stops
 # the join with all parts kept, and the next run downloads only what is missing.
-# A part that goes missing during the join (another session joining the same
-# table deletes them too) is an error in words; the parts already joined are gone,
-# and the next run downloads them again. The file being written has a name of its
-# own per call: two sessions sharing "<dest>.join" wrote into one file.
+# A part that goes missing during the join is an error in words; the parts already
+# joined are gone, and the next run downloads them again. The file being written
+# has a name of its own per call. hostload() downloads a table under a lock
+# (.rmd_fetch()), so no other session touches these parts meanwhile.
 .rmd_join <- function(pfile, dest) {
   gone <- which(!file.exists(pfile) | file.access(pfile, 4L) != 0L)
   if (length(gone)) {
@@ -469,10 +532,11 @@ hostload <- function(key, refresh = FALSE) {
   dest <- file.path(.rmd_data_cache_dir(),
                     paste0(gsub("/", "__", key, fixed = TRUE), ".csv.gz"))
   if (refresh || !file.exists(dest)) {
-    .rmd_data_get(sprintf("/%s/%s.csv.gz", parts[[1L]],
-                          paste(parts[-1L], collapse = "/")), dest)
+    .rmd_fetch(key, sprintf("/%s/%s.csv.gz", parts[[1L]],
+                            paste(parts[-1L], collapse = "/")), dest, refresh)
+  } else {
+    .rmd_check_sha(key, dest)
   }
-  .rmd_check_sha(key, dest)
   # fill = FALSE: a row with a field missing or one too many is a damaged download;
   # it is removed so the next call fetches it again instead of padding the rows
   tryCatch(
