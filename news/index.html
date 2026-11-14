@@ -35,7 +35,8 @@
 
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="0.4.3" id="rmoriedata-043">rmoriedata 0.4.3<a class="anchor" aria-label="anchor" href="#rmoriedata-043"></a></h2>
-<ul><li>
+<ul><li>The title, description and citation put the package’s disclosure-control tools first (differential privacy, k-anonymity and l-diversity checks, cell suppression); the datasets follow. Nothing in the functions changes.</li>
+<li>
 <code>chiload(full = TRUE)</code> returns the bundled sample’s columns, in its order and with its types (16 columns for complaints and 8 for arrests, with <code>date_iso</code> and a <code>POSIXct</code> <code>date</code>), derived from Socrata’s export the way the samples were: it returned Socrata’s raw 22 or 24 columns. Socrata’s export is read as text first, so an IUCR code keeps its leading zero.</li>
 <li>
 <code>chiload(mirror = )</code> with a URL downloads <code>&lt;type&gt;_full.parquet</code> from the mirror over the package’s checked https transport, and checks it against <code>&lt;type&gt;_full.parquet.sha256</code> when the mirror has one; a mirror that fails or does not match falls back to Socrata. A URL was taken for a missing local file, so the mirror was never used.</li>

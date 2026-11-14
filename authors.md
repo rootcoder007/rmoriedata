@@ -10,14 +10,14 @@
 Source:
 [`inst/CITATION`](https://github.com/rootcoder007/rmoriedata/blob/main/inst/CITATION)
 
-Ruhela VS (2026). *rmoriedata: Integrated Datasets for the rmorie
-Package*.
+Ruhela VS (2026). *rmoriedata: Disclosure Control for Aggregate
+Releases, with Open Datasets*.
 [doi:10.32614/CRAN.package.rmoriedata](https://doi.org/10.32614/CRAN.package.rmoriedata).
 R package version 0.4.3,
 <https://rootcoder007.r-universe.dev/rmoriedata>.
 
     @Manual{ruhela_rmoriedata_2026,
-      title = {rmoriedata: Integrated Datasets for the rmorie Package},
+      title = {rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets},
       author = {Vansh Singh Ruhela},
       year = {2026},
       note = {R package version 0.4.3},

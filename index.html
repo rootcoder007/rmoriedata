@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Integrated Datasets for the rmorie Package • rmoriedata</title>
+<title>Disclosure Control for Aggregate Releases, with Open Datasets • rmoriedata</title>
 <!-- favicons --><link rel="icon" type="image/png" sizes="96x96" href="favicon-96x96.png">
 <link rel="icon" type="”image/svg+xml”" href="favicon.svg">
 <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
@@ -15,9 +15,9 @@
 <link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Integrated Datasets for the rmorie Package">
-<meta name="description" content="Integrated open data fixtures used by the rmorie package for examples, vignettes, and tests. Contains snapshots of publicly available datasets from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) directors reports, and synthetic fixtures for unit tests. Also ships a small set of disclosure-control helpers for aggregate releases: differential privacy (an exact discrete Laplace sampler for counts and the analytic Gaussian mechanism for means, drawing on the operating systems random source, with privacy-budget accounting), k-anonymity and l-diversity checks, and cell suppression audited for exact recovery from the margins.">
-<meta property="og:description" content="Integrated open data fixtures used by the rmorie package for examples, vignettes, and tests. Contains snapshots of publicly available datasets from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) directors reports, and synthetic fixtures for unit tests. Also ships a small set of disclosure-control helpers for aggregate releases: differential privacy (an exact discrete Laplace sampler for counts and the analytic Gaussian mechanism for means, drawing on the operating systems random source, with privacy-budget accounting), k-anonymity and l-diversity checks, and cell suppression audited for exact recovery from the margins.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Disclosure Control for Aggregate Releases, with Open Datasets">
+<meta name="description" content="Disclosure-control tools for releasing aggregate statistics, with open datasets to use them on. Differential privacy: an exact discrete Laplace sampler for counts and the analytic Gaussian mechanism for means, drawing on the operating systems random source, with privacy-budget accounting. Checks of k-anonymity and l-diversity, and cell suppression audited for exact recovery from the margins. The datasets are snapshots of publicly available tables from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) directors reports, and synthetic fixtures, with functions that read and verify them.">
+<meta property="og:description" content="Disclosure-control tools for releasing aggregate statistics, with open datasets to use them on. Differential privacy: an exact discrete Laplace sampler for counts and the analytic Gaussian mechanism for means, drawing on the operating systems random source, with privacy-budget accounting. Checks of k-anonymity and l-diversity, and cell suppression audited for exact recovery from the margins. The datasets are snapshots of publicly available tables from open-data portals built on the Comprehensive Knowledge Archive Network (CKAN, &lt;https://ckan.org/&gt;), Socrata (&lt;https://dev.socrata.com/&gt;), and Opendatasoft (&lt;https://www.huwise.com/&gt;) (Chicago, New York City, Toronto, Vancouver, and others), Statistics Canada Canadian Centre for Justice and Community Safety Statistics (CCJS) tables, a multi-agent-reviewed corpus of Ontario Special Investigations Unit (SIU, &lt;https://www.siu.on.ca/&gt;) directors reports, and synthetic fixtures, with functions that read and verify them.">
 <meta property="og:image" content="https://rootcoder007.github.io/rmoriedata/logo.png">
 <meta name="google-site-verification" content="8ORzeHrfoPIOrujfV-km-kXCi9HD8dvL5GYH-GqwjYI">
 </head>
@@ -62,7 +62,17 @@
 </div>
 <!-- badges: start -->
 
-<p>Integrated open-data fixtures for <a href="https://github.com/rootcoder007/rmorie" class="external-link">rmorie</a>, plus a small set of base-R helpers. Its core job remains the <code>inst/extdata/</code> files used by <code>rmorie</code>’s examples, vignettes, and tests.</p>
+<p>Disclosure control for aggregate releases, with open datasets to use it on.</p>
+<ul>
+<li>
+<strong>Differential privacy</strong>: an exact discrete Laplace sampler for counts (<code><a href="reference/dplapcnt.html">dplapcnt()</a></code>, <code><a href="reference/dplaphist.html">dplaphist()</a></code>), the analytic Gaussian mechanism for means (<code><a href="reference/dpgmean.html">dpgmean()</a></code>), and privacy-budget accounting (<code><a href="reference/dpbudget.html">dpbudget()</a></code>, <code><a href="reference/dpspent.html">dpspent()</a></code>), drawing on the operating system’s random source.</li>
+<li>
+<strong>k-anonymity and l-diversity</strong> checks (<code><a href="reference/kanonvrf.html">kanonvrf()</a></code>, <code><a href="reference/ldivvrf.html">ldivvrf()</a></code>).</li>
+<li>
+<strong>Cell suppression</strong> audited for exact recovery from the margins (<code><a href="reference/cellsupp.html">cellsupp()</a></code>).</li>
+<li>
+<strong>Open datasets</strong>, bundled and checksummed, with the functions that read and verify them (<code><a href="reference/mdcat.html">mdcat()</a></code>, <code><a href="reference/mdload.html">mdload()</a></code>, <code><a href="reference/mdverify.html">mdverify()</a></code>), and the curated tables at data.rmorie.com (<code><a href="reference/hostcat.html">hostcat()</a></code>, <code><a href="reference/hostcat.html">hostload()</a></code>).</li>
+</ul>
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
@@ -167,11 +177,11 @@
 </h2>
 <p>If you use rmoriedata in your research, please cite the software:</p>
 <blockquote>
-<p>Ruhela, V. S. (2026). <em>rmoriedata: Integrated Datasets for the rmorie Package.</em> R package version 0.4.3. <a href="doi:10.32614/CRAN.package.rmoriedata" class="uri">doi:10.32614/CRAN.package.rmoriedata</a>. <a href="https://rootcoder007.r-universe.dev/rmoriedata" class="external-link uri">https://rootcoder007.r-universe.dev/rmoriedata</a></p>
+<p>Ruhela, V. S. (2026). <em>rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets.</em> R package version 0.4.3. <a href="doi:10.32614/CRAN.package.rmoriedata" class="uri">doi:10.32614/CRAN.package.rmoriedata</a>. <a href="https://rootcoder007.r-universe.dev/rmoriedata" class="external-link uri">https://rootcoder007.r-universe.dev/rmoriedata</a></p>
 </blockquote>
 <p>BibTeX (or run <code>citation("rmoriedata")</code> after installation for the entry stamped with the exact installed version, sourced from <code>inst/CITATION</code>):</p>
 <div class="sourceCode" id="cb10"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a><span class="va">@Manual</span>{<span class="ot">ruhela_rmoriedata_2026</span>,</span>
-<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="dt">title</span>  = {rmoriedata: Integrated Datasets for the rmorie Package},</span>
+<span id="cb10-2"><a href="#cb10-2" tabindex="-1"></a>  <span class="dt">title</span>  = {rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets},</span>
 <span id="cb10-3"><a href="#cb10-3" tabindex="-1"></a>  <span class="dt">author</span> = {Ruhela, Vansh Singh},</span>
 <span id="cb10-4"><a href="#cb10-4" tabindex="-1"></a>  <span class="dt">year</span>   = {2026},</span>
 <span id="cb10-5"><a href="#cb10-5" tabindex="-1"></a>  <span class="dt">doi</span>    = {10.32614/CRAN.package.rmoriedata},</span>

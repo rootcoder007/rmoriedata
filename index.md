@@ -1,9 +1,30 @@
 # rmoriedata
 
-Integrated open-data fixtures for
-[rmorie](https://github.com/rootcoder007/rmorie), plus a small set of
-base-R helpers. Its core job remains the `inst/extdata/` files used by
-`rmorie`’s examples, vignettes, and tests.
+Disclosure control for aggregate releases, with open datasets to use it
+on.
+
+- **Differential privacy**: an exact discrete Laplace sampler for counts
+  ([`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)),
+  the analytic Gaussian mechanism for means
+  ([`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md)),
+  and privacy-budget accounting
+  ([`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md),
+  [`dpspent()`](https://rootcoder007.github.io/rmoriedata/reference/dpspent.md)),
+  drawing on the operating system’s random source.
+- **k-anonymity and l-diversity** checks
+  ([`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)).
+- **Cell suppression** audited for exact recovery from the margins
+  ([`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)).
+- **Open datasets**, bundled and checksummed, with the functions that
+  read and verify them
+  ([`mdcat()`](https://rootcoder007.github.io/rmoriedata/reference/mdcat.md),
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)),
+  and the curated tables at data.rmorie.com
+  ([`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)).
 
 ## Install
 
@@ -206,8 +227,8 @@ trigger a reviewer pushback. Splitting the data out keeps `rmorie` lean
 
 If you use rmoriedata in your research, please cite the software:
 
-> Ruhela, V. S. (2026). *rmoriedata: Integrated Datasets for the rmorie
-> Package.* R package version 0.4.3.
+> Ruhela, V. S. (2026). *rmoriedata: Disclosure Control for Aggregate
+> Releases, with Open Datasets.* R package version 0.4.3.
 > <doi:10.32614/CRAN.package.rmoriedata>.
 > <https://rootcoder007.r-universe.dev/rmoriedata>
 
@@ -216,7 +237,7 @@ stamped with the exact installed version, sourced from `inst/CITATION`):
 
 ``` bibtex
 @Manual{ruhela_rmoriedata_2026,
-  title  = {rmoriedata: Integrated Datasets for the rmorie Package},
+  title  = {rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets},
   author = {Ruhela, Vansh Singh},
   year   = {2026},
   doi    = {10.32614/CRAN.package.rmoriedata},

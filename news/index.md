@@ -2,6 +2,10 @@
 
 ## rmoriedata 0.4.3
 
+- The title, description and citation put the package’s
+  disclosure-control tools first (differential privacy, k-anonymity and
+  l-diversity checks, cell suppression); the datasets follow. Nothing in
+  the functions changes.
 - `chiload(full = TRUE)` returns the bundled sample’s columns, in its
   order and with its types (16 columns for complaints and 8 for arrests,
   with `date_iso` and a `POSIXct` `date`), derived from Socrata’s export
