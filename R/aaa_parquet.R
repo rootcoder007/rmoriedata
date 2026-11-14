@@ -29,11 +29,11 @@
 # References: parquet-format/parquet.thrift (field ids), the Thrift
 # compact protocol spec, google/snappy/format_description.txt and RFC 8878.
 #
-# ponytail: pure R, no compiled code. The snappy tag loop and the RLE
-# bit-unpacker are the only hot spots; move those to src/ if a file
-# large enough to matter ever shows up. Reading the whole 25,000-row
-# complaints sample is the current worst case and it is seconds, not
-# minutes.
+# The codecs are in src/ (snappy.c, gzip.c, zstd.c), and so are the per-value
+# loops over PLAIN string values (pqplain.c); everything else works on whole
+# vectors. ponytail: the RLE reader still loops in R once per run, which is
+# cheap for the store's files (one bit-packed run per page); move it to src/
+# if files with millions of short runs ever matter.
 
 # ---------------------------------------------------------------- thrift
 
@@ -462,10 +462,9 @@
       bits <- as.integer(rawToBits(chunk))
       take <- min(nvals, count - o)
       if (take > 0L) {
-        vals <- vapply(seq_len(take), function(i) {
-          b0 <- (i - 1L) * width
-          sum(bits[(b0 + 1L):(b0 + width)] * 2^(seq_len(width) - 1L))
-        }, numeric(1))
+        # one column of `width` bits per value, least significant first
+        m <- matrix(bits[seq_len(take * width)], nrow = width)
+        vals <- drop(2^(seq_len(width) - 1L) %*% m)
         out[seq.int(o + 1L, length.out = take)] <- as.integer(vals)
       }
       o <- o + take
@@ -498,9 +497,16 @@
   hi * 2^32 + lo
 }
 
-.pq_decode_plain <- function(buf, pos, ptype, count, type_length = NULL) {
+# The values of a PLAIN block as one vector of their type (a list of raw vectors for
+# FIXED_LEN_BYTE_ARRAY), and the position after them. `cname` names the column in
+# the reader's messages.
+.pq_decode_plain <- function(buf, pos, ptype, count, type_length = NULL,
+                             cname = "?") {
   if (count == 0L) {
-    return(list(values = list(), pos = pos))
+    empty <- if (ptype == .pqBoolean) logical() else if (ptype == .pqInt32) integer()
+      else if (ptype == .pqByteArray) character() else if (ptype == .pqFlba) list()
+      else numeric()
+    return(list(values = empty, pos = pos))
   }
   take <- function(n) .pq_slice(buf, pos, n, "a PLAIN value block")
   if (ptype == .pqBoolean) {
@@ -528,14 +534,8 @@
     return(list(values = v, pos = pos + count * 8L))
   }
   if (ptype == .pqByteArray) {
-    vals <- vector("list", count)
-    for (i in seq_len(count)) {
-      n <- .pq_u32(.pq_slice(buf, pos, 4L, "a BYTE_ARRAY length"))
-      pos <- pos + 4L
-      vals[[i]] <- .pq_slice(buf, pos, n, "a BYTE_ARRAY value")
-      pos <- pos + n
-    }
-    return(list(values = vals, pos = pos))
+    # src/pqplain.c: lengths and bytes in one pass; text that is not UTF-8 is refused
+    return(.Call(C_rmd_pq_strings, buf, pos, count, cname))
   }
   if (ptype == .pqFlba) {
     if (is.null(type_length) || type_length < 1) {
@@ -549,33 +549,14 @@
   }
   if (ptype == .pqInt96) {
     block <- take(count * 12L)
-    vals <- numeric(count)
-    for (i in seq_len(count)) {
-      o <- (i - 1L) * 12L
-      nanos <- .pq_read_i64(block[o + 1:8], 1L)
-      jday <- .pq_u32(block[o + 9:12])
-      vals[i] <- (jday - 2440588) * 86400 * 1e9 + nanos
-    }
+    o <- rep((seq_len(count) - 1L) * 12L, each = 8L)
+    nanos <- .pq_read_i64(block[o + 1:8], count)
+    o <- rep((seq_len(count) - 1L) * 12L, each = 4L)
+    jday <- .pq_u32(block[o + 9:12])
+    vals <- (jday - 2440588) * 86400 * 1e9 + nanos
     return(list(values = vals, pos = pos + count * 12L))
   }
   stop("unsupported physical type ", ptype, call. = FALSE)
-}
-
-.pq_convert <- function(vals, ptype, converted) {
-  if (ptype == .pqByteArray) {
-    return(vapply(vals, function(v) {
-      if (is.null(v)) {
-        return(NA_character_)
-      }
-      if (length(v) == 0L) {
-        return("")
-      }
-      s <- rawToChar(v)
-      Encoding(s) <- "UTF-8"
-      s
-    }, character(1)))
-  }
-  vals
 }
 
 # Logical (converted) types. Applied identically in the Python arm, so
@@ -660,7 +641,7 @@
 
   pos <- 1L
   dictionary <- NULL
-  values <- list()
+  pages <- list()
   got <- 0
 
   while (got < total_values && pos <= length(blob)) {
@@ -713,7 +694,7 @@
     if (ptype_page == .pqPDict) {
       dh <- .pq_f(head, 7)
       nd <- as.integer(.pq_f(dh, 1))
-      dec <- .pq_decode_plain(page, 1L, ptype, nd, typelen)
+      dec <- .pq_decode_plain(page, 1L, ptype, nd, typelen, cname)
       if (dec$pos != length(page) + 1L) {
         stop("parquet: dictionary page of column ", cname, " holds ",
              length(page) - dec$pos + 1L, " bytes beyond its ", nd, " values",
@@ -766,7 +747,7 @@
       }
       vals <- dictionary[idx + 1L]
     } else if (encoding == .pqEPlain) {
-      dec <- .pq_decode_plain(page, p, ptype, present, typelen)
+      dec <- .pq_decode_plain(page, p, ptype, present, typelen, cname)
       # PLAIN values fill the page exactly: bytes left over (or a shortfall, caught above)
       # mean the declared type is not the type the page was written with
       if (dec$pos != length(page) + 1L) {
@@ -781,18 +762,11 @@
       )
     }
 
-    # Splice the present values back into their definition-level slots.
-    col <- vector("list", n)
-    j <- 0L
-    for (i in seq_len(n)) {
-      if (defs[i] != 0L) {
-        j <- j + 1L
-        col[[i]] <- if (is.list(vals)) vals[[j]] else vals[j]
-      } else {
-        col[i] <- list(NULL)
-      }
-    }
-    values <- c(values, col)
+    # Splice the present values back into their definition-level slots: NA (NULL in
+    # a list) where a value is absent.
+    col <- if (is.list(vals)) vector("list", n) else rep(vals[NA_integer_], n)
+    col[defs != 0L] <- vals
+    pages[[length(pages) + 1L]] <- col
     got <- got + n
   }
 
@@ -801,7 +775,7 @@
     stop("parquet: column ", cname, " decoded ", got, " values; its row group has ",
          num_rows, call. = FALSE)
   }
-  values
+  do.call(c, pages)
 }
 
 #' Read a Parquet file
@@ -814,7 +788,14 @@
 #'
 #' @param path Path to a `.parquet` file.
 #' @param columns Optional character vector of column names to decode;
-#'   the rest are skipped entirely.
+#'   the rest are skipped entirely. `character(0)` gives a data frame with
+#'   the file's rows and no columns.
+#' @details A string column comes back as text marked UTF-8 (ASCII text stays
+#'   unmarked, as R keeps it). A Parquet string is UTF-8 by definition, and
+#'   [morie_write_parquet()] refuses to write anything else, so a value that
+#'   is not valid UTF-8, or that holds a NUL byte, is refused with a
+#'   `parquet:` error naming the column: returned, it would fail later in
+#'   `nchar()` or `toupper()`.
 #' @return A `data.frame`. Every error the reader raises, a missing or
 #'   damaged file included, starts with `parquet:`; no base-R warning escapes
 #'   it (a value a damaged file makes R warn about is an error instead).
@@ -860,8 +841,15 @@ morie_read_parquet <- function(path, columns = NULL) {
   num_rows <- .pq_f(meta, 3)
   row_groups <- .pq_f(meta, 4)
   if (is.null(row_groups)) row_groups <- list()
-  if (is.null(num_rows) || num_rows < 0 || num_rows > .pq_max_rows()) {
-    stop("parquet: footer claims ", num_rows %||% "?", " rows (cap ",
+  # a footer read from the wrong offset (a damaged length) parses into fields that
+  # are missing or of the wrong kind: that is damage, not a table too large
+  if (!is.numeric(num_rows) || length(num_rows) != 1L || is.na(num_rows) ||
+      num_rows < 0 || num_rows != floor(num_rows)) {
+    stop("parquet: the file is damaged: its footer gives no valid row count",
+         call. = FALSE)
+  }
+  if (num_rows > .pq_max_rows()) {
+    stop("parquet: footer claims ", num_rows, " rows (cap ",
          .pq_max_rows(), ", option rmoriedata.parquet_max_rows)", call. = FALSE)
   }
   rg_rows <- vapply(row_groups, function(rg) as.numeric(.pq_f(rg, 3) %||% NA), numeric(1))
@@ -914,7 +902,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   out_names <- character()
   for (i in wanted) {
     leaf <- leaves[[i]]
-    col <- list()
+    col <- NULL
     for (rg in row_groups) {
       chunks <- .pq_f(rg, 1)
       if (length(chunks) != length(leaves)) {
@@ -928,11 +916,13 @@ morie_read_parquet <- function(path, columns = NULL) {
       ))
     }
     if (leaf$type == .pqByteArray) {
-      v <- .pq_convert(col, leaf$type, leaf$converted)
+      v <- if (is.null(col)) character() else col
     } else {
-      v <- vapply(col, function(x) {
-        if (is.null(x)) NA_real_ else as.numeric(x)
-      }, numeric(1))
+      v <- if (is.list(col)) {
+        vapply(col, function(x) if (is.null(x)) NA_real_ else as.numeric(x), numeric(1))
+      } else {
+        as.numeric(col)
+      }
       if (leaf$type == .pqBoolean) {
         v <- as.logical(v)
       } else if (leaf$type == .pqInt32) {
@@ -952,10 +942,13 @@ morie_read_parquet <- function(path, columns = NULL) {
   }
   names(out) <- out_names
 
-  df <- as.data.frame(out,
-    stringsAsFactors = FALSE,
-    check.names = FALSE
-  )
+  # columns = character(0) asks for no column: a frame with the file's rows and none
+  df <- if (length(out)) {
+    as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
+  } else {
+    structure(list(), names = character(), class = "data.frame",
+              row.names = .set_row_names(as.integer(num_rows)))
+  }
   if (nrow(df) != num_rows) {
     stop("footer says ", num_rows, " rows, decoded ", nrow(df),
       call. = FALSE
@@ -1068,16 +1061,8 @@ morie_read_parquet <- function(path, columns = NULL) {
     ))
   }
   if (ptype == .pqByteArray) {
-    parts <- vector("list", length(values) * 2L)
-    for (i in seq_along(values)) {
-      b <- charToRaw(.pq_utf8(values[[i]], paste0("column ", sQuote(name))))
-      parts[[2L * i - 1L]] <- writeBin(length(b), raw(),
-        size = 4L,
-        endian = "little"
-      )
-      parts[[2L * i]] <- b
-    }
-    return(do.call(base::c, parts))
+    # src/pqplain.c: each value's 4-byte length and its UTF-8 bytes, in one pass
+    return(.Call(C_rmd_pq_bytes, .pq_utf8(values, paste0("column ", sQuote(name)))))
   }
   stop("cannot PLAIN-encode physical type ", ptype, call. = FALSE)
 }

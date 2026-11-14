@@ -10,7 +10,8 @@ morie_read_parquet(path, columns = NULL)
 \item{path}{Path to a \code{.parquet} file.}
 
 \item{columns}{Optional character vector of column names to decode;
-the rest are skipped entirely.}
+the rest are skipped entirely. \code{character(0)} gives a data frame with
+the file's rows and no columns.}
 }
 \value{
 A \code{data.frame}. Every error the reader raises, a missing or
@@ -23,5 +24,13 @@ format with PLAIN, RLE and dictionary encodings, GZIP, Snappy, Zstandard
 (ZSTD) or no compression. ZSTD pages are read by a decoder in the package
 (RFC 8878, without dictionaries), so no other package is needed for them;
 the writer does not write ZSTD. Nested and repeated columns are refused.
+}
+\details{
+A string column comes back as text marked UTF-8 (ASCII text stays
+unmarked, as R keeps it). A Parquet string is UTF-8 by definition, and
+\code{\link[=morie_write_parquet]{morie_write_parquet()}} refuses to write anything else, so a value that
+is not valid UTF-8, or that holds a NUL byte, is refused with a
+\verb{parquet:} error naming the column: returned, it would fail later in
+\code{nchar()} or \code{toupper()}.
 }
 \keyword{internal}
