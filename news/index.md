@@ -2,6 +2,13 @@
 
 ## rmoriedata 0.4.3
 
+- The Parquet reader reads ZSTD-compressed pages, such as those of files
+  written with `compression = "zstd"` by nanoparquet, arrow or DuckDB,
+  with no other package: the Zstandard decoder is in the package,
+  written from RFC 8878 (no dictionaries), and checks every page against
+  its stated size, and against the frame’s checksum when it has one.
+  Such a file stopped with “compression codec 6 not implemented”. The
+  writer still writes GZIP, Snappy or no compression.
 - A hosted table downloaded in parts no longer comes out damaged when
   the disk fills up while the parts are joined: the failed write is an
   error that names the folder and `options(rmoriedata.cache_dir = )`,
