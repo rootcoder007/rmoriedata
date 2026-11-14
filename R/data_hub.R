@@ -323,8 +323,8 @@
   total <- sum(file.size(pfile))
   full <- function() {
     stop(sprintf(paste0("cannot join the parts of %s: the folder %s is full or cannot ",
-                        "be written (the file needs %.0f MB). Name a folder with room in ",
-                        "options(rmoriedata.cache_dir = ) and run again."),
+                        "be written (the file needs %.0f MB). Name a folder with ",
+                        "room in options(rmoriedata.cache_dir = ) and run again."),
                  basename(dest), dirname(dest), total / 2^20), call. = FALSE)
   }
   out <- file(tmp, "wb")
