@@ -366,16 +366,20 @@ test_that("a refusal is read from the status answered, not from the table's name
   }
   k <- "statcan_indigenous/tbl_41100401"
   u <- paste0("bldl: https://data.rmorie.com/", k, ".csv.gz answered HTTP ")
-  expect_match(f(paste0(u, "404"), k), "^data.rmorie.com: bldl: ")
+  # told in the package's words, without the transport's function name
+  expect_match(f(paste0(u, "404"), k),
+               paste0("^rmoriedata could not download ", k,
+                      ": https://.* answered HTTP 404$"))
   expect_match(f(paste0(u, "500"), "statcan_indigenous/tbl_41100403"),
-               "^data.rmorie.com: bldl: ")
+               "^rmoriedata could not download .* answered HTTP 500$")
   expect_match(f(paste0(u, "403"), k), "need no sign-in")
   expect_match(f(paste0(u, "401"), "fec/t"), "need no sign-in")
   expect_match(f(paste0(u, "410"), "fec/t"),
                "fec/t is no longer served .* its source does not allow")
   expect_match(f(paste0(u, "410"), "icpsr_9/t"), "ICPSR's terms")
   expect_match(f("could not resolve host", "fec/t410"),
-               "^data.rmorie.com: could not resolve host$")
+               paste0("^rmoriedata could not download fec/t410 from data.rmorie.com: ",
+                      "could not resolve host$"))
 })
 
 test_that("a damaged cached manifest is fetched again, once, and says so", {
@@ -420,4 +424,155 @@ test_that("hostload checks refresh as hostcat does, before any request", {
     expect_error(mdload("arsau_2023_uof_main_records", refresh = bad),
                  "`refresh` must be TRUE or FALSE.", fixed = TRUE)
   }
+})
+
+# A csv.gz written byte for byte, as the service serves it.
+hub_gz <- function(bytes) {
+  f <- withr::local_tempfile(fileext = ".csv.gz", .local_envir = parent.frame())
+  con <- gzfile(f, "wb")
+  writeBin(bytes, con)
+  close(con)
+  f
+}
+
+test_that("hostload returns what the file holds (N9)", {
+  b <- c(as.raw(c(0xef, 0xbb, 0xbf)), charToRaw(paste0(
+    "Code,Offence Description,% of All,txt,note,empty,lg,num,big,hex,frac\r\n",
+    "046,Theft under,1.5,NA,\"a, b\",,TRUE,0.25,3000000000,0x1A,1.50\r\n",
+    "120,\"Assault\r\nwith a weapon\",2,x,\"say \"\"hi\"\"\",,FALSE,1e-05,2,1,2\r\n",
+    "871,caf\xc3\xa9,,,,,,-3,4,2,3\r\n")))
+  d <- .rmd_read_hosted(hub_gz(b))
+  # names as written, the byte-order mark dropped
+  expect_identical(names(d), c("Code", "Offence Description", "% of All", "txt", "note",
+                               "empty", "lg", "num", "big", "hex", "frac"))
+  # a code keeps its leading zero; the text "NA" is a value; only an empty field is NA
+  expect_identical(d$Code, c("046", "120", "871"))
+  expect_identical(d$txt, c("NA", "x", NA))
+  expect_identical(d$`% of All`, c(1.5, 2, NA))
+  # quoted commas, quotes and line breaks (a CRLF inside a quoted field reads as \n)
+  expect_identical(d$note, c("a, b", "say \"hi\"", NA))
+  expect_identical(d$`Offence Description`[2L], "Assault\nwith a weapon")
+  # a column with no value is logical NA; TRUE/FALSE is logical
+  expect_identical(d$empty, rep(NA, 3L))
+  expect_identical(d$lg, c(TRUE, FALSE, NA))
+  # numbers only when written as R writes them ("1.50" is formatting): "0x1A" keeps
+  # its column text
+  expect_identical(d$num, c(0.25, 1e-05, -3))
+  expect_identical(d$big, c(3e9, 2, 4))
+  expect_identical(d$hex, c("0x1A", "1", "2"))
+  expect_identical(d$frac, c(1.5, 2, 3))
+  # UTF-8 text is marked UTF-8 whatever the locale
+  expect_identical(Encoding(d$`Offence Description`[3L]), "UTF-8")
+  expect_identical(charToRaw(d$`Offence Description`[3L]),
+                   as.raw(c(0x63, 0x61, 0x66, 0xc3, 0xa9)))
+  # other spellings of numbers stay text, every character kept
+  for (v in c("+3", "007", "1e5", "Inf", "NaN", "-0", " 4", ".5", "1.",
+              "1234567890123456", "0.300000000000000044")) {
+    got <- .rmd_read_hosted(hub_gz(charToRaw(paste0("a\n", v, "\n1\n"))))$a
+    expect_identical(got, c(v, "1"), info = v)
+  }
+  expect_identical(.rmd_read_hosted(hub_gz(charToRaw(
+    "a\n6.0\n0.10\n-12.500\n0.30000000000000004\n123456789012345\n")))$a,
+    c(6, 0.1, -12.5, 0.1 + 0.2, 123456789012345))
+  # bytes that are not UTF-8 are marked "bytes", not mislabelled
+  x <- .rmd_read_hosted(hub_gz(c(charToRaw("a\n"), as.raw(c(0x61, 0xff)), as.raw(10))))$a
+  expect_identical(Encoding(x), "bytes")
+  # a record with a field too many or too few is an error
+  expect_error(.rmd_read_hosted(hub_gz(charToRaw("a,b\n1,2\n3\n"))),
+               "record 3 has 1 fields, the header 2")
+})
+
+test_that("hostload agrees with rmoriebricklayer's reader on a plain table", {
+  rd <- get0(".bl_read_csv_gz", asNamespace("rmoriebricklayer"), inherits = FALSE)
+  skip_if(is.null(rd), "this rmoriebricklayer has no .bl_read_csv_gz()")
+  # names R keeps as they are, numbers as R writes them, text without leading zeros
+  f <- hub_gz(charToRaw(paste0("id,name,rate,flag,when\n",
+                               "1,THEFT,0.25,TRUE,2024-01-01\n",
+                               "2,\"BATTERY, SIMPLE\",-3.5,FALSE,2024-01-02\n",
+                               "3,ROBBERY,,,2024-01-03\n")))
+  a <- .rmd_read_hosted(f)
+  b <- rd(f)
+  expect_identical(lapply(a, unname), lapply(b, unname))
+  expect_identical(names(a), names(b))
+})
+
+test_that("hostload goes through the new reader and keeps a code's zero", {
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  served <- hub_gz(charToRaw("ISSUING CODE,n\n046,1\n120,2\n"))
+  m <- rmoriebricklayer::tojs(list(datasets = list(list(
+    key = "justice_open/t", rows = 2, sha256_gz = rmoriebricklayer::sha256file(served)))),
+    auto_unbox = TRUE)
+  testthat::local_mocked_bindings(.rmd_data_get = function(path, dest, timeout = 600) {
+    if (path == "/manifest.json") writeLines(m, dest) else file.copy(served, dest)
+    invisible(dest)
+  })
+  d <- hostload("justice_open/t")
+  expect_identical(d, data.frame(`ISSUING CODE` = c("046", "120"), n = 1:2,
+                                 check.names = FALSE))
+})
+
+test_that("a cached, verified table loads offline when the manifest is old (N14)", {
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  real_get <- .rmd_data_get
+  dig <- rmoriebricklayer::sha256file(hub_fixture(list())$served)
+  fx <- hub_fixture(list(sha256_gz = dig))
+  st <- new.env()
+  hub_mock(fx, st)
+  expect_identical(hostload("statcan_health/tbl_1")$VALUE, c(1L, 2L))
+  p <- file.path(rmoriedata:::.rmd_data_cache_dir(), "manifest.json")
+  Sys.setFileTime(p, Sys.time() - 2 * 86400)
+  rm(list = ls(rmoriedata:::.rmd_stale), envir = rmoriedata:::.rmd_stale)
+  # offline: every request fails in the transport
+  testthat::local_mocked_bindings(
+    .rmd_data_get = real_get,
+    .rmd_dl = function(url, ...) stop("bldl: ", url, ": refused: could not resolve"))
+  expect_message(d <- hostload("statcan_health/tbl_1"),
+                 "manifest of data.rmorie.com could not be refreshed .*using the copy")
+  expect_identical(d$VALUE, c(1L, 2L))
+  # a copy that fails the digest is never served, offline or not
+  hub_tamper("statcan_health/tbl_1")
+  expect_error(suppressMessages(hostload("statcan_health/tbl_1")),
+               "^hostload\\(\\) could not download manifest.json: https://")
+  # an explicit refresh needs the network
+  expect_error(hostcat(refresh = TRUE),
+               paste0("^hostcat\\(\\) could not download manifest.json: ",
+                      "https://data.example.test/manifest.json: refused"))
+  rm(list = ls(rmoriedata:::.rmd_stale), envir = rmoriedata:::.rmd_stale)
+})
+
+test_that("a cached copy is checked under the download lock", {
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  dig <- rmoriebricklayer::sha256file(hub_fixture(list())$served)
+  fx <- hub_fixture(list(sha256_gz = dig))
+  st <- new.env()
+  hub_mock(fx, st)
+  hostload("statcan_health/tbl_1")
+  seen <- character()
+  real <- .rmd_locked
+  testthat::local_mocked_bindings(.rmd_locked = function(lock, label, fn) {
+    seen <<- c(seen, basename(lock))
+    real(lock, label, fn)
+  })
+  hostload("statcan_health/tbl_1")
+  expect_identical(seen, "statcan_health__tbl_1.csv.gz.lock")
+})
+
+test_that("a stalled lock holder ends the wait with an error, not never", {
+  lock <- withr::local_tempfile(fileext = ".lock")
+  withr::local_options(rmoriedata.lockwait = 0.3)
+  # flock() locks are per open file: the inner call, on a second descriptor, is
+  # refused as another session would be, and nothing grows meanwhile
+  t0 <- Sys.time()
+  expect_error(suppressMessages(.rmd_locked(lock, "db/t", function() {
+    .rmd_locked(lock, "db/t", function() "inner")
+  })), "another R session has held the download of db/t for 0.3 seconds without the")
+  expect_lt(as.numeric(difftime(Sys.time(), t0, units = "secs")), 5)
+  withr::local_options(rmoriedata.lockwait = -1)
+  expect_error(.rmd_locked(lock, "db/t", function() 1), "rmoriedata.lockwait must be")
 })

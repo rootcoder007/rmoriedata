@@ -24,7 +24,13 @@ Sends a question through \code{rmoriebricklayer::llmask()},
 to a language model you bring: an OpenAI-compatible endpoint of your own,
 a provider whose key is set (OpenAI, Anthropic, Google Gemini, OpenRouter,
 Groq, Mistral and more: \code{rmoriebricklayer::llmprvd()}),
-or an Ollama server. Nothing is sent anywhere you did not set up.
+or an Ollama server. Nothing is sent anywhere you did not set up. An
+Ollama server is asked only when you chose one: \code{route = "ollama"},
+an \code{OLLAMA_HOST}, \code{OLLAMA_BASE_URL}, \code{OLLAMA_MODEL} or
+\code{OLLAMA_API_KEY} environment variable, or an \code{ollama.*} setting
+or \code{route = "ollama"} saved with \code{\link{mdllmconf}()}. Without
+any of these, an Ollama server that happens to run on this machine (at
+\code{localhost:11434}) is neither probed nor sent the question.
 The model is given every function of rmoriedata and rmoriebricklayer and
 tools to read their help, and this package's catalogue of datasets, so it
 can name the tables and write the code that loads them.

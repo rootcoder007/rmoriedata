@@ -138,6 +138,7 @@ kanonvrf <- function(data, qids, k = 5) {
       call. = FALSE
     )
   }
+  .rmd_nobytes(qids, "qids")
   missing_cols <- setdiff(qids, names(data))
   if (length(missing_cols) > 0L) {
     stop("Columns not found in `data`: ",
@@ -248,6 +249,8 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
   if (!is.character(sensitive) || length(sensitive) != 1L) {
     stop("`sensitive` must be a single column name.", call. = FALSE)
   }
+  .rmd_nobytes(qids, "qids")
+  .rmd_nobytes(sensitive, "sensitive")
   missing_cols <- setdiff(c(qids, sensitive), names(data))
   if (length(missing_cols) > 0L) {
     stop("Columns not found in `data`: ",

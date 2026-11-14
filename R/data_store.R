@@ -104,6 +104,7 @@ mdload <- function(slug, refresh = FALSE,
     stop("`slug` must be a single dataset slug (character). ",
          "See mdcat() for valid slugs.", call. = FALSE)
   }
+  .rmd_nobytes(slug, "slug")
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE.", call. = FALSE)
   }
@@ -174,6 +175,7 @@ mdpath <- function(slug, format = c("parquet", "csv")) {
     stop("`slug` must be a single dataset slug (character). ",
          "See mdcat() for valid slugs.", call. = FALSE)
   }
+  .rmd_nobytes(slug, "slug")
   cat <- mdcat()
   row <- cat[cat$slug == slug, , drop = FALSE]
   if (!nrow(row)) {
@@ -235,6 +237,7 @@ mddict <- function(slug) {
   if (!is.character(slug) || length(slug) != 1L || is.na(slug) || !nzchar(slug)) {
     stop("`slug` must be a single name from mdcat().", call. = FALSE)
   }
+  .rmd_nobytes(slug, "slug")
   cat <- mdcat()
   row <- cat[cat$slug == slug & cat$kind == "dictionary", , drop = FALSE]
   if (!nrow(row)) {

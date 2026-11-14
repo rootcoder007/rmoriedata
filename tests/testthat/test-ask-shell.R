@@ -94,3 +94,30 @@ test_that("mdllmconf() forwards to rmoriebricklayer when it can", {
     expect_error(mdllmconf(), "0.5.11 or later")
   }
 })
+
+test_that("mdask() leaves an Ollama the user did not choose out of the automatic route", {
+  skip_if_old_bricklayer()
+  seen <- NULL
+  testthat::local_mocked_bindings(
+    llmask = function(prompt, model = NULL, tmout = 120, syspro = NULL, route = NULL,
+                      docs = TRUE, pkgs = NULL) {
+      seen <<- Sys.getenv("OLLAMA_HOST", unset = NA)
+      "pong"
+    },
+    .package = "rmoriebricklayer"
+  )
+  withr::local_envvar(OLLAMA_HOST = NA, OLLAMA_BASE_URL = NA, OLLAMA_MODEL = NA,
+                      OLLAMA_API_KEY = NA, XDG_CONFIG_HOME = withr::local_tempdir(),
+                      HOME = withr::local_tempdir())
+  mdask("hello")
+  expect_identical(seen, "off")
+  expect_true(is.na(Sys.getenv("OLLAMA_HOST", unset = NA)))
+  mdask("hello", route = "auto")
+  expect_identical(seen, "off")
+  # chosen: by route, or by a variable the user set
+  mdask("hello", route = "ollama")
+  expect_true(is.na(seen))
+  withr::local_envvar(OLLAMA_HOST = "http://127.0.0.1:9")
+  mdask("hello")
+  expect_identical(seen, "http://127.0.0.1:9")
+})

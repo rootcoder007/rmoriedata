@@ -263,3 +263,51 @@ test_that("the request asks for the service's full count, at least 5,000,000 row
   rmoriedata:::.rmd_fetch_full("arrests", NULL)
   expect_equal(asked, 5e6)
 })
+
+test_that("cihiget's timeout is checked under its own name and passed whole (N13)", {
+  seen <- NULL
+  testthat::local_mocked_bindings(
+    .rmd_fetch_file = function(url, dest, wayback, timeout) {
+      seen <<- timeout
+      writeBin(as.raw(c(0x50, 0x4b, 0x03, 0x04, 0x00)), dest)
+      invisible(dest)
+    })
+  out <- withr::local_tempfile(fileext = ".xlsx")
+  cihiget(1, dest = out, timeout = 1.5)
+  expect_identical(seen, 2)
+  for (bad in list(0.5, 0, 1e9)) {
+    expect_error(cihiget(1, timeout = bad),
+                 "`timeout` must be a number of seconds from 1 to 86400", fixed = TRUE)
+  }
+})
+
+test_that("cihiget's download failure is told as cihiget()'s (N13)", {
+  out <- withr::local_tempfile(fileext = ".xlsx")
+  # the transport's failure, without the transport's own function name
+  testthat::local_mocked_bindings(
+    .rmd_bl = function(name) function(...) stop("blfetch: could not reach x; no Wayback"))
+  e <- tryCatch(.rmd_fetch_file("https://x", out, "", 2), error = conditionMessage)
+  expect_identical(e, paste("cihiget() could not download the table:",
+                            "could not reach x; no Wayback"))
+})
+
+test_that("strings marked as bytes are refused in words (N13)", {
+  # (an ASCII string cannot be marked: these hold a byte past ASCII)
+  b <- "caf\xe9"
+  Encoding(b) <- "bytes"
+  for (call in list(quote(mdload(b)), quote(mdpath(b)), quote(mddict(b)),
+                    quote(cihiget(b)), quote(hostload(paste0(b, "/x"))),
+                    quote(mdask(b)))) {
+    expect_error(eval(call), "holds a string marked as \"bytes\"", fixed = TRUE,
+                 info = deparse(call))
+  }
+  d <- data.frame(a = 1:2, s = c("x", "y"))
+  q <- "a\xe9"
+  Encoding(q) <- "bytes"
+  expect_error(kanonvrf(d, q), "`qids` holds a string marked as \"bytes\"", fixed = TRUE)
+  expect_error(ldivvrf(d, "a", sensitive = {
+    z <- "s\xe9"
+    Encoding(z) <- "bytes"
+    z
+  }), "`sensitive` holds a string marked as \"bytes\"", fixed = TRUE)
+})

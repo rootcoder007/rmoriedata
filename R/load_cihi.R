@@ -74,7 +74,8 @@ cihitbls <- function(archonly = FALSE) {
 #'   titles. Must resolve to exactly one table.
 #' @param dest Destination file path. Default: a tempfile with the
 #'   table's own extension.
-#' @param timeout Per-request timeout, seconds.
+#' @param timeout Per-request timeout in seconds, from 1 to 86400 (a day); a
+#'   fraction is rounded up to the next whole second.
 #' @return The \code{dest} path, invisibly. Errors if both the live URL
 #'   and its Wayback fallback fail.
 #' @examples
@@ -107,11 +108,14 @@ cihiget <- function(which, dest = NULL, timeout = 120L) {
     )
   }
   cat_df <- cihitbls()
+  # the transport counts whole seconds from 1: 0.5 reached it as 0 and was refused
+  # under its own argument name
   if (!is.numeric(timeout) || length(timeout) != 1L || !is.finite(timeout) ||
-        timeout <= 0) {
-    stop("`timeout` must be a single positive number of seconds.",
+        timeout < 1 || timeout > 86400) {
+    stop("`timeout` must be a number of seconds from 1 to 86400 (a day).",
          call. = FALSE)
   }
+  timeout <- ceiling(timeout)
   if (is.numeric(which)) {
     if (length(which) != 1L || is.na(which) || which != trunc(which) ||
           which < 1 || which > nrow(cat_df)) {
@@ -151,9 +155,13 @@ cihiget <- function(which, dest = NULL, timeout = 120L) {
   invisible(dest)
 }
 
-# The shared fetch-with-fallback engine; one seam for the tests.
+# The shared fetch-with-fallback engine; one seam for the tests. Its errors are
+# told as cihiget()'s, without the engine's own function name.
 .rmd_fetch_file <- function(url, dest, wayback, timeout) {
-  .rmd_bl("blfetch")(url, dest, wayback, timeout)
+  tryCatch(.rmd_bl("blfetch")(url, dest, wayback, timeout), error = function(e) {
+    stop("cihiget() could not download the table: ", .rmd_why(conditionMessage(e)),
+         call. = FALSE)
+  })
 }
 
 # A 200 is not a table: an outage page or an empty body arrives with the

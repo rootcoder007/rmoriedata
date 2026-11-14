@@ -14,7 +14,8 @@ titles. Must resolve to exactly one table.}
 \item{dest}{Destination file path. Default: a tempfile with the
 table's own extension.}
 
-\item{timeout}{Per-request timeout, seconds.}
+\item{timeout}{Per-request timeout in seconds, from 1 to 86400 (a day); a
+fraction is rounded up to the next whole second.}
 }
 \value{
 The \code{dest} path, invisibly. Errors if both the live URL

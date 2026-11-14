@@ -6,7 +6,13 @@
 #' to a language model you bring: an OpenAI-compatible endpoint of your own,
 #' a provider whose key is set (OpenAI, Anthropic, Google Gemini, OpenRouter,
 #' Groq, Mistral and more: \code{rmoriebricklayer::llmprvd()}),
-#' or an Ollama server. Nothing is sent anywhere you did not set up.
+#' or an Ollama server. Nothing is sent anywhere you did not set up. An
+#' Ollama server is asked only when you chose one: \code{route = "ollama"},
+#' an \code{OLLAMA_HOST}, \code{OLLAMA_BASE_URL}, \code{OLLAMA_MODEL} or
+#' \code{OLLAMA_API_KEY} environment variable, or an \code{ollama.*} setting
+#' or \code{route = "ollama"} saved with \code{\link{mdllmconf}()}. Without
+#' any of these, an Ollama server that happens to run on this machine (at
+#' \code{localhost:11434}) is neither probed nor sent the question.
 #' The model is given every function of rmoriedata and rmoriebricklayer and
 #' tools to read their help, and this package's catalogue of datasets, so it
 #' can name the tables and write the code that loads them.
@@ -65,6 +71,17 @@ mdask <- function(question, model = NULL, route = NULL) {
     listing
   )
   f <- .rmd_bl("llmask")
+  # rmoriebricklayer's automatic route probes localhost:11434 and sends the question
+  # to any Ollama found there; it is left out unless the user chose Ollama
+  if ((is.null(route) || identical(route, "auto")) && !.rmd_ollama_chosen()) {
+    old <- Sys.getenv("OLLAMA_HOST", unset = NA)
+    Sys.setenv(OLLAMA_HOST = "off")
+    on.exit(if (is.na(old)) {
+      Sys.unsetenv("OLLAMA_HOST")
+    } else {
+      Sys.setenv(OLLAMA_HOST = old)
+    }, add = TRUE)
+  }
   args <- list(question, model = model, syspro = system_prompt)
   have <- names(formals(f))
   if ("route" %in% have) args$route <- route
@@ -83,11 +100,45 @@ mdask <- function(question, model = NULL, route = NULL) {
   )
 }
 
+# Whether the user chose an Ollama server: an OLLAMA_* variable, or an ollama
+# setting (or the route "ollama") saved through llmcfg(). The variables are read
+# here as rmoriebricklayer reads them.
+.rmd_ollama_chosen <- function() {
+  env <- Sys.getenv(c("OLLAMA_HOST", "OLLAMA_BASE_URL", "OLLAMA_MODEL", "OLLAMA_API_KEY"))
+  if (any(nzchar(trimws(env)))) return(TRUE)
+  if (!"llmcfg" %in% .rmd_bl_exports()) return(FALSE)
+  cfg <- tryCatch(.rmd_bl_get("llmcfg")(), error = function(e) NULL)
+  if (!is.data.frame(cfg) || !all(c("key", "value", "source") %in% names(cfg))) {
+    return(FALSE)
+  }
+  set <- cfg$source != "default"
+  any(set & (startsWith(cfg$key, "ollama.") |
+               (cfg$key == "route" & tolower(cfg$value) == "ollama")))
+}
+
 # A non-NA, non-blank character scalar, or an error naming the argument.
 .rmoriedata_scalar <- function(x, what) {
-  if (!is.character(x) || length(x) != 1L || is.na(x) || !nzchar(trimws(x))) {
+  if (!is.character(x) || length(x) != 1L || is.na(x)) {
     stop(sprintf("`%s` must be a single non-empty string.", what),
          call. = FALSE)
+  }
+  .rmd_nobytes(x, what)
+  if (!nzchar(trimws(x))) {
+    stop(sprintf("`%s` must be a single non-empty string.", what),
+         call. = FALSE)
+  }
+  invisible(TRUE)
+}
+
+# Strings marked "bytes" (Encoding()) cannot be compared with names or titles:
+# base R stops with "translating strings with \"bytes\" encoding is not allowed".
+# Refused here in words, naming the argument.
+.rmd_nobytes <- function(x, what) {
+  if (is.character(x) && any(Encoding(x) == "bytes")) {
+    stop(sprintf(paste0("`%s` holds a string marked as \"bytes\", which cannot be ",
+                        "compared with names; mark its encoding first, for example ",
+                        "Encoding(x) <- \"UTF-8\" or iconv(x, \"latin1\", \"UTF-8\")"),
+                 what), call. = FALSE)
   }
   invisible(TRUE)
 }
