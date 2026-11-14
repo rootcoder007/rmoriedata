@@ -1,3 +1,5 @@
 # The data store is byte-exact: every file is listed in a signed SHA-256
 # manifest, so git must never convert line endings on checkout.
 inst/extdata/** -text
+# the zstd and Parquet test vectors are checked byte for byte
+tests/testthat/fixtures/zstd/** -text
