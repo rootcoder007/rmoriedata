@@ -6,25 +6,60 @@
 # rarest, so dropping them hides exactly the classes a verifier exists to catch.
 # Returns the class id per row and one row of keys per class (original values, NA
 # kept), in order of first appearance.
-# A plain double is keyed by its exact binary value (sprintf("%a")): as.character()
-# keeps 15 significant digits, so 0.1 + 0.2 and 0.3 used to share one class. -0 is
-# keyed as 0 (they compare equal); NaN is missing like NA. Integer, character,
-# logical, factor, Date and other classed columns keep their character form.
+# Classes are built column by column on integer codes (.morie_qi_code()), so no
+# value can collide with a separator: a pasted string key merged ("p", "q\003r")
+# with ("p\003q", "r").
 .morie_qi_classes <- function(qi) {
-  enc <- lapply(qi, function(col) {
-    v <- if (is.double(col) && !is.object(col)) {
-      sprintf("%a", col + 0) # + 0 turns -0 into 0
-    } else {
-      as.character(col)
-    }
-    ifelse(is.na(col), "\001NA", paste0("\002", v))
-  })
-  key <- if (length(enc) == 1L) enc[[1L]] else do.call(paste, c(enc, sep = "\003"))
-  id <- match(key, unique(key))
+  id <- integer(nrow(qi))
+  for (nm in names(qi)) {
+    code <- .morie_qi_code(qi[[nm]], nm)
+    code[is.na(code)] <- 0L
+    # two integers written in decimal and joined by "." cannot be read two ways
+    pair <- paste(id, code, sep = ".")
+    id <- match(pair, unique(pair))
+  }
   first <- match(seq_len(max(c(0L, id))), id)
   keys <- qi[first, , drop = FALSE]
   rownames(keys) <- NULL
   list(id = id, keys = keys)
+}
+
+# One column as integer codes, equal codes exactly for equal values and NA for a
+# missing value. Every numeric storage is keyed exactly whatever its class (difftime,
+# POSIXct, I(), ...): unclassed first, a double by its binary value (sprintf("%a")),
+# a complex by both parts, since as.character() keeps 15 significant digits and
+# merged 0.1 + 0.2 with 0.3. -0 is keyed as 0 (they compare equal); NaN is missing
+# like NA. A factor is keyed by its level label, with a level that is itself NA
+# missing (factor(c(NA, "NA"), exclude = NULL) has two levels, NA and "NA"); a
+# POSIXlt by the instant it names. Columns that cannot be keyed exactly are refused
+# by name: integer64 (its bits are not a double's value), list and matrix columns.
+.morie_qi_code <- function(col, name) {
+  if (inherits(col, "integer64")) {
+    stop("column `", name, "` is a bit64 integer64, which cannot be compared ",
+         "exactly here; convert it first (as.character() keeps every digit).",
+         call. = FALSE)
+  }
+  if (!is.null(dim(col)) || (is.list(col) && !inherits(col, "POSIXlt"))) {
+    stop("column `", name, "` is a ",
+         if (is.data.frame(col)) "data frame" else if (is.list(col)) "list" else "matrix",
+         " column; a quasi-identifier or sensitive column must hold one value per row.",
+         call. = FALSE)
+  }
+  if (is.factor(col)) col <- levels(col)[col]
+  if (inherits(col, "POSIXlt")) col <- as.POSIXct(col)
+  col <- unclass(col)
+  attributes(col) <- NULL
+  miss <- is.na(col)
+  v <- switch(typeof(col),
+    double = sprintf("%a", col + 0), # + 0 turns -0 into 0
+    complex = paste(sprintf("%a", Re(col) + 0), sprintf("%a", Im(col) + 0)),
+    logical = , integer = , character = , raw = col,
+    stop("column `", name, "` is of type ", typeof(col), ", which cannot be ",
+         "compared exactly here.", call. = FALSE)
+  )
+  code <- match(v, unique(v))
+  code[miss] <- NA_integer_
+  code
 }
 
 #' k-anonymity verification
@@ -41,11 +76,18 @@
 #' the class sizes sum to `nrow(data)`. `NaN` counts as missing, in the
 #' same class as `NA`.
 #'
-#' Values are compared exactly. Two numbers (plain doubles) are in one
-#' class only when they are the same double, so `0.1 + 0.2` and `0.3`,
-#' which differ in the last bit, are two classes; `-0` and `0` are one.
-#' Integer, character, logical, factor and `Date` columns are compared by
-#' their values as printed (a factor by its level label).
+#' Values are compared exactly. Two numbers are in one class only when
+#' they are the same number in storage, whatever the column's class
+#' (plain double, `Date`, `POSIXct`, `difftime`, `I()` and other classed
+#' numbers alike), so `0.1 + 0.2` and `0.3`, which differ in the last bit,
+#' are two classes, and so are two times a microsecond apart; `-0` and `0`
+#' are one. A complex number is compared by both parts. Integer, logical,
+#' character and raw columns are compared by value, a factor by its level
+#' label and a `POSIXlt` by the instant it names. A factor level that is
+#' itself `NA` is missing, and the string `"NA"` is a value, not a missing
+#' one. A column that cannot be compared exactly is refused with an error
+#' naming it: a `bit64::integer64` column (convert it with
+#' `as.character()`), a list column and a matrix column.
 #'
 #' @param data data.frame.
 #' @param qids Character vector of column names.
@@ -154,7 +196,8 @@ kanonvrf <- function(data, qids, k = 5) {
 #' whose rows read `"HIV"`, `NA`, `NA` tells an adversary the attribute is
 #' HIV or withheld, which is diversity 1. Classes are formed as in
 #' [kanonvrf()], with `NA` in a quasi-identifier as a
-#' level of its own.
+#' level of its own, and sensitive values are compared exactly in the same
+#' way (a factor level that is itself `NA` is withheld, not a value).
 #'
 #' @param data data.frame.
 #' @param qids Character vector of QI column names.
@@ -224,10 +267,12 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
   diversity_tbl <- cls$keys
   # a missing sensitive value is the absence of a value, not a second one: a class whose
   # only known value is "HIV" has diversity 1 however many rows withhold it
-  known <- !is.na(sens)
+  # exact codes, as for the quasi-identifiers: match() compares a classed column by
+  # its as.character() form, which merged two times a microsecond apart
+  sc <- .morie_qi_code(sens, sensitive)
+  known <- !is.na(sc)
   # distinct (class, value) pairs counted once per class: one pass, not a scan per class
-  sk <- sens[known]
-  pair <- unique(data.frame(g = cls$id[known], s = match(sk, unique(sk))))
+  pair <- unique(data.frame(g = cls$id[known], s = sc[known]))
   diversity_tbl$.diversity <- tabulate(pair$g, nbins = nrow(cls$keys))
   min_div <- if (nrow(diversity_tbl) == 0L) 0L else min(diversity_tbl$.diversity)
 

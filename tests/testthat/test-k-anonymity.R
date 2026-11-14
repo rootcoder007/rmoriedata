@@ -403,3 +403,75 @@ test_that("cellsupp treats an NA cell as hidden and refuses non-counts in words"
   expect_error(cellsupp(new.env()), msg, fixed = TRUE)
   expect_error(cellsupp(quote(x)), msg, fixed = TRUE)
 })
+
+test_that("classed and complex numbers are keyed exactly, odd columns refused by name", {
+  t0 <- c(1e9, 1e9 + 1e-7)
+  vals <- list(
+    difftime = as.difftime(c(0.1 + 0.2, 0.3), units = "secs"),
+    AsIs = I(c(0.1 + 0.2, 0.3)),
+    POSIXct = as.POSIXct(t0, origin = "1970-01-01", tz = "UTC"),
+    POSIXlt = as.POSIXlt(as.POSIXct(t0, origin = "1970-01-01", tz = "UTC")),
+    Date = structure(c(19000, 19000.5), class = "Date"),
+    complex = complex(real = c(0.1 + 0.2, 0.3)),
+    imaginary = complex(real = 1, imaginary = c(0.1 + 0.2, 0.3))
+  )
+  for (nm in names(vals)) {
+    d <- data.frame(x = 1:2, g = "a")
+    d$q <- vals[[nm]]
+    r <- kanonvrf(d, "q", k = 2)
+    expect_identical(r$n_classes, 2L, info = nm)
+    expect_false(r$satisfies, info = nm)
+    expect_identical(kanonvrf(d, c("g", "q"), k = 2)$n_classes, 2L, info = nm)
+    # as the sensitive attribute: two values, diversity 2
+    expect_identical(ldivvrf(d, "g", "q", l = 2)$min_diversity, 2L, info = nm)
+  }
+  d <- data.frame(x = 1:2)
+  d$q <- as.POSIXct(c(1e9, 1e9), origin = "1970-01-01", tz = "UTC")
+  expect_true(kanonvrf(d, "q", k = 2)$satisfies)
+  d$q <- complex(real = c(0, -0), imaginary = c(-0, 0))
+  expect_true(kanonvrf(d, "q", k = 2)$satisfies)
+  d$m <- matrix(1:4, 2)
+  expect_error(kanonvrf(d, "m", k = 1), "column `m` is a matrix column", fixed = TRUE)
+  d$l <- list(1, 2)
+  expect_error(kanonvrf(d, "l", k = 1), "column `l` is a list column", fixed = TRUE)
+  d$b <- structure(c(1, 2), class = "integer64")
+  expect_error(kanonvrf(d, "b", k = 1), "column `b` is a bit64 integer64", fixed = TRUE)
+  expect_error(ldivvrf(d, "x", "b", l = 1), "column `b` is a bit64 integer64",
+               fixed = TRUE)
+})
+
+test_that("class keys cannot collide: separators in strings, NA against \"NA\"", {
+  d <- data.frame(a = c("p", "p\003\002q"), b = c("q\003\002r", "r"))
+  r <- kanonvrf(d, c("a", "b"), k = 2)
+  expect_identical(r$n_classes, 2L)
+  expect_false(r$satisfies)
+  d <- data.frame(a = c("x\001", "x"), b = c("y", "\001y"))
+  expect_identical(kanonvrf(d, c("a", "b"), k = 1)$n_classes, 2L)
+  f <- factor(c(NA, "NA"), exclude = NULL)
+  expect_identical(kanonvrf(data.frame(f = f), "f", k = 1)$n_classes, 2L)
+  expect_identical(kanonvrf(data.frame(s = c(NA, "NA")), "s", k = 1)$n_classes, 2L)
+  # a level that is NA is missing, with an NA code; "NA" is a value
+  g <- structure(c(1L, NA, 2L, 3L), levels = c(NA, "NA", "x"), class = "factor")
+  r <- kanonvrf(data.frame(g = g), "g", k = 1)
+  expect_identical(r$n_classes, 3L)
+  expect_identical(sort(r$violating_classes$.n), integer(0))
+  expect_identical(kanonvrf(data.frame(g = g), "g", k = 2)$n_violations, 2L)
+  # as a sensitive value the NA level is withheld, not a second value
+  l <- ldivvrf(data.frame(q = "a", s = f), "q", "s", l = 2)
+  expect_identical(l$min_diversity, 1L)
+  # brute force over strings of separators and "NA"
+  set.seed(11)
+  pool <- c("", "\001", "\002", "\003", "a\003", "\003a", "NA", NA, "\002NA", "\001NA")
+  same <- function(a, b) (is.na(a) & is.na(b)) | (!is.na(a) & !is.na(b) & a == b)
+  for (rep in 1:20) {
+    n <- sample(4:30, 1)
+    d <- data.frame(a = sample(pool, n, TRUE), b = sample(pool, n, TRUE),
+                    stringsAsFactors = FALSE)
+    sz <- vapply(seq_len(n), function(i) {
+      sum(same(d$a[i], d$a) & same(d$b[i], d$b))
+    }, integer(1))
+    got <- kanonvrf(d, c("a", "b"), k = 2)
+    expect_identical(got$min_class_size, min(sz))
+    expect_equal(got$n_classes, sum(1 / sz))
+  }
+})

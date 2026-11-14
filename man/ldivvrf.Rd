@@ -39,7 +39,8 @@ Only known (non-\code{NA}) sensitive values count towards diversity: a class
 whose rows read \code{"HIV"}, \code{NA}, \code{NA} tells an adversary the attribute is
 HIV or withheld, which is diversity 1. Classes are formed as in
 \code{\link[=kanonvrf]{kanonvrf()}}, with \code{NA} in a quasi-identifier as a
-level of its own.
+level of its own, and sensitive values are compared exactly in the same
+way (a factor level that is itself \code{NA} is withheld, not a value).
 }
 \examples{
 df <- data.frame(
