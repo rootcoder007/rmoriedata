@@ -53,6 +53,7 @@ SEXP C_rmd_snappy_decompress(SEXP x);
 SEXP C_rmd_gzip_compress(SEXP x);
 SEXP C_rmd_gzip_decompress(SEXP x, SEXP size);
 SEXP C_rmd_crc32(SEXP x);
+SEXP C_rmd_zstd_decompress(SEXP x, SEXP size);
 
 static const R_CallMethodDef CallEntries[] = {
     {"C_morie_core_sha256", (DL_FUNC) &C_morie_core_sha256, 1},
@@ -61,6 +62,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_rmd_gzip_compress",     (DL_FUNC) &C_rmd_gzip_compress,     1},
     {"C_rmd_gzip_decompress",   (DL_FUNC) &C_rmd_gzip_decompress,   2},
     {"C_rmd_crc32",             (DL_FUNC) &C_rmd_crc32,             1},
+    {"C_rmd_zstd_decompress",   (DL_FUNC) &C_rmd_zstd_decompress,   2},
     {"C_morie_core_mean",   (DL_FUNC) &C_morie_core_mean,   1},
     {NULL, NULL, 0}
 };
