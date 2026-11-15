@@ -30,15 +30,8 @@ mdload(slug, refresh = FALSE, format = c("csv", "parquet"))
 - format:
 
   `"csv"` (default) or `"parquet"`: which shipped copy to read. Both
-  give the same columns, with the same names and types, and the same
-  values, with one exception: in the double columns of five tables
-  (`tps_assault_sample` and its copy `samples_tps_assault_sample`,
-  `vic_criminal_incidents`, `vic_lga_criminal_incidents` and
-  `vic_recorded_offences`) one or two values of the Parquet copy differ
-  from the CSV's in the last binary digit (a relative difference below
-  3e-16). The CSV text read back gives the double nearest to it; those
-  Parquet copies were written from values computed before the CSV text
-  was, and hold the next double.
+  give the same data frame, value for value: decimal text in the CSV is
+  read as the nearest double, the same on every platform.
 
 ## Value
 

@@ -34,7 +34,7 @@ str(ck)
 #>  $ path       : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...
 #>  $ file       : chr  "OTIS_DATA_DICTIONARY.md" "_catalog.csv" "_checksums.csv" "_checksums.sig" ...
 #>  $ bytes      : num  23210 14421 23768 10181 131454 ...
-#>  $ sha256     : chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "7dea162bf542aab8f646ad54900e18332c4de1424787afc4cd93a05405d4caf2" "b274f02d651b773d5789fed42b8c81c1ca77380a7d3e50eea3bb370a5a2d6dbc" "e3df32a1b071d917a26ed16d34eaf257339a4c51f30a1d069d330b9b8134156f" ...
+#>  $ sha256     : chr  "bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00" "7dea162bf542aab8f646ad54900e18332c4de1424787afc4cd93a05405d4caf2" "2b587991862186d249a5c7523f11fd10ea2f59d7e3753d472223d7a01548d7ec" "9ad6877052a79e81926bb7aeb13e29d0ce643bfaf8551b4c622ea6e66798372e" ...
 #>  $ in_manifest: logi  TRUE TRUE NA NA TRUE NA ...
 head(ck)
 #>                      path                    file  bytes
@@ -43,18 +43,18 @@ head(ck)
 #> 3          _checksums.csv          _checksums.csv  23768
 #> 4          _checksums.sig          _checksums.sig  10181
 #> 5             _schema.csv             _schema.csv 131454
-#> 6       _signing_key.json       _signing_key.json    197
+#> 6       _signing_key.json       _signing_key.json    196
 #>                                                             sha256 in_manifest
 #> 1 bc143646019d8edb68a23f8c2fa74616dfe04b83c66483f4ac4a6a7ae886dc00        TRUE
 #> 2 7dea162bf542aab8f646ad54900e18332c4de1424787afc4cd93a05405d4caf2        TRUE
-#> 3 b274f02d651b773d5789fed42b8c81c1ca77380a7d3e50eea3bb370a5a2d6dbc          NA
-#> 4 e3df32a1b071d917a26ed16d34eaf257339a4c51f30a1d069d330b9b8134156f          NA
+#> 3 2b587991862186d249a5c7523f11fd10ea2f59d7e3753d472223d7a01548d7ec          NA
+#> 4 9ad6877052a79e81926bb7aeb13e29d0ce643bfaf8551b4c622ea6e66798372e          NA
 #> 5 24c14b6b500947d424f98a8a1479cf250ca1a694e440cc17788d20755d7dae0b        TRUE
-#> 6 f97d3e9ae0c1ed10264961b396b5fabd019a179fa3123e9267b12ec6b2797a9a          NA
+#> 6 f26cb1f7fb7721439586fa54be1a1ce4ee02ea77bf2d28d88b2df9ea400828f1          NA
 
 # Total bundled payload and the largest few files.
 sum(ck$bytes)
-#> [1] 13360923
+#> [1] 13361273
 head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
 #> 181  siu_directors_reports.csv.gz 2378925

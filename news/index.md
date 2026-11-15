@@ -81,10 +81,21 @@
   [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
   are refused in words, where base R stopped with “translating strings
   with”bytes” encoding is not allowed”.
-- [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)’s
-  help says how the Parquet and CSV copies differ: in five tables one or
-  two doubles of the Parquet copy are the next double to the CSV’s
-  value.
+- Decimal text is read as the nearest double, the same on every
+  platform, by
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and `chiload(full = TRUE)`: R’s own conversion (behind
+  [`read.csv()`](https://rdrr.io/r/utils/read.table.html) and
+  [`as.numeric()`](https://rdrr.io/r/base/numeric.html)) is not
+  correctly rounded, and read some values one bit apart on x86-64 and
+  ARM64 (`1.239042694` was 1.2390426940000001 on one and
+  1.2390426939999999 on the other). The Parquet copies of five bundled
+  tables (`tps_assault_sample`, `samples_tps_assault_sample`,
+  `vic_criminal_incidents`, `vic_lga_criminal_incidents`,
+  `vic_recorded_offences`) held such values and are written again from
+  their CSV copies, so the two copies of every table give the same data
+  frame, as the help says.
 - [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
   and
   [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
