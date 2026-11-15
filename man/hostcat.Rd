@@ -43,7 +43,8 @@ the package cache directory (\code{tempdir()} unless
 \details{
 \code{hostload()} returns the table as the file holds it, as the bundled
 tables are read: the column names as written (as the manifest lists
-them), and only an empty field missing (the text \code{"NA"} is a value).
+them); an empty field is missing in a logical or number column and
+\code{""} in a text column (the text \code{"NA"} is a value).
 A column is logical, integer or double only when every value in it is
 written the way R writes such a value: \code{TRUE} or \code{FALSE};
 whole numbers without a leading zero or a plus sign; for double, numbers

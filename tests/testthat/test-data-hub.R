@@ -445,12 +445,12 @@ test_that("hostload returns what the file holds (N9)", {
   # names as written, the byte-order mark dropped
   expect_identical(names(d), c("Code", "Offence Description", "% of All", "txt", "note",
                                "empty", "lg", "num", "big", "hex", "frac"))
-  # a code keeps its leading zero; the text "NA" is a value; only an empty field is NA
+  # a code keeps its leading zero; the text "NA" is a value; an empty text field is ""
   expect_identical(d$Code, c("046", "120", "871"))
-  expect_identical(d$txt, c("NA", "x", NA))
+  expect_identical(d$txt, c("NA", "x", ""))
   expect_identical(d$`% of All`, c(1.5, 2, NA))
   # quoted commas, quotes and line breaks (a CRLF inside a quoted field reads as \n)
-  expect_identical(d$note, c("a, b", "say \"hi\"", NA))
+  expect_identical(d$note, c("a, b", "say \"hi\"", ""))
   expect_identical(d$`Offence Description`[2L], "Assault\nwith a weapon")
   # a column with no value is logical NA; TRUE/FALSE is logical
   expect_identical(d$empty, rep(NA, 3L))

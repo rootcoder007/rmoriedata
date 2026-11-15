@@ -550,7 +550,8 @@
 #'
 #' \code{hostload()} returns the table as the file holds it, as the bundled
 #' tables are read: the column names as written (as the manifest lists
-#' them), and only an empty field missing (the text \code{"NA"} is a value).
+#' them); an empty field is missing in a logical or number column and
+#' \code{""} in a text column (the text \code{"NA"} is a value).
 #' A column is logical, integer or double only when every value in it is
 #' written the way R writes such a value: \code{TRUE} or \code{FALSE};
 #' whole numbers without a leading zero or a plus sign; for double, numbers
@@ -674,8 +675,8 @@ hostload <- function(key, refresh = FALSE) {
 # A hosted table's csv.gz as the file holds it, the way the bundled tables are read:
 # - column names as written (check.names = FALSE), a byte-order mark before the
 #   first one dropped;
-# - every field read as text first, and only an empty field missing (the text "NA"
-#   is a value);
+# - every field read as text first; an empty field is missing in a logical or number
+#   column and "" in a text column (the text "NA" is a value);
 # - a column takes a type only when every non-empty value in it is written the way
 #   R writes that value: TRUE/FALSE for logical; a whole number in the integer range,
 #   without a leading zero or a plus sign, for integer; for double, a number without
@@ -709,8 +710,11 @@ hostload <- function(key, refresh = FALSE) {
     names(d) <- .rmd_mark_utf8(nm)
   }
   d[] <- lapply(d, function(x) {
-    x[!nzchar(x)] <- NA_character_
-    .rmd_settle(x)
+    e <- !nzchar(x)
+    y <- .rmd_settle(replace(x, e, NA_character_))
+    # a text column is as written: an empty field in it is "", not missing
+    if (is.character(y)) y[e] <- ""
+    y
   })
   rownames(d) <- NULL
   d
