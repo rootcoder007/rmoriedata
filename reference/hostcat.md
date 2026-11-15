@@ -46,23 +46,24 @@ hostload(key, refresh = FALSE)
 
 `hostload()` returns the table as the file holds it, as the bundled
 tables are read: the column names as written (as the manifest lists
-them), and only an empty field missing (the text `"NA"` is a value). A
-column is logical, integer or double only when every value in it is
-written the way R writes such a value: `TRUE` or `FALSE`; whole numbers
-without a leading zero or a plus sign; for double, numbers without a
-leading zero, whole ones of at most 15 digits (which a double holds
-exactly) and decimal ones of at most 17 significant digits (zeros after
-the decimal point are formatting, and `"6.0"` is 6), or in R's own
-exponent form (`1e-05`). Any other column is text, so a code such as
-`"046"` keeps its leading zero, and `"+3"`, `".5"`, `"0x1A"`, `"Inf"` or
-an identifier of 16 or more digits keep every character. A column with
-no value at all is logical `NA`. Text is marked UTF-8, whatever the
-session's locale; bytes that are not valid UTF-8 are marked `"bytes"`.
-Quoted fields may hold commas, quotes and line breaks (a Windows line
-end inside a field reads as `"\n"`); Windows line ends and a byte-order
-mark are allowed. A record with more or fewer fields than the header is
-a damaged download: the copy is deleted and the call fails, so the next
-call fetches it again.
+them); an empty field is missing in a logical or number column and `""`
+in a text column (the text `"NA"` is a value). A column is logical,
+integer or double only when every value in it is written the way R
+writes such a value: `TRUE` or `FALSE`; whole numbers without a leading
+zero or a plus sign; for double, numbers without a leading zero, whole
+ones of at most 15 digits (which a double holds exactly) and decimal
+ones of at most 17 significant digits (zeros after the decimal point are
+formatting, and `"6.0"` is 6), or in R's own exponent form (`1e-05`).
+Any other column is text, so a code such as `"046"` keeps its leading
+zero, and `"+3"`, `".5"`, `"0x1A"`, `"Inf"` or an identifier of 16 or
+more digits keep every character. A column with no value at all is
+logical `NA`. Text is marked UTF-8, whatever the session's locale; bytes
+that are not valid UTF-8 are marked `"bytes"`. Quoted fields may hold
+commas, quotes and line breaks (a Windows line end inside a field reads
+as `"\n"`); Windows line ends and a byte-order mark are allowed. A
+record with more or fewer fields than the header is a damaged download:
+the copy is deleted and the call fails, so the next call fetches it
+again.
 
 The manifest is fetched again once the cached copy is a day old. When
 that fails (offline, or the service is down) the cached copy is used,

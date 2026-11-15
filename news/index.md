@@ -8,12 +8,13 @@
   codes lost their leading zeros (`046` became the number 46), column
   names were rewritten (`Offence Description` became
   `Offence.Description`) and the text `NA` became a missing value. Now
-  the names are kept as written, only an empty field is missing, and a
-  column becomes logical, integer or double only when every value in it
-  is written the way R writes such a value; any other column stays text.
-  Text is marked UTF-8 in every locale (it was unmarked in a non-UTF-8
-  locale), and bytes that are not UTF-8 are marked `"bytes"`. The help
-  page says exactly which values count as numbers.
+  the names are kept as written, an empty field is missing in a logical
+  or number column and `""` in a text column, and a column becomes
+  logical, integer or double only when every value in it is written the
+  way R writes such a value; any other column stays text. Text is marked
+  UTF-8 in every locale (it was unmarked in a non-UTF-8 locale), and
+  bytes that are not UTF-8 are marked `"bytes"`. The help page says
+  exactly which values count as numbers.
 - A table already cached and verified loads offline once the cached
   manifest is more than a day old: when the manifest cannot be fetched
   again, the cached copy is used with a message, and the table is still

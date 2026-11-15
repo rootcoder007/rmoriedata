@@ -121,7 +121,8 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
     <p><code>hostload()</code> returns the table as the file holds it, as the bundled
 tables are read: the column names as written (as the manifest lists
-them), and only an empty field missing (the text <code>"NA"</code> is a value).
+them); an empty field is missing in a logical or number column and
+<code>""</code> in a text column (the text <code>"NA"</code> is a value).
 A column is logical, integer or double only when every value in it is
 written the way R writes such a value: <code>TRUE</code> or <code>FALSE</code>;
 whole numbers without a leading zero or a plus sign; for double, numbers
