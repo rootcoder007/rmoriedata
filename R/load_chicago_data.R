@@ -293,14 +293,9 @@ chiload <- function(type = c("arrests", "complaints"),
   as.integer(d)
 }
 
-# Decimal text as numbers, NA for anything else (hexadecimal, Inf, NaN, words).
-.rmd_decimal <- function(x) {
-  t <- trimws(x)
-  ok <- !is.na(t) & grepl("^[-+]?([0-9]+[.]?[0-9]*|[.][0-9]+)([eE][-+]?[0-9]+)?$", t)
-  out <- rep(NA_real_, length(x))
-  out[ok] <- as.numeric(t[ok])
-  out
-}
+# Decimal text as numbers, NA for anything else (hexadecimal, Inf, NaN, words), read
+# by .rmd_num(): correctly rounded, the same on every platform.
+.rmd_decimal <- function(x) .rmd_num(trimws(x))
 
 # ISO 8601 text as POSIXct. A time with an offset or "Z" is that instant (strptime
 # ignores the zone, which read 10:00Z as 10:00 in Chicago, five hours off); one

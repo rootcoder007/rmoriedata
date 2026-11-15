@@ -57,6 +57,7 @@ SEXP C_rmd_zstd_decompress(SEXP x, SEXP size);
 SEXP C_rmd_flock_with(SEXP path, SEXP fn, SEXP busy);
 SEXP C_rmd_pq_strings(SEXP buf, SEXP pos, SEXP count, SEXP column);
 SEXP C_rmd_pq_bytes(SEXP x);
+SEXP C_rmd_strtod(SEXP x);
 
 static const R_CallMethodDef CallEntries[] = {
     {"C_morie_core_sha256", (DL_FUNC) &C_morie_core_sha256, 1},
@@ -69,6 +70,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_rmd_flock_with",        (DL_FUNC) &C_rmd_flock_with,        3},
     {"C_rmd_pq_strings",        (DL_FUNC) &C_rmd_pq_strings,        4},
     {"C_rmd_pq_bytes",          (DL_FUNC) &C_rmd_pq_bytes,          1},
+    {"C_rmd_strtod",            (DL_FUNC) &C_rmd_strtod,            1},
     {"C_morie_core_mean",   (DL_FUNC) &C_morie_core_mean,   1},
     {NULL, NULL, 0}
 };

@@ -722,10 +722,10 @@ hostload <- function(key, refresh = FALSE) {
   if (!length(v) || all(v %in% c("TRUE", "FALSE"))) return(as.logical(x))
   whole <- grepl("^(0|-?[1-9][0-9]*)$", v, useBytes = TRUE)
   if (all(whole) && all(nchar(v) <= 11L)) {
-    n <- as.numeric(v)
+    n <- .rmd_num(v)
     if (all(abs(n) <= .Machine$integer.max)) return(as.integer(x))
   }
-  if (all(.rmd_canon_num(v))) return(as.numeric(x))
+  if (all(.rmd_canon_num(v))) return(.rmd_num(x))
   .rmd_mark_utf8(x)
 }
 
@@ -741,7 +741,7 @@ hostload <- function(key, refresh = FALSE) {
   core <- ifelse(pt, sub("\\.?0+$", "", v, useBytes = TRUE), v)
   sig <- nchar(sub("^0+", "", gsub("[^0-9]", "", core, useBytes = TRUE), useBytes = TRUE),
                type = "bytes")
-  n <- suppressWarnings(as.numeric(v))
+  n <- .rmd_num(v)
   # a whole number of more than 15 digits is an identifier a double cannot hold;
   # a decimal of up to 17 is a double printed in full (as Python and JSON print them)
   ok <- dec & sig <= ifelse(pt, 17L, 15L) & !is.na(n) & (n == 0 | abs(n) >= 1e-300)

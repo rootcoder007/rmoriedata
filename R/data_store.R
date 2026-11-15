@@ -20,7 +20,7 @@
   p
 }
 
-.rmoriedata_csv <- function(name) {
+.rmoriedata_csv <- function(name, colClasses = NA) {
   f <- file.path(.rmoriedata_extdata(), name)
   if (!file.exists(f)) return(NULL)
   .rmoriedata_check_file(name)
@@ -29,7 +29,23 @@
   # field (22 of 99 tables short, 5 empty, 2026-09-18). encoding = marks
   # the strings as UTF-8 and leaves the bytes alone. The store has no BOM.
   utils::read.csv(f, check.names = FALSE, stringsAsFactors = FALSE,
-                  encoding = "UTF-8")
+                  encoding = "UTF-8", colClasses = colClasses)
+}
+
+# Decimal text as doubles, the same on every platform (src/strtod.c): R's own
+# conversion, behind read.csv(), as.numeric(), type.convert() and scan(), is not
+# correctly rounded and gives a different last bit on x86-64 and on ARM64 for some
+# text ("1.239042694"). The C library's strtod() is correctly rounded. A string that
+# is not a plain decimal or exponent number is NA; with `special`, "Inf", "-Inf" and
+# "NaN" are read as write.csv() writes them.
+.rmd_num <- function(x, special = FALSE) {
+  out <- .Call(C_rmd_strtod, as.character(x))
+  if (special) {
+    out[x %in% "Inf"] <- Inf
+    out[x %in% "-Inf"] <- -Inf
+    out[x %in% "NaN"] <- NaN
+  }
+  out
 }
 
 .rmoriedata_schema <- function() {
@@ -149,7 +165,12 @@ mdload <- function(slug, refresh = FALSE,
     .rmoriedata_check_file(rel)
     d <- as.data.frame(morie_read_parquet(f), stringsAsFactors = FALSE)
   } else {
-    d <- .rmoriedata_csv(row$source_path[1L])
+    # the double columns are read as text and converted here, correctly rounded
+    s <- .rmoriedata_schema()
+    s <- s[s$slug == slug, , drop = FALSE]
+    cc <- NA
+    if (nrow(s)) cc <- ifelse(s$class[order(s$position)] == "numeric", "character", NA)
+    d <- .rmoriedata_csv(row$source_path[1L], colClasses = cc)
     if (is.null(d)) {
       stop(sprintf("The file for '%s' (%s) is missing; reinstall rmoriedata.",
                    slug, row$source_path[1L]), call. = FALSE)
@@ -221,7 +242,7 @@ mdpath <- function(slug, format = c("parquet", "csv")) {
     v <- d[[j]]
     d[[j]] <- switch(cls,
       integer = as.integer(v),
-      numeric = as.numeric(v),
+      numeric = if (is.character(v)) .rmd_num(v, special = TRUE) else as.numeric(v),
       logical = as.logical(v),
       character = if (is.character(v)) v else as.character(v),
       Date = as.Date(v),
