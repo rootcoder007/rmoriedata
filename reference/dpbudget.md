@@ -47,6 +47,20 @@ budget carries a random token drawn from the operating system's CSPRNG
 when the package is loaded, and a release is charged only in the
 process, and the load of the package, that made the budget.
 
+A copy of a budget made in the same session is refused too: one written
+with [`saveRDS()`](https://rdrr.io/r/base/readRDS.html) and read back
+with [`readRDS()`](https://rdrr.io/r/base/readRDS.html), passed through
+[`serialize()`](https://rdrr.io/r/base/serialize.html) and
+[`unserialize()`](https://rdrr.io/r/base/serialize.html), or rebuilt
+from its fields. The copy is a second ledger that would start from what
+the budget had spent when it was copied, so the two together could spend
+the budget twice; every budget is registered in the package when it is
+made, and only that object can be charged. Assigning a budget to another
+name (`b2 <- b`) makes no copy: both names are the one ledger. What is
+not prevented: code that sets a budget's fields by hand, or that creates
+several budgets for one dataset. A budget is an accounting aid for
+honest code, not a defence against code that means to overspend.
+
 A budget of `delta = 0` pays only for pure-DP releases: a release with
 any `delta > 0` is refused. The totals are compared with a slack for
 floating-point rounding only, so that ten releases at `epsilon = 0.1`
@@ -69,7 +83,7 @@ privacy the ledger does not show.
 ``` r
 b <- dpbudget(epsilon = 2)
 dplapcnt(42, epsilon = 1, budget = b)
-#> [1] 41
+#> [1] 42
 dpspent(b)
 #> $epsilon
 #> [1] 2

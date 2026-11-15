@@ -99,7 +99,13 @@ UTC; <code>date_iso</code> keeps the local time and offset.</p></dd>
 large) instead of the bundled sample; a complete fetch is cached as
 Parquet (see Description). The result has the bundled sample's columns,
 in its order and with its types, derived from Socrata's export as the
-sample was.</p></dd>
+sample was. Text in Socrata's export is read as decimal numbers only
+(hexadecimal, <code>Inf</code> and numbers past the double range are not
+numbers here); a value that does not fit its column becomes <code>NA</code>,
+with one warning per column that counts such values and shows the first.
+A mirror's or the cache's file in the sample's own columns must fit
+exactly, and is refused otherwise with an error naming the column and
+the file.</p></dd>
 
 
 <dt id="arg-mirror">mirror<a class="anchor" aria-label="anchor" href="#arg-mirror"></a></dt>

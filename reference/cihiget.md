@@ -27,7 +27,8 @@ cihiget(which, dest = NULL, timeout = 120L)
 
 - timeout:
 
-  Per-request timeout, seconds.
+  Per-request timeout in seconds, from 1 to 86400 (a day); a fraction is
+  rounded up to the next whole second.
 
 ## Value
 

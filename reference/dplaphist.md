@@ -38,11 +38,11 @@ may be negative; clip for display).
 ``` r
 true <- c(120, 45, 8, 230, 17)
 dplaphist(true, epsilon = 0.5)
-#> [1] 122  44   8 237  16
+#> [1] 116  49   8 235  14
 
 # Post-process for display: clip negatives (costs no privacy).
 pmax(0, dplaphist(true, epsilon = 1.0))
-#> [1] 118  46   7 231  17
+#> [1] 122  45   8 232  15
 
 # Release a private histogram straight from tabulated data.
 counts <- as.integer(table(complaint_sample$year))

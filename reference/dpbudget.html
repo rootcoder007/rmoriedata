@@ -92,6 +92,17 @@ every session is PID 1): each budget carries a random token drawn from
 the operating system's CSPRNG when the package is loaded, and a release
 is charged only in the process, and the load of the package, that made
 the budget.</p>
+<p>A copy of a budget made in the same session is refused too: one written
+with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">saveRDS()</a></code> and read back with <code><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS()</a></code>, passed through
+<code><a href="https://rdrr.io/r/base/serialize.html" class="external-link">serialize()</a></code> and <code><a href="https://rdrr.io/r/base/serialize.html" class="external-link">unserialize()</a></code>, or rebuilt from its fields. The copy
+is a second ledger that would start from what the budget had spent when
+it was copied, so the two together could spend the budget twice; every
+budget is registered in the package when it is made, and only that
+object can be charged. Assigning a budget to another name (<code>b2 &lt;- b</code>)
+makes no copy: both names are the one ledger. What is not prevented:
+code that sets a budget's fields by hand, or that creates several
+budgets for one dataset. A budget is an accounting aid for honest code,
+not a defence against code that means to overspend.</p>
 <p>A budget of <code>delta = 0</code> pays only for pure-DP releases: a release with
 any <code>delta &gt; 0</code> is refused. The totals are compared with a slack for
 floating-point rounding only, so that ten releases at <code>epsilon = 0.1</code>
@@ -114,7 +125,7 @@ spend privacy the ledger does not show.</p>
     <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
     <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="va">b</span> <span class="op">&lt;-</span> <span class="fu">dpbudget</span><span class="op">(</span>epsilon <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="dplapcnt.html">dplapcnt</a></span><span class="op">(</span><span class="fl">42</span>, epsilon <span class="op">=</span> <span class="fl">1</span>, budget <span class="op">=</span> <span class="va">b</span><span class="op">)</span></span></span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 41</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 42</span>
 <span class="r-in"><span><span class="fu"><a href="dpspent.html">dpspent</a></span><span class="op">(</span><span class="va">b</span><span class="op">)</span></span></span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $epsilon</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2</span>

@@ -65,7 +65,8 @@ the writer does not write ZSTD. Nested and repeated columns are refused.</p>
 
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>
 <dd><p>Optional character vector of column names to decode;
-the rest are skipped entirely.</p></dd>
+the rest are skipped entirely. <code>character(0)</code> gives a data frame with
+the file's rows and no columns.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -73,6 +74,15 @@ the rest are skipped entirely.</p></dd>
     <p>A <code>data.frame</code>. Every error the reader raises, a missing or
 damaged file included, starts with <code>parquet:</code>; no base-R warning escapes
 it (a value a damaged file makes R warn about is an error instead).</p>
+    </div>
+    <div class="section level2">
+    <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
+    <p>A string column comes back as text marked UTF-8 (ASCII text stays
+unmarked, as R keeps it). A Parquet string is UTF-8 by definition, and
+<code><a href="morie_write_parquet.html">morie_write_parquet()</a></code> refuses to write anything else, so a value that
+is not valid UTF-8, or that holds a NUL byte, is refused with a
+<code>parquet:</code> error naming the column: returned, it would fail later in
+<code><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nchar()</a></code> or <code><a href="https://rdrr.io/r/base/chartr.html" class="external-link">toupper()</a></code>.</p>
     </div>
 
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

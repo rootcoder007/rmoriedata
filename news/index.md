@@ -2,6 +2,89 @@
 
 ## rmoriedata 0.4.3
 
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  returns a table as its file holds it. It read the file with
+  [`read.csv()`](https://rdrr.io/r/utils/read.table.html)’s defaults, so
+  codes lost their leading zeros (`046` became the number 46), column
+  names were rewritten (`Offence Description` became
+  `Offence.Description`) and the text `NA` became a missing value. Now
+  the names are kept as written, only an empty field is missing, and a
+  column becomes logical, integer or double only when every value in it
+  is written the way R writes such a value; any other column stays text.
+  Text is marked UTF-8 in every locale (it was unmarked in a non-UTF-8
+  locale), and bytes that are not UTF-8 are marked `"bytes"`. The help
+  page says exactly which values count as numbers.
+- A table already cached and verified loads offline once the cached
+  manifest is more than a day old: when the manifest cannot be fetched
+  again, the cached copy is used with a message, and the table is still
+  checked against the digest it lists.
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  failed with a network error.
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  checks a cached table under the same lock as a download, so it can no
+  longer delete a copy that another R session has just refreshed. A
+  session waiting for another session’s download stops with an error
+  once that download has not grown for `options(rmoriedata.lockwait = )`
+  seconds (600 by default); it waited for ever behind a stalled session.
+- A failed download from data.rmorie.com names the function called
+  ([`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  or
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)),
+  the table and the address, without the dependency’s own function name
+  in front (`bldl:`).
+- A privacy budget copied within one R session (written with
+  [`saveRDS()`](https://rdrr.io/r/base/readRDS.html) and read back,
+  passed through [`serialize()`](https://rdrr.io/r/base/serialize.html),
+  or rebuilt from its fields) is refused like a budget from another
+  session: the copy and the original could each spend the whole budget.
+  [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)’s
+  help says what is and is not prevented.
+- The Parquet reader refuses a string that is not valid UTF-8, or that
+  holds a NUL byte, with a `parquet:` error naming the column: it marked
+  such bytes as UTF-8, and
+  [`nchar()`](https://rdrr.io/r/base/nchar.html) or
+  [`toupper()`](https://rdrr.io/r/base/chartr.html) failed later.
+  `columns = character(0)` gives the file’s rows with no columns (it
+  failed with “footer says 3 rows, decoded 0”), and a damaged footer
+  length is reported as damage, not as a file over the row cap.
+- The native Parquet reader is about 90 times faster and the writer
+  about 8 times (on a 400,000-row table of 13 columns, 3,500 and 4,400
+  rows a second became 326,000 and 35,000): string values are read and
+  written in compiled code, and the other per-value loops work on whole
+  vectors. The bytes written and the values read are unchanged.
+- `chiload(full = TRUE)` reads text as decimal numbers only, so `"0x1A"`
+  is no longer 26 and `"Inf"` or `"1e400"` no longer an infinite
+  coordinate. A value in Socrata’s export that does not fit its column
+  becomes `NA` with one warning per column, instead of refusing the
+  whole download; a mirror’s or the cache’s file in the sample’s columns
+  must still fit exactly, and the error names that file (it blamed
+  Socrata’s export).
+- [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
+  no longer probes or asks an Ollama server the user did not choose:
+  with the automatic route, a local server at `localhost:11434` is left
+  out unless `route = "ollama"`, an `OLLAMA_*` variable or a saved
+  Ollama setting names it.
+- [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
+  checks `timeout` under its own name and takes 1 to 86400 seconds (0.5
+  was refused as “`tmout` must be a positive number”), and a failed
+  download names
+  [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md),
+  not the dependency’s `blfetch()`; strings marked `"bytes"` passed to
+  [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md),
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md),
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md),
+  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md),
+  [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md),
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and
+  [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
+  are refused in words, where base R stopped with “translating strings
+  with”bytes” encoding is not allowed”.
+- [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)’s
+  help says how the Parquet and CSV copies differ: in five tables one or
+  two doubles of the Parquet copy are the next double to the CSV’s
+  value.
 - [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
   and
   [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)

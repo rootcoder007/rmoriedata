@@ -3,7 +3,13 @@
 to a language model you bring: an OpenAI-compatible endpoint of your own,
 a provider whose key is set (OpenAI, Anthropic, Google Gemini, OpenRouter,
 Groq, Mistral and more: rmoriebricklayer::llmprvd()),
-or an Ollama server. Nothing is sent anywhere you did not set up.
+or an Ollama server. Nothing is sent anywhere you did not set up. An
+Ollama server is asked only when you chose one: route = &quot;ollama&quot;,
+an OLLAMA_HOST, OLLAMA_BASE_URL, OLLAMA_MODEL or
+OLLAMA_API_KEY environment variable, or an ollama.* setting
+or route = &quot;ollama&quot; saved with mdllmconf(). Without
+any of these, an Ollama server that happens to run on this machine (at
+localhost:11434) is neither probed nor sent the question.
 The model is given every function of rmoriedata and rmoriebricklayer and
 tools to read their help, and this package's catalogue of datasets, so it
 can name the tables and write the code that loads them.
@@ -13,7 +19,13 @@ from the shell) saves a provider's key, the route and the model."><meta property
 to a language model you bring: an OpenAI-compatible endpoint of your own,
 a provider whose key is set (OpenAI, Anthropic, Google Gemini, OpenRouter,
 Groq, Mistral and more: rmoriebricklayer::llmprvd()),
-or an Ollama server. Nothing is sent anywhere you did not set up.
+or an Ollama server. Nothing is sent anywhere you did not set up. An
+Ollama server is asked only when you chose one: route = &quot;ollama&quot;,
+an OLLAMA_HOST, OLLAMA_BASE_URL, OLLAMA_MODEL or
+OLLAMA_API_KEY environment variable, or an ollama.* setting
+or route = &quot;ollama&quot; saved with mdllmconf(). Without
+any of these, an Ollama server that happens to run on this machine (at
+localhost:11434) is neither probed nor sent the question.
 The model is given every function of rmoriedata and rmoriebricklayer and
 tools to read their help, and this package's catalogue of datasets, so it
 can name the tables and write the code that loads them.
@@ -59,7 +71,13 @@ from the shell) saves a provider's key, the route and the model."><meta property
 to a language model you bring: an OpenAI-compatible endpoint of your own,
 a provider whose key is set (OpenAI, Anthropic, Google Gemini, OpenRouter,
 Groq, Mistral and more: <code><a href="https://rootcoder007.github.io/rmorie-bricklayer/reference/llmprvd.html" class="external-link">rmoriebricklayer::llmprvd()</a></code>),
-or an Ollama server. Nothing is sent anywhere you did not set up.
+or an Ollama server. Nothing is sent anywhere you did not set up. An
+Ollama server is asked only when you chose one: <code>route = "ollama"</code>,
+an <code>OLLAMA_HOST</code>, <code>OLLAMA_BASE_URL</code>, <code>OLLAMA_MODEL</code> or
+<code>OLLAMA_API_KEY</code> environment variable, or an <code>ollama.*</code> setting
+or <code>route = "ollama"</code> saved with <code><a href="mdllmconf.html">mdllmconf()</a></code>. Without
+any of these, an Ollama server that happens to run on this machine (at
+<code>localhost:11434</code>) is neither probed nor sent the question.
 The model is given every function of rmoriedata and rmoriebricklayer and
 tools to read their help, and this package's catalogue of datasets, so it
 can name the tables and write the code that loads them.

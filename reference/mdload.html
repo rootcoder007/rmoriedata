@@ -76,7 +76,15 @@ again, even if a cached copy exists.</p></dd>
 
 <dt id="arg-format">format<a class="anchor" aria-label="anchor" href="#arg-format"></a></dt>
 <dd><p><code>"csv"</code> (default) or <code>"parquet"</code>: which shipped copy to
-read. Both give the same data frame.</p></dd>
+read. Both give the same columns, with the same names and types, and the
+same values, with one exception: in the double columns of five tables
+(<code>tps_assault_sample</code> and its copy <code>samples_tps_assault_sample</code>,
+<code>vic_criminal_incidents</code>, <code>vic_lga_criminal_incidents</code> and
+<code>vic_recorded_offences</code>) one or two values of the Parquet copy differ
+from the CSV's in the last binary digit (a relative difference below
+3e-16). The CSV text read back gives the double nearest to it; those
+Parquet copies were written from values computed before the CSV text
+was, and hold the next double.</p></dd>
 
 </dl></div>
     <div class="section level2">
