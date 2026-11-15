@@ -2,7 +2,8 @@ test_that("the shipped signing key matches the root pinned in code", {
   pub <- rmoriedata:::.rmoriedata_json("_signing_key.json",
                                        "bricklayer_public_key")
   expect_identical(as.character(pub$root), rmoriedata:::.rmoriedata_signing_root)
-  expect_identical(as.character(pub$pub_seed),
+  seed <- if (is.null(pub$pubseed)) pub$pub_seed else pub$pubseed
+  expect_identical(as.character(seed),
                    rmoriedata:::.rmoriedata_signing_seed)
 })
 

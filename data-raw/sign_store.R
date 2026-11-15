@@ -7,8 +7,10 @@
 # file), signs the SHA-256 of that file with the XMSS (RFC 8391, SHA-256)
 # key at ~/.morie/rmoriedata-signing-key.rds, writes the signature to
 # _checksums.sig and the public key to _signing_key.json. XMSS is stateful:
-# the advanced key state is saved back, so an index is never reused. The
-# private key never enters the repository.
+# the key is carried forward with xmssadv() and saved back, so an index is
+# never reused. Keep a backup of the key file after every run: a copy with an
+# older index must have its index raised before it signs again. The private
+# key never enters the repository.
 suppressPackageStartupMessages(library(rmoriebricklayer))
 ed <- "inst/extdata"
 key_path <- path.expand("~/.morie/rmoriedata-signing-key.rds")
@@ -35,8 +37,21 @@ mf <- file.path(ed, "_checksums.csv")
 utils::write.csv(man, mf, row.names = FALSE, fileEncoding = "UTF-8")
 bytes <- readBin(mf, "raw", n = file.size(mf))
 sig <- cpssign(csha256(bytes), key)
-saveRDS(sig$key_state, key_path)
-sig$key_state <- NULL
+# XMSS is stateful: carry the key forward and save it before anything else is
+# written. The new state is checked, written beside the old file and moved
+# into place, and the old file is kept as .prev: a failed or empty save must
+# never replace the key.
+nxt <- xmssadv(key, sig)
+used <- as.integer(unlist(sig$index))
+stopifnot(inherits(nxt, "bricklayer_signing_key"),
+          identical(as.integer(nxt$next_index), used + 1L),
+          identical(unlist(signpubkey(nxt)$root), unlist(signpubkey(key)$root)))
+tmp <- paste0(key_path, ".new")
+saveRDS(nxt, tmp)
+Sys.chmod(tmp, "600")
+stopifnot(identical(readRDS(tmp)$next_index, nxt$next_index),
+          file.copy(key_path, paste0(key_path, ".prev"), overwrite = TRUE),
+          file.rename(tmp, key_path))
 writeLines(tojs(unclass(sig)), file.path(ed, "_checksums.sig"))
 writeLines(tojs(unclass(signpubkey(key))),
            file.path(ed, "_signing_key.json"))

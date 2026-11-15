@@ -301,7 +301,10 @@ mddict <- function(slug) {
   # would otherwise verify. Changing the signing key means changing this
   # constant in package code, which is the visible change it should be.
   root_ok <- identical(as.character(pub$root), .rmoriedata_signing_root)
-  seed_ok <- identical(as.character(pub$pub_seed), .rmoriedata_signing_seed)
+  # the public seed is named pubseed by rmoriebricklayer 1.1.1 and pub_seed
+  # by the versions before it
+  seed <- if (is.null(pub$pubseed)) pub$pub_seed else pub$pubseed
+  seed_ok <- identical(as.character(seed), .rmoriedata_signing_seed)
   if (!root_ok || !seed_ok) {
     stop("rmoriedata's shipped signing key does not match the root pinned ",
          "in the package: the installed data store has been re-signed. ",
