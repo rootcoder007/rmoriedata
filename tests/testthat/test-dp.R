@@ -97,17 +97,26 @@ test_that("dplapcnt edge-case input validation", {
   # a count a double cannot hold with room for noise: 1e300 + Laplace(1) is 1e300
   expect_error(
     dplapcnt(1e300, epsilon = 1.0),
-    "must not exceed 2\\^53"
+    "must not exceed 2\\^52"
   )
   expect_error(
     dplapcnt(2^53 + 2, epsilon = 1.0),
-    "must not exceed 2\\^53"
+    "must not exceed 2\\^52"
   )
-  # 2^53 + 1 rounds back to 2^53, so 2^53 itself cannot carry a unit of noise
-  expect_error(dplapcnt(2^53, epsilon = 1.0), "must not exceed 2\\^53")
-  expect_error(dplaphist(c(1, 2^53), epsilon = 1.0), "must not exceed 2\\^53")
-  expect_type(dplapcnt(2^53 - 1, epsilon = 1.0), "double")
-  expect_type(dplaphist(c(1, 2^53 - 1), epsilon = 1.0), "double")
+  # above 2^52 a count plus its noise can round (at 2^53 - 1 offsets +2 and
+  # +4 never occurred); 2^52 itself is accepted, as the message says
+  expect_error(dplapcnt(2^52 + 1, epsilon = 1.0), "must not exceed 2\\^52")
+  expect_error(
+    dplaphist(c(1, 2^52 + 1), epsilon = 1.0),
+    "must not exceed 2\\^52"
+  )
+  expect_type(dplapcnt(2^52, epsilon = 1.0), "double")
+  expect_type(dplaphist(c(1, 2^52), epsilon = 1.0), "double")
+  # every offset occurs at the bound, each release exactly the count plus a
+  # whole number
+  r <- replicate(400, dplapcnt(2^52, epsilon = 1.0)) - 2^52
+  expect_true(all(c(-2, -1, 1, 2) %in% r))
+  expect_identical(r, round(r))
 })
 
 test_that("dpgmean converges to the true mean", {
@@ -186,7 +195,7 @@ test_that("dplaphist validates inputs", {
   )
   expect_error(
     dplaphist(c(1, 1e300), 1),
-    "must not exceed 2\\^53"
+    "must not exceed 2\\^52"
   )
 })
 
@@ -201,10 +210,10 @@ test_that("a non-finite count is refused in words, with no coercion warning", {
   expect_no_warning(expect_error(dplaphist(c(1, Inf), 1),
                                  "non-negative integers"))
   # a whole count beyond R's integer range is still a count; beyond 2^53 the
-  # noise would vanish in the representation, so it is refused
+  # noise would vanish in the representation, so it is refused (from 2^52 on)
   set.seed(1)
   expect_true(is.finite(dplapcnt(2^40, 1)))
-  expect_error(dplapcnt(1e300, 1), "must not exceed 2\\^53")
+  expect_error(dplapcnt(1e300, 1), "must not exceed 2\\^52")
 })
 
 test_that("an infinite epsilon is refused in words before any draw (RD-L1)", {

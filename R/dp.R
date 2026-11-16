@@ -340,7 +340,10 @@ print.dpbudget <- function(x, ...) {
 #' `set.seed()` has no effect. `epsilon` is used as a rational with
 #' denominator \eqn{2^{20}}, rounded down.
 #'
-#' @param truecnt Non-negative integer; the true count.
+#' @param truecnt Non-negative integer, at most \eqn{2^{52}}; the true
+#'   count. Up to that bound the count plus its noise is exact in a double
+#'   unless the noise exceeds \eqn{2^{52}} in magnitude, which has
+#'   probability below \eqn{e^{-2^{32}}} at the smallest `epsilon`.
 #' @param epsilon Privacy loss (smaller means more noise, stronger privacy).
 #' @param budget Optional [dpbudget()] to charge `epsilon` against.
 #' @return The noised count, a whole number (it can be negative; clip with
@@ -367,11 +370,14 @@ dplapcnt <- function(truecnt, epsilon, budget = NULL) {
     truecnt != floor(truecnt)) {
     stop("`truecnt` must be a single non-negative integer.", call. = FALSE)
   }
-  # from 2^53 up a double cannot carry the count and a unit of noise distinctly
-  # (2^53 + 1 rounds back to 2^53)
-  if (truecnt >= 2^53) {
-    stop("`truecnt` must not exceed 2^53: the noise would be lost in ",
-         "the representation and the release would equal the true count.",
+  # the release is formed in doubles, which hold every whole number up to
+  # 2^53 exactly: a count up to 2^52 plus noise of magnitude up to 2^52 is
+  # exact. The noise passes 2^52 with probability below exp(-2^32) at the
+  # smallest epsilon (2^-20). At 2^53 - 1 the sum rounded and some offsets
+  # never occurred.
+  if (truecnt > 2^52) {
+    stop("`truecnt` must not exceed 2^52 (4503599627370496), where a ",
+         "count plus its noise is still exact in a double.",
          call. = FALSE)
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||
@@ -391,7 +397,8 @@ dplapcnt <- function(truecnt, epsilon, budget = NULL) {
 #' \eqn{\epsilon}-DP under the add-or-remove-one relation. Noise and sampler
 #' as in [dplapcnt()].
 #'
-#' @param counts Vector of non-negative whole-number bin counts.
+#' @param counts Vector of non-negative whole-number bin counts, each at most
+#'   \eqn{2^{52}} (see [dplapcnt()]).
 #' @param epsilon Privacy loss for the whole histogram (positive scalar).
 #' @param budget Optional [dpbudget()] to charge `epsilon` against.
 #' @return A numeric vector of whole numbers, the same length as `counts`
@@ -414,9 +421,10 @@ dplaphist <- function(counts, epsilon, budget = NULL) {
       call. = FALSE
     )
   }
-  if (any(counts >= 2^53)) {
-    stop("`counts` must not exceed 2^53: the noise would be lost in ",
-         "the representation and the release would equal the true counts.",
+  # exact sums only, as in dplapcnt()
+  if (any(counts > 2^52)) {
+    stop("`counts` must not exceed 2^52 (4503599627370496), where a ",
+         "count plus its noise is still exact in a double.",
          call. = FALSE)
   }
   if (length(epsilon) != 1L || !is.numeric(epsilon) ||

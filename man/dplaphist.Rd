@@ -7,7 +7,8 @@
 dplaphist(counts, epsilon, budget = NULL)
 }
 \arguments{
-\item{counts}{Vector of non-negative whole-number bin counts.}
+\item{counts}{Vector of non-negative whole-number bin counts, each at most
+\eqn{2^{52}} (see \code{\link[=dplapcnt]{dplapcnt()}}).}
 
 \item{epsilon}{Privacy loss for the whole histogram (positive scalar).}
 

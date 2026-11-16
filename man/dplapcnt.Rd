@@ -7,7 +7,10 @@
 dplapcnt(truecnt, epsilon, budget = NULL)
 }
 \arguments{
-\item{truecnt}{Non-negative integer; the true count.}
+\item{truecnt}{Non-negative integer, at most \eqn{2^{52}}; the true
+count. Up to that bound the count plus its noise is exact in a double
+unless the noise exceeds \eqn{2^{52}} in magnitude, which has
+probability below \eqn{e^{-2^{32}}} at the smallest \code{epsilon}.}
 
 \item{epsilon}{Privacy loss (smaller means more noise, stronger privacy).}
 

@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* `dplapcnt()` and `dplaphist()` accept counts up to 2^52, where a count plus its noise is exact in a double, and the message says so. They accepted counts below 2^53, where the release was rounded (at 2^53 - 1 the offsets +2 and +4 never occurred), and said "must not exceed 2^53" while refusing 2^53 itself.
+
 * `chiload()`, `siuload()`, `mdload()` and `mdpath()` refuse an empty or missing `type`, `as`, `lang` or `format` in their own words (match.arg() said "'arg' must be of length 1"); `mdload()` and `mdpath()` refuse a `slug` that is a function without a warning; and `hostload()`, `cihiget()` and `mdask()` refuse text that is not valid in the session's encoding before it reaches a pattern (base R's "input string 1 is invalid").
 
 * `chiload(full = TRUE)` checks a local-directory mirror's Parquet file against the `.sha256` file beside it, as it already did for a mirror URL, and refuses one that does not match (the mirror is then skipped for Socrata): an edited file was loaded under the original's digest. A local file with no `.sha256` beside it is read as it is, and the help says so.
