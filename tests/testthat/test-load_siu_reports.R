@@ -92,3 +92,9 @@ test_that("narrative_summary is the report's own account of the incident", {
   expect_match(r, "^On May 23, 2016, a woman made a 911 call")
   expect_match(r, "taken to the police station in SO #2's cruiser\\.$")
 })
+
+test_that("siuload() refuses an empty choice in its own words", {
+  expect_error(siuload(lang = character(0)), "`lang` must be one of")
+  expect_error(siuload(as = character(0)), "`as` must be one of")
+  expect_error(siuload(format = NA), "`format` must be one of")
+})

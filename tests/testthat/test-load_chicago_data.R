@@ -66,8 +66,8 @@ test_that("a corrupted cell is detected, so the check above can fail", {
 })
 
 test_that("type + as are validated", {
-  expect_error(chiload("bogus"), "should be one of")
-  expect_error(chiload("arrests", as = "xml"), "should be one of")
+  expect_error(chiload("bogus"), "`type` must be one of")
+  expect_error(chiload("arrests", as = "xml"), "`as` must be one of")
 })
 
 test_that("full=TRUE fetches live Chicago data (opt-in only)", {
@@ -494,4 +494,9 @@ test_that("a stray value in a live export no longer refuses the download (lead 3
   expect_identical(nrow(got), 2L)
   expect_identical(got$latitude, c(NA_real_, NA_real_))
   expect_identical(got$beat, c(1225L, 2223L))
+})
+
+test_that("an argument given no choice is refused in words", {
+  expect_error(chiload(type = character(0)), "`type` must be one of")
+  expect_error(chiload("arrests", as = NA_character_), "`as` must be one of")
 })

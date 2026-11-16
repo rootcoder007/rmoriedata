@@ -106,9 +106,9 @@
 siuload <- function(lang = c("all", "en", "fr"),
                              as = c("data.frame", "tibble"),
                              format = c("csv", "parquet")) {
-  lang <- match.arg(lang)
-  as <- match.arg(as)
-  format <- match.arg(format)
+  lang <- .rmd_arg(lang, "lang")
+  as <- .rmd_arg(as, "as")
+  format <- .rmd_arg(format, "format")
   rel <- "siu_directors_reports.csv.gz"
   # the store the signed manifest is checked against, which is the one read
   path <- file.path(.rmoriedata_extdata(), rel)

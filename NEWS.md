@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* `chiload()`, `siuload()`, `mdload()` and `mdpath()` refuse an empty or missing `type`, `as`, `lang` or `format` in their own words (match.arg() said "'arg' must be of length 1"); `mdload()` and `mdpath()` refuse a `slug` that is a function without a warning; and `hostload()`, `cihiget()` and `mdask()` refuse text that is not valid in the session's encoding before it reaches a pattern (base R's "input string 1 is invalid").
+
 * `chiload(full = TRUE)` checks a local-directory mirror's Parquet file against the `.sha256` file beside it, as it already did for a mirror URL, and refuses one that does not match (the mirror is then skipped for Socrata): an edited file was loaded under the original's digest. A local file with no `.sha256` beside it is read as it is, and the help says so.
 
 * `hostload()` returns a table as its file holds it. It read the file with `read.csv()`'s defaults, so codes lost their leading zeros (`046` became the number 46), column names were rewritten (`Offence Description` became `Offence.Description`) and the text `NA` became a missing value. Now the names are kept as written, an empty field is missing in a logical or number column and `""` in a text column, and a column becomes logical, integer or double only when every value in it is written the way R writes such a value; any other column stays text. Text is marked UTF-8 in every locale (it was unmarked in a non-UTF-8 locale), and bytes that are not UTF-8 are marked `"bytes"`. The help page says exactly which values count as numbers.

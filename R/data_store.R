@@ -116,8 +116,7 @@ mdcat <- function() {
 #' @export
 mdload <- function(slug, refresh = FALSE,
                             format = c("csv", "parquet")) {
-  if (is.null(slug) || length(slug) != 1L || is.na(slug) ||
-      !is.character(slug)) {
+  if (!is.character(slug) || length(slug) != 1L || is.na(slug)) {
     stop("`slug` must be a single dataset slug (character). ",
          "See mdcat() for valid slugs.", call. = FALSE)
   }
@@ -125,7 +124,7 @@ mdload <- function(slug, refresh = FALSE,
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE.", call. = FALSE)
   }
-  format <- match.arg(format)
+  format <- .rmd_arg(format, "format")
   key <- paste0("table:", format, ":", slug)
   if (!isTRUE(refresh)) {
     hit <- .rmoriedata_cache[[key]]
@@ -191,9 +190,8 @@ mdload <- function(slug, refresh = FALSE,
 #' basename(mdpath("arsau_2023_uof_main_records", "csv"))
 #' @export
 mdpath <- function(slug, format = c("parquet", "csv")) {
-  format <- match.arg(format)
-  if (is.null(slug) || length(slug) != 1L || is.na(slug) ||
-      !is.character(slug)) {
+  format <- .rmd_arg(format, "format")
+  if (!is.character(slug) || length(slug) != 1L || is.na(slug)) {
     stop("`slug` must be a single dataset slug (character). ",
          "See mdcat() for valid slugs.", call. = FALSE)
   }

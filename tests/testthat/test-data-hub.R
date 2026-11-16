@@ -576,3 +576,10 @@ test_that("a stalled lock holder ends the wait with an error, not never", {
   withr::local_options(rmoriedata.lockwait = -1)
   expect_error(.rmd_locked(lock, "db/t", function() 1), "rmoriedata.lockwait must be")
 })
+
+test_that("text that is not valid is refused before it reaches a pattern", {
+  skip_if_not(isTRUE(l10n_info()[["UTF-8"]]))
+  expect_error(hostload("db/\xff\xfe"), "`key` holds text that is not valid")
+  expect_error(cihiget("\xff\xfe"), "`which` holds text that is not valid")
+  expect_error(mdask("\xff\xfe"), "`question` holds text that is not valid")
+})

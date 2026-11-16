@@ -638,6 +638,7 @@ hostload <- function(key, refresh = FALSE) {
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE", call. = FALSE)
   }
+  .rmd_nobytes(key, "key")
   ok <- is.character(key) && length(key) == 1L && grepl("/", key, fixed = TRUE) &&
     !startsWith(key, "/") && !endsWith(key, "/")
   if (!ok) {

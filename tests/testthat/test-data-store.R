@@ -68,3 +68,10 @@ test_that("each table ships once as CSV and once as Parquet, nothing else twice"
   expect_setequal(list.files(file.path(ed, "parquet")),
                   c(basename(t$parquet_path), "_catalog.parquet"))
 })
+
+test_that("mdload() and mdpath() refuse a slug or format that is no choice", {
+  expect_error(mdload(function(x) x), "`slug` must be a single dataset slug")
+  expect_error(mdpath(function(x) x), "`slug` must be a single dataset slug")
+  expect_error(mdload("x", format = character(0)), "`format` must be one of")
+  expect_error(mdpath("x", format = character(0)), "`format` must be one of")
+})

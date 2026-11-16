@@ -100,8 +100,8 @@ chiload <- function(type = c("arrests", "complaints"),
                               limit = NULL,
                               fraction = NULL,
                               refresh = FALSE) {
-  type <- match.arg(type)
-  as <- match.arg(as)
+  type <- .rmd_arg(type, "type")
+  as <- .rmd_arg(as, "as")
   if (!is.null(limit) && !is.null(fraction)) {
     stop("give either `limit` (rows) or `fraction` (share of the dataset), ",
       "not both.",

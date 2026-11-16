@@ -140,7 +140,33 @@ mdask <- function(question, model = NULL, route = NULL) {
                         "Encoding(x) <- \"UTF-8\" or iconv(x, \"latin1\", \"UTF-8\")"),
                  what), call. = FALSE)
   }
+  # bytes that are not text in the session's encoding failed in sub() or
+  # grepl() in base R's words ("input string 1 is invalid")
+  if (is.character(x) && !all(validEnc(x[!is.na(x)]))) {
+    stop(sprintf("`%s` holds text that is not valid in this session's encoding",
+                 what), call. = FALSE)
+  }
   invisible(TRUE)
+}
+
+# One of an argument's choices, as match.arg() gives it (the default vector
+# or NULL picks the first; a unique prefix matches), refused in words:
+# match.arg() said "'arg' must be of length 1" for character(0) and "'arg'
+# must be NULL or a character vector" for NA.
+.rmd_arg <- function(arg, what) {
+  p <- sys.parent()
+  choices <- eval(formals(sys.function(p))[[what]], envir = sys.frame(p))
+  if (is.null(arg) || identical(arg, choices)) {
+    return(choices[[1L]])
+  }
+  k <- if (is.character(arg) && length(arg) == 1L && !is.na(arg) &&
+             validEnc(arg)) pmatch(arg, choices) else NA_integer_
+  if (is.na(k)) {
+    stop(sprintf("`%s` must be one of %s.", what,
+                 paste0("\"", choices, "\"", collapse = ", ")),
+         call. = FALSE)
+  }
+  choices[[k]]
 }
 
 #' Show or save the language-model settings
