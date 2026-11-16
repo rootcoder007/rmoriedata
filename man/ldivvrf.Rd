@@ -33,6 +33,7 @@ A list with class \code{"morie_l_div"} containing:
 Checks whether a data.frame satisfies l-diversity: within each
 equivalence class defined by the quasi-identifiers, the sensitive
 attribute must take at least \code{l} distinct values.
+A data frame with no rows is refused, as by \code{\link[=kanonvrf]{kanonvrf()}}.
 }
 \details{
 Only known (non-\code{NA}) sensitive values count towards diversity: a class

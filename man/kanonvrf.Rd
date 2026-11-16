@@ -31,6 +31,9 @@ A list with class \code{"morie_k_anon"} containing:
 Checks whether a data.frame satisfies k-anonymity over the supplied
 quasi-identifier columns. A dataset is k-anonymous if every combination
 of quasi-identifier values appears in at least \code{k} rows.
+A data frame with no rows is refused: every class of an empty table
+meets any threshold vacuously, which says nothing about a release (it was
+reported as "VIOLATED ... 0/0 classes below threshold").
 }
 \details{
 A missing value (\code{NA}) in a quasi-identifier is treated as a value of

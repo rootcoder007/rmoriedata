@@ -67,6 +67,9 @@
 #' Checks whether a data.frame satisfies k-anonymity over the supplied
 #' quasi-identifier columns. A dataset is k-anonymous if every combination
 #' of quasi-identifier values appears in at least `k` rows.
+#' A data frame with no rows is refused: every class of an empty table
+#' meets any threshold vacuously, which says nothing about a release (it was
+#' reported as "VIOLATED ... 0/0 classes below threshold").
 #'
 #' A missing value (`NA`) in a quasi-identifier is treated as a value of
 #' its own: rows with an unrecorded ward, age band or race form their own
@@ -151,6 +154,7 @@ kanonvrf <- function(data, qids, k = 5) {
     stop("`k` must be a single positive integer.", call. = FALSE)
   }
   k <- as.integer(k)
+  .rmd_rows(data)
 
   qi <- data[, qids, drop = FALSE]
   cls <- .morie_qi_classes(qi)
@@ -192,6 +196,7 @@ kanonvrf <- function(data, qids, k = 5) {
 #' Checks whether a data.frame satisfies l-diversity: within each
 #' equivalence class defined by the quasi-identifiers, the sensitive
 #' attribute must take at least `l` distinct values.
+#' A data frame with no rows is refused, as by [kanonvrf()].
 #'
 #' Only known (non-`NA`) sensitive values count towards diversity: a class
 #' whose rows read `"HIV"`, `NA`, `NA` tells an adversary the attribute is
@@ -263,6 +268,7 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
     stop("`l` must be a single positive integer.", call. = FALSE)
   }
   l <- as.integer(l)
+  .rmd_rows(data)
 
   qi <- data[, qids, drop = FALSE]
   sens <- data[[sensitive]]
@@ -513,4 +519,14 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
   Q <- qr.Q(q)[, seq_len(q$rank), drop = FALSE]
   out[idx[rowSums(Q^2) > 1 - 1e-7, , drop = FALSE]] <- TRUE
   out
+}
+
+# A table with no rows has no classes: every one of them meets any threshold
+# vacuously, which says nothing about a release, so it is refused in words.
+.rmd_rows <- function(data) {
+  if (!nrow(data)) {
+    stop("`data` has no rows: an empty table meets any threshold vacuously, ",
+         "so there is nothing to check.", call. = FALSE)
+  }
+  invisible(TRUE)
 }

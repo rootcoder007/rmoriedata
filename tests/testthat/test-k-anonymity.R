@@ -475,3 +475,9 @@ test_that("class keys cannot collide: separators in strings, NA against \"NA\"",
     expect_equal(got$n_classes, sum(1 / sz))
   }
 })
+
+test_that("an empty table is refused, not reported as violated", {
+  d <- data.frame(age = integer(), sex = character(), dx = character())
+  expect_error(kanonvrf(d, c("age", "sex"), k = 2), "`data` has no rows")
+  expect_error(ldivvrf(d, c("age", "sex"), "dx", l = 2), "`data` has no rows")
+})
