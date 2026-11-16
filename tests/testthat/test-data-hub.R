@@ -615,3 +615,18 @@ test_that("a manifest not shaped as one is refused in words (F02)", {
   body <- '{"datasets":[{"key":"db/t","meta":"x","source":"bq.t"}]}'
   expect_identical(hostcat(refresh = TRUE)$name, "bq.t")
 })
+
+test_that("rows that are not a count are NA, with no warning (F03)", {
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test")
+  rows <- c('"many"', "1e12", "-1", "2.5", '"12"', "12", "null", "[1,2]")
+  ent <- sprintf('{"key":"db/t%d","rows":%s}', seq_along(rows), rows)
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(path, dest, timeout = 600) {
+      writeLines(paste0('{"datasets":[', paste(ent, collapse = ","), "]}"),
+                 dest)
+      invisible(dest)
+    })
+  expect_no_warning(out <- hostcat())
+  expect_identical(out$rows, c(NA, NA, NA, NA, 12L, 12L, NA, NA))
+})

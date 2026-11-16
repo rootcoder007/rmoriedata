@@ -609,7 +609,8 @@
 #' @param refresh Fetch again even when a day-old copy is cached.
 #' @param key A \code{db/table} key from the catalog.
 #' @return \code{hostcat()}: a data frame with \code{key},
-#'   \code{name}, \code{rows} and \code{source};
+#'   \code{name}, \code{rows} (\code{NA} where the manifest gives no whole
+#'   count) and \code{source};
 #'   \code{hostload()}: the table as a data frame.
 #' @examples
 #' \dontrun{
@@ -652,8 +653,14 @@ hostcat <- function(refresh = FALSE) {
       s <- pick(d, "source")
       if (nzchar(s)) s else pick(d, "key")
     }, ""),
+    # a count that is not a whole number from 0 to the integer range is NA,
+    # read without base R's coercion warning ("many", 1e12)
     rows = vapply(ds, function(d) {
-      as.integer(if (is.null(d[["rows"]])) NA else d[["rows"]])
+      v <- d[["rows"]]
+      if (is.character(v)) v <- .rmd_num(v)
+      ok <- is.numeric(v) && length(v) == 1L && !is.na(v) && v >= 0 &&
+        v == floor(v) && v <= .Machine$integer.max
+      if (ok) as.integer(v) else NA_integer_
     }, 1L),
     source = vapply(ds, pick, "", what = "source"),
     stringsAsFactors = FALSE)

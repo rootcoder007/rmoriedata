@@ -16,7 +16,8 @@ hostload(key, refresh = FALSE)
 }
 \value{
 \code{hostcat()}: a data frame with \code{key},
-\code{name}, \code{rows} and \code{source};
+\code{name}, \code{rows} (\code{NA} where the manifest gives no whole
+count) and \code{source};
 \code{hostload()}: the table as a data frame.
 }
 \description{
