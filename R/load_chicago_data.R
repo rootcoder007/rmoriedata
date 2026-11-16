@@ -114,6 +114,11 @@ chiload <- function(type = c("arrests", "complaints"),
       stop("`", a, "` must be TRUE or FALSE.", call. = FALSE)
     }
   }
+  if (!is.null(mirror) && !(is.character(mirror) && length(mirror) == 1L &&
+                            !is.na(mirror))) {
+    stop("`mirror` (by default options(rmoriedata.mirror = )) must be one ",
+         "URL or folder (a string), or NULL.", call. = FALSE)
+  }
   if (!is.null(limit) && !(is.numeric(limit) && length(limit) == 1L &&
                            !is.na(limit) && limit >= 1 && limit == floor(limit) &&
                            limit <= .Machine$integer.max)) {
@@ -159,6 +164,10 @@ chiload <- function(type = c("arrests", "complaints"),
   # package to write outside the session's temporary directory only when
   # the user asks for it.
   d <- getOption("rmoriedata.cache_dir", NULL)
+  if (!is.null(d) && !(is.character(d) && length(d) == 1L && !is.na(d))) {
+    stop("rmoriedata: options(rmoriedata.cache_dir = ) must be the path of ",
+         "one folder (a string)", call. = FALSE)
+  }
   if (is.null(d) || !nzchar(d)) d <- file.path(tempdir(), "rmoriedata-cache")
   .rmd_mkdir(d)
 }

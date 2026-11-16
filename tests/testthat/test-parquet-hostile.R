@@ -300,3 +300,20 @@ test_that("a column chunk with a second dictionary page is refused", {
   expect_error(morie_read_parquet(pq_one_int(before = c(dict, dict))),
                "^parquet: column x has a second dictionary page")
 })
+
+test_that("a Parquet cap option that is not a positive number is refused", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  morie_write_parquet(data.frame(a = 1:3), f)
+  for (opt in c("rmoriedata.parquet_max_rows",
+                "rmoriedata.parquet_max_page_bytes")) {
+    for (bad in list(NA, "10", 0, -1, c(1, 2), TRUE)) {
+      withr::local_options(structure(list(bad), names = opt))
+      expect_error(morie_read_parquet(f),
+                   paste0("^parquet: option ", opt,
+                          " must be one positive number$"),
+                   info = deparse(bad))
+    }
+    withr::local_options(structure(list(NULL), names = opt))
+  }
+  expect_identical(morie_read_parquet(f)$a, 1:3)
+})

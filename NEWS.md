@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* The options the package reads are checked where they are read, and a value of the wrong kind is refused in the package's own words: `options(rmoriedata.store = )` and `options(rmoriedata.cache_dir = )` must be one folder path (a store option of `1`, `NA`, `TRUE` or two strings stopped `mdload()` with base R's "invalid filename argument" or a coercion error), `chiload()`'s `mirror` (by default `options(rmoriedata.mirror = )`) one URL or folder, or `NULL`, and `options(rmoriedata.parquet_max_page_bytes = )` and `options(rmoriedata.parquet_max_rows = )` one positive number (an `NA` cap called every file damaged). `rmoriedata.lockwait` and `rmoriedata.dpart` were already checked.
+
 * `hostload(key, refresh = TRUE)` fetches the manifest again, as `hostcat(refresh = TRUE)` does and the help says, and stops with an error saying the cached manifest is not used when it cannot fetch it: it used a cached manifest more than a day old, with a message. Without `refresh` a day-old cached manifest is still used when a new one cannot be fetched.
 
 * `hostcat()` gives `NA` rows for a manifest entry whose `rows` is not a whole number from 0 to the integer range, without base R's warnings ("NAs introduced by coercion", "... to integer range") for one that is text or too large.

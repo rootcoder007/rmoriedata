@@ -12,6 +12,10 @@
 
 .rmoriedata_extdata <- function() {
   p <- getOption("rmoriedata.store", NULL)
+  if (!is.null(p) && !(is.character(p) && length(p) == 1L && !is.na(p))) {
+    stop("rmoriedata data store not found: options(rmoriedata.store = ) ",
+         "must be the path of one folder (a string).", call. = FALSE)
+  }
   if (is.null(p)) p <- system.file("extdata", package = "rmoriedata")
   if (!nzchar(p) || !dir.exists(p)) {
     stop("rmoriedata data store not found; reinstall rmoriedata.",

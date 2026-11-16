@@ -500,3 +500,22 @@ test_that("an argument given no choice is refused in words", {
   expect_error(chiload(type = character(0)), "`type` must be one of")
   expect_error(chiload("arrests", as = NA_character_), "`as` must be one of")
 })
+
+test_that("options cache_dir and mirror that are not one string are refused", {
+  for (bad in list(1, NA, TRUE, c("a", "b"))) {
+    withr::local_options(rmoriedata.cache_dir = bad)
+    expect_error(.rmd_cache_dir(), paste0(
+      "^rmoriedata: options\\(rmoriedata.cache_dir = \\) must be the path ",
+      "of one folder \\(a string\\)$"), info = deparse(bad))
+  }
+  withr::local_options(rmoriedata.cache_dir = NULL)
+  for (bad in list(1, NA, TRUE, c("a", "b"))) {
+    withr::local_options(rmoriedata.mirror = bad)
+    expect_error(chiload("arrests"),
+                 "`mirror` (by default options(rmoriedata.mirror = )) must be",
+                 fixed = TRUE)
+    expect_error(chiload("arrests", mirror = bad), "`mirror` (", fixed = TRUE)
+  }
+  withr::local_options(rmoriedata.mirror = NULL)
+  expect_s3_class(chiload("arrests", mirror = tempdir()), "data.frame")
+})

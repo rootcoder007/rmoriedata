@@ -603,8 +603,18 @@
 
 # The largest page this reader will inflate, and the most rows it will build. A
 # page header or a footer that claims more is refused before anything is allocated.
-.pq_max_page <- function() getOption("rmoriedata.parquet_max_page_bytes", 2^30)
-.pq_max_rows <- function() getOption("rmoriedata.parquet_max_rows", 5e7)
+# Options are checked where they are read: a cap that is NA or text compared
+# as NA ("the file is damaged") or as a string.
+.pq_cap <- function(name, default) {
+  v <- getOption(name, default)
+  if (!(is.numeric(v) && length(v) == 1L && !is.na(v) && v > 0)) {
+    stop("parquet: option ", name, " must be one positive number",
+         call. = FALSE)
+  }
+  v
+}
+.pq_max_page <- function() .pq_cap("rmoriedata.parquet_max_page_bytes", 2^30)
+.pq_max_rows <- function() .pq_cap("rmoriedata.parquet_max_rows", 5e7)
 
 # The most bytes a v1 page can hold uncompressed for the values its header
 # counts, worked out from the encodings this reader takes (Parquet's

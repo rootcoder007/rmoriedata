@@ -75,3 +75,17 @@ test_that("mdload() and mdpath() refuse a slug or format that is no choice", {
   expect_error(mdload("x", format = character(0)), "`format` must be one of")
   expect_error(mdpath("x", format = character(0)), "`format` must be one of")
 })
+
+test_that("an option rmoriedata.store that is not one path is refused (F05)", {
+  for (bad in list(1, NA, TRUE, c("a", "b"), NA_character_)) {
+    withr::local_options(rmoriedata.store = bad)
+    .rmoriedata_reset_cache()
+    expect_error(mdload("nyc_zctas"), paste0(
+      "^rmoriedata data store not found: options\\(rmoriedata.store = \\) ",
+      "must be the path of one folder \\(a string\\)\\.$"), info = deparse(bad))
+  }
+  withr::local_options(rmoriedata.store = "")
+  .rmoriedata_reset_cache()
+  expect_error(mdload("nyc_zctas"), "^rmoriedata data store not found;")
+  .rmoriedata_reset_cache()
+})
