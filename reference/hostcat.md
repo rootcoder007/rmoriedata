@@ -39,8 +39,9 @@ hostload(key, refresh = FALSE)
 
 ## Value
 
-`hostcat()`: a data frame with `key`, `name`, `rows` and `source`;
-`hostload()`: the table as a data frame.
+`hostcat()`: a data frame with `key`, `name`, `rows` (`NA` where the
+manifest gives no whole count) and `source`; `hostload()`: the table as
+a data frame.
 
 ## Details
 
@@ -70,7 +71,9 @@ that fails (offline, or the service is down) the cached copy is used,
 with a message, so a table already cached in a persistent
 `rmoriedata.cache_dir` still loads offline; every table is still checked
 against the digest the manifest lists, and one that does not match is
-not used. With `refresh = TRUE` the manifest must be fetched.
+not used. With `refresh = TRUE` the manifest must be fetched: when it
+cannot be, `hostcat()` and `hostload()` stop with an error instead of
+using the cached copy.
 
 R sessions loading the same table take turns: while one downloads it, or
 checks its cached copy, the others wait. A session whose wait sees the

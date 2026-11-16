@@ -2,6 +2,53 @@
 
 ## rmoriedata 0.4.3
 
+- The options the package reads are checked where they are read, and a
+  value of the wrong kind is refused in the package’s own words:
+  `options(rmoriedata.store = )` and `options(rmoriedata.cache_dir = )`
+  must be one folder path (a store option of `1`, `NA`, `TRUE` or two
+  strings stopped
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+  with base R’s “invalid filename argument” or a coercion error),
+  [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)’s
+  `mirror` (by default `options(rmoriedata.mirror = )`) one URL or
+  folder, or `NULL`, and `options(rmoriedata.parquet_max_page_bytes = )`
+  and `options(rmoriedata.parquet_max_rows = )` one positive number (an
+  `NA` cap called every file damaged). `rmoriedata.lockwait` and
+  `rmoriedata.dpart` were already checked.
+
+- `hostload(key, refresh = TRUE)` fetches the manifest again, as
+  `hostcat(refresh = TRUE)` does and the help says, and stops with an
+  error saying the cached manifest is not used when it cannot fetch it:
+  it used a cached manifest more than a day old, with a message. Without
+  `refresh` a day-old cached manifest is still used when a new one
+  cannot be fetched.
+
+- [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  gives `NA` rows for a manifest entry whose `rows` is not a whole
+  number from 0 to the integer range, without base R’s warnings (“NAs
+  introduced by coercion”, “… to integer range”) for one that is text or
+  too large.
+
+- [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  refuse a manifest that is not a JSON object whose `datasets` is an
+  array of objects with “data.rmorie.com sent a manifest that could not
+  be read”: a `datasets` that was a string or an array of numbers
+  stopped them with base R’s “subscript out of bounds”, and a manifest
+  that was an array read as an empty catalogue. An entry whose `meta` is
+  not an object no longer stops
+  [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md);
+  its name falls back to its source.
+
+- The Parquet reader steps over a page it does not use (an index page)
+  without inflating it, and refuses, before inflating anything, a page
+  that says it inflates to more bytes than its values can take in their
+  type and encoding, and a column chunk with a second dictionary page: a
+  270 KB file in a `chiload(full = TRUE)` mirror made it inflate eight
+  skipped pages of 1 GiB each, costing 2 GB of memory and 11 seconds.
+  Valid files read as before.
+
 - R sessions that start together on one cache folder no longer fail now
   and then on Windows with “cannot open the connection”: the cached
   manifest of data.rmorie.com is fetched, replaced and read under an

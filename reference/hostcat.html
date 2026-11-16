@@ -114,7 +114,8 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p><code>hostcat()</code>: a data frame with <code>key</code>,
-<code>name</code>, <code>rows</code> and <code>source</code>;
+<code>name</code>, <code>rows</code> (<code>NA</code> where the manifest gives no whole
+count) and <code>source</code>;
 <code>hostload()</code>: the table as a data frame.</p>
     </div>
     <div class="section level2">
@@ -145,7 +146,9 @@ that fails (offline, or the service is down) the cached copy is used, with
 a message, so a table already cached in a persistent
 <code>rmoriedata.cache_dir</code> still loads offline; every table is still
 checked against the digest the manifest lists, and one that does not
-match is not used. With <code>refresh = TRUE</code> the manifest must be fetched.</p>
+match is not used. With <code>refresh = TRUE</code> the manifest must be fetched:
+when it cannot be, <code>hostcat()</code> and <code>hostload()</code> stop with an
+error instead of using the cached copy.</p>
 <p>R sessions loading the same table take turns: while one downloads it, or
 checks its cached copy, the others wait. A session whose wait sees the
 download not grow for <code>options(rmoriedata.lockwait = )</code> seconds
