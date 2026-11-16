@@ -300,7 +300,8 @@ test_that("four R sessions downloading one table at once share it safely", {
     # used its finished, verified table
     expect_identical(sort(trimws(readLines(log))), sort(hub_ranges(fx$size)))
     left <- list.files(file.path(cache, "hosted"))
-    expect_setequal(left, c("db__t.csv.gz", "db__t.csv.gz.lock", "manifest.json"))
+    expect_setequal(left, c("db__t.csv.gz", "db__t.csv.gz.lock", "manifest.json",
+                            "manifest.json.lock"))
     expect_identical(unname(tools::md5sum(file.path(cache, "hosted", "db__t.csv.gz"))),
                      unname(tools::md5sum(fx$served)))
   }
@@ -334,5 +335,37 @@ test_that("a download killed half-way resumes from its parts in the next session
   # and the rest, nothing before
   r <- hub_ranges(fx$size)
   expect_identical(trimws(readLines(log))[-seq_len(n1)], r[-(1:2)])
-  expect_setequal(list.files(hd), c("db__t.csv.gz", "db__t.csv.gz.lock", "manifest.json"))
+  expect_setequal(list.files(hd), c("db__t.csv.gz", "db__t.csv.gz.lock",
+                                    "manifest.json", "manifest.json.lock"))
+})
+
+test_that("the cached manifest is fetched and read under its own lock", {
+  # sessions that started together each renamed a fetched manifest over the
+  # cached one while another read it; on Windows that read failed with
+  # "cannot open the connection". Held here, the lock makes every reader wait
+  cache <- withr::local_tempdir()
+  withr::local_options(rmoriedata.cache_dir = cache, rmoriedata.lockwait = 0.3)
+  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
+  writeLines('{"datasets":[{"key":"db/t","rows":1,"bytes_gz":10}]}', p)
+  busy <- new.env()
+  held <- function(f) {
+    .Call(C_rmd_flock_with, paste0(p, ".lock"), function() {
+      tryCatch(f(), error = function(e) conditionMessage(e))
+    }, busy)
+  }
+  expect_message(
+    got <- held(function() .rmd_manifest()),
+    "another R session is downloading the manifest of data.rmorie.com"
+  )
+  expect_match(got, "has held the download of the manifest of data.rmorie.com")
+  expect_message(
+    got <- held(function() .rmd_hosted_size("/db/t.csv.gz")),
+    "another R session is downloading the manifest"
+  )
+  expect_match(got, "has held the download of the manifest")
+  # free, both read the cached copy
+  expect_identical(.rmd_manifest()$datasets[[1L]]$key, "db/t")
+  expect_equal(.rmd_hosted_size("/db/t.csv.gz"), 10)
+  writeLines("not json", p)
+  expect_null(.rmd_hosted_size("/db/t.csv.gz"))
 })

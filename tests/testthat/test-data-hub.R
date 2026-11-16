@@ -560,7 +560,10 @@ test_that("a cached copy is checked under the download lock", {
     real(lock, label, fn)
   })
   hostload("statcan_health/tbl_1")
-  expect_identical(seen, "statcan_health__tbl_1.csv.gz.lock")
+  # the table under its own lock; the manifest it is checked against under the
+  # manifest's (update 51)
+  expect_identical(sum(seen == "statcan_health__tbl_1.csv.gz.lock"), 1L)
+  expect_setequal(seen, c("statcan_health__tbl_1.csv.gz.lock", "manifest.json.lock"))
 })
 
 test_that("a stalled lock holder ends the wait with an error, not never", {

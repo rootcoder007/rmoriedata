@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* R sessions that start together on one cache folder no longer fail now and then on Windows with "cannot open the connection": the cached manifest of data.rmorie.com is fetched, replaced and read under an operating-system lock of its own, as each table already was, so no session reads it while another renames a fresh copy over it.
+
 * `mdverify()` and the check each table gets when it is loaded refuse a store file that is a link out of the data store, as rmoriebricklayer's bundle check refuses a link out of its folder: a listed file replaced by a link to an identical copy elsewhere verified.
 
 * The store's manifest signature must be written in lower-case hex, as the signer writes it: a re-cased signature verified, since it decodes to the same bytes (rmoriebricklayer 1.1.1 refuses it too).

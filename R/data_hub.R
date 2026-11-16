@@ -39,10 +39,11 @@
   if (!grepl("\\.csv\\.gz$", path)) return(NULL)
   key <- sub("\\.csv\\.gz$", "", sub("^/", "", path))
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
-  if (!file.exists(p)) return(NULL)
-  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE),
-                error = function(e) NULL)
+  # read under the manifest's lock, as .rmd_manifest() reads it: unlocked, the
+  # read could meet another session renaming its copy into place
+  m <- .rmd_locked(paste0(p, ".lock"), "the manifest of data.rmorie.com",
+                   function() if (file.exists(p)) .rmd_manifest_parse(p))
+  if (!is.list(m)) return(NULL)
   for (d in m[["datasets"]]) {
     if (identical(d[["key"]], key)) return(.rmd_size_ok(d[["bytes_gz"]], key))
   }
@@ -100,8 +101,18 @@
 }
 
 # The manifest, fetched when the cached copy is over a day old or `refresh`.
+# Fetched and read under a lock on "manifest.json.lock", as a table is: sessions
+# that started together each fetched it and renamed their copy over the cached
+# one while another was reading it, and on Windows, where a file that is being
+# replaced cannot be opened, that read failed with "cannot open the connection".
 .rmd_manifest <- function(refresh = FALSE) {
   p <- file.path(.rmd_data_cache_dir(), "manifest.json")
+  .rmd_locked(paste0(p, ".lock"), "the manifest of data.rmorie.com",
+              function() .rmd_manifest_get(p, refresh))
+}
+
+# The body of .rmd_manifest(), run while its lock is held.
+.rmd_manifest_get <- function(p, refresh) {
   age <- if (file.exists(p)) {
     as.numeric(difftime(Sys.time(), file.mtime(p), units = "secs"))
   } else {
