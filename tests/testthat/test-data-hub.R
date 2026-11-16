@@ -630,3 +630,36 @@ test_that("rows that are not a count are NA, with no warning (F03)", {
   expect_no_warning(out <- hostcat())
   expect_identical(out$rows, c(NA, NA, NA, NA, 12L, 12L, NA, NA))
 })
+
+test_that("refresh = TRUE fetches the manifest or stops (F04)", {
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  real_get <- .rmd_data_get
+  dig <- rmoriebricklayer::sha256file(hub_fixture(list())$served)
+  st <- new.env()
+  hub_mock(hub_fixture(list(sha256_gz = dig)), st)
+  expect_identical(hostload("statcan_health/tbl_1")$VALUE, c(1L, 2L))
+  # a fresh cached manifest is fetched again on refresh = TRUE
+  st$calls <- NULL
+  expect_identical(hostload("statcan_health/tbl_1", refresh = TRUE)$VALUE,
+                   c(1L, 2L))
+  expect_true("/manifest.json" %in% st$calls)
+  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
+  Sys.setFileTime(p, Sys.time() - 2 * 86400)
+  rm(list = ls(.rmd_stale), envir = .rmd_stale)
+  testthat::local_mocked_bindings(
+    .rmd_data_get = real_get,
+    .rmd_dl = function(url, ...) stop("bldl: ", url, ": could not resolve"))
+  for (call in list(quote(hostload("statcan_health/tbl_1", refresh = TRUE)),
+                    quote(hostcat(refresh = TRUE)))) {
+    expect_error(eval(call),
+                 paste0("could not download manifest.json: .*; with ",
+                        "refresh = TRUE the cached manifest is not used$"))
+  }
+  # without refresh the day-old copy still serves, with its message
+  expect_message(d <- hostload("statcan_health/tbl_1"),
+                 "could not be refreshed")
+  expect_identical(d$VALUE, c(1L, 2L))
+  rm(list = ls(.rmd_stale), envir = .rmd_stale)
+})

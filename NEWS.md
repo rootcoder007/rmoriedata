@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* `hostload(key, refresh = TRUE)` fetches the manifest again, as `hostcat(refresh = TRUE)` does and the help says, and stops with an error saying the cached manifest is not used when it cannot fetch it: it used a cached manifest more than a day old, with a message. Without `refresh` a day-old cached manifest is still used when a new one cannot be fetched.
+
 * `hostcat()` gives `NA` rows for a manifest entry whose `rows` is not a whole number from 0 to the integer range, without base R's warnings ("NAs introduced by coercion", "... to integer range") for one that is text or too large.
 
 * `hostcat()` and `hostload()` refuse a manifest that is not a JSON object whose `datasets` is an array of objects with "data.rmorie.com sent a manifest that could not be read": a `datasets` that was a string or an array of numbers stopped them with base R's "subscript out of bounds", and a manifest that was an array read as an empty catalogue. An entry whose `meta` is not an object no longer stops `hostcat()`; its name falls back to its source.

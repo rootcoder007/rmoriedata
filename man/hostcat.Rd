@@ -69,7 +69,9 @@ that fails (offline, or the service is down) the cached copy is used, with
 a message, so a table already cached in a persistent
 \code{rmoriedata.cache_dir} still loads offline; every table is still
 checked against the digest the manifest lists, and one that does not
-match is not used. With \code{refresh = TRUE} the manifest must be fetched.
+match is not used. With \code{refresh = TRUE} the manifest must be fetched:
+when it cannot be, \code{hostcat()} and \code{hostload()} stop with an
+error instead of using the cached copy.
 
 R sessions loading the same table take turns: while one downloads it, or
 checks its cached copy, the others wait. A session whose wait sees the

@@ -144,7 +144,14 @@
       return(old)
     }
   } else if (fresh) {
-    .rmd_data_get("/manifest.json", p, timeout = 60)
+    # no copy is cached, or refresh = TRUE: then the manifest must be fetched,
+    # and a fetch that fails is an error, never the cached copy
+    tryCatch(.rmd_data_get("/manifest.json", p, timeout = 60),
+             error = function(e) {
+               if (!is.finite(age)) stop(e)
+               stop(conditionMessage(e), "; with refresh = TRUE the cached ",
+                    "manifest is not used", call. = FALSE)
+             })
   }
   m <- .rmd_manifest_parse(p)
   if (!is.list(m) && !fresh) {
@@ -598,7 +605,9 @@
 #' a message, so a table already cached in a persistent
 #' \code{rmoriedata.cache_dir} still loads offline; every table is still
 #' checked against the digest the manifest lists, and one that does not
-#' match is not used. With \code{refresh = TRUE} the manifest must be fetched.
+#' match is not used. With \code{refresh = TRUE} the manifest must be fetched:
+#' when it cannot be, \code{hostcat()} and \code{hostload()} stop with an
+#' error instead of using the cached copy.
 #'
 #' R sessions loading the same table take turns: while one downloads it, or
 #' checks its cached copy, the others wait. A session whose wait sees the
@@ -684,7 +693,7 @@ hostload <- function(key, refresh = FALSE) {
   # a table that is not served is refused here, before any request: by its key
   # (no network at all), or as the manifest marks it
   if (grepl(.rmd_unserved_re, key)) .rmd_unserved_stop(key)
-  d <- .rmd_manifest_entry(key)
+  d <- .rmd_manifest_entry(key, refresh)
   if (!is.null(d) && .rmd_unserved(d)) .rmd_unserved_stop(key)
   parts <- strsplit(key, "/", fixed = TRUE)[[1L]]
   dest <- file.path(.rmd_data_cache_dir(),
