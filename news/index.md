@@ -2,6 +2,57 @@
 
 ## rmoriedata 0.4.3
 
+- [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  and the check each table gets when it is loaded refuse a store file
+  that is a link out of the data store, as rmoriebricklayer’s bundle
+  check refuses a link out of its folder: a listed file replaced by a
+  link to an identical copy elsewhere verified.
+
+- The store’s manifest signature must be written in lower-case hex, as
+  the signer writes it: a re-cased signature verified, since it decodes
+  to the same bytes (rmoriebricklayer 1.1.1 refuses it too).
+
+- [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
+  and
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
+  refuse a data frame with no rows: every class of an empty table meets
+  any threshold vacuously, which says nothing about a release, and the
+  summary read “VIOLATED (min class size=0; 0/0 classes below
+  threshold)”.
+
+- [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md)
+  and
+  [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
+  accept counts up to 2^52, where a count plus its noise is exact in a
+  double, and the message says so. They accepted counts below 2^53,
+  where the release was rounded (at 2^53 - 1 the offsets +2 and +4 never
+  occurred), and said “must not exceed 2^53” while refusing 2^53 itself.
+
+- [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md),
+  [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md),
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+  and
+  [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md)
+  refuse an empty or missing `type`, `as`, `lang` or `format` in their
+  own words (match.arg() said “‘arg’ must be of length 1”);
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+  and
+  [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md)
+  refuse a `slug` that is a function without a warning; and
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
+  [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
+  and
+  [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
+  refuse text that is not valid in the session’s encoding before it
+  reaches a pattern (base R’s “input string 1 is invalid”).
+
+- `chiload(full = TRUE)` checks a local-directory mirror’s Parquet file
+  against the `.sha256` file beside it, as it already did for a mirror
+  URL, and refuses one that does not match (the mirror is then skipped
+  for Socrata): an edited file was loaded under the original’s digest. A
+  local file with no `.sha256` beside it is read as it is, and the help
+  says so.
+
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   returns a table as its file holds it. It read the file with
   [`read.csv()`](https://rdrr.io/r/utils/read.table.html)’s defaults, so
@@ -15,24 +66,28 @@
   UTF-8 in every locale (it was unmarked in a non-UTF-8 locale), and
   bytes that are not UTF-8 are marked `"bytes"`. The help page says
   exactly which values count as numbers.
+
 - A table already cached and verified loads offline once the cached
   manifest is more than a day old: when the manifest cannot be fetched
   again, the cached copy is used with a message, and the table is still
   checked against the digest it lists.
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   failed with a network error.
+
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   checks a cached table under the same lock as a download, so it can no
   longer delete a copy that another R session has just refreshed. A
   session waiting for another session’s download stops with an error
   once that download has not grown for `options(rmoriedata.lockwait = )`
   seconds (600 by default); it waited for ever behind a stalled session.
+
 - A failed download from data.rmorie.com names the function called
   ([`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   or
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)),
   the table and the address, without the dependency’s own function name
   in front (`bldl:`).
+
 - A privacy budget copied within one R session (written with
   [`saveRDS()`](https://rdrr.io/r/base/readRDS.html) and read back,
   passed through [`serialize()`](https://rdrr.io/r/base/serialize.html),
@@ -40,6 +95,7 @@
   session: the copy and the original could each spend the whole budget.
   [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)’s
   help says what is and is not prevented.
+
 - The Parquet reader refuses a string that is not valid UTF-8, or that
   holds a NUL byte, with a `parquet:` error naming the column: it marked
   such bytes as UTF-8, and
@@ -48,11 +104,13 @@
   `columns = character(0)` gives the file’s rows with no columns (it
   failed with “footer says 3 rows, decoded 0”), and a damaged footer
   length is reported as damage, not as a file over the row cap.
+
 - The native Parquet reader is about 90 times faster and the writer
   about 8 times (on a 400,000-row table of 13 columns, 3,500 and 4,400
   rows a second became 326,000 and 35,000): string values are read and
   written in compiled code, and the other per-value loops work on whole
   vectors. The bytes written and the values read are unchanged.
+
 - `chiload(full = TRUE)` reads text as decimal numbers only, so `"0x1A"`
   is no longer 26 and `"Inf"` or `"1e400"` no longer an infinite
   coordinate. A value in Socrata’s export that does not fit its column
@@ -60,11 +118,13 @@
   whole download; a mirror’s or the cache’s file in the sample’s columns
   must still fit exactly, and the error names that file (it blamed
   Socrata’s export).
+
 - [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
   no longer probes or asks an Ollama server the user did not choose:
   with the automatic route, a local server at `localhost:11434` is left
   out unless `route = "ollama"`, an `OLLAMA_*` variable or a saved
   Ollama setting names it.
+
 - [`cihiget()`](https://rootcoder007.github.io/rmoriedata/reference/cihiget.md)
   checks `timeout` under its own name and takes 1 to 86400 seconds (0.5
   was refused as “`tmout` must be a positive number”), and a failed
@@ -82,6 +142,7 @@
   [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
   are refused in words, where base R stopped with “translating strings
   with”bytes” encoding is not allowed”.
+
 - Decimal text is read as the nearest double, the same on every
   platform, by
   [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
@@ -97,6 +158,7 @@
   `vic_recorded_offences`) held such values and are written again from
   their CSV copies, so the two copies of every table give the same data
   frame, as the help says.
+
 - [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
   and
   [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
@@ -108,6 +170,7 @@
   fractional `Date` is now compared by its stored value, not its printed
   day. Columns that cannot be compared exactly (`bit64::integer64`, list
   and matrix columns) are refused with an error naming them.
+
 - [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
   and
   [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
@@ -116,11 +179,13 @@
   level that is `NA` is missing while the string `"NA"` is a value (they
   were one class). As a sensitive value, an `NA` factor level is
   withheld and no longer counts towards diversity.
+
 - A privacy budget of `delta = 0` refuses every release with
   `delta > 0`: a release at `delta = 5e-13` was accepted. The check of
   the totals allows only floating-point rounding, relative to the
   budget, and never a release more than twice what remains: a budget of
   `epsilon = 1e-13` paid for a release at `1e-12`.
+
 - A privacy budget saved and read back in another R session is refused
   even when that session has the same process ID, as every `Rscript`
   started as a container’s entrypoint does: each budget carries a random
@@ -129,23 +194,27 @@
   [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)’s
   help says that a release interrupted after it is charged stays
   charged.
+
 - `chiload(full = TRUE)` reads a text time with an offset or `Z` (from a
   mirror) as that instant: `2024-06-01T10:00:00Z` was read as 10:00 in
   Chicago, five hours off. A value that does not fit its column’s type
   is refused with an error naming the column, from a mirror and from
   Socrata’s export alike: text `"1.5"` became the integer 1, `2` became
   `TRUE`, and junk in Socrata’s numeric columns became `NA`.
+
 - The Zstandard decoder refuses a block whose sequence count of 0 is
   followed by more bytes (libzstd does too), and reports one to three
   stray bytes after the last frame as trailing data rather than as a
   truncated frame. The zstd, gzip and Snappy decoders refuse, before
   allocating, a size that this build of R cannot hold.
+
 - A hosted table downloaded in parts checks that every part is there and
   readable before it joins any: a missing or unreadable part stopped
   with a base-R warning after the earlier parts had been deleted; now
   all parts are kept and the next run downloads only what is missing.
   Two sessions joining the same table at once each write a file of their
   own instead of sharing one.
+
 - R sessions downloading the same hosted table at once take turns on an
   operating-system lock that the system releases when its holder exits
   or is killed, so it is never left stale: one session downloads, checks
@@ -157,12 +226,14 @@
   parts it finished. The manifest is written under a name of its own and
   renamed, so sessions fetching it at once no longer write into one
   file.
+
 - The Parquet writer refuses matrix, data frame and `integer64` columns,
   naming them: a matrix column was written with more values than rows,
   which other readers cut short. Dates and times are written down to the
   whole day and millisecond as R prints them, so a `Date` of -0.5
   (printed 1969-12-31) no longer reads back as 1970-01-01, and dates or
   times outside what Parquet holds, or infinite, are refused.
+
 - The Parquet reader reads ZSTD-compressed pages, such as those of files
   written with `compression = "zstd"` by nanoparquet, arrow or DuckDB,
   with no other package: the Zstandard decoder is in the package,
@@ -170,58 +241,70 @@
   its stated size, and against the frame’s checksum when it has one.
   Such a file stopped with “compression codec 6 not implemented”. The
   writer still writes GZIP, Snappy or no compression.
+
 - A hosted table downloaded in parts no longer comes out damaged when
   the disk fills up while the parts are joined: the failed write is an
   error that names the folder and `options(rmoriedata.cache_dir = )`,
   where it was a short file that then failed its checksum. Each part is
   deleted once it is joined, so the download needs the table’s size plus
   one part on disk, not twice the table’s size.
+
 - The title, description and citation put the package’s
   disclosure-control tools first (differential privacy, k-anonymity and
   l-diversity checks, cell suppression); the datasets follow. Nothing in
   the functions changes.
+
 - `chiload(full = TRUE)` returns the bundled sample’s columns, in its
   order and with its types (16 columns for complaints and 8 for arrests,
   with `date_iso` and a `POSIXct` `date`), derived from Socrata’s export
   the way the samples were: it returned Socrata’s raw 22 or 24 columns.
   Socrata’s export is read as text first, so an IUCR code keeps its
   leading zero.
+
 - `chiload(mirror = )` with a URL downloads `<type>_full.parquet` from
   the mirror over the package’s checked https transport, and checks it
   against `<type>_full.parquet.sha256` when the mirror has one; a mirror
   that fails or does not match falls back to Socrata. A URL was taken
   for a missing local file, so the mirror was never used.
+
 - [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
   checks its arguments in words: `limit` must be a whole number from 1
   to 2147483647 (`Inf` and `1e10` failed with a coercion error),
   `fraction` a number above 0 and at most 1, and `full` and `refresh`
   `TRUE` or `FALSE` (`full = "yes"` or `NA` silently returned the
   sample).
+
 - [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
   checks which hidden cells the totals determine with one factorisation
   for all of them, not one per cell: a 50x50 table took 152 seconds and
   a 60x60 table did not finish in 17 minutes; both now take well under a
   second, with the same cells suppressed. Negative counts are refused,
   and the help says that zero cells are published as they are.
+
 - `mdload(slug, refresh = TRUE)` checks the file against the signed
   manifest again: a bundled file changed after its first load in a
   session was still returned.
+
 - A cached `hosted/manifest.json` that does not parse is fetched again,
   once, with a message; it blocked
   [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md),
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   and `hostload(refresh = TRUE)` until it was a day old.
+
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   takes a large table whole when the server answers a byte-range request
   with the whole file, instead of failing on every run, and a failed run
   leaves no empty `.parts` directory.
+
 - A cache directory that cannot be written (read-only, or a file in its
   place) is an error naming that directory; it was reported as a failure
   of data.rmorie.com.
+
 - [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
   keeps the names and dimensions of its counts, so a
   [`table()`](https://rdrr.io/r/base/table.html)’s labels stay on the
   release.
+
 - The Parquet reader reports any damaged file with a `parquet:` message:
   about 4% of corrupt files stopped with a base-R message such as
   “subscript out of bounds”, and a footer of 5000 nested lists
@@ -229,6 +312,7 @@
   [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)’s,
   say that a `POSIXct` column reads back in UTC (the same instant):
   Parquet keeps no time zone.
+
 - Extreme arguments are refused in words: `k` or `l` of `Inf` or above
   the integer range in
   [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
@@ -241,6 +325,7 @@
   [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
   takes one string (it hashed only the first of several) and hashes it
   as UTF-8 whatever encoding it is marked with.
+
 - [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
   [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
   and
@@ -250,21 +335,26 @@
   the workers inherited the parent’s buffer of random bytes and released
   identical noise, so the difference of two releases was the exact true
   difference.
+
 - [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
   deletes only what
   [`chiload()`](https://rootcoder007.github.io/rmoriedata/reference/chiload.md)
   wrote (the `<type>_full.parquet` files, their checksum files and
   unfinished writes): it removed everything in the cache directory,
   subfolders and the hosted-table cache included.
+
 - [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
   refuses a table of three or more dimensions (it was flattened to one
   column and suppressed against the wrong margins).
   [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
   counts a class’s values in one pass: 200,000 classes took minutes.
+
 - A refused download reads the status the server answered: a table whose
   name holds 401 or 403 no longer turns a 404 into “need no sign-in”,
   and a 410 names ICPSR only for an ICPSR table.
+
 - Needs rmoriebricklayer 1.1.1 or later.
+
 - `hostlogin()` is gone, and no key is read or sent: every table at
   data.rmorie.com is open, so the sign-in asked for a name, a reason and
   an email or GitHub account for nothing.
@@ -273,6 +363,7 @@
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   work as before. A key that an earlier version stored stays in its
   file, unread. The manifest and services fields are read by exact name.
+
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   checks every table against the manifest’s SHA-256 again, whatever the
   field is called (`sha256_gz`, `sha256` or `sha`, as rmoriebricklayer
@@ -280,6 +371,7 @@
   `sha256_gz` were used unchecked and a modified cached copy loaded. A
   digest field that is not a SHA-256 is an error, and a table listed
   without any digest loads with a warning, once per session.
+
 - Tables whose source terms do not allow redistribution (the ICPSR
   studies, the NCVS 38604 extract among them, and any table the manifest
   marks restricted) are left out of
@@ -288,8 +380,10 @@
   [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   refuses them before any request. The A2AJ case law is an ordinary open
   table.
+
 - The messages for a refused download no longer suggest signing in: the
   tables need no key.
+
 - [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md),
   [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md),
   [`dpgmean()`](https://rootcoder007.github.io/rmoriedata/reference/dpgmean.md)
@@ -297,9 +391,12 @@
   [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
   refuse an infinite `epsilon` in words; `dplapcnt(5, Inf)` stopped with
   “missing value where TRUE/FALSE needed”.
+
 - The signing test writes its XMSS used-index record to a temporary
   file, not to `~/.config/R/rmoriebricklayer`.
+
 - The vignette’s reference to the integrity checks is no longer empty.
+
 - A privacy budget from
   [`dpbudget()`](https://rootcoder007.github.io/rmoriedata/reference/dpbudget.md)
   cannot be spent from a forked worker or another R process:
@@ -311,6 +408,7 @@
   [`parallel::mclapply()`](https://rdrr.io/r/parallel/mclapply.html)
   each spent 0.9 from one budget of 1 and the parent recorded nothing;
   give each worker its own budget and add up the epsilons.
+
 - [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
   and
   [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
@@ -318,6 +416,7 @@
   significant digits, such as `0.1 + 0.2` and `0.3`, were one class, so
   a class of one could be reported as a class of five. `-0` and `0` are
   one class, and `NaN` is missing with `NA`.
+
 - [`cellsupp()`](https://rootcoder007.github.io/rmoriedata/reference/cellsupp.md)
   treats an `NA` cell as unpublished in its audit, as its help says, and
   gives it complements like any hidden cell: it was treated as known, so
@@ -325,15 +424,18 @@
   Infinite and fractional counts are refused, and a function or an
   environment gets the package’s “must be a numeric matrix or table”
   error.
+
 - [`chiclr()`](https://rootcoder007.github.io/rmoriedata/reference/chiclr.md)
   deletes only `arrests_full.parquet`, `complaints_full.parquet`,
   unfinished `write-*.parquet` files and their `.sha256` files: it
   deleted any file ending in `_full.parquet` and left the `.sha256` of
   an unfinished write.
+
 - `chiload(full = TRUE, mirror = )` gives a mirror’s table the bundled
   sample’s types when its columns have the sample’s names (a `date`
   stored as text came back as text), and refuses a column that cannot be
   read as the sample’s type.
+
 - [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
   and
   [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
@@ -342,6 +444,7 @@
   manifest that is not a whole number from 1 to 2^40 bytes is refused in
   words: an absurd size stopped in
   [`seq()`](https://rdrr.io/r/base/seq.html).
+
 - [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
   and
   [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md)
@@ -355,17 +458,20 @@
   [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md)
   read the store named by `options(rmoriedata.store = )`, the one they
   verify; they used to read the installed copy.
+
 - [`dplapcnt()`](https://rootcoder007.github.io/rmoriedata/reference/dplapcnt.md)
   and
   [`dplaphist()`](https://rootcoder007.github.io/rmoriedata/reference/dplaphist.md)
   refuse a count of 2^53 itself: 2^53 + 1 rounds back to 2^53, so the
   release could equal the truth.
+
 - The Parquet writer keeps `NaN` (it read back as `NA`), refuses a data
   frame with no columns, which its reader could not open, and refuses
   list, complex, raw and `difftime` columns in words, naming the column:
   they were written as text. Every error of the reader starts with
   `parquet:`, and a damaged file no longer lets a base-R warning such as
   “NAs introduced by coercion to integer range” escape before the error.
+
 - The help pages, README, vignette and website describe the package by
   its own purpose, disclosure control first and the datasets second, and
   no longer as a companion of another package; the README’s function

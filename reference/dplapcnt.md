@@ -18,7 +18,10 @@ dplapcnt(truecnt, epsilon, budget = NULL)
 
 - truecnt:
 
-  Non-negative integer; the true count.
+  Non-negative integer, at most \\2^{52}\\; the true count. Up to that
+  bound the count plus its noise is exact in a double unless the noise
+  exceeds \\2^{52}\\ in magnitude, which has probability below
+  \\e^{-2^{32}}\\ at the smallest `epsilon`.
 
 - epsilon:
 
@@ -60,12 +63,12 @@ dplapcnt(truecnt = 42, epsilon = 1.0)
 
 # Smaller epsilon = stronger privacy = more noise.
 dplapcnt(42, epsilon = 0.1)
-#> [1] 60
+#> [1] 55
 dplapcnt(42, epsilon = 5.0)
 #> [1] 42
 
 # The mechanism is unbiased: averaging many releases returns about the truth
 # (for illustration; releasing many answers spends many epsilons).
 mean(replicate(500, dplapcnt(42, epsilon = 1.0)))
-#> [1] 41.978
+#> [1] 42.002
 ```
