@@ -1,10 +1,11 @@
-# Downloads go through rmoriebricklayer's checked transport (libcurl in C++): https
-# only, public hosts only, no file://, no cross-scheme redirects, a byte cap, and the
-# same live progress bar as rmoriebricklayer
-# (options(morie.quiet = TRUE) silences it). The curated-data path attaches the MORIE
-# key as a bearer header, which is exactly the request that must never reach an
-# unvalidated URL; an earlier copy of the progress loop here used base R url() and
-# accepted any scheme.
+# The downloads from data.rmorie.com and from a mirror URL go through
+# rmoriebricklayer's checked transport (libcurl in C++): https only, public
+# hosts only, no file://, no cross-scheme redirects, a byte cap, and the same
+# live progress bar as rmoriebricklayer (options(morie.quiet = TRUE) silences
+# it). Not every download does: chiload(full = TRUE) reads Socrata's export
+# and its row count with utils::read.csv(<url>), base R's own connection. An
+# earlier copy of the progress loop here used base R url() and accepted any
+# scheme.
 .rmd_dl <- function(url, dest, headers = NULL, label = basename(dest),
                     size = NULL, timeout = 3600, quiet = NULL, tty = NULL) {
   .rmd_bl("bldl")(url, dest, headers = headers, label = label,
