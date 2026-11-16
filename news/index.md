@@ -2,6 +2,12 @@
 
 ## rmoriedata 0.4.3
 
+- R sessions that start together on one cache folder no longer fail now
+  and then on Windows with “cannot open the connection”: the cached
+  manifest of data.rmorie.com is fetched, replaced and read under an
+  operating-system lock of its own, as each table already was, so no
+  session reads it while another renames a fresh copy over it.
+
 - [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
   and the check each table gets when it is loaded refuse a store file
   that is a link out of the data store, as rmoriebricklayer’s bundle
