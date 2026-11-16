@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* `mdverify()` and the check each table gets when it is loaded refuse a store file that is a link out of the data store, as rmoriebricklayer's bundle check refuses a link out of its folder: a listed file replaced by a link to an identical copy elsewhere verified.
+
 * The store's manifest signature must be written in lower-case hex, as the signer writes it: a re-cased signature verified, since it decodes to the same bytes (rmoriebricklayer 1.1.1 refuses it too).
 
 * `kanonvrf()` and `ldivvrf()` refuse a data frame with no rows: every class of an empty table meets any threshold vacuously, which says nothing about a release, and the summary read "VIOLATED (min class size=0; 0/0 classes below threshold)".

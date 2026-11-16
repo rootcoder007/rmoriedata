@@ -350,7 +350,13 @@ mddict <- function(slug) {
     stop(sprintf("'%s' is not in rmoriedata's signed manifest.", rel),
          call. = FALSE)
   }
-  got <- .rmd_bl("sha256file")(file.path(.rmoriedata_extdata(), rel))
+  f <- file.path(.rmoriedata_extdata(), rel)
+  if (file.exists(f) && !.rmoriedata_inside(f, .rmoriedata_extdata())) {
+    stop(sprintf(paste0("rmoriedata's bundled file '%s' is a link out of ",
+                        "the data store: only the store's own files are ",
+                        "trusted. Reinstall rmoriedata."), rel), call. = FALSE)
+  }
+  got <- .rmd_bl("sha256file")(f)
   if (!identical(got, row$sha256[1L])) {
     stop(sprintf(paste0("rmoriedata's bundled file '%s' does not match the ",
                         "signed manifest (expected sha256 %s, got %s): the ",
@@ -361,6 +367,16 @@ mddict <- function(slug) {
   assign("_verified", c(.rmoriedata_cache[["_verified"]], rel),
          envir = .rmoriedata_cache)
   invisible(TRUE)
+}
+
+# Whether a store file resolves inside the store: a listed file replaced by a
+# link to an identical copy elsewhere verified, where rmoriebricklayer's bundle
+# check refuses a link out of its directory. A link inside the store is a file
+# of the store.
+.rmoriedata_inside <- function(f, dir) {
+  real <- normalizePath(f, winslash = "/", mustWork = FALSE)
+  base <- sub("/+$", "", normalizePath(dir, winslash = "/", mustWork = FALSE))
+  startsWith(real, paste0(base, "/"))
 }
 
 .rmoriedata_reset_cache <- function() {
@@ -406,7 +422,7 @@ mdverify <- function() {
   m$listed <- rep(TRUE, nrow(m))
   m$ok <- vapply(seq_len(nrow(m)), function(i) {
     f <- file.path(ed, m$path[i])
-    file.exists(f) &&
+    file.exists(f) && .rmoriedata_inside(f, ed) &&
       identical(.rmd_bl("sha256file")(f), m$sha256[i])
   }, TRUE)
   # the manifest, its signature and the public key are the trust machinery, not data
