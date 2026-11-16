@@ -322,8 +322,12 @@ mddict <- function(slug) {
          "in the package: the installed data store has been re-signed. ",
          "Reinstall rmoriedata.", call. = FALSE)
   }
-  ok <- .rmd_bl("cpsvrf")(.rmd_bl("csha256")(bytes),
-                                         sig, pub)
+  # hex as the signer writes it, lower case: a re-cased signature is the
+  # same bytes, but not the signature that was made
+  hex <- unlist(sig[c("signature", "auth", "randomizer")])
+  ok <- is.character(hex) && length(hex) == 3L &&
+    all(grepl("^[0-9a-f]+$", hex)) &&
+    isTRUE(.rmd_bl("cpsvrf")(.rmd_bl("csha256")(bytes), sig, pub))
   if (!isTRUE(ok)) {
     stop("rmoriedata's checksum manifest does not verify against the ",
          "package's signing key: the installed data store has been ",

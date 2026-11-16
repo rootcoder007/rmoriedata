@@ -54,3 +54,18 @@ test_that("every table loads its declared rows in a C locale", {
   rmoriedata:::.rmoriedata_reset_cache()
   expect_equal(short, 0L)
 })
+
+test_that("a signature with its hex re-cased does not verify", {
+  ed <- system.file("extdata", package = "rmoriedata")
+  tmp <- file.path(tempfile("store-"), "extdata")
+  dir.create(tmp, recursive = TRUE)
+  src <- list.files(ed, full.names = TRUE)
+  file.copy(src[!grepl("[.]sqlite$", src)], tmp, recursive = TRUE)
+  withr::local_options(rmoriedata.store = tmp)
+  withr::defer(rmoriedata:::.rmoriedata_reset_cache())
+  sf <- file.path(tmp, "_checksums.sig")
+  s <- readLines(sf, warn = FALSE)
+  writeLines(sub('("signature":\\[")([0-9a-f]+)', "\\1\\U\\2", s, perl = TRUE), sf)
+  rmoriedata:::.rmoriedata_reset_cache()
+  expect_error(mdverify(), "does not verify against the package's signing key")
+})

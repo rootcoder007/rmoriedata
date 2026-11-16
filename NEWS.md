@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* The store's manifest signature must be written in lower-case hex, as the signer writes it: a re-cased signature verified, since it decodes to the same bytes (rmoriebricklayer 1.1.1 refuses it too).
+
 * `kanonvrf()` and `ldivvrf()` refuse a data frame with no rows: every class of an empty table meets any threshold vacuously, which says nothing about a release, and the summary read "VIOLATED (min class size=0; 0/0 classes below threshold)".
 
 * `dplapcnt()` and `dplaphist()` accept counts up to 2^52, where a count plus its noise is exact in a double, and the message says so. They accepted counts below 2^53, where the release was rounded (at 2^53 - 1 the offsets +2 and +4 never occurred), and said "must not exceed 2^53" while refusing 2^53 itself.
