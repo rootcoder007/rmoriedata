@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* `hostcat()` and `hostload()` refuse a manifest that is not a JSON object whose `datasets` is an array of objects with "data.rmorie.com sent a manifest that could not be read": a `datasets` that was a string or an array of numbers stopped them with base R's "subscript out of bounds", and a manifest that was an array read as an empty catalogue. An entry whose `meta` is not an object no longer stops `hostcat()`; its name falls back to its source.
+
 * The Parquet reader steps over a page it does not use (an index page) without inflating it, and refuses, before inflating anything, a page that says it inflates to more bytes than its values can take in their type and encoding, and a column chunk with a second dictionary page: a 270 KB file in a `chiload(full = TRUE)` mirror made it inflate eight skipped pages of 1 GiB each, costing 2 GB of memory and 11 seconds. Valid files read as before.
 
 * R sessions that start together on one cache folder no longer fail now and then on Windows with "cannot open the connection": the cached manifest of data.rmorie.com is fetched, replaced and read under an operating-system lock of its own, as each table already was, so no session reads it while another renames a fresh copy over it.

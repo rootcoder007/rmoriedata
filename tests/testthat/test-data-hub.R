@@ -586,3 +586,32 @@ test_that("text that is not valid is refused before it reaches a pattern", {
   expect_error(cihiget("\xff\xfe"), "`which` holds text that is not valid")
   expect_error(mdask("\xff\xfe"), "`question` holds text that is not valid")
 })
+
+test_that("a manifest not shaped as one is refused in words (F02)", {
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  withr::local_envvar(MORIE_DATA_URL = "https://data.example.test")
+  p <- file.path(.rmd_data_cache_dir(), "manifest.json")
+  body <- NULL
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(path, dest, timeout = 600) {
+      if (path != "/manifest.json") stop("no table request expected")
+      writeLines(body, dest)
+      invisible(dest)
+    })
+  for (body in c('{"datasets":"x"}', '{"datasets":[1,2]}', "[1,2]", "[]",
+                 '{"datasets":{"a":{"key":"db/t"}}}', '{"tables":[]}')) {
+    unlink(p)
+    expect_error(hostcat(),
+                 "^data.rmorie.com sent a manifest that could not be read",
+                 info = body)
+    unlink(p)
+    expect_error(hostload("db/t"),
+                 "^data.rmorie.com sent a manifest that could not be read",
+                 info = body)
+  }
+  # an empty catalogue is a manifest; `meta` that is not an object names nothing
+  body <- '{"datasets":[]}'
+  expect_identical(nrow(hostcat(refresh = TRUE)), 0L)
+  body <- '{"datasets":[{"key":"db/t","meta":"x","source":"bq.t"}]}'
+  expect_identical(hostcat(refresh = TRUE)$name, "bq.t")
+})

@@ -164,12 +164,24 @@
 # The cached manifest whose refresh last failed, and when.
 .rmd_stale <- new.env(parent = emptyenv())
 
-# The parsed manifest, or the reason it does not parse (a string).
+# The parsed manifest, or the reason it does not parse (a string). Its shape is
+# checked here, once, for every reader: a JSON object whose `datasets` is an
+# array of objects. A string, an array of numbers or a top-level array stopped
+# hostcat() and hostload() with "subscript out of bounds", or read as an empty
+# catalogue.
 .rmd_manifest_parse <- function(p) {
   txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE), error = function(e) e)
+  m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE),
+                error = function(e) e)
   if (inherits(m, "error")) return(conditionMessage(m))
-  if (is.list(m)) m else "not a JSON object"
+  if (!is.list(m) || is.null(names(m))) return("not a JSON object")
+  ds <- m[["datasets"]]
+  obj <- function(x) is.list(x) && (!length(x) || !is.null(names(x)))
+  if (!is.list(ds) || (length(ds) && !is.null(names(ds))) ||
+        !all(vapply(ds, obj, NA))) {
+    return("its datasets are not an array of objects")
+  }
+  m
 }
 
 # Tables data.rmorie.com does not serve: their source terms do not allow
@@ -625,7 +637,11 @@ hostcat <- function(refresh = FALSE) {
                       source = character(), stringsAsFactors = FALSE))
   }
   pick <- function(d, what) {
-    v <- if (identical(what, "name")) d[["meta"]][["description"]] else d[[what]]
+    # `meta` that is not an object has no description (a string's [[ ]] failed)
+    m <- d[["meta"]]
+    v <- if (!identical(what, "name")) d[[what]] else if (is.list(m)) {
+      m[["description"]]
+    }
     if (is.null(v) || !length(v)) "" else as.character(v)[[1L]]
   }
   data.frame(
