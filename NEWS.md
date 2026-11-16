@@ -1,5 +1,7 @@
 # rmoriedata 0.4.3
 
+* The Parquet reader steps over a page it does not use (an index page) without inflating it, and refuses, before inflating anything, a page that says it inflates to more bytes than its values can take in their type and encoding, and a column chunk with a second dictionary page: a 270 KB file in a `chiload(full = TRUE)` mirror made it inflate eight skipped pages of 1 GiB each, costing 2 GB of memory and 11 seconds. Valid files read as before.
+
 * R sessions that start together on one cache folder no longer fail now and then on Windows with "cannot open the connection": the cached manifest of data.rmorie.com is fetched, replaced and read under an operating-system lock of its own, as each table already was, so no session reads it while another renames a fresh copy over it.
 
 * `mdverify()` and the check each table gets when it is loaded refuse a store file that is a link out of the data store, as rmoriebricklayer's bundle check refuses a link out of its folder: a listed file replaced by a link to an identical copy elsewhere verified.

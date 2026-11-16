@@ -606,6 +606,50 @@
 .pq_max_page <- function() getOption("rmoriedata.parquet_max_page_bytes", 2^30)
 .pq_max_rows <- function() getOption("rmoriedata.parquet_max_rows", 5e7)
 
+# The most bytes a v1 page can hold uncompressed for the values its header
+# counts, worked out from the encodings this reader takes (Parquet's
+# Encodings.md). A page that says it inflates to more cannot be right and is
+# refused before anything is allocated: a 33 KB zstd frame inflates to 1 GiB,
+# so the page cap alone let a small file cost gigabytes.
+# - PLAIN: BOOLEAN one bit per value; INT32 and FLOAT 4 bytes, INT64 and
+#   DOUBLE 8, INT96 12, FIXED_LEN_BYTE_ARRAY its type_length. A BYTE_ARRAY
+#   value carries its own length, so a count gives no bound for it (Inf: only
+#   the page cap applies).
+# - RLE/bit-packed hybrid of n values at bit width w: every run holds at least
+#   one value, and its header varint has no more bytes than the run has
+#   values. An RLE run of L values is that header and ceiling(w / 8) value
+#   bytes; a bit-packed run of g groups is that header and w bytes per 8
+#   values. The most per value is therefore 1 + ceiling(w / 8), and the last
+#   bit-packed group may be padded with up to 7 values, under w bytes more.
+# - definition levels of an optional column: a 4-byte length, then the hybrid
+#   at width 1; dictionary indices: a bit-width byte, then the hybrid at a
+#   width of at most 32.
+.pq_hybrid_most <- function(n, w) n * (1 + ceiling(w / 8)) + w
+
+.pq_plain_most <- function(ptype, n, typelen) {
+  if (ptype == .pqByteArray) return(Inf)
+  if (ptype == .pqBoolean) return(ceiling(n / 8))
+  if (ptype == .pqFlba &&
+        !(is.numeric(typelen) && length(typelen) == 1L && typelen >= 1)) {
+    stop("FIXED_LEN_BYTE_ARRAY without a positive type_length", call. = FALSE)
+  }
+  w <- switch(as.character(ptype), "1" = 4, "4" = 4, "2" = 8, "5" = 8,
+              "3" = 12, "7" = typelen,
+              stop("unsupported physical type ", ptype, call. = FALSE))
+  n * w
+}
+
+# The most bytes a data page of n values (levels and values) can inflate to.
+.pq_data_most <- function(ptype, n, typelen, maxdef, encoding) {
+  lv <- if (maxdef > 0L) 4 + .pq_hybrid_most(n, 1) else 0
+  if (encoding == .pqEPlain) return(lv + .pq_plain_most(ptype, n, typelen))
+  if (encoding == .pqEPlainDict || encoding == .pqERleDict) {
+    return(lv + 1 + .pq_hybrid_most(n, 32))
+  }
+  stop("encoding ", encoding, " not implemented; the store uses ",
+       "PLAIN and RLE_DICTIONARY", call. = FALSE)
+}
+
 .pq_column_values <- function(con, cm, num_rows, maxdef, typelen, stype, fsize, cname) {
   ptype <- as.integer(.pq_f(cm, 1))
   if (!identical(ptype, as.integer(stype))) {
@@ -670,6 +714,36 @@
       # before this message could fire
       stop("data page v2 not implemented (store is v1)", call. = FALSE)
     }
+    # a page the reader does not use (an index page, a type it does not know) is
+    # stepped over as it is: it was inflated first, up to the page cap each time
+    if (ptype_page != .pqPDict && ptype_page != .pqPData) next
+    if (ptype_page == .pqPDict) {
+      # a chunk has one dictionary page (the format's rule); a second one would
+      # be inflated only to replace the first
+      if (!is.null(dictionary)) {
+        stop("parquet: column ", cname, " has a second dictionary page",
+             call. = FALSE)
+      }
+      n <- as.integer(.pq_f(.pq_f(head, 7), 1))
+      if (length(n) != 1L || is.na(n) || n < 0L) {
+        stop("parquet: dictionary page of column ", cname,
+             " gives no valid value count", call. = FALSE)
+      }
+      most <- .pq_plain_most(ptype, n, typelen)
+    } else {
+      dph <- .pq_f(head, 5)
+      n <- as.integer(.pq_f(dph, 1))
+      if (length(n) != 1L || is.na(n) || n < 0 || got + n > total_values) {
+        stop("parquet: page of column ", cname, " claims ", n, " values with ",
+             total_values - got, " left in the chunk", call. = FALSE)
+      }
+      encoding <- as.integer(.pq_f(dph, 2))
+      most <- .pq_data_most(ptype, n, typelen, maxdef, encoding)
+    }
+    if (usize > most) {
+      stop("parquet: page of column ", cname, " says it inflates to ", usize,
+           " bytes; its ", n, " values take at most ", most, call. = FALSE)
+    }
     if (codec == .pqCSnappy) {
       page <- .pq_snappy_decompress(raw_page)
     } else if (codec == .pqCGzip) {
@@ -692,26 +766,16 @@
     }
 
     if (ptype_page == .pqPDict) {
-      dh <- .pq_f(head, 7)
-      nd <- as.integer(.pq_f(dh, 1))
-      dec <- .pq_decode_plain(page, 1L, ptype, nd, typelen, cname)
+      dec <- .pq_decode_plain(page, 1L, ptype, n, typelen, cname)
       if (dec$pos != length(page) + 1L) {
         stop("parquet: dictionary page of column ", cname, " holds ",
-             length(page) - dec$pos + 1L, " bytes beyond its ", nd, " values",
+             length(page) - dec$pos + 1L, " bytes beyond its ", n, " values",
              call. = FALSE)
       }
       dictionary <- dec$values
       next
     }
-    if (ptype_page != .pqPData) next
 
-    dph <- .pq_f(head, 5)
-    n <- as.integer(.pq_f(dph, 1))
-    if (is.na(n) || n < 0 || got + n > total_values) {
-      stop("parquet: page of column ", cname, " claims ", n, " values with ",
-           total_values - got, " left in the chunk", call. = FALSE)
-    }
-    encoding <- as.integer(.pq_f(dph, 2))
     p <- 1L
 
     if (maxdef > 0L) {
@@ -746,7 +810,8 @@
         stop("parquet: dictionary index out of range in column ", cname, call. = FALSE)
       }
       vals <- dictionary[idx + 1L]
-    } else if (encoding == .pqEPlain) {
+    } else {
+      # PLAIN: .pq_data_most() refused every other encoding before inflating
       dec <- .pq_decode_plain(page, p, ptype, present, typelen, cname)
       # PLAIN values fill the page exactly: bytes left over (or a shortfall, caught above)
       # mean the declared type is not the type the page was written with
@@ -755,11 +820,6 @@
              " bytes beyond its ", present, " values of the declared type", call. = FALSE)
       }
       vals <- dec$values
-    } else {
-      stop("encoding ", encoding, " not implemented; the store uses ",
-        "PLAIN and RLE_DICTIONARY",
-        call. = FALSE
-      )
     }
 
     # Splice the present values back into their definition-level slots: NA (NULL in

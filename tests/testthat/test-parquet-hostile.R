@@ -199,3 +199,104 @@ test_that("Dates and times before 1970 or with fractions keep the day and second
   expect_identical(format(back, "%Y-%m-%d %H:%M:%S"), format(tt, "%Y-%m-%d %H:%M:%S"))
   expect_identical(as.numeric(back) * 1000, floor(as.numeric(tt) * 1000))
 })
+
+# A page header: type, sizes, and for a data page its value count and
+# encoding, for a dictionary page its value count.
+pq_hdr <- function(type, usize, csize, n = 1L, enc = .pqEPlain) {
+  ph <- .pq_writer()
+  l <- .pq_wi32(ph, 1L, type, 0L)
+  l <- .pq_wi32(ph, 2L, usize, l)
+  l <- .pq_wi32(ph, 3L, csize, l)
+  if (type == .pqPData) {
+    dp <- .pq_writer()
+    m <- .pq_wi32(dp, 1L, n, 0L)
+    m <- .pq_wi32(dp, 2L, enc, m)
+    m <- .pq_wi32(dp, 3L, .pqERle, m)
+    m <- .pq_wi32(dp, 4L, .pqERle, m)
+    l <- .pq_wstruct(ph, 5L, .pq_wstop(dp), l)
+  } else if (type == .pqPDict) {
+    dh <- .pq_writer()
+    m <- .pq_wi32(dh, 1L, n, 0L)
+    m <- .pq_wi32(dh, 2L, .pqEPlain, m)
+    l <- .pq_wstruct(ph, 7L, .pq_wstop(dh), l)
+  }
+  .pq_wstop(ph)
+}
+
+# A snappy file of one optional INT32 column `x` holding 7: the pages in
+# `before` (headers and their bytes), then the data page, whose header says it
+# inflates to `usize` bytes (its true size when NULL).
+pq_one_int <- function(before = raw(0), usize = NULL) {
+  body <- c(.pq_encode_levels(1L, 1L), .pq_encode_plain(7L, .pqInt32, "x"))
+  pay <- .pq_snappy_compress(body)
+  blob <- c(before, pq_hdr(.pqPData, usize %||% length(body), length(pay)), pay)
+  cmd <- .pq_writer()
+  l <- .pq_wi32(cmd, 1L, .pqInt32, 0L)
+  l <- .pq_wlisti32(cmd, 2L, c(.pqERle, .pqEPlain), l)
+  l <- .pq_wlistbin(cmd, 3L, "x", l)
+  l <- .pq_wi32(cmd, 4L, .pqCSnappy, l)
+  l <- .pq_wi64(cmd, 5L, 1, l)
+  l <- .pq_wi64(cmd, 6L, length(blob), l)
+  l <- .pq_wi64(cmd, 7L, length(blob), l)
+  l <- .pq_wi64(cmd, 9L, 4, l)
+  cc <- .pq_writer()
+  l <- .pq_wi64(cc, 2L, 4, 0L)
+  l <- .pq_wstruct(cc, 3L, .pq_wstop(cmd), l)
+  root <- .pq_writer()
+  l <- .pq_wbytes(root, 4L, "schema", 0L)
+  l <- .pq_wi32(root, 5L, 1L, l)
+  se <- .pq_writer()
+  l <- .pq_wi32(se, 1L, .pqInt32, 0L)
+  l <- .pq_wi32(se, 3L, .pqOptional, l)
+  l <- .pq_wbytes(se, 4L, "x", l)
+  rg <- .pq_writer()
+  l <- .pq_wliststruct(rg, 1L, list(.pq_wstop(cc)), 0L)
+  l <- .pq_wi64(rg, 2L, length(blob), l)
+  l <- .pq_wi64(rg, 3L, 1, l)
+  fm <- .pq_writer()
+  l <- .pq_wi32(fm, 1L, 1L, 0L)
+  l <- .pq_wliststruct(fm, 2L, list(.pq_wstop(root), .pq_wstop(se)), l)
+  l <- .pq_wi64(fm, 3L, 1, l)
+  l <- .pq_wliststruct(fm, 4L, list(.pq_wstop(rg)), l)
+  ft <- .pq_wstop(fm)
+  f <- tempfile(fileext = ".parquet")
+  writeBin(c(charToRaw("PAR1"), blob, ft,
+             writeBin(length(ft), raw(), size = 4L, endian = "little"),
+             charToRaw("PAR1")), f)
+  f
+}
+
+test_that("a page the reader does not use is stepped over, never inflated", {
+  expect_identical(morie_read_parquet(pq_one_int())$x, 7L)
+  # index pages that say they inflate to 1 GiB, over bytes that are not snappy
+  # at all: inflating them would fail (or cost the 1 GiB each); skipped, they
+  # cost nothing and the column reads
+  junk <- as.raw(rep(0xff, 16L))
+  idx <- c(pq_hdr(.pqPIndex, 2^30, length(junk)), junk)
+  f <- pq_one_int(before = rep(idx, 3L))
+  expect_identical(morie_read_parquet(f)$x, 7L)
+})
+
+test_that("a page that says it inflates past what its values take is refused", {
+  # one optional INT32: a 4-byte level length, at most 2 bytes per level and 1
+  # of padding, and 4 bytes of value make 11 bytes at most
+  expect_error(morie_read_parquet(pq_one_int(usize = 12)),
+               paste0("^parquet: page of column x says it inflates to 12 ",
+                      "bytes; its 1 values take at most 11$"))
+  expect_error(morie_read_parquet(pq_one_int(usize = 2^30)), "take at most 11$")
+  # a dictionary page of one INT32 holds exactly 4 bytes
+  junk <- as.raw(rep(0xff, 16L))
+  dict <- c(pq_hdr(.pqPDict, 2^20, length(junk), n = 1L), junk)
+  expect_error(morie_read_parquet(pq_one_int(before = dict)), "take at most 4$")
+  bad <- c(pq_hdr(.pqPDict, 4, length(junk), n = -1L), junk)
+  expect_error(morie_read_parquet(pq_one_int(before = bad)),
+               "^parquet: dictionary page of column x gives no valid value")
+})
+
+test_that("a column chunk with a second dictionary page is refused", {
+  one <- .pq_snappy_compress(.pq_encode_plain(3L, .pqInt32, "x"))
+  dict <- c(pq_hdr(.pqPDict, 4, length(one), n = 1L), one)
+  expect_identical(morie_read_parquet(pq_one_int(before = dict))$x, 7L)
+  expect_error(morie_read_parquet(pq_one_int(before = c(dict, dict))),
+               "^parquet: column x has a second dictionary page")
+})
