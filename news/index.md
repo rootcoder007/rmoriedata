@@ -359,7 +359,7 @@
   name holds 401 or 403 no longer turns a 404 into “need no sign-in”,
   and a 410 names ICPSR only for an ICPSR table.
 
-- Needs rmoriebricklayer 1.1.1 or later.
+- Works with rmoriebricklayer 1.1.0 and later.
 
 - `hostlogin()` is gone, and no key is read or sent: every table at
   data.rmorie.com is open, so the sign-in asked for a name, a reason and
