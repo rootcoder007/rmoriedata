@@ -47,8 +47,11 @@
 #' @param mirror Optional base URL of an r-universe/drat mirror, or a local
 #'   directory, to try before Socrata (offline-friendly fallback). Defaults to
 #'   \code{getOption("rmoriedata.mirror")}. A URL is downloaded over https
-#'   and checked against \code{<type>_full.parquet.sha256} when the mirror
-#'   has one; if the mirror fails, Socrata is used. The mirror's
+#'   and a local directory read in place; either way the file is checked
+#'   against \code{<type>_full.parquet.sha256} when the mirror has one beside
+#'   it, and a file that does not match is refused. A local file with no
+#'   \code{.sha256} beside it is read as it is, unchecked. If the mirror
+#'   fails, Socrata is used. The mirror's
 #'   \code{<type>_full.parquet} must use snappy or no compression and
 #'   data pages v1: the package's own reader supports nothing else.
 #' @param refresh If \code{TRUE}, ignore the cache of the
@@ -453,19 +456,31 @@ chiclr <- function() {
 }
 
 # A mirror on the web is downloaded through the package's checked transport
-# (.rmd_dl(), rmoriebricklayer's bldl()) and checked against the SHA-256 in
-# `<file>.sha256` when the mirror serves one beside it; a local directory is read
-# in place. An error sends .rmd_fetch_full() on to Socrata.
+# (.rmd_dl(), rmoriebricklayer's bldl()); a local directory is read in place.
+# Either way the file is checked against the SHA-256 in `<file>.sha256` when
+# the mirror has one beside it (a local mirror's was ignored, and edited data
+# loaded under the original's digest); with none it is read as it is. An error
+# sends .rmd_fetch_full() on to Socrata.
 .rmd_mirror_read <- function(u) {
-  if (!grepl("^[A-Za-z][A-Za-z0-9+.-]*://", u)) return(morie_read_parquet(u))
-  f <- tempfile("mirror-", fileext = ".parquet")
-  side <- paste0(f, ".sha256")
-  on.exit(unlink(c(f, side)), add = TRUE)
-  .rmd_dl(u, f, label = basename(u))
-  want <- tryCatch({
-    .rmd_dl(paste0(u, ".sha256"), side, label = basename(side), quiet = TRUE)
-    tolower(sub("[[:space:]].*$", "", trimws(readLines(side, n = 1L, warn = FALSE))))
-  }, error = function(e) NA_character_, warning = function(w) NA_character_)
+  if (!grepl("^[A-Za-z][A-Za-z0-9+.-]*://", u)) {
+    f <- u
+    side <- paste0(u, ".sha256")
+    want <- if (file.exists(side)) {
+      tolower(sub("[[:space:]].*$", "", trimws(readLines(side, n = 1L, warn = FALSE))))
+    } else {
+      NA_character_
+    }
+  } else {
+    f <- tempfile("mirror-", fileext = ".parquet")
+    side <- paste0(f, ".sha256")
+    on.exit(unlink(c(f, side)), add = TRUE)
+    .rmd_dl(u, f, label = basename(u))
+    want <- tryCatch({
+      .rmd_dl(paste0(u, ".sha256"), side, label = basename(side), quiet = TRUE)
+      tolower(sub("[[:space:]].*$", "", trimws(readLines(side, n = 1L, warn = FALSE))))
+    }, error = function(e) NA_character_, warning = function(w) NA_character_)
+  }
+  if (!length(want)) want <- ""
   if (length(want) && !is.na(want)) {
     if (!grepl("^[0-9a-f]{64}$", want)) {
       stop("the mirror's ", basename(u), ".sha256 is not a SHA-256 digest", call. = FALSE)

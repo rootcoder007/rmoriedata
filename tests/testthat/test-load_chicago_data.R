@@ -311,6 +311,32 @@ test_that("a mirror URL is downloaded, checked against its .sha256 and used", {
                                         refresh = TRUE)), 5L)
 })
 
+test_that("a local mirror's .sha256 is checked, and refused when it differs", {
+  local_chicago_cache()
+  m <- withr::local_tempdir()
+  pq <- file.path(m, "arrests_full.parquet")
+  served <- data.frame(id = as.character(1:5), x = letters[1:5], stringsAsFactors = FALSE)
+  morie_write_parquet(served, pq)
+  testthat::local_mocked_bindings(
+    .rmd_full_count_or_na = function(type) 5,
+    .rmd_full_url = function(type, n) "file:///nonexistent/socrata.csv"
+  )
+  # no digest beside it: read as it is
+  expect_identical(.rmd_fetch_full("arrests", m), served, ignore_attr = "rmd_src")
+  writeLines(.rmd_bl("sha256file")(pq), paste0(pq, ".sha256"))
+  expect_identical(.rmd_fetch_full("arrests", m, refresh = TRUE), served,
+                   ignore_attr = "rmd_src")
+  # the data edited under the original's digest: refused, Socrata asked
+  ed <- served
+  ed$x[1] <- "EDITED"
+  morie_write_parquet(ed, pq)
+  expect_error(.rmd_fetch_full("arrests", m, refresh = TRUE),
+               "arrests_full.parquet does not match its SHA-256")
+  writeLines("not a digest", paste0(pq, ".sha256"))
+  expect_error(.rmd_fetch_full("arrests", m, refresh = TRUE),
+               "arrests_full.parquet.sha256 is not a SHA-256 digest")
+})
+
 test_that("a cache directory that cannot be written is named, not blamed on the server", {
   f <- withr::local_tempfile()
   writeLines("x", f)

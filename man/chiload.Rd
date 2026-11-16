@@ -38,8 +38,11 @@ the file.}
 \item{mirror}{Optional base URL of an r-universe/drat mirror, or a local
 directory, to try before Socrata (offline-friendly fallback). Defaults to
 \code{getOption("rmoriedata.mirror")}. A URL is downloaded over https
-and checked against \code{<type>_full.parquet.sha256} when the mirror
-has one; if the mirror fails, Socrata is used. The mirror's
+and a local directory read in place; either way the file is checked
+against \code{<type>_full.parquet.sha256} when the mirror has one beside
+it, and a file that does not match is refused. A local file with no
+\code{.sha256} beside it is read as it is, unchecked. If the mirror
+fails, Socrata is used. The mirror's
 \code{<type>_full.parquet} must use snappy or no compression and
 data pages v1: the package's own reader supports nothing else.}
 
