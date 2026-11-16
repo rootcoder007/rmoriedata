@@ -5,9 +5,22 @@ test_that("hosted catalog and load need no key and cache locally", {
   withr::local_envvar(XDG_CONFIG_HOME = cfg, MORIE_HOSTED_KEY = NA,
                       MORIE_DATA_URL = "https://data.example.test")
   withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
-  # no key: nothing is refused locally, the request goes out (to a .test name
-  # that never resolves)
-  expect_error(hostcat(), "data.example.test")
+  # no key: nothing is refused locally, and the request goes out, with no key
+  # in it. Tests that R CMD check runs on CRAN (NOT_CRAN unset) must not touch
+  # the network, so there the transport is replaced; elsewhere the real one
+  # also tries the .test name, which never resolves.
+  sent <- list()
+  testthat::with_mocked_bindings(
+    expect_error(hostcat(), "data.example.test"),
+    .rmd_dl = function(url, dest, headers = NULL, ...) {
+      sent[[length(sent) + 1L]] <<- list(url = url, headers = headers)
+      stop("bldl: ", url, ": could not resolve host", call. = FALSE)
+    })
+  expect_identical(sent[[1L]]$url, "https://data.example.test/manifest.json")
+  expect_false(any(tolower(names(sent[[1L]]$headers)) == "authorization"))
+  if (identical(Sys.getenv("NOT_CRAN"), "true")) {
+    expect_error(hostcat(), "data.example.test")
+  }
   # a credentials file left by an earlier version changes nothing
   dir.create(file.path(cfg, "morie"), recursive = TRUE)
   writeLines('{"hosted_key": "sk-good", "hosted_user": "me"}',
