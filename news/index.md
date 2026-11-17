@@ -27,7 +27,14 @@
   compressed size if that is more, before it inflates it: a 33 KB file
   whose one page said it inflated to 1 GiB was inflated in full (a
   gigabyte of memory) before its single value was read. Pages of numbers
-  were already bounded by their count.
+  were already bounded by their count. For gzip and snappy the larger
+  bound is what the codec can inflate the page to (1032 and 22 times),
+  so a large, repetitive text column written by
+  [`morie_write_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_write_parquet.md),
+  which puts a column in one page, is read back: 8 million category
+  labels were refused at 16 times, and the cache of
+  `chiload(full = TRUE)` was then deleted and fetched again on every
+  call.
 
 - The Parquet reader decodes run-length data in compiled code: a 29 KB
   file of fifteen million rows, each a run of its own, took two to three
