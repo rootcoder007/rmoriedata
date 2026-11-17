@@ -16,6 +16,13 @@
   file, and a file whose row group holds no rows (as arrow writes an
   empty table) is read as no rows.
 
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  reads a short page whose missing-value levels are padded to a whole
+  block, as DuckDB writes them: a DuckDB file of 2 to 13 rows with a
+  `NULL` was refused (“says it inflates to 45 bytes; its 3 values take
+  at most 23”). The allowance is a constant, so the bound still refuses
+  a page that claims more than its values can take.
+
 - The Parquet reader decodes run-length data in compiled code: a 29 KB
   file of fifteen million rows, each a run of its own, took two to three
   minutes and now takes under two seconds.
@@ -32,8 +39,9 @@
 - [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
   with a slug of thousands of bytes says there is no such dataset, not
   base R’s “variable names are limited to 10000 bytes”; and a
-  `MORIE_DATA_URL` that is not an http(s) address is refused by name,
-  where the failure was laid on data.rmorie.com.
+  `MORIE_DATA_URL` that is not an http(s) address (the scheme in either
+  case) is refused by name, where the failure was laid on
+  data.rmorie.com.
 
 - The options the package reads are checked where they are read, and a
   value of the wrong kind is refused in the package’s own words:
