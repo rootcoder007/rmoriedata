@@ -23,6 +23,12 @@
   at most 23”). The allowance is a constant, so the bound still refuses
   a page that claims more than its values can take.
 
+- The Parquet reader holds a page of text to 64 MiB, or 16 times its
+  compressed size if that is more, before it inflates it: a 33 KB file
+  whose one page said it inflated to 1 GiB was inflated in full (a
+  gigabyte of memory) before its single value was read. Pages of numbers
+  were already bounded by their count.
+
 - The Parquet reader decodes run-length data in compiled code: a 29 KB
   file of fifteen million rows, each a run of its own, took two to three
   minutes and now takes under two seconds.
