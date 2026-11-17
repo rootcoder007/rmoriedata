@@ -278,12 +278,13 @@ test_that("a page the reader does not use is stepped over, never inflated", {
 })
 
 test_that("a page that says it inflates past what its values take is refused", {
-  # one optional INT32: a 4-byte level length, at most 2 bytes per level and 1
-  # of padding, and 4 bytes of value make 11 bytes at most
-  expect_error(morie_read_parquet(pq_one_int(usize = 12)),
-               paste0("^parquet: page of column x says it inflates to 12 ",
-                      "bytes; its 1 values take at most 11$"))
-  expect_error(morie_read_parquet(pq_one_int(usize = 2^30)), "take at most 11$")
+  # one optional INT32: a 4-byte level length, at most 2 bytes per level and
+  # the 34 a block of padded levels may take, and 4 bytes of value make 44
+  # bytes at most
+  expect_error(morie_read_parquet(pq_one_int(usize = 45)),
+               paste0("^parquet: page of column x says it inflates to 45 ",
+                      "bytes; its 1 values take at most 44$"))
+  expect_error(morie_read_parquet(pq_one_int(usize = 2^30)), "take at most 44$")
   # a dictionary page of one INT32 holds exactly 4 bytes
   junk <- as.raw(rep(0xff, 16L))
   dict <- c(pq_hdr(.pqPDict, 2^20, length(junk), n = 1L), junk)

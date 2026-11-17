@@ -19,7 +19,8 @@
   if (nzchar(env)) {
     # an address, not a bare host: the failure would otherwise be laid on
     # data.rmorie.com, which was never asked
-    if (!grepl("^https?://[^/[:space:]]+", env)) {
+    # (a scheme is written in either case: RFC 3986, section 3.1)
+    if (!grepl("^https?://[^/[:space:]]+", env, ignore.case = TRUE)) {
       stop("the environment variable MORIE_DATA_URL is ", sQuote(env), ", which ",
            "is not an http(s) address: unset it, or give one such as ",
            "https://data.rmorie.com", call. = FALSE)

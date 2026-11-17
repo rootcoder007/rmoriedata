@@ -212,4 +212,23 @@ test_that("MORIE_DATA_URL must be an http(s) address", {
   expect_error(.rmd_data_url(), "MORIE_DATA_URL is .example.org/data., which is not")
   Sys.setenv(MORIE_DATA_URL = "https://example.org/data/")
   expect_identical(.rmd_data_url(), "https://example.org/data")
+  Sys.setenv(MORIE_DATA_URL = "HTTPS://Example.org")
+  expect_identical(.rmd_data_url(), "HTTPS://Example.org")
+})
+
+test_that("levels padded to a whole block, as DuckDB writes them, are read", {
+  # three values, the middle one missing: the levels are one bit-packed run
+  # of 32 groups (256 levels) whatever the count, then the two values
+  lev <- c(as.raw(0x41), as.raw(0x05), raw(31L))
+  page <- c(i32(length(lev)), lev, i32(c(1, 2)))
+  ph <- .pq_writer()
+  m <- .pq_wi32(ph, 1L, 3L, 0L)
+  m <- .pq_wi32(ph, 2L, .pqEPlain, m)
+  m <- .pq_wi32(ph, 3L, .pqERle, m)
+  m <- .pq_wi32(ph, 4L, .pqERle, m)
+  expect_lte(length(page), .pq_data_most(.pqInt32, 3L, NULL, 1L, .pqEPlain))
+  expect_identical(.pq_read_rle(lev, 1L, 1L, 3L, length(lev))$values, c(1L, 0L, 1L))
+  # the allowance is a constant: a page of a million values gains nothing
+  expect_identical(.pq_hybrid_most(1e6, 1) - .pq_hybrid_most(0, 1), 2e6)
+  expect_identical(.pq_hybrid_most(0, 32), 1026)
 })

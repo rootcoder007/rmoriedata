@@ -662,12 +662,15 @@
 #   one value, and its header varint has no more bytes than the run has
 #   values. An RLE run of L values is that header and ceiling(w / 8) value
 #   bytes; a bit-packed run of g groups is that header and w bytes per 8
-#   values. The most per value is therefore 1 + ceiling(w / 8), and the last
-#   bit-packed group may be padded with up to 7 values, under w bytes more.
+#   values. The most per value is therefore 1 + ceiling(w / 8). A writer may
+#   pad its last bit-packed run: to a group of 8 values, or, as DuckDB writes
+#   the levels of a short page, to a whole block of 32 groups (256 values),
+#   which is 32 * w bytes and a header. That allowance does not grow with
+#   the page, so it leaves the bound what it is for.
 # - definition levels of an optional column: a 4-byte length, then the hybrid
 #   at width 1; dictionary indices: a bit-width byte, then the hybrid at a
 #   width of at most 32.
-.pq_hybrid_most <- function(n, w) n * (1 + ceiling(w / 8)) + w
+.pq_hybrid_most <- function(n, w) n * (1 + ceiling(w / 8)) + 32 * w + 2
 
 .pq_plain_most <- function(ptype, n, typelen) {
   if (ptype == .pqByteArray) return(Inf)
