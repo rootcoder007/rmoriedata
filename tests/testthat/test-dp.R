@@ -253,7 +253,8 @@ test_that("dplaphist keeps names, dims and a table's labels", {
   out <- dplaphist(tb, epsilon = 1)
   expect_identical(dim(out), dim(tb))
   expect_identical(dimnames(out), dimnames(tb))
-  expect_s3_class(out, "table")
+  # the labels, not the class: a result is plain numbers
+  expect_false(is.object(out))
   expect_identical(names(dplaphist(table(c("u", "v")), 1)), c("u", "v"))
 })
 
@@ -402,4 +403,85 @@ test_that("a copy of a budget made in this session is refused (N10)", {
   invisible(dplapcnt(1, 1, budget = a2))
   invisible(dplapcnt(1, 1, budget = a))
   expect_identical(dpspent(a)$spent_epsilon, 2)
+})
+
+# Classed numbers for the tests below: hand-made ones, which every R has, and those of
+# the packages installed here (called by name, not attached).
+dp_classed <- function() {
+  out <- list(
+    own = function(v) structure(v, class = "mycount"),
+    i64bits = function(v) structure(v, class = "integer64"),
+    Date = function(v) structure(v, class = "Date"),
+    POSIXct = function(v) structure(v, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
+    difftime = function(v) structure(v, class = "difftime", units = "secs"),
+    factor = function(v) factor(v),
+    ts = function(v) stats::ts(v),
+    AsIs = function(v) I(v)
+  )
+  pkg <- function(p, f) if (requireNamespace(p, quietly = TRUE)) f
+  c(out, Filter(Negate(is.null), list(
+    integer64 = pkg("bit64", function(v) getExportedValue("bit64", "as.integer64")(v)),
+    units = pkg("units", function(v) getExportedValue("units", "as_units")(v, "m")),
+    haven_labelled = pkg("haven", function(v) {
+      getExportedValue("haven", "labelled")(as.double(v), c(low = 1))
+    }),
+    data.table = pkg("data.table", function(v) {
+      getExportedValue("data.table", "data.table")(v = v)
+    }),
+    tibble = pkg("tibble", function(v) getExportedValue("tibble", "tibble")(v = v))
+  )))
+}
+
+test_that("each mechanism gives plain numbers or refuses a class by name", {
+  msg <- "must be plain numbers, not an object of class"
+  df <- data.frame(a = c(1, 1, 2), b = c("x", "y", "x"))
+  for (nm in names(dp_classed())) {
+    mk <- dp_classed()[[nm]]
+    v <- mk(c(10, 20))
+    one <- mk(1)
+    expect_error(dplaphist(v, epsilon = 1), msg, info = nm)
+    expect_error(dplaphist(c(10, 20), epsilon = one), msg, info = nm)
+    expect_error(dplapcnt(mk(10), epsilon = 1), msg, info = nm)
+    expect_error(dplapcnt(10, epsilon = one), msg, info = nm)
+    expect_error(dpgmean(v, 0, 100, epsilon = 1), msg, info = nm)
+    expect_error(dpgmean(c(1, 2), mk(0), 100, epsilon = 1), msg, info = nm)
+    expect_error(dpgmean(c(1, 2), 0, mk(100), epsilon = 1), msg, info = nm)
+    expect_error(dpgmean(c(1, 2), 0, 100, epsilon = one), msg, info = nm)
+    expect_error(dpgmean(c(1, 2), 0, 100, 1, delta = mk(1e-6)), msg, info = nm)
+    expect_error(dpbudget(one), msg, info = nm)
+    expect_error(dpbudget(1, delta = mk(0)), msg, info = nm)
+    # a data frame (a tibble, a data.table) of plain columns is a table of counts
+    if (!is.data.frame(v)) expect_error(cellsupp(v, threshold = 5), msg, info = nm)
+    expect_error(cellsupp(matrix(c(1, 2, 3, 4), 2), threshold = mk(5)), msg, info = nm)
+    expect_error(kanonvrf(df, "a", k = one), msg, info = nm)
+    expect_error(ldivvrf(df, "a", "b", l = one), msg, info = nm)
+  }
+})
+
+test_that("tables and plain vectors keep their labels, never a class", {
+  tb <- table(c("x", "y", "y"), c("p", "q", "q"))
+  for (out in list(dplaphist(tb, 1), dplaphist(stats::xtabs(~ cyl + gear, mtcars), 1))) {
+    expect_false(is.object(out))
+    expect_true(is.double(out))
+    expect_identical(names(attributes(out)), c("dim", "dimnames"))
+  }
+  v <- dplaphist(c(a = 3, b = 4), epsilon = 1)
+  expect_identical(attributes(v), list(names = c("a", "b")))
+  m <- dplaphist(matrix(1:4, 2), epsilon = 1)
+  expect_identical(attributes(m), list(dim = c(2L, 2L)))
+  expect_false(is.object(dplapcnt(table(c("u", "v"))["u"], 1)))
+  # a 2-D table or a data frame of counts: the suppressed result is plain numbers
+  s <- cellsupp(as.table(matrix(c(2, 40, 30, 1), 2)), threshold = 5)$suppressed
+  expect_false(is.object(s))
+  for (nm in intersect(c("data.table", "tibble"), names(dp_classed()))) {
+    d <- dp_classed()[[nm]](c(20, 40))
+    d$w <- c(30, 1)
+    expect_false(is.object(cellsupp(d, threshold = 5)$suppressed), info = nm)
+  }
+})
+
+test_that("a data frame of counts with a classed column is refused by the column", {
+  d <- data.frame(a = c(20, 40))
+  d$b <- structure(c(30, 1), class = "integer64")
+  expect_error(cellsupp(d), "`tbl[[\"b\"]]` must be plain numbers", fixed = TRUE)
 })

@@ -32,6 +32,20 @@
   p
 }
 
+# options(check.bounds = FALSE) for the rest of the call that runs this, as the Parquet
+# reader and writer set it (the old value is restored when that call returns). Under
+# check.bounds = TRUE R warns whenever a vector, list or data frame grows, which base
+# R's own `$<-` for data frames and loadNamespace() do, and so did the package's code:
+# under warn = 2 a valid hosted table was called damaged and deleted. Every exported
+# function runs it first.
+.rmd_bounds <- function(env = parent.frame()) {
+  op <- options(check.bounds = FALSE)
+  # first among the call's exit handlers, so that options set before it, by whatever
+  # called it, are restored after it, in the reverse order they were set
+  do.call(on.exit, list(call("options", op), add = TRUE, after = FALSE), envir = env)
+  invisible(op)
+}
+
 # What the session cache holds for `name`, for the store in use now.
 .rmd_cached <- function(name) {
   .rmoriedata_extdata()
@@ -58,39 +72,74 @@
 # before it is opened (a FIFO blocked the reader for ever).
 .rmd_bytes <- function(f, max = Inf) .Call(C_rmd_readfile, f, as.numeric(max))
 
-# The SHA-256 of a file's bytes (lower-case hex), or NA when they cannot be read.
+# The SHA-256 of a file's bytes (lower-case hex), or NA when they cannot be read or
+# there are more than `max` of them: taken as the file is read through once, never
+# held whole (the cache of chiload(full = TRUE) is digested as it is written).
 .rmd_digest <- function(f, max = Inf) {
-  b <- .rmd_bytes(f, max)
-  if (is.raw(b)) .Call(C_morie_core_sha256, b) else NA_character_
+  v <- .rmd_vopen(f, fail = FALSE, max = max, blocks = FALSE)
+  if (!is.list(v)) return(NA_character_)
+  .rmd_vclose(v)
+  v$sha256
 }
 
-# A text-mode connection over bytes, plain or gzip: read.csv() and count.fields()
-# push lines back, which only a text-mode connection allows. Text that is valid UTF-8,
-# without a NUL byte and under 2^31 bytes (every store file) is one string, left
-# unmarked so that its bytes pass as they are in any locale, read through a text
-# connection: the fastest way (readLines() of a raw connection took half again the
-# time of reading the file). Other bytes go through gzcon(text = TRUE), which drops a
-# last line that has no newline: one is added after the bytes (a gzip member of one
-# newline after gzip bytes), and the blank line it can make is skipped by the readers.
+# A file opened once (src/readfile.c) and read a range at a time, never held whole.
+# With `verify` it is read through once first, its SHA-256 kept in `$sha256`, and (with
+# `blocks`) every range read later is checked against the digests of the blocks it
+# covers, so what is parsed is what was hashed. A file over `max` bytes is not opened.
+# When it cannot be opened: an error naming the file, or with `fail = FALSE` the
+# reason, a string. Closed by .rmd_vclose().
+.rmd_vopen <- function(f, verify = TRUE, fail = TRUE, max = Inf, blocks = verify) {
+  mode <- if (!verify) 0L else if (blocks) 2L else 1L
+  v <- .Call(C_rmd_vopen, f, mode, as.numeric(max))
+  if (is.list(v)) return(structure(v, class = "rmd_vfile"))
+  if (!fail) return(v)
+  stop(basename(f), " ", v, call. = FALSE)
+}
+
+.rmd_vclose <- function(v) invisible(.Call(C_rmd_vclose, v$handle))
+
+# An error that proves a file's bytes bad: they do not match the digest they are
+# checked against, a gzip member in them is damaged, or a record has more or fewer
+# fields than the header. Only such an error lets the package delete a cached or
+# downloaded copy. Running out of memory, an interrupt, a read that failed, a file
+# replaced while it was read, a session option, or any other error proves nothing
+# about the file, and the file stays.
+.rmd_damage <- function(...) {
+  stop(errorCondition(paste0(...), class = "rmd_damage", call = NULL))
+}
+
+# The text of gzip bytes (src/gzip.c): every member inflated, and NUL bytes after the
+# last one ignored, as gzip -d ignores them. Anything else after the last member is
+# refused, naming it: it is part of no member, so it is neither text of the file nor
+# to be dropped unseen (read through gzcon(), padding made a valid table "damaged",
+# and text after it became a row). A damaged member is damage (.rmd_damage()); bytes
+# after the members are not, and keep the file.
+.rmd_gunzip <- function(b) {
+  x <- .Call(C_rmd_gunzip, b)
+  if (is.raw(x)) return(x)
+  if (x[[1L]] == "damage") .rmd_damage(x[[2L]])
+  stop(x[[2L]], call. = FALSE)
+}
+
+# A text-mode connection over bytes, plain or gzip: read.csv() and count.fields() push
+# lines back, which only a text-mode connection allows. The text (inflated by
+# .rmd_gunzip()) that is valid UTF-8, without a NUL byte and under 2^31 bytes (every
+# store file) is one string, left unmarked so that its bytes pass as they are in any
+# locale, read through a text connection: the fastest way (readLines() of a raw
+# connection took half again the time of reading the file). Other text goes through
+# gzcon(text = TRUE) (a text connection stops at a byte 0xff), which drops a last line
+# that has no newline: one is added, and the blank line it can make is skipped by the
+# readers. gzcon() passes bytes through as they are unless they start as gzip does;
+# text that does is handed to it as one stored gzip member, or it was inflated twice.
 .rmd_textcon <- function(b) {
-  x <- if (.rmd_gz(b)) .rmd_inflate(b) else b
-  s <- if (length(x) < 2^31 - 1 && !any(x == as.raw(0L))) rawToChar(x)
-  if (!is.null(s) && validUTF8(s)) return(textConnection(s))
-  nl <- if (.rmd_gz(b)) .Call(C_rmd_gzip_compress, as.raw(10L)) else as.raw(10L)
-  gzcon(rawConnection(c(b, nl)), text = TRUE)
-}
-
-# gzip bytes inflated (every member, as gzfile() reads them), in blocks of 16 MiB.
-.rmd_inflate <- function(b) {
-  con <- gzcon(rawConnection(b))
-  on.exit(close(con))
-  out <- list()
-  repeat {
-    x <- readBin(con, "raw", 2^24)
-    if (!length(x)) break
-    out[[length(out) + 1L]] <- x
+  x <- if (.rmd_gz(b)) .rmd_gunzip(b) else b
+  s <- if (length(x) < 2^31 - 1 && !length(grepRaw(as.raw(0L), x, fixed = TRUE))) {
+    rawToChar(x)
   }
-  if (length(out)) unlist(out, use.names = FALSE) else raw(0)
+  if (!is.null(s) && validUTF8(s)) return(textConnection(s))
+  y <- c(x, as.raw(10L))
+  if (.rmd_gz(y)) y <- .Call(C_rmd_gzip_store, y)
+  gzcon(rawConnection(y), text = TRUE)
 }
 
 # Whether bytes start as gzip does.
@@ -108,7 +157,7 @@
 # The lines of bytes, plain or gzip, as readLines() reads them from the file, a last
 # line without its newline included; a NUL byte, which no R string holds, is dropped.
 .rmd_lines <- function(b) {
-  con <- if (.rmd_gz(b)) gzcon(rawConnection(b)) else rawConnection(b)
+  con <- rawConnection(if (.rmd_gz(b)) .rmd_gunzip(b) else b)
   on.exit(close(con))
   readLines(con, warn = FALSE, skipNul = TRUE, encoding = "UTF-8")
 }
@@ -184,6 +233,7 @@
 #' head(tbls[order(-tbls$n_rows), ])
 #' @export
 mdcat <- function() {
+  .rmd_bounds()
   cat <- .rmd_cached("_catalog")
   if (is.null(cat)) {
     cat <- .rmoriedata_csv("_catalog.csv")
@@ -225,6 +275,7 @@ mdcat <- function() {
 #' @export
 mdload <- function(slug, refresh = FALSE,
                             format = c("csv", "parquet")) {
+  .rmd_bounds()
   if (!is.character(slug) || length(slug) != 1L || is.na(slug)) {
     stop("`slug` must be a single dataset slug (character). ",
          "See mdcat() for valid slugs.", call. = FALSE)
@@ -306,6 +357,7 @@ mdload <- function(slug, refresh = FALSE,
 #' basename(mdpath("arsau_2023_uof_main_records", "csv"))
 #' @export
 mdpath <- function(slug, format = c("parquet", "csv")) {
+  .rmd_bounds()
   format <- .rmd_arg(format, "format")
   if (!is.character(slug) || length(slug) != 1L || is.na(slug)) {
     stop("`slug` must be a single dataset slug (character). ",
@@ -370,6 +422,7 @@ mdpath <- function(slug, format = c("parquet", "csv")) {
 #' substr(d, 1, 60)
 #' @export
 mddict <- function(slug) {
+  .rmd_bounds()
   if (!is.character(slug) || length(slug) != 1L || is.na(slug) || !nzchar(slug)) {
     stop("`slug` must be a single name from mdcat().", call. = FALSE)
   }
@@ -559,7 +612,8 @@ mddict <- function(slug) {
 #' a row with `ok = FALSE`; nothing at such a path is waited on.
 #'
 #' @return A data frame with one row per manifest entry, then one per
-#'   unlisted file: `path`, `bytes`, `sha256` (the manifest digest, or the
+#'   unlisted file (in the byte order of their paths, the same in every
+#'   locale): `path`, `bytes`, `sha256` (the manifest digest, or the
 #'   file's own for an unlisted file: `NA` when it is not a regular file or is
 #'   larger than 1 GiB), `listed`, `ok` (the file on disk is
 #'   listed and matches). The attribute `"signature"` is `TRUE` when the
@@ -570,6 +624,7 @@ mddict <- function(slug) {
 #' attr(v, "signature")
 #' @export
 mdverify <- function() {
+  .rmd_bounds()
   m <- .rmoriedata_manifest()
   ed <- .rmoriedata_extdata()
   m$listed <- rep(TRUE, nrow(m))
@@ -585,7 +640,8 @@ mdverify <- function() {
   # hidden files too: a dot-file added to the store is as much a change as any other
   present <- list.files(ed, recursive = TRUE, all.files = TRUE, no.. = TRUE)
   trust <- c("_checksums.csv", "_checksums.sig", "_signing_key.json")
-  extra <- setdiff(present, c(m$path, trust))
+  # in C (byte) order, the same in every locale (list.files() follows the collation)
+  extra <- sort(setdiff(present, c(m$path, trust)), method = "radix")
   if (length(extra)) {
     fx <- file.path(ed, extra)
     m <- rbind(m, data.frame(

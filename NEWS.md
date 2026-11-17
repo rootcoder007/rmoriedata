@@ -1,5 +1,21 @@
 # rmoriedata 0.4.3
 
+* `chiload(full = TRUE)` reads its cache, and `morie_read_parquet()` a file by its path, through one open of the file, a page at a time, never holding the file whole: the cache was read whole into memory and each column chunk copied out of it, so an 865 MB cache needed 2.5 GB where it had needed 1.5 GB, and a 1.3 GB cache that loaded under a 4 GB limit no longer did. The digest is taken as the file is read through once, and every range read after it is checked against the digests of the blocks it covers, so the bytes parsed are still the bytes hashed.
+
+* A cached or downloaded copy is deleted only when its bytes are proven bad: they do not match their digest, or the file itself is damaged (no Parquet frame, a damaged gzip member, a record with the wrong number of fields). A cache that could not be read for want of memory was deleted as damaged and fetched again; now running out of memory, a read that fails, a file replaced while it is read, a session option or a parse error leave the copy in place, and the call says what happened. A hosted table the manifest no longer lists and one that cannot be read are kept too, a cached manifest too large for the memory left is no longer fetched again over itself, and a copy is deleted only while it still holds the bytes found bad.
+
+* `hostload()` works under `options(check.bounds = TRUE, warn = 2)`: a valid, digest-checked table was called damaged and its cached copy deleted, because inflating it grew a list.
+
+* The text of a `.gz` file (a hosted table, the data store's gzip files, a sidecar, the manifest) is exactly its gzip members, every one inflated by the package's own routine: NUL bytes after the last member are ignored, as `gzip -d` ignores them, and any other bytes after it are refused, naming them. Bytes after the gzip data were read as text, so zero padding made a valid table "damaged" and deleted it, and text after it became a row.
+
+* `dplaphist()`, `dplapcnt()`, `dpgmean()`, `dpbudget()`, `cellsupp()`, `kanonvrf()` and `ldivvrf()` take plain numbers, or a table of counts, and refuse any other class by name: `dplaphist()` of `bit64::integer64` counts returned the noised counts as doubles still classed `integer64`, which printed as about 4.6e18, silently. Results keep names, dimensions and labels, never the input's class (a table's noised counts are a plain array).
+
+* `mdsums()` lists files, and `mdverify()` the files the manifest does not list, in byte order of their paths, the same in every locale: the order followed the collation, so the record differed between `LC_ALL=C` and `en_US.UTF-8`.
+
+* `hostload()` caches each table in a file of its own, the same on a file system that ignores case: `"a__b/c"` and `"a/b__c"` shared one file, so loading one after the other failed its digest and deleted it, and a table listed without a digest would have been returned for the other key. Tables cached by earlier versions are not read, and are fetched again once.
+
+* On Windows, the file reader takes a file's size from the 64-bit `_stat64()`: with the 32-bit size, a file over 2 GiB could not be read.
+
 * `mdload()`, `mddict()`, `siuload()`, `cihitbls()`, `hostload()` and the cache of `chiload(full = TRUE)` read a file once and check and read the same bytes: each hashed the file and then opened it again to read it, so a file replaced between the two (3 of 300 loads under a second process swapping it) was returned, and cached, although its bytes were never checked. The signed manifest, its signature and key, a mirror's file and its `.sha256` are read the same way.
 
 * `mdverify()` reports every listed file whatever is at its path (missing, a directory, a FIFO, a device, a link that loops, a file that cannot be read) as not ok, and drops what the session cached from it: a directory stopped it with an error, and nothing was dropped. A FIFO in the store, the cache or a mirror no longer makes `mdverify()`, `mdsums()` or a loader wait for ever: only regular files are opened.

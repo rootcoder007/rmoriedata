@@ -83,7 +83,7 @@ test_that("a damaged hosted table (a short row) is refused and its copy removed"
     },
     .package = "rmoriedata"
   )
-  dest <- file.path(rmoriedata:::.rmd_data_cache_dir(), "chicago_crime__incidents.csv.gz")
+  dest <- rmoriedata:::.rmd_host_file("chicago_crime/incidents")
   # listed without a digest: used with a warning (once per session), then refused
   expect_warning(expect_error(hostload("chicago_crime/incidents"),
                               "did not parse.*damaged copy was removed"),
@@ -107,7 +107,7 @@ test_that("a table failing the manifest's SHA-256 is deleted after a refresh", {
     },
     .package = "rmoriedata"
   )
-  dest <- file.path(rmoriedata:::.rmd_data_cache_dir(), "chicago_crime__incidents.csv.gz")
+  dest <- rmoriedata:::.rmd_host_file("chicago_crime/incidents")
   expect_error(hostload("chicago_crime/incidents"),
                "does not match the manifest's SHA-256 .*aaaaaaaaaaaa")
   expect_false(file.exists(dest))
@@ -225,8 +225,7 @@ hub_mock <- function(fx, calls_env, envir = parent.frame()) {
 }
 
 hub_tamper <- function(key) {
-  f <- file.path(rmoriedata:::.rmd_data_cache_dir(),
-                 paste0(gsub("/", "__", key, fixed = TRUE), ".csv.gz"))
+  f <- rmoriedata:::.rmd_host_file(key)
   con <- gzfile(f, "w")
   writeLines(c("REF_DATE,VALUE", "2020,999999", "2021,2"), con)
   close(con)
@@ -578,8 +577,8 @@ test_that("a cached copy is checked under the download lock", {
   hostload("statcan_health/tbl_1")
   # the table under its own lock; the manifest it is checked against under the
   # manifest's (update 51)
-  expect_identical(sum(seen == "statcan_health__tbl_1.csv.gz.lock"), 1L)
-  expect_setequal(seen, c("statcan_health__tbl_1.csv.gz.lock", "manifest.json.lock"))
+  expect_identical(sum(seen == "statcan__health_-tbl__1.csv.gz.lock"), 1L)
+  expect_setequal(seen, c("statcan__health_-tbl__1.csv.gz.lock", "manifest.json.lock"))
 })
 
 test_that("a stalled lock holder ends the wait with an error, not never", {

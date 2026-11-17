@@ -106,6 +106,7 @@
 siuload <- function(lang = c("all", "en", "fr"),
                              as = c("data.frame", "tibble"),
                              format = c("csv", "parquet")) {
+  .rmd_bounds()
   lang <- .rmd_arg(lang, "lang")
   as <- .rmd_arg(as, "as")
   format <- .rmd_arg(format, "format")

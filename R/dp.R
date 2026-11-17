@@ -191,6 +191,9 @@
 #' # a second release at epsilon = 1.5 would exceed the remaining 1
 #' try(dplapcnt(42, epsilon = 1.5, budget = b))
 dpbudget <- function(epsilon, delta = 0) {
+  .rmd_bounds()
+  epsilon <- .morie_plain(epsilon, "epsilon")
+  delta <- .morie_plain(delta, "delta")
   if (length(epsilon) != 1L || !is.numeric(epsilon) || !is.finite(epsilon) ||
       epsilon <= 0) {
     stop("`epsilon` must be a single positive number.", call. = FALSE)
@@ -232,6 +235,7 @@ dpbudget <- function(epsilon, delta = 0) {
 #' invisible(dplaphist(c(10, 20), epsilon = 0.25, budget = b))
 #' dpspent(b)$remaining_epsilon
 dpspent <- function(budget) {
+  .rmd_bounds()
   .morie_dp_check_budget(budget)
   list(epsilon = budget$epsilon, delta = budget$delta,
        spent_epsilon = budget$spent_epsilon, spent_delta = budget$spent_delta,
@@ -323,6 +327,27 @@ print.dpbudget <- function(x, ...) {
   invisible()
 }
 
+# `x` as plain numbers: its storage (an integer or double vector, matrix or array) with
+# only its names, dim and dimnames. An object of any other class is refused in words:
+# a class's own arithmetic, conversion and printing went into the result (dplaphist()
+# of bit64 integer64 counts returned noised doubles still classed integer64, which
+# printed as about 4.6e18), and integer64 holds its numbers as bits that are not a
+# double's value. With `tables`, a table (table(), xtabs()) is taken as its counts and
+# their labels.
+.morie_plain <- function(x, what, tables = FALSE) {
+  cl <- oldClass(x)
+  if (length(cl) && !(tables && all(cl %in% c("table", "xtabs")))) {
+    stop(sprintf(paste0("`%s` must be plain numbers, not an object of class %s; ",
+                        "convert it with as.numeric() first."),
+                 what, paste(cl, collapse = "/")), call. = FALSE)
+  }
+  # anything else (a list, a function, an environment) is left to the caller's checks
+  if (!is.atomic(x)) return(x)
+  a <- attributes(x)
+  attributes(x) <- a[intersect(names(a), c("names", "dim", "dimnames"))]
+  x
+}
+
 # ---- mechanisms --------------------------------------------------------------
 
 #' Differentially-private count via the discrete Laplace mechanism
@@ -365,6 +390,9 @@ print.dpbudget <- function(x, ...) {
 #' # (for illustration; releasing many answers spends many epsilons).
 #' mean(replicate(500, dplapcnt(42, epsilon = 1.0)))
 dplapcnt <- function(truecnt, epsilon, budget = NULL) {
+  .rmd_bounds()
+  truecnt <- .morie_plain(truecnt, "truecnt", tables = TRUE)
+  epsilon <- .morie_plain(epsilon, "epsilon")
   if (length(truecnt) != 1L || !is.numeric(truecnt) ||
     !is.finite(truecnt) || truecnt < 0 ||
     truecnt != floor(truecnt)) {
@@ -415,6 +443,9 @@ dplapcnt <- function(truecnt, epsilon, budget = NULL) {
 #' counts <- as.integer(table(complaint_sample$year))
 #' dplaphist(counts, epsilon = 1.0)
 dplaphist <- function(counts, epsilon, budget = NULL) {
+  .rmd_bounds()
+  counts <- .morie_plain(counts, "counts", tables = TRUE)
+  epsilon <- .morie_plain(epsilon, "epsilon")
   if (!is.numeric(counts) || length(counts) == 0L || any(!is.finite(counts)) ||
     any(counts < 0) || any(counts != floor(counts))) {
     stop("`counts` must be a non-empty vector of non-negative integers.",
@@ -437,7 +468,8 @@ dplaphist <- function(counts, epsilon, budget = NULL) {
     .morie_dp_dlaplace1(q[["s"]], q[["t"]])
   }, numeric(1))
   out <- as.numeric(counts) + noise
-  # names, dims and a table's labels stay with the counts
+  # names, dims and a table's labels stay with the counts (.morie_plain() kept only
+  # those); a class does not
   attributes(out) <- attributes(counts)
   out
 }
@@ -475,6 +507,12 @@ dplaphist <- function(counts, epsilon, budget = NULL) {
 #' dpgmean(x, lower = -5, upper = 5, epsilon = 1.0)
 dpgmean <- function(x, lower, upper, epsilon, delta = 1e-6,
                                    budget = NULL) {
+  .rmd_bounds()
+  x <- .morie_plain(x, "x")
+  lower <- .morie_plain(lower, "lower")
+  upper <- .morie_plain(upper, "upper")
+  epsilon <- .morie_plain(epsilon, "epsilon")
+  delta <- .morie_plain(delta, "delta")
   if (!is.numeric(x) || length(x) == 0L) {
     stop("`x` must be a non-empty numeric vector.", call. = FALSE)
   }

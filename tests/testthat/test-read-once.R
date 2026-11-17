@@ -50,12 +50,30 @@ test_that("the full Chicago cache and a hosted table are read once", {
   path <- file.path(dir, "arrests_full.parquet")
   d <- data.frame(a = 1:3, b = c("x", "y", "z"), stringsAsFactors = FALSE)
   .rmd_cache_write(d, path)
-  got <- swap_after_read(path, charToRaw("PAR1 not parquet PAR1"),
-                         function() .rmd_cache_read(path))
-  expect_identical(got$value, d)
-  expect_identical(got$hits, 1L)
-  # the swapped file no longer matches its sidecar
-  expect_null(.rmd_cache_read(path))
+  junk <- charToRaw("PAR1 not parquet PAR1")
+  # the cache is replaced right after it is opened and hashed: renamed over (another
+  # session writing it), the open file is still the one hashed; rewritten in place,
+  # every range the reader takes is checked against what was hashed, and it stops
+  swap <- function(how) {
+    real <- .rmd_vopen
+    testthat::with_mocked_bindings(.rmd_cache_read(path), .rmd_vopen = function(...) {
+      v <- real(...)
+      if (how == "rename") {
+        tmp <- tempfile(tmpdir = dir)
+        writeBin(junk, tmp)
+        file.rename(tmp, path)
+      } else {
+        writeBin(junk, path)
+      }
+      v
+    })
+  }
+  orig <- readBin(path, "raw", file.size(path))
+  expect_identical(swap("rename"), d)
+  writeBin(orig, path)
+  expect_error(swap("in place"), "the file was changed while it was read")
+  # the replaced file no longer matches its sidecar: its bytes are proven bad
+  expect_error(.rmd_cache_read(path), class = "rmd_damage")
 })
 
 test_that("mdverify() reports whatever is at a listed path and drops its caches", {
@@ -172,7 +190,7 @@ test_that("a hosted table replaced after its check is never read", {
     invisible(dest)
   })
   want <- hostload("db/t")
-  dest <- file.path(cache, "hosted", "db__t.csv.gz")
+  dest <- file.path(cache, "hosted", "tables", "db_-t.csv.gz")
   bad <- withr::local_tempfile(fileext = ".csv.gz")
   con <- gzfile(bad, "w")
   writeLines(c("id,v", "1,EVIL"), con)

@@ -222,6 +222,12 @@
   m <- tryCatch(.rmd_bl("fromjs")(paste(.rmd_lines(b), collapse = "\n"),
                                   simplifyVector = FALSE),
                 error = function(e) e)
+  # memory that ran short says nothing about the file: an error, and the copy is kept
+  # (read as damaged, it was fetched again over a valid copy)
+  if (inherits(m, "error") && .pq_alloc_failed(conditionMessage(m))) {
+    stop("not enough memory to read the manifest of data.rmorie.com (",
+         conditionMessage(m), ")", call. = FALSE)
+  }
   if (inherits(m, "error")) return(conditionMessage(m))
   if (!is.list(m) || is.null(names(m))) return("not a JSON object")
   ds <- m[["datasets"]]
@@ -320,16 +326,15 @@
 # (checked by path and read again by path, a copy replaced between the two was read
 # unchecked).
 .rmd_check_sha <- function(key, dest) {
+  # neither proves the file bad: it is left as it is
   unlisted <- function() {
-    unlink(dest)
     stop(key, " is not listed in the manifest of data.rmorie.com", call. = FALSE)
   }
   want <- .rmd_manifest_sha(key)
   if (is.null(want)) unlisted()
   b <- .rmd_bytes(dest)
   if (!is.raw(b)) {
-    unlink(dest)
-    stop(sprintf("the cached copy of %s %s: it was deleted; run again", key, b),
+    stop(sprintf("the cached copy of %s %s; it was left in place: run again", key, b),
          call. = FALSE)
   }
   if (is.na(want)) {
@@ -697,6 +702,17 @@
 #' \code{"\\n"}); Windows line ends and a byte-order mark are allowed. A
 #' record with more or fewer fields than the header is a damaged download:
 #' the copy is deleted and the call fails, so the next call fetches it again.
+#' A table's file is its gzip members, each one read: NUL bytes after the
+#' last member are ignored, as \code{gzip -d} ignores them, and any other
+#' bytes after it are refused, never read as rows. A cached copy is deleted
+#' only when it does not match the manifest's digest or is damaged itself;
+#' a table that cannot be read for another reason (memory that runs short,
+#' bytes after its gzip data, a session option) stops with the copy left in
+#' place. Each table is cached in a file of its own under
+#' \code{hosted/tables} in the cache folder, named from its key so that no
+#' two keys share one (two that differ only in case included); tables that
+#' versions before 0.4.3 cached under \code{hosted/} are not read, and are
+#' fetched again once.
 #'
 #' The manifest is fetched again once the cached copy is a day old. When
 #' that fails (offline, or the service is down) the cached copy is used, with
@@ -729,6 +745,7 @@
 #' }
 #' @export
 hostcat <- function(refresh = FALSE) {
+  .rmd_bounds()
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE", call. = FALSE)
   }
@@ -779,6 +796,7 @@ hostcat <- function(refresh = FALSE) {
 #' @rdname hostcat
 #' @export
 hostload <- function(key, refresh = FALSE) {
+  .rmd_bounds()
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE", call. = FALSE)
   }
@@ -797,24 +815,55 @@ hostload <- function(key, refresh = FALSE) {
   d <- .rmd_manifest_entry(key, refresh)
   if (!is.null(d) && .rmd_unserved(d)) .rmd_unserved_stop(key)
   parts <- strsplit(key, "/", fixed = TRUE)[[1L]]
-  dest <- file.path(.rmd_data_cache_dir(),
-                    paste0(gsub("/", "__", key, fixed = TRUE), ".csv.gz"))
+  dest <- .rmd_host_file(key)
   # a cached copy is checked under the same lock as a download: checked unlocked, a
   # copy another session had just refreshed could be hashed half replaced, called
   # damaged and deleted
   b <- .rmd_fetch(key, sprintf("/%s/%s.csv.gz", parts[[1L]],
                                paste(parts[-1L], collapse = "/")), dest, refresh)
-  # a record with a field missing or one too many is a damaged download; it is
-  # removed so the next call fetches it again instead of padding the rows
+  .rmd_parse_hosted(key, b, dest)
+}
+
+# The table from its checked bytes `b`. Damage in the bytes themselves (a damaged gzip
+# member, a record with a field missing or one too many) removes the copy, so the next
+# call fetches it again instead of padding the rows; it is removed only while it still
+# holds those bytes (another session may have fetched it again meanwhile). Any other
+# error (memory, bytes after the gzip data, a session option) proves nothing about the
+# copy, which stays.
+.rmd_parse_hosted <- function(key, b, dest) {
   tryCatch(
     .rmd_read_hosted(b),
-    error = function(e) {
-      unlink(dest)
+    rmd_damage = function(e) {
+      .rmd_drop(dest, .Call(C_morie_core_sha256, b))
       stop(sprintf(paste0("the table %s did not parse (%s); ",
                           "the damaged copy was removed, try again"),
                    key, conditionMessage(e)), call. = FALSE)
+    },
+    error = function(e) {
+      stop(sprintf("the table %s could not be read (%s); the copy was left in place",
+                   key, conditionMessage(e)), call. = FALSE)
     }
   )
+}
+
+# The file a hosted table is cached in, one per key and the same on a file system that
+# ignores case: the key with "_" written "__", "/" written "_-", and each upper-case
+# letter written "_" and the letter in lower case, so no two keys share a name and no
+# name holds an upper-case letter. They are kept in a folder of their own: earlier
+# versions cached "a__b/c" and "a/b__c" both as a__b__c.csv.gz beside the manifest,
+# and a file named that way is never read now (such a table is fetched again once).
+.rmd_host_file <- function(key) {
+  n <- gsub("/", "_-", gsub("_", "__", key, fixed = TRUE), fixed = TRUE)
+  n <- .rmd_lower(gsub("([A-Z])", "_\\1", n, perl = TRUE))
+  file.path(.rmd_mkdir(file.path(.rmd_data_cache_dir(), "tables")), paste0(n, ".csv.gz"))
+}
+
+# Deletes the file `f` (and the files `also`) only while its SHA-256 is still `sha`, the
+# digest of bytes proven bad: a copy written over it since is not touched.
+.rmd_drop <- function(f, sha, also = character()) {
+  same <- identical(.rmd_digest(f), sha)
+  if (same) unlink(c(f, also))
+  invisible(same)
 }
 
 # A hosted table's csv.gz as the file holds it, the way the bundled tables are read:
@@ -842,8 +891,8 @@ hostload <- function(key, refresh = FALSE) {
   nf <- nf[!is.na(nf)]
   bad <- which(nf != nf[1L])
   if (length(bad)) {
-    stop(sprintf("record %d has %d fields, the header %d", bad[[1L]],
-                 nf[[bad[[1L]]]], nf[[1L]]), call. = FALSE)
+    .rmd_damage(sprintf("record %d has %d fields, the header %d", bad[[1L]],
+                        nf[[bad[[1L]]]], nf[[1L]]))
   }
   d <- .rmd_csv_bytes(b, colClasses = "character", na.strings = character(),
                        check.names = FALSE, stringsAsFactors = FALSE, encoding = "UTF-8",

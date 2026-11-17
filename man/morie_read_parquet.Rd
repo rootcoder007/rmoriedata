@@ -7,8 +7,9 @@
 morie_read_parquet(path, columns = NULL)
 }
 \arguments{
-\item{path}{Path to a \code{.parquet} file (read once, whole, and only when it
-is a regular file), or the file's bytes as a raw vector.}
+\item{path}{Path to a \code{.parquet} file (opened once, only when it is a
+regular file, and read a page at a time, never held whole), or the
+file's bytes as a raw vector.}
 
 \item{columns}{Optional character vector of column names to decode;
 the rest are skipped entirely. \code{character(0)} gives a data frame with

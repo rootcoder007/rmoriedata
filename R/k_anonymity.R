@@ -134,6 +134,7 @@
 #'   k = 5
 #' )$summary
 kanonvrf <- function(data, qids, k = 5) {
+  .rmd_bounds()
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
@@ -144,6 +145,7 @@ kanonvrf <- function(data, qids, k = 5) {
   }
   .rmd_nobytes(qids, "qids")
   at <- .rmd_cols(data, qids, "qids")
+  k <- .morie_plain(k, "k")
   if (length(k) != 1L || !is.numeric(k) || is.na(k) ||
     k < 1 || k > .Machine$integer.max || k != as.integer(k)) {
     stop("`k` must be a single positive integer.", call. = FALSE)
@@ -238,6 +240,7 @@ kanonvrf <- function(data, qids, k = 5) {
 #' # k-anonymity and l-diversity are complementary: check both.
 #' kanonvrf(df, c("age", "sex"), k = 3)$satisfies
 ldivvrf <- function(data, qids, sensitive, l = 3) {
+  .rmd_bounds()
   if (!is.data.frame(data)) {
     stop("`data` must be a data.frame.", call. = FALSE)
   }
@@ -253,6 +256,7 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
   .rmd_nobytes(sensitive, "sensitive")
   at <- .rmd_cols(data, qids, "qids")
   s_at <- .rmd_cols(data, sensitive, "sensitive", reserved = character())
+  l <- .morie_plain(l, "l")
   if (length(l) != 1L || !is.numeric(l) || is.na(l) ||
     l < 1 || l > .Machine$integer.max || l != as.integer(l)) {
     stop("`l` must be a single positive integer.", call. = FALSE)
@@ -383,6 +387,8 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
 #' ))
 #' cellsupp(t2, threshold = 5)$suppressed
 cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
+  .rmd_bounds()
+  threshold <- .morie_plain(threshold, "threshold")
   if (length(threshold) != 1L || !is.numeric(threshold) ||
     is.na(threshold) || threshold < 1) {
     stop("`threshold` must be a single positive number.", call. = FALSE)
@@ -395,6 +401,15 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
   # before as.matrix(), which turns a 3-way array or table into one column
   if (is.null(tbl) || (!is.data.frame(tbl) && length(dim(tbl)) > 2L)) {
     stop("`tbl` must be 2-dimensional.", call. = FALSE)
+  }
+  # counts as plain numbers: a classed matrix or column (integer64, ...) is refused by
+  # name, and the result carries no class of the input's (.morie_plain())
+  if (is.data.frame(tbl)) {
+    for (j in seq_along(tbl)) {
+      .morie_plain(tbl[[j]], sprintf("tbl[[\"%s\"]]", names(tbl)[j]))
+    }
+  } else {
+    tbl <- .morie_plain(tbl, "tbl", tables = TRUE)
   }
   # a function or an environment has no matrix form: as.matrix() errors in base R's words
   m <- tryCatch(as.matrix(tbl), error = function(e) NULL)

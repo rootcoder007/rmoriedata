@@ -40,6 +40,7 @@
 #' cat$title[grepl("hospital", cat$title, ignore.case = TRUE)][1:3]
 #' @export
 cihitbls <- function(archonly = FALSE) {
+  .rmd_bounds()
   if (!isTRUE(archonly) && !isFALSE(archonly)) {
     stop("`archonly` must be TRUE or FALSE.", call. = FALSE)
   }
@@ -102,6 +103,7 @@ cihitbls <- function(archonly = FALSE) {
 #' }
 #' @export
 cihiget <- function(which, dest = NULL, timeout = 120L) {
+  .rmd_bounds()
   if (!requireNamespace("rmoriebricklayer", quietly = TRUE)) {
     stop("cihiget() needs 'rmoriebricklayer' for the shared ",
       "fetch-with-fallback engine.",

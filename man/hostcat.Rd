@@ -70,6 +70,17 @@ quotes and line breaks (a Windows line end inside a field reads as
 \code{"\\n"}); Windows line ends and a byte-order mark are allowed. A
 record with more or fewer fields than the header is a damaged download:
 the copy is deleted and the call fails, so the next call fetches it again.
+A table's file is its gzip members, each one read: NUL bytes after the
+last member are ignored, as \code{gzip -d} ignores them, and any other
+bytes after it are refused, never read as rows. A cached copy is deleted
+only when it does not match the manifest's digest or is damaged itself;
+a table that cannot be read for another reason (memory that runs short,
+bytes after its gzip data, a session option) stops with the copy left in
+place. Each table is cached in a file of its own under
+\code{hosted/tables} in the cache folder, named from its key so that no
+two keys share one (two that differ only in case included); tables that
+versions before 0.4.3 cached under \code{hosted/} are not read, and are
+fetched again once.
 
 The manifest is fetched again once the cached copy is a day old. When
 that fails (offline, or the service is down) the cached copy is used, with

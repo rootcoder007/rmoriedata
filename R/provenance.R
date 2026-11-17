@@ -10,7 +10,8 @@
 #' For the full check, signature included, use [mdverify()]; this
 #' function is the per-file record an analysis can pin and compare later.
 #'
-#' @return A data frame with one row per bundled file and columns
+#' @return A data frame with one row per bundled file, in the byte order of
+#'   \code{path} (the same in every locale), and columns
 #'   \code{path} (relative to the extdata root, forward slashes, unique),
 #'   \code{file} (the bare basename), \code{bytes}, \code{sha256}, and
 #'   \code{in_manifest} (TRUE when the signed manifest lists the file with
@@ -36,6 +37,7 @@
 #' }
 #' @export
 mdsums <- function() {
+  .rmd_bounds()
   # the store the manifest is read from (options(rmoriedata.store = ) or the install)
   dir <- tryCatch(.rmoriedata_extdata(), error = function(e) "")
   empty <- data.frame(
@@ -45,8 +47,10 @@ mdsums <- function() {
   if (!nzchar(dir) || !dir.exists(dir)) {
     return(empty)
   }
-  files <- list.files(dir, full.names = TRUE, recursive = TRUE, all.files = TRUE,
-                      no.. = TRUE)
+  # in C (byte) order, the same in every locale: list.files() sorts by the session's
+  # collation, and the record's rows came out in another order under LC_ALL=C
+  files <- sort(list.files(dir, full.names = TRUE, recursive = TRUE, all.files = TRUE,
+                           no.. = TRUE), method = "radix")
   if (length(files) == 0L) {
     return(empty)
   }

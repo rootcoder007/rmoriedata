@@ -8,7 +8,8 @@ mdverify()
 }
 \value{
 A data frame with one row per manifest entry, then one per
-unlisted file: \code{path}, \code{bytes}, \code{sha256} (the manifest digest, or the
+unlisted file (in the byte order of their paths, the same in every
+locale): \code{path}, \code{bytes}, \code{sha256} (the manifest digest, or the
 file's own for an unlisted file: \code{NA} when it is not a regular file or is
 larger than 1 GiB), \code{listed}, \code{ok} (the file on disk is
 listed and matches). The attribute \code{"signature"} is \code{TRUE} when the

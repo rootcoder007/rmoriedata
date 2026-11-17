@@ -10,11 +10,12 @@
 #include <string.h>
 #include <zlib.h>
 
-SEXP C_rmd_gzip_compress(SEXP x) {
+/* One gzip member of `x` at deflate level `level` (0: stored, not compressed). */
+static SEXP rmd_deflate(SEXP x, int level) {
     if (TYPEOF(x) != RAWSXP) Rf_error("gzip: expected a raw vector");
     z_stream s;
     memset(&s, 0, sizeof s);
-    if (deflateInit2(&s, 9, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY) != Z_OK)
+    if (deflateInit2(&s, level, Z_DEFLATED, 15 + 16, 9, Z_DEFAULT_STRATEGY) != Z_OK)
         Rf_error("gzip: deflateInit2 failed");
     /* avail_in and avail_out are 32-bit: a larger page would be cut short silently */
     if ((double) XLENGTH(x) > 4.0e9) {
@@ -37,6 +38,12 @@ SEXP C_rmd_gzip_compress(SEXP x) {
     UNPROTECT(1);
     return out;
 }
+
+SEXP C_rmd_gzip_compress(SEXP x) { return rmd_deflate(x, 9); }
+
+/* For data/R: bytes as one gzip member, stored as they are, for gzcon(), which
+ * passes bytes through as they are only when they do not start as gzip does. */
+SEXP C_rmd_gzip_store(SEXP x) { return rmd_deflate(x, 0); }
 
 /* RFC 1952, 2.2: a gzip file is a series of members, and a page may hold several
  * (concatenated gzip output). Each is inflated in turn into the one buffer of the
@@ -101,4 +108,111 @@ SEXP C_rmd_crc32(SEXP x) {
         n -= take;
     }
     return Rf_ScalarReal((double) c);
+}
+
+/* ---- the text of a .gz file ------------------------------------------------ */
+
+/* Inflates every member of `in` (RFC 1952: a .gz file is one or more members)
+ * into `out` (`cap` bytes), or only counts the bytes when `out` is NULL. NUL
+ * bytes after the last member are ignored, as gzip -d ignores them. Returns 0
+ * with *total set; 1 when the data is damaged (a member that is not valid
+ * deflate data, fails its CRC-32 or length, or is cut short), with *why set;
+ * 2 when bytes after a member are neither a member nor NUL padding, with
+ * *at their offset. Input and output are fed to zlib in pieces of at most
+ * 1 GiB, as its counts are 32-bit. */
+static int rmd_gunzip_run(const unsigned char *in, double len, unsigned char *out,
+                          double cap, double *total, const char **why, double *at) {
+    unsigned char scratch[16384];
+    z_stream s;
+    memset(&s, 0, sizeof s);
+    if (inflateInit2(&s, 15 + 16) != Z_OK) Rf_error("gzip: inflateInit2 failed");
+    double fed = 0, used = 0;
+    *total = 0;
+    for (;;) {
+        int rc;
+        do {
+            if (s.avail_in == 0 && fed < len) {
+                double k = len - fed < 1073741824.0 ? len - fed : 1073741824.0;
+                s.next_in = (Bytef *) (in + (size_t) fed);
+                s.avail_in = (uInt) k;
+                fed += k;
+            }
+            double room = out ? cap - *total : (double) sizeof scratch;
+            if (room > 1073741824.0) room = 1073741824.0;
+            s.next_out = out ? out + (size_t) *total : scratch;
+            s.avail_out = (uInt) room;
+            rc = inflate(&s, Z_NO_FLUSH);
+            *total += room - (double) s.avail_out;
+            if (rc == Z_MEM_ERROR) {
+                inflateEnd(&s);
+                Rf_error("gzip: not enough memory to inflate");
+            }
+            if (rc == Z_NEED_DICT || rc == Z_DATA_ERROR || rc == Z_STREAM_ERROR) {
+                *why = s.msg ? s.msg : "not valid gzip data";
+                inflateEnd(&s);
+                return 1;
+            }
+            /* no progress: `out` is full, or the input is used up inside a member */
+            if (rc == Z_BUF_ERROR) {
+                inflateEnd(&s);
+                if (out && *total >= cap)
+                    Rf_error("gzip: the data inflated to more than it did when counted");
+                *why = "the data ends inside a gzip member";
+                return 1;
+            }
+        } while (rc != Z_STREAM_END);
+        used = fed - (double) s.avail_in;
+        double rest = len - used;
+        const unsigned char *r = in + (size_t) used;
+        size_t z = 0;
+        while ((double) z < rest && r[z] == 0) z++;
+        if ((double) z == rest) break; /* the end, or NUL padding only */
+        if (rest < 2 || r[0] != 0x1f || r[1] != 0x8b) {
+            *at = used;
+            inflateEnd(&s);
+            return 2;
+        }
+        if (inflateReset(&s) != Z_OK) {
+            inflateEnd(&s);
+            Rf_error("gzip: inflateReset failed");
+        }
+        s.next_in = (Bytef *) r;
+        s.avail_in = (uInt) (rest < 1073741824.0 ? rest : 1073741824.0);
+        fed = used + (double) s.avail_in;
+    }
+    inflateEnd(&s);
+    return 0;
+}
+
+/* The inflated bytes of a .gz file, counted first and then inflated into a
+ * vector of that size (a buffer grown as it went took twice the text); or, when
+ * it cannot be inflated, c(kind, message): kind "damage" for damaged data,
+ * "trailer" for bytes after the last member that are not one. */
+SEXP C_rmd_gunzip(SEXP x) {
+    if (TYPEOF(x) != RAWSXP) Rf_error("gzip: expected a raw vector");
+    const char *why = NULL;
+    char msg[256];
+    double len = (double) XLENGTH(x), total = 0, at = 0;
+    int rc = rmd_gunzip_run(RAW(x), len, NULL, 0, &total, &why, &at);
+    if (rc == 0) {
+        if (total > (double) R_XLEN_T_MAX)
+            Rf_error("gzip: the data inflates to %.0f bytes, more than this R can allocate", total);
+        SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) total));
+        double again = 0;
+        rc = rmd_gunzip_run(RAW(x), len, total > 0 ? RAW(out) : NULL, total, &again, &why, &at);
+        if (rc == 0 && again == total) {
+            UNPROTECT(1);
+            return out;
+        }
+        UNPROTECT(1);
+        Rf_error("gzip: the data inflated differently a second time");
+    }
+    if (rc == 1) snprintf(msg, sizeof msg, "the gzip data is damaged (%s)", why);
+    else snprintf(msg, sizeof msg, "%.0f bytes after the last gzip member (from byte %.0f) are "
+                  "not gzip data", len - at, at + 1);
+    SEXP out = PROTECT(allocVector(STRSXP, 2));
+    SET_STRING_ELT(out, 0, mkChar(rc == 1 ? "damage" : "trailer"));
+    SET_STRING_ELT(out, 1, mkChar(msg));
+    UNPROTECT(1);
+    return out;
 }

@@ -51,6 +51,7 @@
 #' }
 #' @export
 mdask <- function(question, model = NULL, route = NULL) {
+  .rmd_bounds()
   .rmoriedata_scalar(question, "question")
   if (!is.null(model)) .rmoriedata_scalar(model, "model")
   if (!is.null(route)) .rmoriedata_scalar(route, "route")
@@ -202,6 +203,7 @@ mdask <- function(question, model = NULL, route = NULL) {
 #' }
 #' @export
 mdllmconf <- function(...) {
+  .rmd_bounds()
   if (!"llmcfg" %in% getNamespaceExports("rmoriebricklayer")) {
     stop("saving language-model settings needs rmoriebricklayer 0.5.11 or later: ",
          "install.packages(\"rmoriebricklayer\", repos = ",

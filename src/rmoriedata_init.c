@@ -67,6 +67,12 @@ SEXP C_rmd_pq_secs(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP per);
 SEXP C_rmd_strtod(SEXP x);
 SEXP C_rmd_pq_usfit(SEXP x);
 SEXP C_rmd_readfile(SEXP path, SEXP max);
+SEXP C_rmd_vopen(SEXP path, SEXP verify, SEXP max);
+SEXP C_rmd_vread(SEXP h, SEXP start, SEXP n);
+SEXP C_rmd_vclose(SEXP h);
+SEXP C_rmd_sha256(SEXP x);
+SEXP C_rmd_gunzip(SEXP x);
+SEXP C_rmd_gzip_store(SEXP x);
 
 static const R_CallMethodDef CallEntries[] = {
     {"C_morie_core_sha256", (DL_FUNC) &C_morie_core_sha256, 1},
@@ -88,6 +94,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_rmd_strtod",            (DL_FUNC) &C_rmd_strtod,            1},
     {"C_rmd_pq_usfit",          (DL_FUNC) &C_rmd_pq_usfit,          1},
     {"C_rmd_readfile",          (DL_FUNC) &C_rmd_readfile,          2},
+    {"C_rmd_vopen",             (DL_FUNC) &C_rmd_vopen,             3},
+    {"C_rmd_vread",             (DL_FUNC) &C_rmd_vread,             3},
+    {"C_rmd_vclose",            (DL_FUNC) &C_rmd_vclose,            1},
+    {"C_rmd_sha256",            (DL_FUNC) &C_rmd_sha256,            1},
+    {"C_rmd_gunzip",            (DL_FUNC) &C_rmd_gunzip,            1},
+    {"C_rmd_gzip_store",        (DL_FUNC) &C_rmd_gzip_store,        1},
     {"C_morie_core_mean",   (DL_FUNC) &C_morie_core_mean,   1},
     {NULL, NULL, 0}
 };

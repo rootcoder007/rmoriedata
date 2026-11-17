@@ -56,7 +56,14 @@
 #'   data pages v1: the package's own reader supports nothing else.
 #' @param refresh If \code{TRUE}, ignore the cache of the
 #'   complete dataset and fetch it again (the cache is rewritten). A cache
-#'   file that cannot be read is discarded and refetched regardless.
+#'   whose bytes do not match its \code{.sha256}, or that is not a Parquet
+#'   file, is deleted and fetched again regardless, and one without a usable
+#'   \code{.sha256} is fetched again and rewritten. A cache that cannot be
+#'   read for any other reason (memory that runs short, a read that fails,
+#'   an option such as \code{rmoriedata.parquet_max_rows}) is kept: the call
+#'   stops and says why. The cache is opened once and read a page at a
+#'   time, each part checked against the digest taken as it was opened; it
+#'   is never held whole.
 #' @return A \code{data.frame}/\code{tibble}, or a length-1 character Parquet
 #'   path when \code{as = "parquet_path"}.
 #' @examples
@@ -100,6 +107,7 @@ chiload <- function(type = c("arrests", "complaints"),
                               limit = NULL,
                               fraction = NULL,
                               refresh = FALSE) {
+  .rmd_bounds()
   type <- .rmd_arg(type, "type")
   as <- .rmd_arg(as, "as")
   if (!is.null(limit) && !is.null(fraction)) {
@@ -368,6 +376,7 @@ chiload <- function(type = c("arrests", "complaints"),
 #' chiclr()
 #' @export
 chiclr <- function() {
+  .rmd_bounds()
   d <- .rmd_cache_dir()
   # only what chiload() wrote: the directory is the user's, and the hosted tables
   # are cached under it too
@@ -409,12 +418,11 @@ chiclr <- function() {
   bounded <- !is.null(limit)
   cache <- file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))
   if (!bounded && !isTRUE(refresh) && file.exists(cache)) {
-    df <- .rmd_cache_read(cache)
+    df <- .rmd_cache_use(cache)
     if (!is.null(df)) {
       attr(df, "rmd_src") <- sprintf("the cached %s", basename(cache))
       return(df)
     }
-    unlink(c(cache, paste0(cache, ".sha256"))) # damaged or unverified: fetch again
   }
   # The service's own row count decides whether a response is the complete
   # dataset; without it (count endpoint down) only the shape checks apply
@@ -474,7 +482,7 @@ chiclr <- function() {
     # in anything else the round trip through Parquet changes
     if (!bounded && !is.na(expected) &&
         !inherits(try(.rmd_cache_write(df, cache), silent = TRUE), "try-error")) {
-      df <- .rmd_cache_read(cache) %||% df
+      df <- tryCatch(.rmd_cache_read(cache), error = function(e) NULL) %||% df
     }
     attr(df, "rmd_src") <- if (grepl("\\.parquet$", u)) {
       sprintf("the mirror's %s (%s)", basename(u), u)
@@ -510,18 +518,17 @@ chiclr <- function() {
       .rmd_side_digest(side)
     }, error = function(e) NA_character_, warning = function(w) NA_character_)
   }
-  # read once: the bytes checked are the bytes read
-  b <- .rmd_bytes(f)
-  if (!is.raw(b)) stop("the mirror's ", basename(u), " ", b, call. = FALSE)
-  if (!is.na(want)) {
-    if (!grepl("^[0-9a-f]{64}$", want, useBytes = TRUE)) {
-      stop("the mirror's ", basename(u), ".sha256 is not a SHA-256 digest", call. = FALSE)
-    }
-    if (!identical(.Call(C_morie_core_sha256, b), want)) {
-      stop("the mirror's ", basename(u), " does not match its SHA-256", call. = FALSE)
-    }
+  if (!is.na(want) && !grepl("^[0-9a-f]{64}$", want, useBytes = TRUE)) {
+    stop("the mirror's ", basename(u), ".sha256 is not a SHA-256 digest", call. = FALSE)
   }
-  morie_read_parquet(b)
+  # opened once: the bytes checked are the bytes read
+  v <- .rmd_vopen(f, verify = !is.na(want), fail = FALSE)
+  if (!is.list(v)) stop("the mirror's ", basename(u), " ", v, call. = FALSE)
+  on.exit(.rmd_vclose(v), add = TRUE)
+  if (!is.na(want) && !identical(v$sha256, want)) {
+    stop("the mirror's ", basename(u), " does not match its SHA-256", call. = FALSE)
+  }
+  morie_read_parquet(v)
 }
 
 # The digest a `<file>.sha256` holds: its first word, ASCII case folded ("" when it
@@ -578,18 +585,87 @@ chiclr <- function() {
   invisible(path)
 }
 
-# The cached frame, or NULL when the file is unreadable, has no sidecar,
-# or no longer matches it.
-# The file is read once, and its bytes are both checked and read: checked by path and
-# opened again, a file replaced between the two (another session refreshing the
-# cache) was read unchecked. The sidecar and the file must be regular files.
+# The cached frame, or NULL when there is no verified cache to read: the file or its
+# sidecar is missing, or the sidecar is not a SHA-256 digest (the cache is then
+# unverified, and the next full fetch writes both again). Bytes that do not match the
+# sidecar, or that match it but are not framed as a Parquet file, are an rmd_damage
+# error (see .rmd_damage()), with their digest in `sha`; any other error (memory, a
+# read that failed, a parse error, an option) is passed on as it is.
+# The file is opened once, its digest taken as it is read through, and the reader
+# then reads it a page at a time through the same descriptor, each range
+# checked against the digests of its blocks: what is parsed is what was hashed, and
+# the file is never held whole (held whole, it took its size again on top of the
+# parse). A sidecar replaced while the file was checked (another session writing the
+# cache: data first, then its sidecar) is read again, once, before the bytes are
+# called bad.
 .rmd_cache_read <- function(path) {
+  v <- .rmd_cache_open(path)
+  if (is.null(v)) return(NULL)
+  on.exit(.rmd_vclose(v))
+  if (!.rmd_pq_framed(v)) .rmd_cache_bad(path, "is not a Parquet file", v)
+  morie_read_parquet(v)
+}
+
+# The cache opened and found to match its sidecar (.rmd_vopen()), or NULL when there
+# is no sidecar to check it against; bytes that do not match it are an rmd_damage
+# error. A sidecar that changed while the file was hashed is read again, once.
+.rmd_cache_open <- function(path) {
+  for (i in 1:2) {
+    want <- .rmd_cache_want(path)
+    if (is.null(want)) return(NULL)
+    v <- .rmd_vopen(path)
+    if (identical(v$sha256, want)) return(v)
+    .rmd_vclose(v)
+    if (i == 2L || identical(.rmd_cache_want(path), want)) {
+      .rmd_cache_bad(path, paste0("does not match its ", basename(path), ".sha256"), v)
+    }
+  }
+}
+
+# The digest the cache's sidecar holds, or NULL when the cache or its sidecar is
+# missing or the sidecar holds no SHA-256 digest.
+.rmd_cache_want <- function(path) {
   side <- paste0(path, ".sha256")
-  if (!file.exists(side)) return(NULL)
-  want <- tryCatch(.rmd_side_digest(side), error = function(e) NULL)
-  b <- .rmd_bytes(path)
-  if (!is.raw(b) || !identical(.Call(C_morie_core_sha256, b), want)) return(NULL)
-  tryCatch(morie_read_parquet(b), error = function(e) NULL)
+  if (!file.exists(side) || !file.exists(path)) return(NULL)
+  want <- .rmd_side_digest(side)
+  if (grepl("^[0-9a-f]{64}$", want, useBytes = TRUE)) want
+}
+
+# The rmd_damage error for the cache at `path`, opened as `v`, with its digest in `sha`.
+.rmd_cache_bad <- function(path, why, v) {
+  stop(errorCondition(paste(basename(path), why), class = "rmd_damage", call = NULL,
+                      sha = v$sha256))
+}
+
+# Whether the file is framed as a Parquet file: "PAR1" at both ends and a footer length
+# that fits. That is read from the file alone (no option or memory decides it), so a
+# cache that matches its sidecar but is not framed so is a damaged file, not a read
+# that failed.
+.rmd_pq_framed <- function(v) {
+  n <- v$size
+  if (n < 12) return(FALSE)
+  tail <- .pq_at(v, n - 8, 8)
+  len <- .pq_u32(tail[1:4])
+  identical(.pq_at(v, 0, 4), charToRaw("PAR1")) &&
+    identical(tail[5:8], charToRaw("PAR1")) && len >= 2 && len <= n - 12
+}
+
+# The cache read for chiload(), or NULL to fetch again. A cache whose bytes do not
+# match its sidecar is deleted with the sidecar (only while it still holds those
+# bytes). Nothing else deletes it: running out of memory, a read that failed, a parse
+# error or a session option proves nothing about the file, and the call stops saying
+# what happened, with the cache left in place.
+.rmd_cache_use <- function(cache) {
+  tryCatch(.rmd_cache_read(cache),
+    rmd_damage = function(e) {
+      .rmd_drop(cache, e$sha, also = paste0(cache, ".sha256"))
+      NULL
+    },
+    error = function(e) {
+      stop(sprintf(paste0("the cached %s could not be read (%s); it was left in place: ",
+                          "run again, or fetch it anew with refresh = TRUE"),
+                   basename(cache), conditionMessage(e)), call. = FALSE)
+    })
 }
 
 .rmd_write_parquet <- function(df, type, full) {

@@ -299,10 +299,12 @@ test_that("four R sessions downloading one table at once share it safely", {
     # every part was served once: one session downloaded, the others waited and
     # used its finished, verified table
     expect_identical(sort(trimws(readLines(log))), sort(hub_ranges(fx$size)))
-    left <- list.files(file.path(cache, "hosted"))
-    expect_setequal(left, c("db__t.csv.gz", "db__t.csv.gz.lock", "manifest.json",
-                            "manifest.json.lock"))
-    expect_identical(unname(tools::md5sum(file.path(cache, "hosted", "db__t.csv.gz"))),
+    expect_setequal(list.files(file.path(cache, "hosted")),
+                    c("manifest.json", "manifest.json.lock", "tables"))
+    left <- list.files(file.path(cache, "hosted", "tables"))
+    expect_setequal(left, c("db_-t.csv.gz", "db_-t.csv.gz.lock"))
+    expect_identical(unname(tools::md5sum(file.path(cache, "hosted", "tables",
+                                                    "db_-t.csv.gz"))),
                      unname(tools::md5sum(fx$served)))
   }
 })
@@ -324,9 +326,9 @@ test_that("a download killed half-way resumes from its parts in the next session
   # no SIGKILL (it is NA there) and ends the process outright for any signal
   sig <- if (.Platform$OS.type == "windows") tools::SIGTERM else tools::SIGKILL
   expect_true(tools::pskill(pid, sig))
-  hd <- file.path(cache, "hosted")
-  expect_true(dir.exists(file.path(hd, "db__t.csv.gz.dl.parts")))
-  expect_false(file.exists(file.path(hd, "db__t.csv.gz")))
+  hd <- file.path(cache, "hosted", "tables")
+  expect_true(dir.exists(file.path(hd, "db_-t.csv.gz.dl.parts")))
+  expect_false(file.exists(file.path(hd, "db_-t.csv.gz")))
   n1 <- length(readLines(log))
   hub_run(d, cache, log, file.path(d, "out"))
   hub_wait(file.path(d, "out"))
@@ -335,8 +337,9 @@ test_that("a download killed half-way resumes from its parts in the next session
   # and the rest, nothing before
   r <- hub_ranges(fx$size)
   expect_identical(trimws(readLines(log))[-seq_len(n1)], r[-(1:2)])
-  expect_setequal(list.files(hd), c("db__t.csv.gz", "db__t.csv.gz.lock",
-                                    "manifest.json", "manifest.json.lock"))
+  expect_setequal(list.files(hd), c("db_-t.csv.gz", "db_-t.csv.gz.lock"))
+  expect_setequal(list.files(dirname(hd)), c("manifest.json", "manifest.json.lock",
+                                             "tables"))
 })
 
 test_that("the cached manifest is fetched and read under its own lock", {

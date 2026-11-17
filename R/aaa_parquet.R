@@ -74,11 +74,18 @@
 }
 
 .pq_slice <- function(buf, pos, n, what = "data") {
-  if (!is.finite(n) || n < 0 || !is.finite(pos) || pos < 1 || pos + n - 1 > length(buf)) {
-    stop("parquet: ", what, " runs past the end of its page or chunk (", n,
-         " bytes at ", pos, " of ", length(buf), ")", call. = FALSE)
-  }
+  .pq_fits(length(buf), pos, n, what)
   if (n == 0) raw(0) else buf[seq.int(pos, length.out = n)]
+}
+
+# Refuses `n` bytes at `pos` (counted from 1) of something `len` bytes long that do not
+# fit in it.
+.pq_fits <- function(len, pos, n, what) {
+  if (!all(is.finite(c(n, pos))) || min(n, pos - 1) < 0 || pos + n - 1 > len) {
+    stop("parquet: ", what, " runs past the end of its page or chunk (", n,
+         " bytes at ", pos, " of ", len, ")", call. = FALSE)
+  }
+  invisible(TRUE)
 }
 
 .pq_byte <- function(e) {
@@ -760,14 +767,25 @@
 
 # ------------------------------------------------------------------ read
 
-# `buf` is the whole file (read once, by morie_read_parquet()).
-.pq_read_footer <- function(buf) {
-  size <- length(buf)
+# The file the reader reads, `src`: its bytes (a raw vector), or a file opened once
+# (.rmd_vopen()), read a range at a time and never held whole: held whole, a large
+# file took its size again on top of what the parse needs.
+.pq_size <- function(src) if (is.raw(src)) length(src) else src$size
+
+# The bytes [start, start + n) of `src` (start counted from 0), fewer when it ends sooner.
+.pq_at <- function(src, start, n) {
+  if (!is.raw(src)) return(.Call(C_rmd_vread, src$handle, start, n))
+  n <- min(n, max(0, length(src) - start))
+  if (n == 0) raw(0) else src[seq.int(start + 1, length.out = n)]
+}
+
+.pq_read_footer <- function(src) {
+  size <- .pq_size(src)
   if (size < 12) stop("not a parquet file: ", size, " bytes", call. = FALSE)
-  if (!identical(buf[1:4], charToRaw("PAR1"))) {
+  if (!identical(.pq_at(src, 0, 4), charToRaw("PAR1"))) {
     stop("not a parquet file: missing leading PAR1", call. = FALSE)
   }
-  tail <- buf[size - 7:0]
+  tail <- .pq_at(src, size - 8, 8)
   if (!identical(tail[5:8], charToRaw("PAR1"))) {
     stop("not a parquet file: missing trailing PAR1", call. = FALSE)
   }
@@ -776,7 +794,7 @@
     stop("parquet: footer length ", n, " does not fit a ", size, "-byte file",
          call. = FALSE)
   }
-  .pq_struct(.pq_reader(buf[seq.int(size - 8 - n + 1, length.out = n)]))
+  .pq_struct(.pq_reader(.pq_at(src, size - 8 - n, n)))
 }
 
 # The largest page this reader will inflate, and the most rows it will build. A
@@ -858,7 +876,7 @@
 # each page its header, where its stored bytes start, and its sizes. Everything
 # a header alone can show to be wrong is refused here, so the whole file's text
 # can be weighed (.pq_text_budget()) before any of it is inflated.
-.pq_chunk_pages <- function(buf, cm, num_rows, stype, fsize, cname) {
+.pq_chunk_pages <- function(src, cm, num_rows, stype, fsize, cname) {
   ptype <- as.integer(.pq_f(cm, 1))
   if (!identical(ptype, as.integer(stype))) {
     stop("parquet: column ", cname, " is declared type ", stype,
@@ -885,14 +903,14 @@
     stop("parquet: column ", cname, " chunk (", clen, " bytes at ", start,
          ") lies outside the ", fsize, "-byte file", call. = FALSE)
   }
-  blob <- .pq_chunk_blob(buf, start, clen, cname)
-
+  # the chunk is not read whole here: each page's header, and its bytes only when it
+  # has a CRC to check
   pos <- 1L
   heads <- list()
   got <- 0
-  while (got < total_values && pos <= length(blob)) {
-    r <- .pq_reader(blob, pos)
-    head <- .pq_struct(r)
+  while (got < total_values && pos <= clen) {
+    r <- .pq_page_head(src, start, clen, pos, cname)
+    head <- r$head
     pos <- r$pos
     usize <- .pq_f(head, 2)
     csize <- .pq_f(head, 3)
@@ -900,12 +918,12 @@
       stop("parquet: page of ", usize %||% "?", " bytes in column ", cname,
            " (cap ", .pq_max_page(), ")", call. = FALSE)
     }
-    raw_page <- .pq_slice(blob, pos, csize, paste("a page of column", cname))
+    .pq_fits(clen, pos, csize, paste("a page of column", cname))
     at <- pos
     pos <- pos + csize
     crc <- .pq_f(head, 4)
     if (!is.null(crc)) {
-      have <- .Call(C_rmd_crc32, raw_page)
+      have <- .Call(C_rmd_crc32, .pq_at(src, start + at - 1, csize))
       if (have != crc %% 2^32) {
         stop("parquet: page CRC mismatch in column ", cname, call. = FALSE)
       }
@@ -935,8 +953,21 @@
        clen = clen, pages = heads)
 }
 
-.pq_chunk_blob <- function(buf, start, clen, cname) {
-  blob <- buf[seq.int(start + 1, length.out = min(clen, max(0, length(buf) - start)))]
+# The header of the page at `pos` (counted from 1) of the column chunk of `clen` bytes
+# at `start`, and the position after it: list(head, pos). It is parsed from the first
+# KiB there, which holds the headers writers write, so a chunk is not read whole to
+# find its pages. A header that does not parse from that is parsed from the whole
+# chunk, as it always was, so a damaged one is refused in the same words.
+.pq_page_head <- function(src, start, clen, pos, cname) {
+  r <- .pq_reader(.pq_at(src, start + pos - 1, min(1024, clen - pos + 1)))
+  head <- tryCatch(.pq_struct(r), error = function(e) NULL)
+  if (!is.null(head)) return(list(head = head, pos = pos + r$pos - 1L))
+  r <- .pq_reader(.pq_chunk_blob(src, start, clen, cname), pos)
+  list(head = .pq_struct(r), pos = r$pos)
+}
+
+.pq_chunk_blob <- function(src, start, clen, cname) {
+  blob <- .pq_at(src, start, clen)
   if (length(blob) != clen) {
     stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
   }
@@ -982,11 +1013,10 @@
        "rmoriedata.parquet_max_text_bytes)", call. = FALSE)
 }
 
-.pq_column_values <- function(buf, ch, maxdef, typelen, cname, kind = NULL) {
+.pq_column_values <- function(src, ch, maxdef, typelen, cname, kind = NULL) {
   ptype <- ch$ptype
   codec <- ch$codec
   total_values <- ch$total_values
-  blob <- .pq_chunk_blob(buf, ch$start, ch$clen, cname)
   dictionary <- NULL
   out <- NULL
   got <- 0
@@ -995,7 +1025,9 @@
     head <- pg$head
     usize <- pg$usize
     csize <- pg$csize
-    raw_page <- .pq_slice(blob, pg$at, csize, paste("a page of column", cname))
+    # one page at a time, never the chunk whole: .pq_chunk_pages() found it inside it
+    .pq_fits(ch$clen, pg$at, csize, paste("a page of column", cname))
+    raw_page <- .pq_at(src, ch$start + pg$at - 1, csize)
     ptype_page <- as.integer(.pq_f(head, 1))
     if (ptype_page == .pqPDict) {
       # a chunk has one dictionary page (the format's rule); a second one would
@@ -1150,8 +1182,9 @@
 #' no other package is needed for them;
 #' the writer does not write ZSTD. Nested and repeated columns are refused.
 #'
-#' @param path Path to a `.parquet` file (read once, whole, and only when it
-#'   is a regular file), or the file's bytes as a raw vector.
+#' @param path Path to a `.parquet` file (opened once, only when it is a
+#'   regular file, and read a page at a time, never held whole), or the
+#'   file's bytes as a raw vector.
 #' @param columns Optional character vector of column names to decode;
 #'   the rest are skipped entirely. `character(0)` gives a data frame with
 #'   the file's rows and no columns. A name the file gives two columns names
@@ -1222,15 +1255,9 @@
 #'   it (a value a damaged file makes R warn about is an error instead).
 #' @keywords internal
 morie_read_parquet <- function(path, columns = NULL) {
-  # the whole file, read once, a regular file only (a FIFO blocked the reader), or
-  # the bytes a caller read and checked
-  one <- .rmd_string(path)
-  buf <- if (is.raw(path)) path else if (one) .rmd_bytes(path)
-  if (!is.raw(buf)) {
-    stop("parquet: ", if (one && file.exists(path)) paste(path, buf) else
-      paste("no such file:", paste(path, collapse = " ")), call. = FALSE)
-  }
-  where <- if (is.raw(path)) "the file" else path
+  src <- .pq_src(path)
+  if (is.character(path)) on.exit(.rmd_vclose(src), add = TRUE)
+  where <- if (is.character(path)) path else "the file"
   op <- .pq_opts()
   on.exit(options(op), add = TRUE)
   # A check the reader makes says what is wrong, after the `parquet: ` every reader
@@ -1238,7 +1265,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   # field, an index past the end) is said to be damage too. A base-R warning on the
   # way (a count past the integer range, say) is damage as well, not a stray warning.
   tryCatch(
-    withCallingHandlers(.pq_read(buf, columns, where), warning = function(w) {
+    withCallingHandlers(.pq_read(src, columns, where), warning = function(w) {
       m <- conditionMessage(w)
       # the reader's own warning passes; any other is damage
       if (!grepl("holds whole numbers of 2^53", m, fixed = TRUE)) {
@@ -1254,6 +1281,20 @@ morie_read_parquet <- function(path, columns = NULL) {
       stop("parquet: the file is damaged (", m, ")", call. = FALSE)
     }
   )
+}
+
+# The file to read: the bytes a caller read and checked, a file a caller opened and
+# checked (.rmd_vopen()), or a path, opened here once, a regular file only (a FIFO
+# blocked the reader), and read a range at a time.
+.pq_src <- function(path) {
+  if (is.raw(path) || inherits(path, "rmd_vfile")) return(path)
+  one <- .rmd_string(path)
+  src <- if (one) .rmd_vopen(path, verify = FALSE, fail = FALSE)
+  if (!is.list(src)) {
+    stop("parquet: ", if (one && file.exists(path)) paste(path, src) else
+      paste("no such file:", paste(path, collapse = " ")), call. = FALSE)
+  }
+  src
 }
 
 # Whether an error is R failing to allocate memory, which is not damage. R gives that
@@ -1291,9 +1332,9 @@ morie_read_parquet <- function(path, columns = NULL) {
   s
 }
 
-.pq_read <- function(buf, columns, where) {
-  size <- length(buf)
-  meta <- .pq_read_footer(buf)
+.pq_read <- function(src, columns, where) {
+  size <- .pq_size(src)
+  meta <- .pq_read_footer(src)
   schema <- .pq_f(meta, 2)
   num_rows <- .pq_f(meta, 3)
   row_groups <- .pq_f(meta, 4)
@@ -1397,7 +1438,7 @@ morie_read_parquet <- function(path, columns = NULL) {
       }
       # a row group of no rows holds no pages (arrow writes one for an empty table)
       if (.pq_f(rg, 3) == 0) next
-      ch <- .pq_chunk_pages(buf, .pq_f(chunks[[i]], 3), .pq_f(rg, 3),
+      ch <- .pq_chunk_pages(src, .pq_f(chunks[[i]], 3), .pq_f(rg, 3),
                             leaf$type, size, leaf$name)
       chs[[w]][[length(chs[[w]]) + 1L]] <- ch
       # the two types whose bytes a value takes the file states: text by each
@@ -1421,7 +1462,7 @@ morie_read_parquet <- function(path, columns = NULL) {
     col <- NULL
     at <- 0
     for (ch in chs[[w]]) {
-      v <- .pq_column_values(buf, ch, leaf$maxdef, leaf$typelen, leaf$name,
+      v <- .pq_column_values(src, ch, leaf$maxdef, leaf$typelen, leaf$name,
                              leaf$kind)
       # one row group holds the column, or each goes into a vector made once at
       # the file's row count (c() on each row group copied the column so far)

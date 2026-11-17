@@ -42,6 +42,7 @@ NULL
 #' @rdname morie_core
 #' @export
 mdsha <- function(x) {
+  .rmd_bounds()
   if (!is.raw(x)) {
     # one string, hashed as UTF-8 whatever encoding it is marked with
     if (!is.character(x) || length(x) != 1L || is.na(x)) {
@@ -55,6 +56,7 @@ mdsha <- function(x) {
 #' @rdname morie_core
 #' @export
 mdmean <- function(x) {
+  .rmd_bounds()
   if (!is.numeric(x) && !is.logical(x)) {
     stop("`x` must be a numeric vector", call. = FALSE)
   }

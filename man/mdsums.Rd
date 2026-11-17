@@ -7,7 +7,8 @@
 mdsums()
 }
 \value{
-A data frame with one row per bundled file and columns
+A data frame with one row per bundled file, in the byte order of
+\code{path} (the same in every locale), and columns
 \code{path} (relative to the extdata root, forward slashes, unique),
 \code{file} (the bare basename), \code{bytes}, \code{sha256}, and
 \code{in_manifest} (TRUE when the signed manifest lists the file with
