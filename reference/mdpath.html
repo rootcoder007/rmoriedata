@@ -75,7 +75,8 @@ slug has one file, which is returned either way.</p></dd>
 with the manifest's (the store's files are small; the largest takes a few
 tens of milliseconds), so a file changed since an earlier call is refused,
 whatever else about it stayed the same. What is not covered: a change
-made after the path is returned, before it is read.</p>
+made after the path is returned, before it is read. <code><a href="mdload.html">mdload()</a></code> has no such
+gap: it reads a file's bytes once, checks them and reads the table from them.</p>
     </div>
 
     <div class="section level2">

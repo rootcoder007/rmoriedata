@@ -1,9 +1,9 @@
 # SHA256 checksums of bundled rmoriedata files
 
 Computes the SHA256 digest of every file rmoriedata bundles in
-`inst/extdata`, using the shared provenance layer
-([`rmoriebricklayer::sha256file()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/sha256file.html)),
-and compares each with the digest the signed manifest records for it
+`inst/extdata`, each file read once and only when it is a regular file
+(`NA` for any other path, and for a file larger than 1 GiB), and
+compares each with the digest the signed manifest records for it
 (`in_manifest`). For the full check, signature included, use
 [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md);
 this function is the per-file record an analysis can pin and compare

@@ -2,6 +2,84 @@
 
 ## rmoriedata 0.4.3
 
+- [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md),
+  [`siuload()`](https://rootcoder007.github.io/rmoriedata/reference/siuload.md),
+  [`cihitbls()`](https://rootcoder007.github.io/rmoriedata/reference/cihitbls.md),
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and the cache of `chiload(full = TRUE)` read a file once and check and
+  read the same bytes: each hashed the file and then opened it again to
+  read it, so a file replaced between the two (3 of 300 loads under a
+  second process swapping it) was returned, and cached, although its
+  bytes were never checked. The signed manifest, its signature and key,
+  a mirror’s file and its `.sha256` are read the same way.
+
+- [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  reports every listed file whatever is at its path (missing, a
+  directory, a FIFO, a device, a link that loops, a file that cannot be
+  read) as not ok, and drops what the session cached from it: a
+  directory stopped it with an error, and nothing was dropped. A FIFO in
+  the store, the cache or a mirror no longer makes
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md),
+  [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md)
+  or a loader wait for ever: only regular files are opened.
+
+- [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  takes a key only in the form the manifest writes keys: segments of
+  ASCII letters, digits, `_`, `-` and `.`, none starting with a dot,
+  joined by single slashes. `"db/./t"`, `"db/x/../t"` and `"./db/t"`
+  were requested, and named the table `"db/t"` that the manifest closes;
+  nothing is now asked for, looked up or written for such a key, and a
+  manifest entry with such a key is not served.
+
+- Case is folded in ASCII alone, the same in every locale: in Turkish
+  `cihiget("injury")` matched none of the “Injury” titles, a table
+  marked `"access": "PUBLIC"` was not served, and a message named a
+  “UUİD”.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  refuses an 8- or 16-bit column holding a value outside its width,
+  naming the column and the value, as a damaged file: an unsigned 8-bit
+  word 0xFFFFFFFF came back as -1, and 0x80000000 in an unsigned 16-bit
+  column made it a double column of -2147483648. A width the stored type
+  does not have (an INT32 marked 64 bits wide, an INT64 marked 32) is
+  refused too.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  reads a column’s logical type where it and the converted type
+  disagree, for every type, as the format says and arrow does: `UINT_32`
+  with a signed `INT(32)` read the word 0xFFFFFFFF as 4294967295 instead
+  of -1.
+
+- [`morie_write_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_write_parquet.md)
+  writes a `POSIXct` of 9223372036854.775390625 seconds, the time the
+  reader returns for the largest TIMESTAMP_MICROS: it was refused as
+  outside the range, because the bound 2^63 / 1e6 rounds to that time.
+  The bound is now the microsecond count itself, decided in whole
+  numbers.
+
+- [`kanonvrf()`](https://rootcoder007.github.io/rmoriedata/reference/kanonvrf.md)
+  and
+  [`ldivvrf()`](https://rootcoder007.github.io/rmoriedata/reference/ldivvrf.md)
+  take a column named `""`, and refuse in words a name that is `NA`,
+  that two columns of `data` share, or (as a quasi-identifier) that is
+  `.n` or `.diversity`, the column the result adds: a name `""` stopped
+  them in base R’s words, and of two columns of one name the first was
+  checked without a word.
+
+- Results no longer follow `options(scipen = , OutDec = )`: under
+  `scipen = -5` every Parquet read failed as a damaged file (a field id
+  was looked up as “3e+00”); under `scipen = 100`
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  read `1e-05` as text; under `OutDec = ","`
+  [`mdask()`](https://rootcoder007.github.io/rmoriedata/reference/mdask.md)
+  warned, and stopped under `warn = 2`. Numbers become text through one
+  helper that ignores those options, the Parquet reader and writer run
+  with `check.bounds` off and their messages written the same under any
+  options, quotes in messages are plain, Socrata’s export is read as its
+  bytes whatever `options(encoding = )` says, and a text column of a
+  mirror that holds numbers keeps every digit (`1e+05` was `"1e+05"`).
+
 - [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
   decides once for a whole INT32 column, from the values in its rows,
   whether it is an integer column: an unsigned 8- or 16-bit column

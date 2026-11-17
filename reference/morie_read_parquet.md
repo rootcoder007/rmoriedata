@@ -17,13 +17,15 @@ morie_read_parquet(path, columns = NULL)
 
 - path:
 
-  Path to a `.parquet` file.
+  Path to a `.parquet` file (read once, whole, and only when it is a
+  regular file), or the file's bytes as a raw vector.
 
 - columns:
 
   Optional character vector of column names to decode; the rest are
   skipped entirely. `character(0)` gives a data frame with the file's
-  rows and no columns.
+  rows and no columns. A name the file gives two columns names the first
+  of them.
 
 ## Value
 
@@ -65,13 +67,24 @@ An INT32 column is an integer column unless one of its values cannot be
 an R integer, which is -2147483648 (-2^31, R's `NA_integer_`): then the
 whole column is a double. This is decided once for the whole column,
 across all its pages and row groups, from the values in its rows: an
-entry of a dictionary that no row uses does not count. Unsigned 8- and
-16-bit columns (stored as INT32) always fit and are integer columns, and
-an unsigned 32-bit column is a double column, whether the file marks the
-type by its converted type (`UINT_8`, `UINT_16`, `UINT_32`) or by its
-logical type (an unsigned `INT(8)`, `INT(16)` or `INT(32)`, as arrow
-writes them). Every other 64-bit column is a double column: exact below
-2^53, otherwise the nearest double, with a warning that it is rounded.
+entry of a dictionary that no row uses does not count. Columns of 8 and
+16 bits (stored as INT32) are integer columns, and an unsigned 32-bit
+column is a double column, whether the file marks the type by its
+converted type (`UINT_8`, `INT_16`, `UINT_32`, ...) or by its logical
+type (`INT(8, false)`, as arrow writes `uint8`, ...). A value outside
+the marked width (an unsigned 8-bit column holding 256, or the word
+0xFFFFFFFF, which is -1 as an INT32) is a damaged file and is refused,
+naming the column and the value, as other values the format does not
+allow are; so is a width the format does not give the stored type (an
+INT32 marked 64 bits wide, an INT64 marked 8, 16 or 32). Every 32- and
+64-bit word is a value of its width, signed or unsigned. Every other
+64-bit column is a double column: exact below 2^53, otherwise the
+nearest double, with a warning that it is rounded.
+
+Where a column's logical type and its converted type disagree (`UINT_32`
+with a signed `INT(32)`, or with an unsigned `INT(8)`), the logical type
+is read, as the format says and arrow does, for every type: the
+converted type is read only when the file gives no logical type.
 
 A TIMESTAMP (in milliseconds, microseconds or nanoseconds, or the legacy
 INT96) is a `POSIXct` in UTC, and a TIME a `difftime` in seconds. Each

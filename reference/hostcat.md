@@ -38,7 +38,10 @@ hostload(key, refresh = FALSE)
 
 - key:
 
-  A `db/table` key from the catalog.
+  A `db/table` key from the catalog: segments of ASCII letters, digits,
+  `_`, `-` and `.`, none starting with a dot, joined by single slashes.
+  Any other key is refused before anything is requested, and a manifest
+  entry whose key is not of this form is not served.
 
 ## Value
 
@@ -62,12 +65,12 @@ Any other column is text, so a code such as `"046"` keeps its leading
 zero, and `"+3"`, `".5"`, `"0x1A"`, `"Inf"` or an identifier of 16 or
 more digits keep every character. A column with no value at all is
 logical `NA`. Text is marked UTF-8, whatever the session's locale; bytes
-that are not valid UTF-8 are marked `"bytes"`. Quoted fields may hold
-commas, quotes and line breaks (a Windows line end inside a field reads
-as `"\n"`); Windows line ends and a byte-order mark are allowed. A
-record with more or fewer fields than the header is a damaged download:
-the copy is deleted and the call fails, so the next call fetches it
-again.
+that are not valid UTF-8 are marked `"bytes"`, and a NUL byte, which no
+R string holds, is dropped. Quoted fields may hold commas, quotes and
+line breaks (a Windows line end inside a field reads as `"\n"`); Windows
+line ends and a byte-order mark are allowed. A record with more or fewer
+fields than the header is a damaged download: the copy is deleted and
+the call fails, so the next call fetches it again.
 
 The manifest is fetched again once the cached copy is a day old. When
 that fails (offline, or the service is down) the cached copy is used,

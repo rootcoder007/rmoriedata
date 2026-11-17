@@ -20,9 +20,10 @@ mdverify()
 
 A data frame with one row per manifest entry, then one per unlisted
 file: `path`, `bytes`, `sha256` (the manifest digest, or the file's own
-for an unlisted file), `listed`, `ok` (the file on disk is listed and
-matches). The attribute `"signature"` is `TRUE` when the manifest's
-signature verified, and the function errors if it did not.
+for an unlisted file: `NA` when it is not a regular file or is larger
+than 1 GiB), `listed`, `ok` (the file on disk is listed and matches).
+The attribute `"signature"` is `TRUE` when the manifest's signature
+verified, and the function errors if it did not.
 
 ## Details
 
@@ -49,6 +50,11 @@ and
 installed files of the package itself, which
 `tools::checkMD5sums("rmoriedata")` checks against the `MD5` file of a
 CRAN install.
+
+A listed path that holds anything but the file (it is missing, a
+directory, a FIFO, a device, a link that loops or leaves the store, or
+cannot be read) is a row with `ok = FALSE`; nothing at such a path is
+waited on.
 
 ## Examples
 

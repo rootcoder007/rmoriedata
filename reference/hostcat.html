@@ -117,7 +117,10 @@ the package cache directory (<code><a href="https://rdrr.io/r/base/tempfile.html
 
 
 <dt id="arg-key">key<a class="anchor" aria-label="anchor" href="#arg-key"></a></dt>
-<dd><p>A <code>db/table</code> key from the catalog.</p></dd>
+<dd><p>A <code>db/table</code> key from the catalog: segments of ASCII
+letters, digits, <code>_</code>, <code>-</code> and <code>.</code>, none starting with a dot,
+joined by single slashes. Any other key is refused before anything is
+requested, and a manifest entry whose key is not of this form is not served.</p></dd>
 
 </dl></div>
     <div class="section level2">
@@ -145,7 +148,8 @@ such as <code>"046"</code> keeps its leading zero, and <code>"+3"</code>,
 digits keep every character. A column with no value at all is logical
 <code>NA</code>.
 Text is marked UTF-8, whatever the session's locale; bytes that are not
-valid UTF-8 are marked <code>"bytes"</code>. Quoted fields may hold commas,
+valid UTF-8 are marked <code>"bytes"</code>, and a NUL byte, which no R string
+holds, is dropped. Quoted fields may hold commas,
 quotes and line breaks (a Windows line end inside a field reads as
 <code>"\n"</code>); Windows line ends and a byte-order mark are allowed. A
 record with more or fewer fields than the header is a damaged download:

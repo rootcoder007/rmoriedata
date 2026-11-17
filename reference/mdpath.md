@@ -35,6 +35,9 @@ with the manifest's (the store's files are small; the largest takes a
 few tens of milliseconds), so a file changed since an earlier call is
 refused, whatever else about it stayed the same. What is not covered: a
 change made after the path is returned, before it is read.
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+has no such gap: it reads a file's bytes once, checks them and reads the
+table from them.
 
 ## Examples
 
