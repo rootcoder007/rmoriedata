@@ -26,8 +26,9 @@ hostile_settings <- function() {
       withr::local_envvar(TZ = "America/St_Johns", .local_envir = env)
     },
     "LC_ALL C" = function(env) {
-      withr::local_locale(c(LC_CTYPE = "C", LC_COLLATE = "C", LC_TIME = "C",
-                            LC_MONETARY = "C", LC_MESSAGES = "C"), .local_envir = env)
+      withr::local_locale(.settings_cats(c(LC_CTYPE = "C", LC_COLLATE = "C",
+                                           LC_TIME = "C", LC_MONETARY = "C",
+                                           LC_MESSAGES = "C")), .local_envir = env)
       withr::local_envvar(LANGUAGE = "en", .local_envir = env)
     }
   )
@@ -40,8 +41,9 @@ hostile_settings <- function() {
       set[[paste("LC_ALL", loc)]] <- local({
         l <- loc
         function(env) {
-          withr::local_locale(c(LC_CTYPE = l, LC_COLLATE = l, LC_TIME = l,
-                                LC_MESSAGES = l), .local_envir = env)
+          withr::local_locale(.settings_cats(c(LC_CTYPE = l, LC_COLLATE = l,
+                                               LC_TIME = l, LC_MESSAGES = l)),
+                              .local_envir = env)
           withr::local_envvar(LANGUAGE = substr(l, 1L, 2L), .local_envir = env)
         }
       })
@@ -51,6 +53,12 @@ hostile_settings <- function() {
 }
 
 .settings_ctype <- Sys.getlocale("LC_CTYPE")
+
+# The locale categories this system has: Windows has no LC_MESSAGES, and setting it
+# there only warns.
+.settings_cats <- function(x) {
+  if (.Platform$OS.type == "windows") x[names(x) != "LC_MESSAGES"] else x
+}
 
 # `block()` under the defaults, then under each setting: identical results.
 under_settings <- function(block, label = "") {

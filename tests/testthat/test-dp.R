@@ -415,22 +415,47 @@ dp_classed <- function() {
     POSIXct = function(v) structure(v, class = c("POSIXct", "POSIXt"), tzone = "UTC"),
     difftime = function(v) structure(v, class = "difftime", units = "secs"),
     factor = function(v) factor(v),
-    ts = function(v) stats::ts(v),
-    AsIs = function(v) I(v)
+    ts = function(v) stats::ts(v)
   )
   pkg <- function(p, f) if (requireNamespace(p, quietly = TRUE)) f
   c(out, Filter(Negate(is.null), list(
     integer64 = pkg("bit64", function(v) getExportedValue("bit64", "as.integer64")(v)),
     units = pkg("units", function(v) getExportedValue("units", "as_units")(v, "m")),
-    haven_labelled = pkg("haven", function(v) {
-      getExportedValue("haven", "labelled")(as.double(v), c(low = 1))
-    }),
     data.table = pkg("data.table", function(v) {
       getExportedValue("data.table", "data.table")(v = v)
     }),
     tibble = pkg("tibble", function(v) getExportedValue("tibble", "tibble")(v = v))
   )))
 }
+
+test_that("a label on a number is not another kind of number", {
+  lab <- list(
+    AsIs = function(v) I(v),
+    Hmisc = function(v) structure(v, class = c("labelled", "numeric"), label = "n"),
+    haven = function(v) {
+      structure(v, class = c("haven_labelled", "vctrs_vctr", "double"),
+                labels = c(low = 1), label = "n")
+    }
+  )
+  if (requireNamespace("haven", quietly = TRUE)) {
+    lab$real <- function(v) {
+      getExportedValue("haven", "labelled")(as.double(v), c(low = 1))
+    }
+  }
+  for (nm in names(lab)) {
+    mk <- lab[[nm]]
+    h <- dplaphist(mk(c(10, 20)), epsilon = 1)
+    expect_null(oldClass(h), info = nm)
+    expect_length(h, 2L)
+    expect_null(oldClass(dplapcnt(mk(10), epsilon = 1)), info = nm)
+    expect_true(is.finite(dpgmean(mk(c(1, 2, 3)), 0, 10, epsilon = mk(1))), info = nm)
+    d <- data.frame(g = c("a", "a", "b"))
+    d$q <- mk(c(1, 1, 2))
+    expect_identical(kanonvrf(d, "q", k = mk(2))$n_classes, 2L, info = nm)
+  }
+  # text under a label is still not a number
+  expect_error(dplaphist(I(c("a", "b")), epsilon = 1), "plain numbers")
+})
 
 test_that("each mechanism gives plain numbers or refuses a class by name", {
   msg <- "must be plain numbers, not an object of class"

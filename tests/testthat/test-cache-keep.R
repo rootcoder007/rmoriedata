@@ -146,9 +146,12 @@ test_that("a file opened once is read in ranges checked against what was hashed"
     expect_identical(.Call(C_rmd_vread, v$handle, s, n), want)
   }
   # renamed over: the open file is still the one that was hashed
+  # (Windows refuses to rename over a file that is open: the file stays as it was)
   tmp <- withr::local_tempfile()
   writeBin(rev(b), tmp)
-  file.rename(tmp, f)
+  over <- suppressWarnings(file.rename(tmp, f))
+  expect_identical(over, .Platform$OS.type != "windows")
+  now <- if (over) rev(b) else b
   expect_identical(.Call(C_rmd_vread, v$handle, 7e4, 10), b[70001:70010])
   .rmd_vclose(v)
   expect_error(.Call(C_rmd_vread, v$handle, 0, 1), "no longer open")
@@ -158,7 +161,7 @@ test_that("a file opened once is read in ranges checked against what was hashed"
   seek(con, 70000, rw = "write")
   writeBin(as.raw(1:3), con)
   close(con)
-  expect_identical(.Call(C_rmd_vread, v$handle, 0, 100), rev(b)[1:100])
+  expect_identical(.Call(C_rmd_vread, v$handle, 0, 100), now[1:100])
   expect_error(.Call(C_rmd_vread, v$handle, 66000, 10), "changed while it was read")
   .rmd_vclose(v)
   # an empty file, and what is not a regular file
@@ -279,8 +282,10 @@ test_that("every key has a cache file of its own, also where case is ignored", {
   names <- basename(vapply(keys, .rmd_host_file, ""))
   expect_identical(anyDuplicated(.rmd_lower(names)), 0L)
   expect_false(any(grepl("[A-Z]", names)))
-  expect_true(all(dirname(vapply(keys, .rmd_host_file, "")) ==
-                    file.path(.rmd_data_cache_dir(), "tables")))
+  # the same folder, however the system writes its separators
+  where <- function(d) normalizePath(d, winslash = "/", mustWork = TRUE)
+  expect_identical(unique(where(dirname(vapply(keys, .rmd_host_file, "")))),
+                   where(file.path(.rmd_data_cache_dir(), "tables")))
   # the name decodes to the key: "__" is "_", "_-" is "/", "_x" is "X"
   dec <- function(n) {
     n <- sub("\\.csv\\.gz$", "", n)

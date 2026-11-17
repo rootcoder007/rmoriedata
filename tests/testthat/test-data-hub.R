@@ -86,7 +86,7 @@ test_that("a damaged hosted table (a short row) is refused and its copy removed"
   dest <- rmoriedata:::.rmd_host_file("chicago_crime/incidents")
   # listed without a digest: used with a warning (once per session), then refused
   expect_warning(expect_error(hostload("chicago_crime/incidents"),
-                              "did not parse.*damaged copy was removed"),
+                              "did not parse.*damaged copy was removed, try again$"),
                  "without a SHA-256")
   expect_false(file.exists(dest))
 })

@@ -61,7 +61,8 @@ test_that("the full Chicago cache and a hosted table are read once", {
       if (how == "rename") {
         tmp <- tempfile(tmpdir = dir)
         writeBin(junk, tmp)
-        file.rename(tmp, path)
+        # refused on Windows while the file is open: the reader keeps the one hashed
+        suppressWarnings(file.rename(tmp, path))
       } else {
         writeBin(junk, path)
       }

@@ -9,6 +9,9 @@
 * The text of a `.gz` file (a hosted table, the data store's gzip files, a sidecar, the manifest) is exactly its gzip members, every one inflated by the package's own routine: NUL bytes after the last member are ignored, as `gzip -d` ignores them, and any other bytes after it are refused, naming them. Bytes after the gzip data were read as text, so zero padding made a valid table "damaged" and deleted it, and text after it became a row.
 
 * `dplaphist()`, `dplapcnt()`, `dpgmean()`, `dpbudget()`, `cellsupp()`, `kanonvrf()` and `ldivvrf()` take plain numbers, or a table of counts, and refuse any other class by name: `dplaphist()` of `bit64::integer64` counts returned the noised counts as doubles still classed `integer64`, which printed as about 4.6e18, silently. Results keep names, dimensions and labels, never the input's class (a table's noised counts are a plain array).
+* A number with a label on it (`haven::labelled()`, `Hmisc::label()`, `I()`) is taken as its numbers by those functions: survey data read from SPSS or Stata works as it is.
+* A hosted table whose cached copy was damaged and removed is said to have been removed: the message ended by saying the copy was left in place.
+* A Parquet file whose page headers are longer than 1 KiB (long text statistics) is read in time proportional to its size; each page had the whole column chunk read again.
 
 * `mdsums()` lists files, and `mdverify()` the files the manifest does not list, in byte order of their paths, the same in every locale: the order followed the collation, so the record differed between `LC_ALL=C` and `en_US.UTF-8`.
 

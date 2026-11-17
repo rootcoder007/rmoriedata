@@ -335,6 +335,13 @@ print.dpbudget <- function(x, ...) {
 # double's value. With `tables`, a table (table(), xtabs()) is taken as its counts and
 # their labels.
 .morie_plain <- function(x, what, tables = FALSE) {
+  # a label on a number (haven and Hmisc for survey data, I()) is not another kind of
+  # number: the numbers under it are taken
+  lab <- c("haven_labelled", "vctrs_vctr", "labelled", "AsIs", "double", "integer",
+           "numeric")
+  if (length(oldClass(x)) && all(oldClass(x) %in% lab) && is.numeric(unclass(x))) {
+    x <- unclass(x)
+  }
   cl <- oldClass(x)
   if (length(cl) && !(tables && all(cl %in% c("table", "xtabs")))) {
     stop(sprintf(paste0("`%s` must be plain numbers, not an object of class %s; ",

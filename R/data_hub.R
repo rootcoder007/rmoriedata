@@ -831,19 +831,21 @@ hostload <- function(key, refresh = FALSE) {
 # error (memory, bytes after the gzip data, a session option) proves nothing about the
 # copy, which stays.
 .rmd_parse_hosted <- function(key, b, dest) {
-  tryCatch(
-    .rmd_read_hosted(b),
-    rmd_damage = function(e) {
-      .rmd_drop(dest, .Call(C_morie_core_sha256, b))
-      stop(sprintf(paste0("the table %s did not parse (%s); ",
-                          "the damaged copy was removed, try again"),
-                   key, conditionMessage(e)), call. = FALSE)
-    },
-    error = function(e) {
-      stop(sprintf("the table %s could not be read (%s); the copy was left in place",
-                   key, conditionMessage(e)), call. = FALSE)
-    }
-  )
+  # one handler, not two: a second one would catch the first one's stop()
+  why <- NULL
+  d <- tryCatch(.rmd_read_hosted(b), error = function(e) {
+    why <<- e
+    NULL
+  })
+  if (is.null(why)) return(d)
+  if (inherits(why, "rmd_damage")) {
+    .rmd_drop(dest, .Call(C_morie_core_sha256, b))
+    stop(sprintf(paste0("the table %s did not parse (%s); ",
+                        "the damaged copy was removed, try again"),
+                 key, conditionMessage(why)), call. = FALSE)
+  }
+  stop(sprintf("the table %s could not be read (%s); the copy was left in place",
+               key, conditionMessage(why)), call. = FALSE)
 }
 
 # The file a hosted table is cached in, one per key and the same on a file system that

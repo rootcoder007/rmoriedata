@@ -955,13 +955,22 @@
 
 # The header of the page at `pos` (counted from 1) of the column chunk of `clen` bytes
 # at `start`, and the position after it: list(head, pos). It is parsed from the first
-# KiB there, which holds the headers writers write, so a chunk is not read whole to
-# find its pages. A header that does not parse from that is parsed from the whole
-# chunk, as it always was, so a damaged one is refused in the same words.
+# KiB there, which holds the headers most writers write, and from eight times as far
+# each time it does not, so a chunk is not read whole for each of its pages. A header
+# that parses from none of that is parsed from the whole chunk, as it always was, so
+# a damaged one is refused in the same words.
 .pq_page_head <- function(src, start, clen, pos, cname) {
-  r <- .pq_reader(.pq_at(src, start + pos - 1, min(1024, clen - pos + 1)))
-  head <- tryCatch(.pq_struct(r), error = function(e) NULL)
-  if (!is.null(head)) return(list(head = head, pos = pos + r$pos - 1L))
+  left <- clen - pos + 1
+  w <- 1024
+  repeat {
+    n <- min(w, left)
+    r <- .pq_reader(.pq_at(src, start + pos - 1, n))
+    head <- tryCatch(.pq_struct(r), error = function(e) NULL)
+    if (!is.null(head)) return(list(head = head, pos = pos + r$pos - 1L))
+    # eight times as far each time, so a chunk of long headers is read about once
+    if (n >= left) break
+    w <- w * 8
+  }
   r <- .pq_reader(.pq_chunk_blob(src, start, clen, cname), pos)
   list(head = .pq_struct(r), pos = r$pos)
 }
