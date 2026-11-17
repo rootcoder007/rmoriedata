@@ -59,3 +59,9 @@ double, or whose precision and scale the format does not allow for its
 type, is refused. A UUID is text (`"8-4-4-4-12"` lower-case
 hexadecimal), and a FLOAT16 a double. Other fixed-length bytes (an
 INTERVAL, or bytes with no logical type) are refused by name.
+
+An INT32 column is an integer column, unless it holds -2147483648
+(-2^31), which is R's `NA_integer_` and no R integer: then the whole
+column is a double. An unsigned 32-bit column and every 64-bit one are
+doubles: exact below 2^53, otherwise the nearest double, with a warning
+that they are rounded.

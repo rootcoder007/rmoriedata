@@ -3,6 +3,36 @@
 ## rmoriedata 0.4.3
 
 - [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  reads every 32-bit word of a whole number, 0x80000000 included: that
+  word read as `NA`, without a word, so an INT64 of 2^31, -2^31 or
+  2^31 + k \* 2^32, one from -2^63 to -2^63 + 2^32 - 1, a UINT_32 of
+  2^31, and any timestamp, INT64 DECIMAL or INT96 time holding one,
+  plain or from a dictionary, came back `NA`. An INT32 column holding
+  -2^31, which no R integer holds, is now a double column.
+  [`morie_write_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_write_parquet.md)
+  writes such values too: one second in every 2^29 (2012-07-13 11:01:20
+  UTC among them) was written with a base-R warning and read back as
+  `NA`. A footer or level length of that word is read as its value, not
+  as `NA`.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  rounds a UINT_64 of 2^63 or more once, to the nearest double, with the
+  warning other 64-bit whole numbers past 2^53 give: it was rounded as a
+  signed number and again when moved up by 2^64, and could be one unit
+  in the last place off.
+
+- [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+  [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md),
+  [`mddict()`](https://rootcoder007.github.io/rmoriedata/reference/mddict.md)
+  and the other readers of the data store check a file again after
+  `options(rmoriedata.store = )` names another store: a file verified in
+  one store, the catalog, the schema and a table loaded from it were
+  served from the cache for the other, so a changed file there was
+  returned unchecked. The session’s record of a hosted manifest that
+  could not be refreshed, and of a table listed without a digest, are
+  kept per cache folder.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
   reads a DECIMAL kept as fixed-length bytes correctly at every length:
   a length of 200 holding 0 and 1 read both as `NaN`, without a word.
   The unscaled whole number is read as two’s complement of its stated
