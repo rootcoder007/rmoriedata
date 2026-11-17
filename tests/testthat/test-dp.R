@@ -437,7 +437,6 @@ test_that("a label on a number is not another kind of number", {
                 labels = c(low = 1), label = "n")
     }
   )
-  }
   for (nm in names(lab)) {
     mk <- lab[[nm]]
     h <- dplaphist(mk(c(10, 20)), epsilon = 1)
