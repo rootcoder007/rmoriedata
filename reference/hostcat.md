@@ -11,11 +11,14 @@ manifest is kept for a day); tables whose source terms do not allow
 redistribution (ICPSR studies, among them the NCVS 38604 extract, and
 any table the manifest marks restricted) are not served: they are left
 out, with a message counting them, and `hostload()` refuses them before
-any request. `hostload()` checks each table against the SHA-256 the
-manifest lists for it (`sha256_gz`, `sha256` or `sha`) and refuses a
-file that does not match; a table listed without any digest is used with
-a warning, once per session. `hostload("db/table")` returns one table,
-cached under the package cache directory
+any request. A table is served only when its `access` mark, if any, is
+`"open"` or `"public"` and its `restricted` mark, if any, is `false`; a
+mark of any other value or shape counts as restricted. `hostload()`
+checks each table against the SHA-256 the manifest lists for it
+(`sha256_gz`, `sha256` or `sha`) and refuses a file that does not match;
+a table listed without any digest is used with a warning, once per
+session. `hostload("db/table")` returns one table, cached under the
+package cache directory
 ([`tempdir()`](https://rdrr.io/r/base/tempfile.html) unless
 `options(rmoriedata.cache_dir = )` names a persistent one).
 

@@ -10,7 +10,10 @@ description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
 among them the NCVS 38604 extract, and any table the manifest marks
 restricted) are not served: they are left out, with a message counting
-them, and hostload() refuses them before any request.
+them, and hostload() refuses them before any request. A table is
+served only when its access mark, if any, is "open" or
+"public" and its restricted mark, if any, is false;
+a mark of any other value or shape counts as restricted.
 hostload() checks each table against the SHA-256 the manifest
 lists for it (sha256_gz, sha256 or sha) and refuses
 a file that does not match; a table listed without any digest is used
@@ -28,7 +31,10 @@ description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
 among them the NCVS 38604 extract, and any table the manifest marks
 restricted) are not served: they are left out, with a message counting
-them, and hostload() refuses them before any request.
+them, and hostload() refuses them before any request. A table is
+served only when its access mark, if any, is "open" or
+"public" and its restricted mark, if any, is false;
+a mark of any other value or shape counts as restricted.
 hostload() checks each table against the SHA-256 the manifest
 lists for it (sha256_gz, sha256 or sha) and refuses
 a file that does not match; a table listed without any digest is used
@@ -82,7 +88,10 @@ description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
 among them the NCVS 38604 extract, and any table the manifest marks
 restricted) are not served: they are left out, with a message counting
-them, and <code>hostload()</code> refuses them before any request.
+them, and <code>hostload()</code> refuses them before any request. A table is
+served only when its <code>access</code> mark, if any, is <code>"open"</code> or
+<code>"public"</code> and its <code>restricted</code> mark, if any, is <code>false</code>;
+a mark of any other value or shape counts as restricted.
 <code>hostload()</code> checks each table against the SHA-256 the manifest
 lists for it (<code>sha256_gz</code>, <code>sha256</code> or <code>sha</code>) and refuses
 a file that does not match; a table listed without any digest is used

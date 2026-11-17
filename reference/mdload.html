@@ -5,13 +5,19 @@ every platform regardless of how read.csv() would have guessed.
 Every table also ships as a Parquet file holding the same typed
 frame; format = &quot;parquet&quot; reads that copy instead. The first load
 of a table is cached for the session; later calls return the cached
-copy unless refresh = TRUE."><meta property="og:description" content="Reads the table's CSV and applies the column names and classes from
+copy unless refresh = TRUE. The cached copy is what the file held when
+it was checked; when mdverify() finds the file changed since, the
+cached copy is dropped, and the next load reads the file again and
+refuses it."><meta property="og:description" content="Reads the table's CSV and applies the column names and classes from
 the bundled schema, so the result is the same typed data frame on
 every platform regardless of how read.csv() would have guessed.
 Every table also ships as a Parquet file holding the same typed
 frame; format = &quot;parquet&quot; reads that copy instead. The first load
 of a table is cached for the session; later calls return the cached
-copy unless refresh = TRUE."><meta property="og:image" content="https://rootcoder007.github.io/rmoriedata/logo.png"><meta name="google-site-verification" content="8ORzeHrfoPIOrujfV-km-kXCi9HD8dvL5GYH-GqwjYI"></head><body>
+copy unless refresh = TRUE. The cached copy is what the file held when
+it was checked; when mdverify() finds the file changed since, the
+cached copy is dropped, and the next load reads the file again and
+refuses it."><meta property="og:image" content="https://rootcoder007.github.io/rmoriedata/logo.png"><meta name="google-site-verification" content="8ORzeHrfoPIOrujfV-km-kXCi9HD8dvL5GYH-GqwjYI"></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
 
 
@@ -53,7 +59,10 @@ every platform regardless of how <code><a href="https://rdrr.io/r/utils/read.tab
 Every table also ships as a Parquet file holding the same typed
 frame; <code>format = "parquet"</code> reads that copy instead. The first load
 of a table is cached for the session; later calls return the cached
-copy unless <code>refresh = TRUE</code>.</p>
+copy unless <code>refresh = TRUE</code>. The cached copy is what the file held when
+it was checked; when <code><a href="mdverify.html">mdverify()</a></code> finds the file changed since, the
+cached copy is dropped, and the next load reads the file again and
+refuses it.</p>
     </div>
 
     <div class="section level2">

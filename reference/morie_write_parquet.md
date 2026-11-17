@@ -34,11 +34,16 @@ morie_write_parquet(df, path, compression = "gzip")
 
 ## Details
 
-A `Date` column is written as a Parquet DATE (whole days) and a
-`POSIXct` column as a Parquet TIMESTAMP (whole milliseconds since
-1970-01-01 UTC), each taken down to the whole day or millisecond as R
-prints them, before 1970 too: a fractional `Date` of -0.5 (printed
-1969-12-31) is written as 1969-12-31. The format stores the instant but
+A `Date` column is written as a Parquet DATE (whole days), taken down to
+the whole day as R prints it, before 1970 too: a fractional `Date` of
+-0.5 (printed 1969-12-31) is written as 1969-12-31. A `POSIXct` column
+is written as a Parquet TIMESTAMP of whole microseconds since 1970-01-01
+UTC, each time the nearest microsecond to it (ties to even), up to 2^63
+microseconds (about 292,000 years) either side of 1970. A time read from
+a file of milliseconds or microseconds within 2^33 seconds (272 years)
+of 1970, where a double still resolves a microsecond, is written back as
+the count it was read from, so it reads back identical; finer parts of a
+second are rounded to the microsecond. The format stores the instant but
 not a time zone, so it reads back as the same instant in UTC: a column
 in `America/Chicago` comes back with `tz = "UTC"`. Set the zone again
 with `attr(x, "tzone") <- "America/Chicago"`, or keep an ISO 8601 text

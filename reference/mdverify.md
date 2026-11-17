@@ -3,7 +3,12 @@
 Every file rmoriedata ships is listed with its SHA-256 in a manifest,
 and the manifest is signed with an XMSS (RFC 8391, SHA-256) key whose
 public half ships with the package. Loading a table checks its file
-against the manifest; this function checks all of them at once.
+against the manifest; this function checks all of them at once. What the
+session has cached from a file found changed or missing (a table loaded
+by
+[`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md),
+the catalog, the schema) is dropped, so the next load reads the file
+again and refuses it.
 
 ## Usage
 

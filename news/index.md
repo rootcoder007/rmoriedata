@@ -3,6 +3,64 @@
 ## rmoriedata 0.4.3
 
 - [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  decides once for a whole INT32 column, from the values in its rows,
+  whether it is an integer column: an unsigned 8- or 16-bit column
+  marked by its logical type, as arrow writes `uint8` and `uint16`, came
+  back as doubles while the same column marked `UINT_8` came back as
+  integers, and a dictionary entry of -2^31 that no row used made the
+  column doubles. Only a value of -2^31 or an unsigned 32-bit type now
+  makes it a double column, however the type is marked.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  keeps the file’s column names exactly: a column named `""` came back
+  named after a deparse of its values (`"20:21"`), which could repeat
+  another column’s name, and a name used twice came back changed by
+  [`make.unique()`](https://rdrr.io/r/base/make.unique.html) with a
+  warning. A file with no columns reads as its rows and no columns.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  reads a GZIP page made of more than one gzip member, as RFC 1952
+  allows, inflating each in turn within the page’s stated size, and
+  refuses a page with bytes after its last member that are not a member:
+  such a page was refused as damaged, while one member followed by other
+  bytes was accepted.
+
+- [`mdpath()`](https://rootcoder007.github.io/rmoriedata/reference/mdpath.md)
+  and the other readers of the data store check a file against the
+  signed manifest every time they read it: a file verified once in a
+  session was returned unchecked after it changed, even after
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  had reported it.
+  [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
+  now also drops what the session cached from a file it finds changed,
+  so the next
+  [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+  refuses it.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  reads a TIMESTAMP or TIME of 64 bits and an INT96 time as the double
+  nearest to its exact number of seconds: a time in nanoseconds was
+  rounded to a double count and rounded again when divided, so about a
+  quarter of present-day times were one unit in the last place off.
+
+- [`hostcat()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  and
+  [`hostload()`](https://rootcoder007.github.io/rmoriedata/reference/hostcat.md)
+  serve a table only when the manifest marks it open in a form the
+  package knows: a table marked `"access": ["closed"]`,
+  `"restricted": "true"` or in any other unknown form was listed and
+  would have been requested. A key listed again in an entry that is not
+  served is not served, and the same key listed with different entries
+  is a damaged manifest.
+
+- [`morie_write_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_write_parquet.md)
+  writes a `POSIXct` as whole microseconds, the nearest to each time,
+  where it wrote whole milliseconds; and `chiload(full = TRUE)` returns,
+  on the call that writes its cache, what the cache holds: the first
+  call kept the mirror’s sub-millisecond times and every later call
+  returned them cut to the millisecond.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
   reads every 32-bit word of a whole number, 0x80000000 included: that
   word read as `NA`, without a word, so an INT64 of 2^31, -2^31 or
   2^31 + k \* 2^32, one from -2^63 to -2^63 + 2^32 - 1, a UINT_32 of
