@@ -32,5 +32,14 @@ unmarked, as R keeps it). A Parquet string is UTF-8 by definition, and
 is not valid UTF-8, or that holds a NUL byte, is refused with a
 \verb{parquet:} error naming the column: returned, it would fail later in
 \code{nchar()} or \code{toupper()}.
+
+Three options bound what a file can make the reader do, each checked
+from the file's footer and page headers before anything is allocated or
+inflated: \code{rmoriedata.parquet_max_rows} (default 5e7 rows),
+\code{rmoriedata.parquet_max_page_bytes} (default 2^30 bytes a page) and
+\code{rmoriedata.parquet_max_text_bytes} (default 2^32 bytes, 4 GiB). The
+last is the most text the compressed pages of one file may inflate to,
+summed over the columns read; pages stored uncompressed are not counted.
+A file past a bound is refused with an error naming the option to raise.
 }
 \keyword{internal}

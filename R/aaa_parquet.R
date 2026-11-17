@@ -709,7 +709,11 @@
        "PLAIN and RLE_DICTIONARY", call. = FALSE)
 }
 
-.pq_column_values <- function(con, cm, num_rows, maxdef, typelen, stype, fsize, cname) {
+# A column chunk's pages, found from their headers before any is inflated: for
+# each page its header, where its stored bytes start, and its sizes. Everything
+# a header alone can show to be wrong is refused here, so the whole file's text
+# can be weighed (.pq_text_budget()) before any of it is inflated.
+.pq_chunk_pages <- function(con, cm, num_rows, stype, fsize, cname) {
   ptype <- as.integer(.pq_f(cm, 1))
   if (!identical(ptype, as.integer(stype))) {
     stop("parquet: column ", cname, " is declared type ", stype,
@@ -736,17 +740,11 @@
     stop("parquet: column ", cname, " chunk (", clen, " bytes at ", start,
          ") lies outside the ", fsize, "-byte file", call. = FALSE)
   }
-  seek(con, start)
-  blob <- readBin(con, "raw", clen)
-  if (length(blob) != clen) {
-    stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
-  }
+  blob <- .pq_chunk_blob(con, start, clen, cname)
 
   pos <- 1L
-  dictionary <- NULL
-  pages <- list()
+  heads <- list()
   got <- 0
-
   while (got < total_values && pos <= length(blob)) {
     r <- .pq_reader(blob, pos)
     head <- .pq_struct(r)
@@ -758,6 +756,7 @@
            " (cap ", .pq_max_page(), ")", call. = FALSE)
     }
     raw_page <- .pq_slice(blob, pos, csize, paste("a page of column", cname))
+    at <- pos
     pos <- pos + csize
     crc <- .pq_f(head, 4)
     if (!is.null(crc)) {
@@ -774,8 +773,78 @@
       stop("data page v2 not implemented (store is v1)", call. = FALSE)
     }
     # a page the reader does not use (an index page, a type it does not know) is
-    # stepped over as it is: it was inflated first, up to the page cap each time
+    # stepped over as it is, never inflated
     if (ptype_page != .pqPDict && ptype_page != .pqPData) next
+    if (ptype_page == .pqPData) {
+      n <- as.integer(.pq_f(.pq_f(head, 5), 1))
+      if (length(n) != 1L || is.na(n) || n < 0 || got + n > total_values) {
+        stop("parquet: page of column ", cname, " claims ", n, " values with ",
+             total_values - got, " left in the chunk", call. = FALSE)
+      }
+      got <- got + n
+    }
+    heads[[length(heads) + 1L]] <- list(head = head, at = at, usize = usize,
+                                        csize = csize)
+  }
+  list(ptype = ptype, codec = codec, total_values = total_values, start = start,
+       clen = clen, pages = heads)
+}
+
+.pq_chunk_blob <- function(con, start, clen, cname) {
+  seek(con, start)
+  blob <- readBin(con, "raw", clen)
+  if (length(blob) != clen) {
+    stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
+  }
+  blob
+}
+
+# The most bytes of text the reader inflates from one file: the dictionary and
+# data pages of its BYTE_ARRAY columns, summed from their headers before any
+# page is inflated. A page of text has no bound from its count, so a file of
+# under 1 MB whose 160 zstd pages each said 64 MiB (10.7 GB of one string,
+# repeated) was inflated in full, which took about a minute. Pages stored
+# uncompressed are not counted: the file holds them as they are. The default,
+# 4 GiB, is 2.7 times the text of the 8-million-row cache of
+# chiload("complaints", full = TRUE) (1.6 GB) and 29 times the most in any of
+# 335 Parquet files of public data (146 MB, in 5.3 million rows); a crafted
+# file just under it took 27 to 31 seconds to read. Text per row runs from
+# 27 bytes to 74 KB in those files, so the budget is not scaled by the row
+# count.
+.pq_max_text <- function() .pq_cap("rmoriedata.parquet_max_text_bytes", 2^32)
+
+# Refuse a file whose compressed text says it inflates to more than
+# .pq_max_text(). `inflated` and `stored` are byte totals per column (doubles:
+# a file's total can pass 2^31).
+.pq_text_budget <- function(inflated, stored) {
+  most <- .pq_max_text()
+  total <- sum(inflated)
+  if (total <= most) return(invisible(TRUE))
+  k <- which.max(inflated)
+  stop("parquet: the compressed text pages of this file say they inflate to ",
+       format(total, scientific = FALSE), " bytes in all, ",
+       format(inflated[[k]], scientific = FALSE), " of them in column ",
+       names(inflated)[k], " from ", format(stored[[k]], scientific = FALSE),
+       " stored bytes; text is inflated up to ",
+       format(most, scientific = FALSE), " bytes a file (option ",
+       "rmoriedata.parquet_max_text_bytes)", call. = FALSE)
+}
+
+.pq_column_values <- function(con, ch, maxdef, typelen, cname) {
+  ptype <- ch$ptype
+  codec <- ch$codec
+  total_values <- ch$total_values
+  blob <- .pq_chunk_blob(con, ch$start, ch$clen, cname)
+  dictionary <- NULL
+  out <- NULL
+  got <- 0
+
+  for (pg in ch$pages) {
+    head <- pg$head
+    usize <- pg$usize
+    csize <- pg$csize
+    raw_page <- .pq_slice(blob, pg$at, csize, paste("a page of column", cname))
+    ptype_page <- as.integer(.pq_f(head, 1))
     if (ptype_page == .pqPDict) {
       # a chunk has one dictionary page (the format's rule); a second one would
       # be inflated only to replace the first
@@ -792,10 +861,6 @@
     } else {
       dph <- .pq_f(head, 5)
       n <- as.integer(.pq_f(dph, 1))
-      if (length(n) != 1L || is.na(n) || n < 0 || got + n > total_values) {
-        stop("parquet: page of column ", cname, " claims ", n, " values with ",
-             total_values - got, " left in the chunk", call. = FALSE)
-      }
       encoding <- as.integer(.pq_f(dph, 2))
       most <- .pq_data_most(ptype, n, typelen, maxdef, encoding)
     }
@@ -844,27 +909,28 @@
       next
     }
 
+    # the definition levels (width 1: 0 missing, 1 present) lie in bytes
+    # dpos to dend of the page; dpos 0 is a column without them
     p <- 1L
-
+    dpos <- dend <- 0
     if (maxdef > 0L) {
-      width <- .pq_bit_width(maxdef)
-      if (as.integer(.pq_f(dph, 3)) == .pqERle) {
-        ln <- .pq_u32(.pq_slice(page, p, 4L, "a definition-level length"))
-        p <- p + 4L
-        .pq_slice(page, p, ln, "definition levels")
-        rr <- .pq_read_rle(page, p, width, n, p + ln - 1L)
-        defs <- rr$values
-        p <- p + ln
-      } else {
+      if (as.integer(.pq_f(dph, 3)) != .pqERle) {
         stop("BIT_PACKED definition levels not implemented",
           call. = FALSE
         )
       }
-    } else {
-      defs <- rep(1L, n)
+      ln <- .pq_u32(.pq_slice(page, p, 4L, "a definition-level length"))
+      p <- p + 4L
+      .pq_slice(page, p, ln, "definition levels")
+      dpos <- p
+      dend <- p + ln - 1
+      p <- p + ln
     }
 
-    present <- sum(defs != 0L)
+    # src/pqplain.c builds the rows at their final length in one pass, with NA
+    # (NULL in a list) for a missing value: expanding the levels and the
+    # dictionary indices into vectors first, and copying the column at each
+    # step, cost four times the result
     if (encoding == .pqEPlainDict || encoding == .pqERleDict) {
       if (is.null(dictionary)) {
         stop("dictionary-encoded page with no dictionary page",
@@ -872,14 +938,18 @@
         )
       }
       width <- as.integer(.pq_slice(page, p, 1L, "a dictionary bit width"))
-      p <- p + 1L
-      idx <- .pq_read_rle(page, p, width, present, length(page))$values
-      if (present && (min(idx) < 0L || max(idx) >= length(dictionary))) {
-        stop("parquet: dictionary index out of range in column ", cname, call. = FALSE)
+      if (width > 32L) {
+        stop("parquet: RLE bit width ", width, " above 32", call. = FALSE)
       }
-      vals <- dictionary[idx + 1L]
+      col <- .Call(C_rmd_pq_rows, page, dpos, dend, p + 1, width, dictionary,
+                   n, cname)
     } else {
       # PLAIN: .pq_data_most() refused every other encoding before inflating
+      present <- if (maxdef > 0L) {
+        sum(.pq_read_rle(page, dpos, 1L, n, dend)$values)
+      } else {
+        n
+      }
       dec <- .pq_decode_plain(page, p, ptype, present, typelen, cname)
       # PLAIN values fill the page exactly: bytes left over (or a shortfall, caught above)
       # mean the declared type is not the type the page was written with
@@ -887,23 +957,31 @@
         stop("parquet: page of column ", cname, " holds ", length(page) - dec$pos + 1L,
              " bytes beyond its ", present, " values of the declared type", call. = FALSE)
       }
-      vals <- dec$values
+      col <- if (maxdef > 0L) {
+        .Call(C_rmd_pq_rows, page, dpos, dend, 0, 0L, dec$values, n, cname)
+      } else {
+        dec$values
+      }
     }
 
-    # Splice the present values back into their definition-level slots: NA (NULL in
-    # a list) where a value is absent.
-    col <- if (is.list(vals)) vector("list", n) else rep(vals[NA_integer_], n)
-    col[defs != 0L] <- vals
-    pages[[length(pages) + 1L]] <- col
+    # one page holds the chunk (this package's writer), or each page goes into
+    # a vector made once at the chunk's length: joining a list of pages at the
+    # end held every value twice
+    if (n == total_values) {
+      out <- col
+    } else {
+      if (is.null(out)) out <- vector(typeof(col), total_values)
+      out[got + seq_len(n)] <- col
+    }
     got <- got + n
   }
 
   # exact, never padded or truncated: a count the data does not bear out is an error
-  if (got != num_rows) {
+  if (got != total_values) {
     stop("parquet: column ", cname, " decoded ", got, " values; its row group has ",
-         num_rows, call. = FALSE)
+         total_values, call. = FALSE)
   }
-  do.call(c, pages)
+  out
 }
 
 #' Read a Parquet file
@@ -924,6 +1002,15 @@
 #'   is not valid UTF-8, or that holds a NUL byte, is refused with a
 #'   `parquet:` error naming the column: returned, it would fail later in
 #'   `nchar()` or `toupper()`.
+#'
+#'   Three options bound what a file can make the reader do, each checked
+#'   from the file's footer and page headers before anything is allocated or
+#'   inflated: `rmoriedata.parquet_max_rows` (default 5e7 rows),
+#'   `rmoriedata.parquet_max_page_bytes` (default 2^30 bytes a page) and
+#'   `rmoriedata.parquet_max_text_bytes` (default 2^32 bytes, 4 GiB). The
+#'   last is the most text the compressed pages of one file may inflate to,
+#'   summed over the columns read; pages stored uncompressed are not counted.
+#'   A file past a bound is refused with an error naming the option to raise.
 #' @return A `data.frame`. Every error the reader raises, a missing or
 #'   damaged file included, starts with `parquet:`; no base-R warning escapes
 #'   it (a value a damaged file makes R warn about is an error instead).
@@ -1030,11 +1117,13 @@ morie_read_parquet <- function(path, columns = NULL) {
     wanted <- match(columns, nm)
   }
 
-  out <- list()
-  out_names <- character()
-  for (i in wanted) {
+  # every chunk's page headers first, so that the file's text is weighed
+  # before any page of it is inflated
+  chs <- vector("list", length(wanted))
+  inflated <- stored <- numeric(length(wanted))
+  for (w in seq_along(wanted)) {
+    i <- wanted[w]
     leaf <- leaves[[i]]
-    col <- NULL
     isdec <- .pq_is_decimal(leaf$converted, leaf$logical)
     # bytes that are not text: read as a DECIMAL when marked one and of fixed
     # length, otherwise refused by name rather than as damage
@@ -1048,6 +1137,7 @@ morie_read_parquet <- function(path, columns = NULL) {
            "of varying length, which this reader does not read; name the ",
            "columns to read in `columns`", call. = FALSE)
     }
+    chs[[w]] <- list()
     for (rg in row_groups) {
       chunks <- .pq_f(rg, 1)
       if (length(chunks) != length(leaves)) {
@@ -1056,11 +1146,37 @@ morie_read_parquet <- function(path, columns = NULL) {
       }
       # a row group of no rows holds no pages (arrow writes one for an empty table)
       if (.pq_f(rg, 3) == 0) next
-      cm <- .pq_f(chunks[[i]], 3)
-      col <- c(col, .pq_column_values(
-        con, cm, .pq_f(rg, 3),
-        leaf$maxdef, leaf$typelen, leaf$type, size, leaf$name
-      ))
+      ch <- .pq_chunk_pages(con, .pq_f(chunks[[i]], 3), .pq_f(rg, 3),
+                            leaf$type, size, leaf$name)
+      chs[[w]][[length(chs[[w]]) + 1L]] <- ch
+      if (leaf$type == .pqByteArray && ch$codec != .pqCUncompressed) {
+        sizes <- vapply(ch$pages, function(p) as.numeric(c(p$usize, p$csize)),
+                        numeric(2))
+        inflated[w] <- inflated[w] + sum(sizes[1L, ])
+        stored[w] <- stored[w] + sum(sizes[2L, ])
+      }
+    }
+  }
+  names(inflated) <- vapply(leaves[wanted], `[[`, character(1), "name")
+  .pq_text_budget(inflated, stored)
+
+  out <- list()
+  out_names <- character()
+  for (w in seq_along(wanted)) {
+    leaf <- leaves[[wanted[w]]]
+    col <- NULL
+    at <- 0
+    for (ch in chs[[w]]) {
+      v <- .pq_column_values(con, ch, leaf$maxdef, leaf$typelen, leaf$name)
+      # one row group holds the column, or each goes into a vector made once at
+      # the file's row count (c() on each row group copied the column so far)
+      if (length(v) == num_rows) {
+        col <- v
+      } else {
+        if (is.null(col)) col <- vector(typeof(v), num_rows)
+        col[at + seq_along(v)] <- v
+      }
+      at <- at + length(v)
     }
     if (leaf$type == .pqByteArray) {
       v <- if (is.null(col)) character() else col

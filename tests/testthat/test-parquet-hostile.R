@@ -334,3 +334,195 @@ test_that("a text page is held to what its codec can inflate it to", {
     expect_identical(morie_read_parquet(f)$x, x$x)
   }
 })
+
+# A file of one BYTE_ARRAY column `x` of N rows from `pages`, each a list of n
+# (values), body (the page as it inflates), and optionally dict = TRUE, enc,
+# and usize (what the header claims, the body's size when NULL); `pay` maps a
+# body to its stored bytes for `codec`.
+pq_text_file <- function(pages, N, codec = .pqCGzip, optional = FALSE) {
+  pay <- switch(as.character(codec),
+                "2" = function(b) .Call(C_rmd_gzip_compress, b),
+                "1" = .pq_snappy_compress, function(b) b)
+  blob <- raw(0)
+  for (pg in pages) {
+    p <- if (is.null(pg$stored)) pay(pg$body) else pg$stored
+    type <- if (isTRUE(pg$dict)) .pqPDict else .pqPData
+    blob <- c(blob, pq_hdr(type, pg$usize %||% length(pg$body), length(p),
+                           n = pg$n, enc = pg$enc %||% .pqEPlain), p)
+  }
+  cmd <- .pq_writer()
+  l <- .pq_wi32(cmd, 1L, .pqByteArray, 0L)
+  l <- .pq_wlisti32(cmd, 2L, c(.pqERle, .pqEPlain, .pqERleDict), l)
+  l <- .pq_wlistbin(cmd, 3L, "x", l)
+  l <- .pq_wi32(cmd, 4L, codec, l)
+  l <- .pq_wi64(cmd, 5L, N, l)
+  l <- .pq_wi64(cmd, 6L, length(blob), l)
+  l <- .pq_wi64(cmd, 7L, length(blob), l)
+  l <- .pq_wi64(cmd, 9L, 4, l)
+  cc <- .pq_writer()
+  l <- .pq_wi64(cc, 2L, 4, 0L)
+  l <- .pq_wstruct(cc, 3L, .pq_wstop(cmd), l)
+  root <- .pq_writer()
+  l <- .pq_wbytes(root, 4L, "schema", 0L)
+  l <- .pq_wi32(root, 5L, 1L, l)
+  se <- .pq_writer()
+  l <- .pq_wi32(se, 1L, .pqByteArray, 0L)
+  l <- .pq_wi32(se, 3L, if (optional) .pqOptional else .pqRequired, l)
+  l <- .pq_wbytes(se, 4L, "x", l)
+  rg <- .pq_writer()
+  l <- .pq_wliststruct(rg, 1L, list(.pq_wstop(cc)), 0L)
+  l <- .pq_wi64(rg, 2L, length(blob), l)
+  l <- .pq_wi64(rg, 3L, N, l)
+  fm <- .pq_writer()
+  l <- .pq_wi32(fm, 1L, 1L, 0L)
+  l <- .pq_wliststruct(fm, 2L, list(.pq_wstop(root), .pq_wstop(se)), l)
+  l <- .pq_wi64(fm, 3L, N, l)
+  l <- .pq_wliststruct(fm, 4L, list(.pq_wstop(rg)), l)
+  ft <- .pq_wstop(fm)
+  f <- tempfile(fileext = ".parquet")
+  writeBin(c(charToRaw("PAR1"), blob, ft,
+             writeBin(length(ft), raw(), size = 4L, endian = "little"),
+             charToRaw("PAR1")), f)
+  f
+}
+
+# an RLE run of `n` copies of `v` at bit width `w` (w <= 8)
+pq_run <- function(n, v = 0L, w = 1L) {
+  h <- n * 2
+  out <- raw(0)
+  repeat {
+    if (h < 128) {
+      out <- c(out, as.raw(h))
+      break
+    }
+    out <- c(out, as.raw(h %% 128 + 128))
+    h <- h %/% 128
+  }
+  c(out, as.raw(v))
+}
+
+test_that("the text budget is summed in doubles and holds at its limit", {
+  expect_identical(.pq_max_text(), 2^32)
+  ok <- c(x = 2^31, y = 2^31)
+  expect_invisible(.pq_text_budget(ok, c(x = 1, y = 1)))
+  expect_error(.pq_text_budget(ok + c(0, 1), c(x = 10, y = 20)),
+               paste0("^parquet: the compressed text pages of this file say ",
+                      "they inflate to 4294967297 bytes in all, 2147483649 of ",
+                      "them in column y from 20 stored bytes; text is inflated ",
+                      "up to 4294967296 bytes a file \\(option ",
+                      "rmoriedata.parquet_max_text_bytes\\)$"))
+  withr::local_options(rmoriedata.parquet_max_text_bytes = 5)
+  expect_invisible(.pq_text_budget(c(x = 2, y = 3), c(1, 1)))
+  expect_error(.pq_text_budget(c(x = 2, y = 4), c(1, 1)), "6 bytes in all")
+  for (bad in list(NA, "10", 0, -1, c(1, 2), TRUE)) {
+    withr::local_options(rmoriedata.parquet_max_text_bytes = bad)
+    expect_error(.pq_max_text(), paste0("^parquet: option rmoriedata.parquet_",
+                                        "max_text_bytes must be one positive ",
+                                        "number$"))
+  }
+})
+
+test_that("compressed text past the budget is refused before any of it is inflated", {
+  # 160 pages of 16 bytes that are not gzip at all, each saying it inflates to
+  # 60 MiB (under the bound of a single page): 9.4 GiB in all, refused from
+  # the headers alone, so no page is inflated and the gzip error never comes
+  junk <- list(n = 1L, body = raw(0), stored = as.raw(rep(0xff, 16L)),
+               usize = 60 * 2^20)
+  f <- pq_text_file(rep(list(junk), 160L), 160)
+  t0 <- proc.time()[["elapsed"]]
+  expect_error(morie_read_parquet(f),
+               paste0("^parquet: the compressed text pages of this file say ",
+                      "they inflate to 10066329600 bytes in all, 10066329600 ",
+                      "of them in column x from 2560 stored bytes; text is ",
+                      "inflated up to 4294967296 bytes a file \\(option ",
+                      "rmoriedata.parquet_max_text_bytes\\)$"))
+  expect_lt(proc.time()[["elapsed"]] - t0, 5)
+  # the same file under a larger budget gets as far as inflating
+  withr::local_options(rmoriedata.parquet_max_text_bytes = 2^34)
+  expect_error(morie_read_parquet(f), "^parquet: ")
+  expect_error(morie_read_parquet(f), "gzip", fixed = TRUE)
+})
+
+test_that("the text budget reads a file at its limit and refuses one byte more", {
+  s <- strrep("abcdefgh", 128)
+  body <- rep(c(writeBin(1024L, raw(), size = 4L, endian = "little"),
+                charToRaw(s)), 1000L)
+  pg <- list(n = 1000L, body = body)
+  each <- length(body)
+  for (codec in c(.pqCGzip, .pqCSnappy)) {
+    f <- pq_text_file(rep(list(pg), 4L), 4000, codec = codec)
+    withr::local_options(rmoriedata.parquet_max_text_bytes = 4 * each)
+    expect_identical(morie_read_parquet(f)$x, rep(s, 4000))
+    withr::local_options(rmoriedata.parquet_max_text_bytes = 4 * each - 1)
+    expect_error(morie_read_parquet(f), paste0("inflate to ", 4 * each,
+                                               " bytes in all"))
+  }
+  # pages stored as they are cost what the file holds, and are not counted
+  f <- pq_text_file(rep(list(pg), 4L), 4000, codec = .pqCUncompressed)
+  withr::local_options(rmoriedata.parquet_max_text_bytes = 1)
+  expect_identical(morie_read_parquet(f)$x, rep(s, 4000))
+})
+
+test_that("a dictionary column costs about its result, not copies of it", {
+  s <- strrep("abcdefgh", 128)
+  n <- 2e6
+  dict <- list(n = 1L, dict = TRUE,
+               body = c(writeBin(1024L, raw(), size = 4L, endian = "little"),
+                        charToRaw(s)))
+  # one run of n indices at bit width 1, as a 184-byte file held 5e7 of them
+  run <- list(n = n, enc = .pqERleDict, body = c(as.raw(1L), pq_run(n)))
+  f <- pq_text_file(list(dict, run), n)
+  invisible(gc())
+  before <- gc(reset = TRUE)[2L, 2L]
+  r <- morie_read_parquet(f)
+  peak <- gc()[2L, 6L] - before
+  expect_identical(r$x, rep(s, n))
+  size <- as.numeric(object.size(r$x)) / 2^20
+  # the result is 8 bytes a row; expanding the indices in R cost four times it
+  expect_lt(peak, 1.5 * size)
+})
+
+test_that("dictionary and plain pages fill their rows, missing values in place", {
+  lv <- function(d) .pq_encode_levels(d, 1L)
+  dict <- list(n = 2L, dict = TRUE, body = .pq_encode_plain(c("a", "bc"),
+                                                            .pqByteArray, "x"))
+  # page 1: rows a, NA, bc, a; indices 0 1 0 bit-packed at width 1 (0b010)
+  p1 <- list(n = 4L, enc = .pqERleDict,
+             body = c(lv(c(1L, 0L, 1L, 1L)), as.raw(1L), as.raw(c(3L, 2L))))
+  # page 2: PLAIN rows NA, "z"
+  p2 <- list(n = 2L, body = c(lv(c(0L, 1L)), .pq_encode_plain("z", .pqByteArray,
+                                                              "x")))
+  # page 3: no rows
+  p3 <- list(n = 0L, body = lv(integer(0)))
+  f <- pq_text_file(list(dict, p1, p3, p2), 6, optional = TRUE)
+  expect_identical(morie_read_parquet(f)$x, c("a", NA, "bc", "a", NA, "z"))
+  # a bit width of 0: every index is 0
+  p0 <- list(n = 3L, enc = .pqERleDict, body = c(lv(c(1L, 1L, 0L)), as.raw(0L)))
+  f <- pq_text_file(list(dict, p0), 3, optional = TRUE)
+  expect_identical(morie_read_parquet(f)$x, c("a", "a", NA))
+  # an index past the dictionary, and indices that run out
+  bad <- list(n = 1L, enc = .pqERleDict, body = c(as.raw(2L), pq_run(1L, 2L)))
+  expect_error(morie_read_parquet(pq_text_file(list(dict, bad), 1)),
+               "^parquet: dictionary index out of range in column x$")
+  short <- list(n = 3L, enc = .pqERleDict, body = c(as.raw(1L), pq_run(2L)))
+  expect_error(morie_read_parquet(pq_text_file(list(dict, short), 3)),
+               "^parquet: RLE data ran out after 2 of 3 values$")
+  wide <- list(n = 1L, enc = .pqERleDict, body = c(as.raw(33L), raw(8)))
+  expect_error(morie_read_parquet(pq_text_file(list(dict, wide), 1)),
+               "^parquet: RLE bit width 33 above 32$")
+  expect_error(.Call(C_rmd_pq_rows, raw(4), 0, 0, 0, 0L, c("a", "b"), 1, "x"),
+               "^parquet: page of column x holds 2 values for 1 present rows$")
+  expect_error(.Call(C_rmd_pq_rows, raw(4), 0, 0, 9, 1L, "a", 1, "x"),
+               "bad position")
+})
+
+test_that("the package's own writer reads back a text column past 64 MiB", {
+  cats <- c("THEFT", "BATTERY", "CRIMINAL DAMAGE", "ASSAULT",
+            "DECEPTIVE PRACTICE", "OTHER OFFENSE", "NARCOTICS", "BURGLARY")
+  set.seed(7)
+  x <- data.frame(x = sample(cats, 5e6, TRUE), stringsAsFactors = FALSE)
+  # 14 bytes a value: 71 MB of text in one gzip page, past the 64 MiB floor
+  f <- withr::local_tempfile(fileext = ".parquet")
+  morie_write_parquet(x, f)
+  expect_identical(morie_read_parquet(f)$x, x$x)
+})
