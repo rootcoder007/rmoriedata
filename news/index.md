@@ -3,6 +3,40 @@
 ## rmoriedata 0.4.3
 
 - [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  reads a DECIMAL kept as fixed-length bytes correctly at every length:
+  a length of 200 holding 0 and 1 read both as `NaN`, without a word.
+  The unscaled whole number is read as two’s complement of its stated
+  length and rounded once to the nearest double; it is exact below 2^53,
+  larger ones are rounded with the warning 64-bit whole numbers already
+  give, and one past the range of a double is refused. A scale past 308
+  no longer gives 0 or `NaN`. A precision and scale the format does not
+  allow (a precision below 1, a scale below 0 or above the precision, or
+  more digits than the type holds, such as precision 5 in 2 bytes or 10
+  in an INT32) are refused naming the column, the precision and the
+  length. A UUID is now read as text and a FLOAT16 as a number, as
+  arrow, DuckDB and nanoparquet write them; an INTERVAL and bytes of no
+  logical type are still refused by name.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  counts the bytes the compressed pages of fixed-length columns say they
+  inflate to toward `options(rmoriedata.parquet_max_text_bytes = )`, as
+  it counts text, before any page is inflated: their length is the
+  file’s word, and a 65 KB file of 1024 values of 65,536 bytes each took
+  1.1 GB of memory to read, a 260 KB file asked for 2 GB and a 1 MB file
+  for 8 GB. The values are read in place from the page, without a raw
+  vector for each, so the 65 KB file now takes 97 MB, and a file past
+  the budget is refused naming the column, the totals and the option. A
+  fixed length of 0, below 0 or past 2^31 - 1, and a UUID or FLOAT16 of
+  the wrong length, are refused by name.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  refuses a definition level above the column’s maximum on a
+  dictionary-encoded page, as it did on a plain one, with the same
+  message; it was read as a present value. A column whose repetition
+  type the format does not define is refused as damage rather than read
+  as required.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
   weighs the text a file’s compressed pages say they inflate to, from
   the page headers of every column it reads, before it inflates any of
   them, and refuses a file past 4 GiB
