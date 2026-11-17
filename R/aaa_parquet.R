@@ -434,56 +434,9 @@
     return(list(values = rep(0L, count), pos = pos))
   }
   if (width > 32L) stop("parquet: RLE bit width ", width, " above 32", call. = FALSE)
-  end <- min(end, length(buf))
-  out <- integer(count)
-  o <- 0L
-  nbytes <- (width + 7L) %/% 8L
-  while (o < count && pos <= end) {
-    header <- 0
-    shift <- 0
-    repeat {
-      if (pos > end) stop("parquet: RLE run header runs past its data", call. = FALSE)
-      b <- as.integer(buf[pos])
-      pos <- pos + 1L
-      header <- header + bitwAnd(b, 127L) * 2^shift
-      if (bitwAnd(b, 128L) == 0L) break
-      shift <- shift + 7
-      if (shift > 63) stop("parquet: RLE run header longer than 10 bytes", call. = FALSE)
-    }
-    if (header %% 2 == 1) { # bit-packed
-      groups <- (header - 1) / 2
-      need <- groups * width
-      if (need > end - pos + 1) stop("parquet: bit-packed run of ", groups,
-                                     " groups runs past its data", call. = FALSE)
-      nvals <- groups * 8
-      chunk <- .pq_slice(buf, pos, need, "bit-packed run")
-      pos <- pos + need
-      # Unpack LSB-first across byte boundaries.
-      bits <- as.integer(rawToBits(chunk))
-      take <- min(nvals, count - o)
-      if (take > 0L) {
-        # one column of `width` bits per value, least significant first
-        m <- matrix(bits[seq_len(take * width)], nrow = width)
-        vals <- drop(2^(seq_len(width) - 1L) %*% m)
-        out[seq.int(o + 1L, length.out = take)] <- as.integer(vals)
-      }
-      o <- o + take
-    } else { # RLE run
-      run <- header / 2
-      val <- sum(as.integer(.pq_slice(buf, pos, nbytes, "RLE run value")) *
-        256^(seq_len(nbytes) - 1L))
-      pos <- pos + nbytes
-      take <- min(run, count - o)
-      if (take > 0L) {
-        out[seq.int(o + 1L, length.out = take)] <- as.integer(val)
-      }
-      o <- o + take
-    }
-  }
-  if (o < count) {
-    stop("parquet: RLE data ran out after ", o, " of ", count, " values", call. = FALSE)
-  }
-  list(values = out, pos = pos)
+  # src/pqplain.c: one pass over the runs (a page of runs of one value each took
+  # the R loop minutes)
+  .Call(C_rmd_pq_rle, buf, pos, as.integer(width), count, min(end, length(buf)))
 }
 
 .pq_read_i64 <- function(raw_bytes, count) {
@@ -559,22 +512,102 @@
   stop("unsupported physical type ", ptype, call. = FALSE)
 }
 
-# Logical (converted) types. Applied identically in the Python arm, so
-# the two agree on the epoch value; without this a DATE column came back
-# as a bare day count while nanoparquet handed the caller a Date, which
-# is a silent factor-of-86400 trap for anyone swapping the engines.
-.pq_apply_logical <- function(v, ptype, converted) {
-  if (is.null(converted)) {
-    return(v)
+# Logical types: the schema's converted_type (field 6, with the scale in field
+# 7) and its newer LogicalType (field 10). What a writer marks is honoured or
+# the column is refused: a DECIMAL returned as its unscaled whole number, an
+# unsigned column as negative numbers, or a time as a bare count is a silent
+# wrong value.
+.pqCtDecimal <- 5L
+.pqCtTimeMillis <- 7L
+.pqCtTimeMicros <- 8L
+.pqCtUint32 <- 13L
+.pqCtUint64 <- 14L
+
+# The counts per second of a TIME or TIMESTAMP logical type, or NULL.
+.pq_unit <- function(lt) {
+  u <- .pq_f(lt, 2)
+  if (is.null(u)) {
+    return(NULL)
   }
-  if (converted == .pqCtDate && ptype == .pqInt32) {
+  if (!is.null(.pq_f(u, 1))) {
+    1e3
+  } else if (!is.null(.pq_f(u, 2))) {
+    1e6
+  } else if (!is.null(.pq_f(u, 3))) {
+    1e9
+  }
+}
+
+# TRUE when the schema element marks its column a DECIMAL.
+.pq_is_decimal <- function(converted, logical) {
+  identical(as.integer(converted), .pqCtDecimal) ||
+    (!is.null(logical) && !is.null(.pq_f(logical, 5)))
+}
+
+# R holds whole numbers exactly up to 2^53: past that a 64-bit value is rounded,
+# which is said once per column.
+.pq_inexact <- function(v, name) {
+  if (any(abs(v) >= 2^53, na.rm = TRUE)) {
+    warning("parquet: column ", sQuote(name), " holds whole numbers of 2^53 or ",
+            "more, which R keeps as doubles: they are rounded", call. = FALSE)
+  }
+  invisible(NULL)
+}
+
+# The values of a DECIMAL stored as fixed-length big-endian two's complement
+# bytes, unscaled. `col` is a list of raw vectors, NULL where a value is missing.
+.pq_flba_whole <- function(col, typelen) {
+  out <- rep(NA_real_, length(col))
+  has <- !vapply(col, is.null, logical(1))
+  if (any(has)) {
+    m <- matrix(as.numeric(unlist(col[has])), nrow = typelen)
+    neg <- m[1L, ] >= 128
+    # a negative value is read from its complement, so that a small one in many
+    # bytes is not the difference of two huge numbers
+    m[, neg] <- 255 - m[, neg]
+    val <- drop(256^((typelen - 1L):0) %*% m)
+    val[neg] <- -(val[neg] + 1)
+    out[has] <- val
+  }
+  out
+}
+
+.pq_apply_logical <- function(v, ptype, converted, scale = NULL, logical = NULL,
+                              name = "?") {
+  lt <- function(id) if (is.null(logical)) NULL else .pq_f(logical, id)
+  ct <- if (is.null(converted)) -1L else as.integer(converted)
+  posix <- function(x) as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
+  if (.pq_is_decimal(converted, logical)) {
+    s <- as.numeric(.pq_f(lt(5) %||% list(), 1) %||% scale %||% 0)
+    .pq_inexact(v, name)
+    return(as.numeric(v) / 10^s)
+  }
+  # INT96 is the legacy timestamp: nanoseconds since the epoch
+  if (ptype == .pqInt96) {
+    return(posix(v / 1e9))
+  }
+  if ((ct == .pqCtDate || !is.null(lt(6))) && ptype == .pqInt32) {
     return(structure(as.numeric(v), class = "Date"))
   }
-  if (converted == .pqCtTsMillis) {
-    return(as.POSIXct(v / 1e3, origin = "1970-01-01", tz = "UTC"))
+  per <- if (!is.null(lt(8))) .pq_unit(lt(8)) else if (ct == .pqCtTsMillis) 1e3
+    else if (ct == .pqCtTsMicros) 1e6
+  if (!is.null(per)) {
+    return(posix(v / per))
   }
-  if (converted == .pqCtTsMicros) {
-    return(as.POSIXct(v / 1e6, origin = "1970-01-01", tz = "UTC"))
+  per <- if (!is.null(lt(7))) .pq_unit(lt(7)) else if (ct == .pqCtTimeMillis) 1e3
+    else if (ct == .pqCtTimeMicros) 1e6
+  if (!is.null(per)) {
+    return(as.difftime(as.numeric(v) / per, units = "secs"))
+  }
+  unsigned <- ct %in% c(.pqCtUint32, .pqCtUint64) ||
+    identical(.pq_f(lt(10) %||% list(), 2), FALSE)
+  if (unsigned && ptype %in% c(.pqInt32, .pqInt64)) {
+    v <- as.numeric(v)
+    neg <- !is.na(v) & v < 0
+    v[neg] <- v[neg] + if (ptype == .pqInt32) 2^32 else 2^64
+  }
+  if (ptype == .pqInt64) {
+    .pq_inexact(v, name)
   }
   v
 }
@@ -880,7 +913,9 @@ morie_read_parquet <- function(path, columns = NULL) {
   tryCatch(
     withCallingHandlers(.pq_read(path, columns, size), warning = function(w) {
       m <- conditionMessage(w)
-      if (!startsWith(m, "duplicate column names in ")) {
+      # the reader's own two warnings pass; any other is damage
+      if (!startsWith(m, "duplicate column names in ") &&
+          !grepl("holds whole numbers of 2^53", m, fixed = TRUE)) {
         stop("parquet: the file is damaged (", m, ")", call. = FALSE)
       }
     }),
@@ -951,6 +986,8 @@ morie_read_parquet <- function(path, columns = NULL) {
       type = as.integer(.pq_f(el, 1)),
       typelen = .pq_f(el, 2),
       converted = .pq_f(el, 6),
+      scale = .pq_f(el, 7),
+      logical = .pq_f(el, 10),
       maxdef = if (rep_type == .pqOptional) 1L else 0L
     )
   }
@@ -973,12 +1010,27 @@ morie_read_parquet <- function(path, columns = NULL) {
   for (i in wanted) {
     leaf <- leaves[[i]]
     col <- NULL
+    isdec <- .pq_is_decimal(leaf$converted, leaf$logical)
+    # bytes that are not text: read as a DECIMAL when marked one and of fixed
+    # length, otherwise refused by name rather than as damage
+    if (leaf$type == .pqFlba && !isdec) {
+      stop("parquet: column ", sQuote(leaf$name), " holds fixed-length bytes (a ",
+           "UUID, an interval or the like), which this reader does not read; ",
+           "name the columns to read in `columns`", call. = FALSE)
+    }
+    if (leaf$type == .pqByteArray && isdec) {
+      stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL stored as bytes ",
+           "of varying length, which this reader does not read; name the ",
+           "columns to read in `columns`", call. = FALSE)
+    }
     for (rg in row_groups) {
       chunks <- .pq_f(rg, 1)
       if (length(chunks) != length(leaves)) {
         stop("parquet: a row group has ", length(chunks), " column chunks for ",
              length(leaves), " schema columns", call. = FALSE)
       }
+      # a row group of no rows holds no pages (arrow writes one for an empty table)
+      if (.pq_f(rg, 3) == 0) next
       cm <- .pq_f(chunks[[i]], 3)
       col <- c(col, .pq_column_values(
         con, cm, .pq_f(rg, 3),
@@ -988,7 +1040,9 @@ morie_read_parquet <- function(path, columns = NULL) {
     if (leaf$type == .pqByteArray) {
       v <- if (is.null(col)) character() else col
     } else {
-      v <- if (is.list(col)) {
+      v <- if (leaf$type == .pqFlba) {
+        .pq_flba_whole(as.list(col), as.integer(leaf$typelen))
+      } else if (is.list(col)) {
         vapply(col, function(x) if (is.null(x)) NA_real_ else as.numeric(x), numeric(1))
       } else {
         as.numeric(col)
@@ -998,7 +1052,8 @@ morie_read_parquet <- function(path, columns = NULL) {
       } else if (leaf$type == .pqInt32) {
         v <- as.integer(v)
       }
-      v <- .pq_apply_logical(v, leaf$type, leaf$converted)
+      v <- .pq_apply_logical(v, leaf$type, leaf$converted, leaf$scale,
+                             leaf$logical, leaf$name)
     }
     out[[length(out) + 1L]] <- v
     out_names <- c(out_names, leaf$name)

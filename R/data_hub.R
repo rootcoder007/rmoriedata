@@ -16,7 +16,16 @@
 
 .rmd_data_url <- function() {
   env <- sub("/+$", "", trimws(Sys.getenv("MORIE_DATA_URL", unset = "")))
-  if (nzchar(env)) return(env)
+  if (nzchar(env)) {
+    # an address, not a bare host: the failure would otherwise be laid on
+    # data.rmorie.com, which was never asked
+    if (!grepl("^https?://[^/[:space:]]+", env)) {
+      stop("the environment variable MORIE_DATA_URL is ", sQuote(env), ", which ",
+           "is not an http(s) address: unset it, or give one such as ",
+           "https://data.rmorie.com", call. = FALSE)
+    }
+    return(env)
+  }
   svc <- .rmd_services_data()
   if (is.null(svc)) return("https://data.rmorie.com")
   if (!identical(svc[["mode"]], "key") || !nzchar(svc[["base_url"]] %||% "")) {

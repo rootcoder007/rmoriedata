@@ -202,7 +202,7 @@ chiload <- function(type = c("arrests", "complaints"),
   }
   n <- nrow(raw)
   pick <- function(...) {
-    for (nm in c(...)) if (nm %in% names(raw)) return(as.character(raw[[nm]]))
+    for (nm in c(...)) if (nm %in% names(raw)) return(.rmd_astext(raw[[nm]]))
     rep(NA_character_, n)
   }
   # an empty field of the CSV export is a missing value; any other text must read as
@@ -308,6 +308,21 @@ chiload <- function(type = c("arrests", "complaints"),
 # Decimal text as numbers, NA for anything else (hexadecimal, Inf, NaN, words), read
 # by .rmd_num(): correctly rounded, the same on every platform.
 .rmd_decimal <- function(x) .rmd_num(trimws(x))
+
+# A column of Socrata's export as text. A mirror may hold `date` as a timestamp
+# or a date: as.character() drops the time at midnight and writes the clock in
+# the column's zone, which .rmd_ptime() then read as Chicago time. An instant is
+# written with its "Z"; a date is midnight on the Chicago clock, as Socrata's
+# floating timestamps are.
+.rmd_astext <- function(v) {
+  if (inherits(v, "POSIXct")) {
+    return(format(v, "%Y-%m-%dT%H:%M:%SZ", tz = "UTC"))
+  }
+  if (inherits(v, "Date")) {
+    return(format(v, "%Y-%m-%dT00:00:00"))
+  }
+  as.character(v)
+}
 
 # ISO 8601 text as POSIXct. A time with an offset or "Z" is that instant (strptime
 # ignores the zone, which read 10:00Z as 10:00 in Chicago, five hours off); one

@@ -1,5 +1,15 @@
 # rmoriedata 0.4.3
 
+* `morie_read_parquet()` honours what other writers mark a column as, or refuses the column by name. A DECIMAL (kept as whole numbers, or as fixed-length bytes as arrow's `decimal128` is) is read with its scale: 12.34 came back as 1234. An unsigned column no longer wraps to negative numbers (3000000000 came back as -1294967296). A TIME column is a `difftime`, and a timestamp in nanoseconds or in the legacy 96-bit form is a `POSIXct`, not a bare count. A 64-bit whole number of 2^53 or more is rounded, as before, and now with a warning. Fixed-length bytes that are not a DECIMAL (a UUID, an interval) and a DECIMAL of varying length are refused in the reader's words rather than as a damaged file, and a file whose row group holds no rows (as arrow writes an empty table) is read as no rows.
+
+* The Parquet reader decodes run-length data in compiled code: a 29 KB file of fifteen million rows, each a run of its own, took two to three minutes and now takes under two seconds.
+
+* `chiload(full = TRUE, mirror = )` keeps the instants of a mirror file in Socrata's columns whose `date` is a timestamp: midnight became `NA`, and every other time moved by Chicago's offset from UTC.
+
+* `mdsha()` takes one string or a raw vector, as its help says: a number, a logical, a factor or a date was hashed as its text, so `mdsha(1)` equalled `mdsha("1")`.
+
+* `mdload()` with a slug of thousands of bytes says there is no such dataset, not base R's "variable names are limited to 10000 bytes"; and a `MORIE_DATA_URL` that is not an http(s) address is refused by name, where the failure was laid on data.rmorie.com.
+
 * The options the package reads are checked where they are read, and a value of the wrong kind is refused in the package's own words: `options(rmoriedata.store = )` and `options(rmoriedata.cache_dir = )` must be one folder path (a store option of `1`, `NA`, `TRUE` or two strings stopped `mdload()` with base R's "invalid filename argument" or a coercion error), `chiload()`'s `mirror` (by default `options(rmoriedata.mirror = )`) one URL or folder, or `NULL`, and `options(rmoriedata.parquet_max_page_bytes = )` and `options(rmoriedata.parquet_max_rows = )` one positive number (an `NA` cap called every file damaged). `rmoriedata.lockwait` and `rmoriedata.dpart` were already checked.
 
 * `hostload(key, refresh = TRUE)` fetches the manifest again, as `hostcat(refresh = TRUE)` does and the help says, and stops with an error saying the cached manifest is not used when it cannot fetch it: it used a cached manifest more than a day old, with a message. Without `refresh` a day-old cached manifest is still used when a new one cannot be fetched.

@@ -124,3 +124,74 @@ SEXP C_rmd_pq_bytes(SEXP x) {
     UNPROTECT(1);
     return out;
 }
+
+/* C_rmd_pq_rle(buf, pos, width, count, end): `count` values of the RLE /
+ * bit-packed hybrid starting at the 1-based byte `pos` of `buf`, read no
+ * further than the 1-based byte `end`; `width` is 1 to 32 bits. Returns
+ * list(values, pos). One pass in C: a page of runs of one value each cost
+ * the R loop a second per hundred thousand rows. */
+SEXP C_rmd_pq_rle(SEXP buf, SEXP pos, SEXP width, SEXP count, SEXP end) {
+    if (TYPEOF(buf) != RAWSXP) error("parquet: internal: `buf` must be raw");
+    double p0 = asReal(pos), nc = asReal(count), e0 = asReal(end);
+    int w = asInteger(width);
+    R_xlen_t len = XLENGTH(buf);
+    if (!R_FINITE(p0) || p0 < 1 || !R_FINITE(nc) || nc < 0 || nc > (double) INT_MAX ||
+        !R_FINITE(e0) || w == NA_INTEGER || w < 1 || w > 32)
+        error("parquet: internal: bad position, count or width");
+    R_xlen_t e = e0 >= (double) len ? len : (e0 < 0 ? 0 : (R_xlen_t) e0);
+    R_xlen_t p = p0 - 1 >= (double) len ? len : (R_xlen_t) (p0 - 1);
+    R_xlen_t n = (R_xlen_t) nc, o = 0;
+    int nbytes = (w + 7) / 8;
+    const unsigned char *b = RAW(buf);
+    SEXP vals = PROTECT(allocVector(INTSXP, n));
+    int *out = INTEGER(vals);
+    while (o < n && p < e) {
+        uint64_t header = 0;
+        int shift = 0;
+        for (;;) {
+            if (p >= e) error("parquet: RLE run header runs past its data");
+            unsigned char c = b[p++];
+            header |= (uint64_t) (c & 127) << shift;
+            if (!(c & 128)) break;
+            shift += 7;
+            if (shift > 63) error("parquet: RLE run header longer than 10 bytes");
+        }
+        uint64_t left = (uint64_t) (n - o);
+        if (header & 1) { /* bit-packed: groups of eight values */
+            uint64_t groups = header >> 1;
+            if (groups > (uint64_t) (e - p) / (uint64_t) w)
+                error("parquet: bit-packed run of %.0f groups runs past its data",
+                      (double) groups);
+            uint64_t nvals = groups * 8, take = nvals < left ? nvals : left, bit = 0;
+            const unsigned char *q = b + p;
+            for (uint64_t i = 0; i < take; i++) {
+                uint64_t v = 0;
+                for (int k = 0; k < w; k++, bit++)
+                    v |= (uint64_t) ((q[bit >> 3] >> (bit & 7)) & 1) << k;
+                if (v > (uint64_t) INT_MAX) error("parquet: RLE value above 2^31");
+                out[o + (R_xlen_t) i] = (int) v;
+            }
+            o += (R_xlen_t) take;
+            p += (R_xlen_t) (groups * (uint64_t) w);
+        } else { /* a run of one value */
+            uint64_t run = header >> 1, take = run < left ? run : left, v = 0;
+            if (e - p < nbytes) error("parquet: RLE run value runs past its data");
+            for (int k = 0; k < nbytes; k++) v |= (uint64_t) b[p + k] << (8 * k);
+            p += nbytes;
+            if (v > (uint64_t) INT_MAX) error("parquet: RLE value above 2^31");
+            for (uint64_t i = 0; i < take; i++) out[o + (R_xlen_t) i] = (int) v;
+            o += (R_xlen_t) take;
+        }
+    }
+    if (o < n)
+        error("parquet: RLE data ran out after %.0f of %.0f values", (double) o, (double) n);
+    SEXP res = PROTECT(allocVector(VECSXP, 2));
+    SEXP nm = PROTECT(allocVector(STRSXP, 2));
+    SET_STRING_ELT(nm, 0, mkChar("values"));
+    SET_STRING_ELT(nm, 1, mkChar("pos"));
+    setAttrib(res, R_NamesSymbol, nm);
+    SET_VECTOR_ELT(res, 0, vals);
+    SET_VECTOR_ELT(res, 1, ScalarInteger((int) (p + 1)));
+    UNPROTECT(3);
+    return res;
+}

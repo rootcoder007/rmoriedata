@@ -125,6 +125,11 @@ mdload <- function(slug, refresh = FALSE,
          "See mdcat() for valid slugs.", call. = FALSE)
   }
   .rmd_nobytes(slug, "slug")
+  # no slug is this long, and R cannot keep a name of 10,000 bytes
+  if (nchar(slug, "bytes") > 200L) {
+    stop(sprintf("No dataset '%s...'. See mdcat() for valid slugs.",
+                 substr(slug, 1L, 40L)), call. = FALSE)
+  }
   if (!is.logical(refresh) || length(refresh) != 1L || is.na(refresh)) {
     stop("`refresh` must be TRUE or FALSE.", call. = FALSE)
   }

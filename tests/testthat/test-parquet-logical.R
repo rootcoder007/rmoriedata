@@ -1,0 +1,215 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+# The Parquet reader on what other writers mark their columns as: a DECIMAL, an
+# unsigned whole number or a time comes back as its value, or the column is
+# refused by name. Never the unscaled or wrapped number without a word.
+
+# A one-column file, built byte by byte: `ptype` the physical type, `page` the
+# PLAIN body of its one data page, `n` the rows.
+pq_lone <- function(ptype, page, n, conv = NULL, scale = NULL, typelen = NULL,
+                    off = 4) {
+  ph <- .pq_writer()
+  m <- .pq_wi32(ph, 1L, n, 0L)
+  m <- .pq_wi32(ph, 2L, .pqEPlain, m)
+  m <- .pq_wi32(ph, 3L, .pqERle, m)
+  m <- .pq_wi32(ph, 4L, .pqERle, m)
+  hd <- .pq_writer()
+  l <- .pq_wi32(hd, 1L, .pqPData, 0L)
+  l <- .pq_wi32(hd, 2L, length(page), l)
+  l <- .pq_wi32(hd, 3L, length(page), l)
+  l <- .pq_wstruct(hd, 5L, .pq_wstop(ph), l)
+  blob <- c(.pq_wstop(hd), page)
+  cmd <- .pq_writer()
+  l <- .pq_wi32(cmd, 1L, ptype, 0L)
+  l <- .pq_wlisti32(cmd, 2L, c(.pqERle, .pqEPlain), l)
+  l <- .pq_wlistbin(cmd, 3L, "x", l)
+  l <- .pq_wi32(cmd, 4L, .pqCUncompressed, l)
+  l <- .pq_wi64(cmd, 5L, n, l)
+  l <- .pq_wi64(cmd, 6L, length(blob), l)
+  l <- .pq_wi64(cmd, 7L, length(blob), l)
+  l <- .pq_wi64(cmd, 9L, off, l)
+  cc <- .pq_writer()
+  l <- .pq_wi64(cc, 2L, off, 0L)
+  l <- .pq_wstruct(cc, 3L, .pq_wstop(cmd), l)
+  root <- .pq_writer()
+  l <- .pq_wbytes(root, 4L, "schema", 0L)
+  l <- .pq_wi32(root, 5L, 1L, l)
+  se <- .pq_writer()
+  l <- .pq_wi32(se, 1L, ptype, 0L)
+  if (!is.null(typelen)) l <- .pq_wi32(se, 2L, typelen, l)
+  l <- .pq_wi32(se, 3L, .pqRequired, l)
+  l <- .pq_wbytes(se, 4L, "x", l)
+  if (!is.null(conv)) l <- .pq_wi32(se, 6L, conv, l)
+  if (!is.null(scale)) l <- .pq_wi32(se, 7L, scale, l)
+  rg <- .pq_writer()
+  l <- .pq_wliststruct(rg, 1L, list(.pq_wstop(cc)), 0L)
+  l <- .pq_wi64(rg, 2L, length(blob), l)
+  l <- .pq_wi64(rg, 3L, n, l)
+  fm <- .pq_writer()
+  l <- .pq_wi32(fm, 1L, 1L, 0L)
+  l <- .pq_wliststruct(fm, 2L, list(.pq_wstop(root), .pq_wstop(se)), l)
+  l <- .pq_wi64(fm, 3L, n, l)
+  l <- .pq_wliststruct(fm, 4L, list(.pq_wstop(rg)), l)
+  ft <- .pq_wstop(fm)
+  f <- tempfile(fileext = ".parquet")
+  writeBin(c(charToRaw("PAR1"), blob, ft,
+             writeBin(length(ft), raw(), size = 4L, endian = "little"),
+             charToRaw("PAR1")), f)
+  f
+}
+i32 <- function(x) writeBin(as.integer(x), raw(), size = 4L, endian = "little")
+
+test_that("a DECIMAL kept as whole numbers is read with its scale", {
+  f <- pq_lone(.pqInt32, i32(c(1234, -150, 1)), 3L, conv = .pqCtDecimal, scale = 2L)
+  expect_equal(morie_read_parquet(f)$x, c(12.34, -1.5, 0.01), tolerance = 1e-15)
+  # 64-bit: low half, high half
+  f <- pq_lone(.pqInt64, i32(c(1234, 0, -150, -1)), 2L, conv = .pqCtDecimal,
+               scale = 3L)
+  expect_equal(morie_read_parquet(f)$x, c(1.234, -0.15), tolerance = 1e-15)
+})
+
+test_that("a DECIMAL kept as fixed-length bytes is read; other bytes are refused", {
+  page <- as.raw(c(0x04, 0xd2, 0xff, 0x6a, 0x00, 0x00))
+  f <- pq_lone(.pqFlba, page, 3L, conv = .pqCtDecimal, scale = 2L, typelen = 2L)
+  expect_equal(morie_read_parquet(f)$x, c(12.34, -1.5, 0), tolerance = 1e-15)
+  # sixteen bytes, as arrow's decimal128: a small negative stays exact
+  page <- c(rep(as.raw(0xff), 15L), as.raw(0x85), raw(15L), as.raw(0x7b))
+  f <- pq_lone(.pqFlba, page, 2L, conv = .pqCtDecimal, scale = 0L, typelen = 16L)
+  expect_identical(morie_read_parquet(f)$x, c(-123, 123))
+  f <- pq_lone(.pqFlba, raw(4L), 2L, typelen = 2L)
+  expect_error(morie_read_parquet(f), "column .x. holds fixed-length bytes")
+  f <- pq_lone(.pqByteArray, c(i32(1), as.raw(0x05)), 1L, conv = .pqCtDecimal,
+               scale = 0L)
+  expect_error(morie_read_parquet(f), "DECIMAL stored as bytes of varying length")
+  expect_identical(.pq_flba_whole(list(NULL, as.raw(c(0, 7))), 2L), c(NA, 7))
+})
+
+test_that("unsigned columns are not read as negative numbers", {
+  f <- pq_lone(.pqInt32, i32(c(1, -1294967296, -1)), 3L, conv = .pqCtUint32)
+  expect_identical(morie_read_parquet(f)$x, c(1, 3000000000, 4294967295))
+  f <- pq_lone(.pqInt64, i32(c(1, 0, -1, -1)), 2L, conv = .pqCtUint64)
+  expect_warning(x <- morie_read_parquet(f)$x, "whole numbers of 2^53 or more",
+                 fixed = TRUE)
+  expect_identical(x, c(1, 2^64))
+  # the newer logical type says the same: INTEGER, not signed
+  int <- list("10" = list("1" = 32L, "2" = FALSE))
+  expect_identical(.pq_apply_logical(c(-1L, 2L), .pqInt32, NULL, NULL, int),
+                   c(4294967295, 2))
+  int[["10"]][["2"]] <- TRUE
+  expect_identical(.pq_apply_logical(c(-1L, 2L), .pqInt32, NULL, NULL, int),
+                   c(-1L, 2L))
+})
+
+test_that("a 64-bit whole number past 2^53 is rounded with a warning", {
+  f <- pq_lone(.pqInt64, i32(c(1, 2097152, 5, 0)), 2L)
+  expect_warning(x <- morie_read_parquet(f)$x, "column .x. holds whole numbers")
+  expect_identical(x, c(2^53, 5))
+  f <- pq_lone(.pqInt64, i32(c(7, 0, 5, 0)), 2L)
+  expect_no_warning(expect_identical(morie_read_parquet(f)$x, c(7, 5)))
+})
+
+test_that("times and timestamps are read as times, in every unit", {
+  utc <- function(x) as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
+  ts <- function(unit) {
+    list("8" = list("1" = TRUE, "2" = stats::setNames(list(list()), unit)))
+  }
+  expect_identical(.pq_apply_logical(1.5e12, .pqInt64, NULL, NULL, ts("1")), utc(1.5e9))
+  expect_identical(.pq_apply_logical(1.5e15, .pqInt64, NULL, NULL, ts("2")), utc(1.5e9))
+  expect_no_warning(
+    expect_identical(.pq_apply_logical(1.5e18, .pqInt64, NULL, NULL, ts("3")), utc(1.5e9))
+  )
+  expect_identical(.pq_apply_logical(1.5e12, .pqInt64, .pqCtTsMillis), utc(1.5e9))
+  expect_identical(.pq_apply_logical(1.5e15, .pqInt64, .pqCtTsMicros), utc(1.5e9))
+  # the legacy 96-bit timestamp: nanoseconds since the epoch
+  expect_identical(.pq_apply_logical(1.5e18, .pqInt96, NULL), utc(1.5e9))
+  hour <- as.difftime(3600, units = "secs")
+  expect_identical(.pq_apply_logical(3600000L, .pqInt32, .pqCtTimeMillis), hour)
+  expect_identical(.pq_apply_logical(3.6e9, .pqInt64, .pqCtTimeMicros), hour)
+  tm <- list("7" = list("1" = TRUE, "2" = list("3" = list())))
+  expect_identical(.pq_apply_logical(3.6e12, .pqInt64, NULL, NULL, tm), hour)
+  day <- structure(18262, class = "Date")
+  dt <- list("6" = list())
+  expect_identical(.pq_apply_logical(18262L, .pqInt32, NULL, NULL, dt), day)
+  expect_identical(.pq_apply_logical(18262L, .pqInt32, .pqCtDate), day)
+  # a unit the file does not name leaves the numbers as they are
+  nounit <- list("8" = list("1" = TRUE))
+  expect_identical(.pq_apply_logical(5, .pqInt64, NULL, NULL, nounit), 5)
+  f <- pq_lone(.pqInt32, i32(c(3600000, 1500)), 2L, conv = .pqCtTimeMillis)
+  expect_identical(morie_read_parquet(f)$x, as.difftime(c(3600, 1.5), units = "secs"))
+})
+
+test_that("a row group of no rows is read as no rows, wherever it says it starts", {
+  f <- pq_lone(.pqInt32, raw(0), 0L, off = 0)
+  x <- morie_read_parquet(f)
+  expect_identical(dim(x), c(0L, 1L))
+  expect_identical(x$x, integer())
+})
+
+test_that("the run decoder reads runs and bit-packed groups, and refuses short data", {
+  r <- .pq_read_rle(as.raw(c(0x06, 0x05)), 1L, 3L, 3L, 2L)
+  expect_identical(r, list(values = c(5L, 5L, 5L), pos = 3L))
+  # one bit-packed group of eight one-bit values, least significant first
+  r <- .pq_read_rle(as.raw(c(0x03, 0xaa)), 1L, 1L, 8L, 2L)
+  expect_identical(r$values, rep(0:1, 4L))
+  # three-bit values 0..7 packed in three bytes, then a run that is cut to the count
+  r <- .pq_read_rle(as.raw(c(0x03, 0x88, 0xc6, 0xfa, 0x08, 0x02)), 1L, 3L, 10L, 6L)
+  expect_identical(r$values, c(0:7, 2L, 2L))
+  expect_identical(r$pos, 7L)
+  # a two-byte value, a width of nothing
+  expect_identical(.pq_read_rle(as.raw(c(0x02, 0x01, 0x01)), 1L, 9L, 1L, 3L)$values, 257L)
+  expect_identical(.pq_read_rle(raw(0), 1L, 0L, 4L, 0L),
+                   list(values = integer(4L), pos = 1L))
+  rle <- function(b, width, count) .pq_read_rle(as.raw(b), 1L, width, count, length(b))
+  expect_error(rle(c(0x02, 0x01), 3L, 4L), "ran out after 1 of 4")
+  expect_error(.pq_read_rle(as.raw(0x80), 1L, 3L, 1L, 1L), "run header runs past")
+  expect_error(.pq_read_rle(as.raw(c(0x02)), 1L, 3L, 1L, 1L), "run value runs past")
+  expect_error(rle(c(0x05, 0x01), 3L, 9L), "bit-packed run of 2 groups")
+  expect_error(rle(rep(0x80, 11L), 3L, 1L), "longer than 10 bytes")
+  expect_error(rle(c(0x02, rep(0xff, 4L)), 32L, 1L), "above 2\\^31")
+  expect_error(rle(c(0x03, rep(0xff, 32L)), 32L, 8L), "above 2\\^31")
+  expect_error(.pq_read_rle(raw(2L), 1L, 33L, 1L, 2L), "above 32")
+  expect_error(.Call(C_rmd_pq_rle, "x", 1, 1L, 1, 1), "must be raw")
+  expect_error(.Call(C_rmd_pq_rle, raw(1L), 0, 1L, 1, 1), "bad position")
+})
+
+test_that("runs of one value each are read at once, not a run at a time in R", {
+  n <- 300000L
+  buf <- as.raw(rep(c(0x02, 0x01), n))
+  t0 <- proc.time()[["elapsed"]]
+  r <- .pq_read_rle(buf, 1L, 1L, n, length(buf))
+  expect_lt(proc.time()[["elapsed"]] - t0, 5)
+  expect_identical(r$values, rep(1L, n))
+})
+
+test_that("a mirror's timestamp or date column keeps its instants", {
+  t <- as.POSIXct(c("2020-01-01 00:00:00", "2020-01-01 13:30:00", NA), tz = "UTC")
+  expect_identical(.rmd_astext(t), c("2020-01-01T00:00:00Z", "2020-01-01T13:30:00Z", NA))
+  expect_equal(as.numeric(.rmd_ptime(.rmd_astext(t))), as.numeric(t))
+  # a date is midnight on the Chicago clock, as Socrata's floating timestamps are
+  d <- .rmd_ptime(.rmd_astext(as.Date("2020-01-01")))
+  expect_identical(format(d, "%Y-%m-%d %H:%M", tz = "America/Chicago"),
+                   "2020-01-01 00:00")
+  expect_identical(.rmd_astext(c(a = 1.5)), "1.5")
+})
+
+test_that("mdsha() hashes one string or raw bytes, nothing turned into text", {
+  for (x in list(1, 0.1 + 0.2, TRUE, as.Date("2020-01-01"), factor("a"))) {
+    expect_error(mdsha(x), "a raw vector or a single string")
+  }
+  expect_identical(mdsha("1"), mdsha(charToRaw("1")))
+})
+
+test_that("a slug no dataset could have is refused in the package's words", {
+  expect_error(mdload(strrep("a", 1e5)), "^No dataset 'a{40}\\.\\.\\.'")
+  expect_error(mdload(strrep("a", 201L)), "See mdcat\\(\\) for valid slugs")
+})
+
+test_that("MORIE_DATA_URL must be an http(s) address", {
+  old <- Sys.getenv("MORIE_DATA_URL", unset = NA)
+  on.exit(
+    if (is.na(old)) Sys.unsetenv("MORIE_DATA_URL") else Sys.setenv(MORIE_DATA_URL = old)
+  )
+  Sys.setenv(MORIE_DATA_URL = "example.org/data")
+  expect_error(.rmd_data_url(), "MORIE_DATA_URL is .example.org/data., which is not")
+  Sys.setenv(MORIE_DATA_URL = "https://example.org/data/")
+  expect_identical(.rmd_data_url(), "https://example.org/data")
+})
