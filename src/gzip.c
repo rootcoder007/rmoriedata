@@ -9,6 +9,18 @@
 #include <math.h>
 #include <string.h>
 #include <zlib.h>
+#include <R_ext/Utils.h>
+
+/* Whether the user has asked to stop: the check is made under a context of its
+ * own, so it returns here and the stream can be released before the call ends. */
+static void rmd_gz_chk(void *d) {
+    (void) d;
+    R_CheckUserInterrupt();
+}
+
+static int rmd_gz_stop(void) {
+    return !R_ToplevelExec(rmd_gz_chk, NULL);
+}
 
 /* One gzip member of `x` at deflate level `level` (0: stored, not compressed). */
 static SEXP rmd_deflate(SEXP x, int level) {
@@ -127,10 +139,18 @@ static int rmd_gunzip_run(const unsigned char *in, double len, unsigned char *ou
     memset(&s, 0, sizeof s);
     if (inflateInit2(&s, 15 + 16) != Z_OK) Rf_error("gzip: inflateInit2 failed");
     double fed = 0, used = 0;
+    unsigned long turn = 0;
     *total = 0;
     for (;;) {
         int rc;
         do {
+            /* every 4 MiB counted (256 blocks), and before each block written */
+            if ((!out && (++turn & 255UL) == 0) || (out && turn++ > 0)) {
+                if (rmd_gz_stop()) {
+                    inflateEnd(&s);
+                    Rf_error("gzip: interrupted");
+                }
+            }
             if (s.avail_in == 0 && fed < len) {
                 double k = len - fed < 1073741824.0 ? len - fed : 1073741824.0;
                 s.next_in = (Bytef *) (in + (size_t) fed);

@@ -329,7 +329,8 @@ test_that("two keys that shared a cache file under the old names both load", {
     expect_identical(hostload("a/b__c")$k, "second")
   }
   expect_identical(sum(calls != "/manifest.json"), 2L)
-  expect_true(file.exists(old))
+  # and it goes once a table it could be is held under its own name
+  expect_false(file.exists(old))
 })
 
 test_that("exported functions run under check.bounds and warn = 2, and restore them", {
@@ -349,4 +350,23 @@ test_that("exported functions run under check.bounds and warn = 2, and restore t
     expect_true(is.list(got), info = paste(i, got))
     expect_true(isTRUE(got$after), info = i)
   }
+})
+
+test_that("a copy cached under the earlier name goes once the table is held anew", {
+  keep_host(keep_gz(c("a", "1")))
+  old <- file.path(.rmd_data_cache_dir(), "db__t.csv.gz")
+  writeLines("stale", old)
+  d <- suppressWarnings(hostload("db/t"))
+  expect_identical(d$a, 1L)
+  expect_false(file.exists(old))
+  expect_true(file.exists(.rmd_host_file("db/t")))
+})
+
+test_that("gzip data of many blocks inflates whole, counted and written", {
+  set.seed(3)
+  # past 4 MiB, so the count passes its interrupt check, and of two members
+  x <- as.raw(sample(0:255, 5e6, TRUE))
+  z <- c(.Call(C_rmd_gzip_compress, x[1:3e6]),
+         .Call(C_rmd_gzip_compress, x[-(1:3e6)]))
+  expect_identical(.Call(C_rmd_gunzip, z), x)
 })

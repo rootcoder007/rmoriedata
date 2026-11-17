@@ -821,7 +821,12 @@ hostload <- function(key, refresh = FALSE) {
   # damaged and deleted
   b <- .rmd_fetch(key, sprintf("/%s/%s.csv.gz", parts[[1L]],
                                paste(parts[-1L], collapse = "/")), dest, refresh)
-  .rmd_parse_hosted(key, b, dest)
+  d <- .rmd_parse_hosted(key, b, dest)
+  # the copy an earlier version kept beside the manifest, under a name two keys
+  # could share: nothing reads it now, and the table is held under its own name
+  unlink(file.path(.rmd_data_cache_dir(),
+                   paste0(gsub("/", "__", key, fixed = TRUE), ".csv.gz")))
+  d
 }
 
 # The table from its checked bytes `b`. Damage in the bytes themselves (a damaged gzip
