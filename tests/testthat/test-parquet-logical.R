@@ -6,7 +6,7 @@
 # A one-column file, built byte by byte: `ptype` the physical type, `page` the
 # PLAIN body of its one data page, `n` the rows.
 pq_lone <- function(ptype, page, n, conv = NULL, scale = NULL, typelen = NULL,
-                    off = 4) {
+                    off = 4, usize = length(page)) {
   ph <- .pq_writer()
   m <- .pq_wi32(ph, 1L, n, 0L)
   m <- .pq_wi32(ph, 2L, .pqEPlain, m)
@@ -14,7 +14,7 @@ pq_lone <- function(ptype, page, n, conv = NULL, scale = NULL, typelen = NULL,
   m <- .pq_wi32(ph, 4L, .pqERle, m)
   hd <- .pq_writer()
   l <- .pq_wi32(hd, 1L, .pqPData, 0L)
-  l <- .pq_wi32(hd, 2L, length(page), l)
+  l <- .pq_wi32(hd, 2L, usize, l)
   l <- .pq_wi32(hd, 3L, length(page), l)
   l <- .pq_wstruct(hd, 5L, .pq_wstop(ph), l)
   blob <- c(.pq_wstop(hd), page)
@@ -231,4 +231,17 @@ test_that("levels padded to a whole block, as DuckDB writes them, are read", {
   # the allowance is a constant: a page of a million values gains nothing
   expect_identical(.pq_hybrid_most(1e6, 1) - .pq_hybrid_most(0, 1), 2e6)
   expect_identical(.pq_hybrid_most(0, 32), 1026)
+})
+
+test_that("a page of text is not inflated past what its size on disk allows", {
+  expect_identical(.pq_text_most(100), 64 * 2^20)
+  expect_identical(.pq_text_most(8 * 2^20), 128 * 2^20)
+  # one string column, one row
+  body <- c(i32(1L), as.raw(0x61))
+  expect_identical(morie_read_parquet(pq_lone(.pqByteArray, body, 1L))$x, "a")
+  # the same page, its header claiming 1 GiB: refused before it is inflated
+  f <- pq_lone(.pqByteArray, body, 1L, usize = 2^30)
+  t0 <- proc.time()[["elapsed"]]
+  expect_error(morie_read_parquet(f), "inflate to 1073741824 bytes of text")
+  expect_lt(proc.time()[["elapsed"]] - t0, 5)
 })

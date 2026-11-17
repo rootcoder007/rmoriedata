@@ -672,6 +672,12 @@
 #   width of at most 32.
 .pq_hybrid_most <- function(n, w) n * (1 + ceiling(w / 8)) + 32 * w + 2
 
+# The most bytes a page of text (BYTE_ARRAY, PLAIN or a dictionary) is taken
+# to inflate to, from its compressed size: 64 MiB, which no writer's page
+# comes near (their pages are about 1 MiB), or 16 times what is on disk for
+# the rare page that is larger.
+.pq_text_most <- function(csize) max(64 * 2^20, 16 * csize)
+
 .pq_plain_most <- function(ptype, n, typelen) {
   if (ptype == .pqByteArray) return(Inf)
   if (ptype == .pqBoolean) return(ceiling(n / 8))
@@ -789,6 +795,15 @@
     if (usize > most) {
       stop("parquet: page of column ", cname, " says it inflates to ", usize,
            " bytes; its ", n, " values take at most ", most, call. = FALSE)
+    }
+    # text gives no bound by its count (a value carries its own length), so a
+    # page of it is held to .pq_text_most(): a 33 KB zstd frame said it
+    # inflated to 1 GiB, and was inflated before its one value was looked at
+    if (is.infinite(most) && usize > .pq_text_most(csize)) {
+      stop("parquet: page of column ", cname, " says its ", csize,
+           " bytes inflate to ", usize, " bytes of text; a page of text is ",
+           "read up to ", .pq_text_most(csize), " (64 MiB, or 16 times its ",
+           "compressed size)", call. = FALSE)
     }
     if (codec == .pqCSnappy) {
       page <- .pq_snappy_decompress(raw_page)

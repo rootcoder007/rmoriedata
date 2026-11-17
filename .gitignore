@@ -20,3 +20,4 @@ src/symbols.rds
 inst/extdata/rmoriedata.sqlite
 cran-comments.md
 tests/testthat/testthat-problems.rds
+tests/testthat/_problems/
