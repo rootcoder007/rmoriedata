@@ -2,6 +2,14 @@
 
 ## rmoriedata 0.4.3
 
+- The copy of a hosted table that an earlier version cached beside the
+  manifest is removed once the table is held under its new name: it was
+  left on disk, never read again. Ctrl-C stops the inflating of a large
+  gzip table between blocks. On Windows a cache that one session is
+  reading cannot be replaced by another until the read ends (Windows
+  does not rename over an open file): the other session returns the data
+  it fetched and the cache keeps its earlier copy.
+
 - `chiload(full = TRUE)` reads its cache, and
   [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
   a file by its path, through one open of the file, a page at a time,
