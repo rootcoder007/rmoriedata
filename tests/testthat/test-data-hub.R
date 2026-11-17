@@ -283,6 +283,9 @@ test_that("a table listed without a digest loads with one warning per session", 
                  "statcan_health/tbl_1 is listed in the manifest .* without a SHA-256")
   expect_identical(df$VALUE, c(1L, 2L))
   expect_no_warning(hostload("statcan_health/tbl_1"))
+  # another cache folder holds another manifest: said again
+  withr::local_options(rmoriedata.cache_dir = withr::local_tempdir())
+  expect_warning(hostload("statcan_health/tbl_1"), "without a SHA-256")
   rm(list = ls(rmoriedata:::.rmd_nodigest), envir = rmoriedata:::.rmd_nodigest)
 })
 
@@ -675,4 +678,28 @@ test_that("refresh = TRUE fetches the manifest or stops (F04)", {
                  "could not be refreshed")
   expect_identical(d$VALUE, c(1L, 2L))
   rm(list = ls(.rmd_stale), envir = .rmd_stale)
+})
+
+test_that("a refresh that failed for one cache folder does not hold back another's", {
+  rm(list = ls(.rmd_stale), envir = .rmd_stale)
+  withr::defer(rm(list = ls(.rmd_stale), envir = .rmd_stale))
+  fx <- hub_fixture(list())
+  ps <- file.path(withr::local_tempdir(), c("a", "b"), "manifest.json")
+  when <- Sys.time() - 2 * 86400
+  for (p in ps) {
+    dir.create(dirname(p))
+    writeLines(fx$manifest, p)
+    Sys.setFileTime(p, when)
+  }
+  tries <- 0
+  testthat::local_mocked_bindings(.rmd_data_get = function(...) {
+    tries <<- tries + 1
+    stop("offline")
+  })
+  expect_message(.rmd_manifest_get(ps[1], FALSE), "could not be refreshed")
+  expect_message(.rmd_manifest_get(ps[2], FALSE), "could not be refreshed")
+  expect_identical(tries, 2)
+  # the same copy again within five minutes: not tried again
+  expect_no_message(.rmd_manifest_get(ps[2], FALSE))
+  expect_identical(tries, 2)
 })

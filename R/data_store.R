@@ -21,7 +21,21 @@
     stop("rmoriedata data store not found; reinstall rmoriedata.",
          call. = FALSE)
   }
+  # everything in .rmoriedata_cache (the manifest, the files verified, the catalog,
+  # the schema, the tables) belongs to one store: another store empties it, or a
+  # file verified in the first was served from the second unchecked
+  id <- normalizePath(p, winslash = "/", mustWork = FALSE)
+  if (!identical(.rmoriedata_cache[["_store"]], id)) {
+    .rmoriedata_reset_cache()
+    assign("_store", id, envir = .rmoriedata_cache)
+  }
   p
+}
+
+# What the session cache holds for `name`, for the store in use now.
+.rmd_cached <- function(name) {
+  .rmoriedata_extdata()
+  .rmoriedata_cache[[name]]
 }
 
 .rmoriedata_csv <- function(name, colClasses = NA) {
@@ -53,7 +67,7 @@
 }
 
 .rmoriedata_schema <- function() {
-  s <- .rmoriedata_cache[["_schema"]]
+  s <- .rmd_cached("_schema")
   if (is.null(s)) {
     s <- .rmoriedata_csv("_schema.csv")
     if (is.null(s)) {
@@ -82,7 +96,7 @@
 #' head(tbls[order(-tbls$n_rows), ])
 #' @export
 mdcat <- function() {
-  cat <- .rmoriedata_cache[["_catalog"]]
+  cat <- .rmd_cached("_catalog")
   if (is.null(cat)) {
     cat <- .rmoriedata_csv("_catalog.csv")
     if (is.null(cat)) {
@@ -136,7 +150,7 @@ mdload <- function(slug, refresh = FALSE,
   format <- .rmd_arg(format, "format")
   key <- paste0("table:", format, ":", slug)
   if (!isTRUE(refresh)) {
-    hit <- .rmoriedata_cache[[key]]
+    hit <- .rmd_cached(key)
     if (!is.null(hit)) return(hit)
   }
   cat <- mdcat()
@@ -152,7 +166,7 @@ mdload <- function(slug, refresh = FALSE,
   }
   if (isTRUE(refresh)) {
     # re-read means re-verified: a file changed since its first check is caught
-    v <- .rmoriedata_cache[["_verified"]]
+    v <- .rmd_cached("_verified")
     assign("_verified", setdiff(v, c(row$source_path[1L], row$parquet_path[1L])),
            envir = .rmoriedata_cache)
   }
@@ -305,7 +319,7 @@ mddict <- function(slug) {
 }
 
 .rmoriedata_manifest <- function() {
-  m <- .rmoriedata_cache[["_manifest"]]
+  m <- .rmd_cached("_manifest")
   if (!is.null(m)) {
     return(m)
   }
@@ -350,7 +364,7 @@ mddict <- function(slug) {
 }
 
 .rmoriedata_check_file <- function(rel) {
-  if (rel %in% .rmoriedata_cache[["_verified"]]) {
+  if (rel %in% .rmd_cached("_verified")) {
     return(invisible(TRUE))
   }
   m <- .rmoriedata_manifest()

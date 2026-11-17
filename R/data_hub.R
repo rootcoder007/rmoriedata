@@ -131,7 +131,7 @@
   fresh <- refresh || age >= 86400
   # a refresh that failed a moment ago for this same cached copy is not tried
   # again within one call (hostload() reads the manifest more than once)
-  if (fresh && !refresh && is.finite(age) &&
+  if (fresh && !refresh && is.finite(age) && identical(.rmd_stale$path, p) &&
       identical(.rmd_stale$mtime, file.mtime(p)) &&
       as.numeric(difftime(Sys.time(), .rmd_stale$when, units = "secs")) < 300) {
     fresh <- FALSE
@@ -146,6 +146,7 @@
     if (inherits(got, "error")) {
       old <- .rmd_manifest_parse(p)
       if (!is.list(old)) stop(got)
+      .rmd_stale$path <- p
       .rmd_stale$mtime <- file.mtime(p)
       .rmd_stale$when <- Sys.time()
       message("rmoriedata: the manifest of data.rmorie.com could not be refreshed (",
@@ -178,7 +179,8 @@
   m
 }
 
-# The cached manifest whose refresh last failed, and when.
+# The cached manifest whose refresh last failed (its path, under the cache folder in
+# use then, and its time stamp), and when.
 .rmd_stale <- new.env(parent = emptyenv())
 
 # The parsed manifest, or the reason it does not parse (a string). Its shape is
@@ -232,13 +234,14 @@
        "redistribution; download it from its source (see hostcat())", call. = FALSE)
 }
 
-# Once per session and table: a table the manifest lists without any digest is
-# used, but not silently.
+# Once per session, table and cache folder: a table the manifest lists without any
+# digest is used, but not silently; a manifest in another cache folder warns again.
 .rmd_nodigest <- new.env(parent = emptyenv())
 
 .rmd_warn_nodigest <- function(key) {
-  if (!isTRUE(.rmd_nodigest[[key]])) {
-    assign(key, TRUE, envir = .rmd_nodigest)
+  id <- paste0(.rmd_data_cache_dir(), "\n", key)
+  if (!isTRUE(.rmd_nodigest[[id]])) {
+    assign(id, TRUE, envir = .rmd_nodigest)
     warning(key, " is listed in the manifest of data.rmorie.com without a ",
             "SHA-256: it is used unverified", call. = FALSE)
   }

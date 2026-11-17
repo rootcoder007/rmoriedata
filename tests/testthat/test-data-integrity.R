@@ -149,3 +149,50 @@ test_that("a listed file replaced by a link out of the store is refused", {
   rmoriedata:::.rmoriedata_reset_cache()
   expect_error(mdload(tb$slug[1L]), "is a link out of the data store")
 })
+
+test_that("another store's files are checked, whatever the first store verified", {
+  ed <- system.file("extdata", package = "rmoriedata")
+  src <- list.files(ed, full.names = TRUE)
+  copy <- function() {
+    d <- file.path(tempfile("store-"), "extdata")
+    dir.create(d, recursive = TRUE)
+    file.copy(src[!grepl("[.]sqlite$", src)], d, recursive = TRUE)
+    d
+  }
+  tampered <- copy()
+  changed <- copy()
+  withr::defer(rmoriedata:::.rmoriedata_reset_cache())
+  rmoriedata:::.rmoriedata_reset_cache()
+  slug <- "arsau_2023_uof_main_records"
+  rel <- mdcat()$source_path[mdcat()$slug == slug]
+  # the installed store: the file verified, its table, catalog and schema cached
+  good <- mdload(slug)
+  csv <- mdpath(slug, "csv")
+  f <- file.path(tampered, rel)
+  x <- readLines(f, warn = FALSE)
+  x[2] <- sub("^([^,]*),", "\\1,TAMPERED", x[2])
+  writeLines(x, f)
+  withr::local_options(rmoriedata.store = tampered)
+  expect_error(mdload(slug), "does not match the signed manifest")
+  expect_error(mdpath(slug, "csv"), "does not match the signed manifest")
+  # its untouched Parquet copy is its own file, verified in its own store
+  expect_true(startsWith(mdpath(slug), normalizePath(tampered, winslash = "/")))
+  # a store whose manifest was changed: not the cached manifest of the other
+  mf <- file.path(changed, "_checksums.csv")
+  writeLines(readLines(mf, warn = FALSE)[-2], mf)
+  options(rmoriedata.store = changed)
+  expect_error(mdpath(slug, "csv"), "does not verify")
+  # back to the installed store: its own files, verified again
+  options(rmoriedata.store = NULL)
+  expect_identical(mdload(slug), good)
+  expect_identical(mdpath(slug, "csv"), csv)
+  options(rmoriedata.store = tampered)
+  expect_error(mdload(slug), "does not match the signed manifest")
+  # its catalog too, read again from that store
+  cf <- file.path(tampered, "_catalog.csv")
+  writeLines(c(readLines(cf, warn = FALSE), ""), cf)
+  options(rmoriedata.store = NULL)
+  expect_identical(mdcat()$slug[mdcat()$slug == slug], slug)
+  options(rmoriedata.store = tampered)
+  expect_error(mdcat(), "does not match the signed manifest")
+})

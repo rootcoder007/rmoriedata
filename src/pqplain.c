@@ -16,7 +16,8 @@
  *
  * C_rmd_pq_rle reads the RLE / bit-packed hybrid, C_rmd_pq_rows puts a data
  * page's values (or its dictionary's) into their rows, and C_rmd_pq_flba reads
- * FIXED_LEN_BYTE_ARRAY values; see each below.
+ * FIXED_LEN_BYTE_ARRAY values; C_rmd_pq_ints reads INT32, INT64 and unsigned
+ * 32-bit words, and C_rmd_pq_i64 writes INT64 values; see each below.
  */
 #include <R.h>
 #include <Rinternals.h>
@@ -393,6 +394,73 @@ SEXP C_rmd_pq_flba(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP kind_) {
         double v = (double) u;
         if (m > 8) v = (m - 8) * 8.0 > 2000.0 ? R_PosInf : ldexp(v, (int) ((m - 8) * 8));
         o[i] = neg ? -v : v;
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* C_rmd_pq_ints(buf, pos, count, width, unsigned): `count` little-endian whole
+ * numbers of `width` bytes (4 or 8) from the 1-based byte `pos` of `buf`, read as
+ * whole words, never through an R integer: readBin(size = 4) gives NA for the word
+ * 0x80000000, which is a value of every 32-bit half (2^31 as an INT64's low word,
+ * -2^63 and up as its high word, 2^31 as a UINT_32), and gave it without a word.
+ *   width 4, signed: INT32, as integers; when one of them is -2^31, which no R
+ *     integer holds, all of them as doubles.
+ *   width 4, unsigned: 0 to 2^32 - 1 as doubles (UINT_32, lengths, Julian days).
+ *   width 8: INT64 or UINT_64 as the nearest double, ties to even, rounded once
+ *     (the R side warns from 2^53 up). A UINT_64 rounded as the signed value and
+ *     then moved up by 2^64 was rounded twice. */
+SEXP C_rmd_pq_ints(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP unsigned_) {
+    if (TYPEOF(buf) != RAWSXP) error("parquet: internal: `buf` must be raw");
+    double p0 = asReal(pos), nc = asReal(count);
+    int w = asInteger(width), uns = asLogical(unsigned_);
+    R_xlen_t len = XLENGTH(buf);
+    if (!R_FINITE(p0) || p0 < 1 || !R_FINITE(nc) || nc < 0 ||
+        (w != 4 && w != 8) || uns == NA_LOGICAL || nc * w > (double) len - (p0 - 1))
+        error("parquet: internal: bad position, count or width");
+    R_xlen_t n = (R_xlen_t) nc;
+    const unsigned char *b = RAW(buf) + (R_xlen_t) p0 - 1;
+    int real = uns || w == 8;
+    for (R_xlen_t i = 0; i < n && !real; i++)
+        real = b[4 * i] == 0 && b[4 * i + 1] == 0 && b[4 * i + 2] == 0 &&
+            b[4 * i + 3] == 0x80;
+    SEXP out = PROTECT(allocVector(real ? REALSXP : INTSXP, n));
+    for (R_xlen_t i = 0; i < n; i++) {
+        const unsigned char *p = b + i * w;
+        uint64_t u = 0;
+        for (int k = w - 1; k >= 0; k--) u = (u << 8) | p[k];
+        uint32_t u4 = (uint32_t) u;
+        int32_t s4;
+        int64_t s8;
+        memcpy(&s4, &u4, 4); /* two's complement, as int32_t and int64_t are */
+        memcpy(&s8, &u, 8);
+        if (!real) INTEGER(out)[i] = (int) s4; /* none is -2^31, R's NA */
+        else if (w == 4) REAL(out)[i] = uns ? (double) u4 : (double) s4;
+        else REAL(out)[i] = uns ? (double) u : (double) s8;
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* C_rmd_pq_i64(x): the doubles `x`, whole numbers above -2^63 and below 2^63 (the
+ * writer has refused others), as INT64 values: 8 little-endian bytes each, made
+ * from the 64-bit value itself. The R side split them into two 32-bit halves for
+ * writeBin(), and a low half of 2^31 went through as.integer() as NA. */
+SEXP C_rmd_pq_i64(SEXP x) {
+    if (TYPEOF(x) != REALSXP) error("parquet: internal: `x` must be double");
+    R_xlen_t n = XLENGTH(x);
+    if ((double) n * 8.0 > (double) R_XLEN_T_MAX) error("parquet: column too large to write");
+    SEXP out = PROTECT(allocVector(RAWSXP, n * 8));
+    unsigned char *o = RAW(out);
+    const double *v = REAL(x);
+    for (R_xlen_t i = 0; i < n; i++) {
+        if (!(v[i] > -9223372036854775808.0 && v[i] < 9223372036854775808.0) ||
+            v[i] != floor(v[i]))
+            error("parquet: internal: %g is not a 64-bit whole number", v[i]);
+        int64_t s = (int64_t) v[i];
+        uint64_t u;
+        memcpy(&u, &s, 8);
+        for (int k = 0; k < 8; k++) o[8 * i + k] = (unsigned char) (u >> (8 * k));
     }
     UNPROTECT(1);
     return out;

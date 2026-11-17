@@ -409,16 +409,18 @@
 
 # --------------------------------------------------------------- decoding
 
-# readBin ignores signed = FALSE for sizes above 2 and warns about it, so
-# unsigned 32-bit values (byte-array lengths, the footer length, the low
-# half of an INT64) have to be read signed and folded back up.
-.pq_u32 <- function(r) {
-  v <- readBin(r, "integer",
-    n = length(r) %/% 4L, size = 4L,
-    endian = "little"
-  )
-  ifelse(v < 0, v + 2^32, v)
+# Little-endian whole numbers of 4 or 8 bytes (src/pqplain.c), never through
+# readBin(size = 4): it gives NA for the word 0x80000000 without a word, and that
+# word is a value of every 32-bit half (2^31 as an INT64's low half, -2^63 as its
+# high half, 2^31 as a UINT_32). Signed 4-byte values are integers, or doubles when
+# one is -2^31; unsigned ones and 8-byte ones are doubles, each rounded once.
+.pq_ints <- function(r, width, unsigned = FALSE, pos = 1L,
+                     count = length(r) %/% width) {
+  .Call(C_rmd_pq_ints, r, pos, count, width, unsigned)
 }
+
+# unsigned 32-bit values: the footer length, a level length, an INT96 Julian day
+.pq_u32 <- function(r) .pq_ints(r, 4L, TRUE)
 
 .pq_bit_width <- function(n) {
   w <- 0L
@@ -439,20 +441,10 @@
   .Call(C_rmd_pq_rle, buf, pos, as.integer(width), count, min(end, length(buf)))
 }
 
-.pq_read_i64 <- function(raw_bytes, count) {
-  # readBin has no 64-bit integer, so recombine two 32-bit halves. Exact
-  # to 2^53, which covers every count, offset and epoch value here.
-  lo <- .pq_u32(raw_bytes)[seq(1L, by = 2L, length.out = count)]
-  hi <- readBin(raw_bytes, "integer",
-    n = count * 2L, size = 4L,
-    endian = "little"
-  )[seq(2L, by = 2L, length.out = count)]
-  hi * 2^32 + lo
-}
-
 # The values of a PLAIN block as one vector of their type, and the position after
 # them. FIXED_LEN_BYTE_ARRAY values are read as what `kind` says they are
-# (.pq_flba_kind()): a DECIMAL's unscaled value, a UUID's text or a FLOAT16.
+# (.pq_flba_kind()): a DECIMAL's unscaled value, a UUID's text or a FLOAT16;
+# INT32 and INT64 values as unsigned when `kind` is "unsigned".
 # `cname` names the column in the reader's messages.
 .pq_decode_plain <- function(buf, pos, ptype, count, type_length = NULL,
                              cname = "?", kind = "decimal") {
@@ -471,13 +463,11 @@
       pos = pos + nb
     ))
   }
-  if (ptype == .pqInt32) {
-    v <- readBin(take(count * 4L), "integer", n = count, size = 4L, endian = "little")
-    return(list(values = v, pos = pos + count * 4L))
-  }
-  if (ptype == .pqInt64) {
-    v <- .pq_read_i64(take(count * 8L), count)
-    return(list(values = v, pos = pos + count * 8L))
+  if (ptype == .pqInt32 || ptype == .pqInt64) {
+    w <- if (ptype == .pqInt32) 4L else 8L
+    if (pos + count * w - 1 > length(buf)) take(count * w)
+    v <- .pq_ints(buf, w, identical(kind, "unsigned"), pos, count)
+    return(list(values = v, pos = pos + count * w))
   }
   if (ptype == .pqFloat) {
     v <- readBin(take(count * 4L), "double", n = count, size = 4L, endian = "little")
@@ -504,7 +494,7 @@
   if (ptype == .pqInt96) {
     block <- take(count * 12L)
     o <- rep((seq_len(count) - 1L) * 12L, each = 8L)
-    nanos <- .pq_read_i64(block[o + 1:8], count)
+    nanos <- .pq_ints(block[o + 1:8], 8L)
     o <- rep((seq_len(count) - 1L) * 12L, each = 4L)
     jday <- .pq_u32(block[o + 9:12])
     vals <- (jday - 2440588) * 86400 * 1e9 + nanos
@@ -543,6 +533,20 @@
 .pq_is_decimal <- function(converted, logical) {
   identical(as.integer(converted), .pqCtDecimal) ||
     (!is.null(logical) && !is.null(.pq_f(logical, 5)))
+}
+
+# TRUE when an INT32 or INT64 column holds unsigned whole numbers: marked so (UINT_32,
+# UINT_64, or an IntType that is not signed), and not as a DECIMAL, a date, a time or
+# a timestamp, which .pq_apply_logical() reads first and as signed. The values are
+# decoded unsigned (.pq_decode_plain()), so a UINT_64 is rounded once.
+.pq_is_unsigned <- function(ptype, converted, logical) {
+  ct <- if (is.null(converted)) -1L else as.integer(converted)
+  marked <- any(ct %in% c(.pqCtUint32, .pqCtUint64),
+                identical(.pq_f(.pq_f(logical, 10) %||% list(), 2), FALSE))
+  # a date (6), a time (7) or a timestamp (8)
+  first <- !all(vapply(c(6, 7, 8), function(id) is.null(.pq_f(logical, id)), NA))
+  all(ptype %in% c(.pqInt32, .pqInt64), marked, !first,
+      !.pq_is_decimal(converted, logical))
 }
 
 # R holds whole numbers exactly up to 2^53: past that a 64-bit value is rounded,
@@ -661,12 +665,12 @@
   if (!is.null(per)) {
     return(as.difftime(as.numeric(v) / per, units = "secs"))
   }
-  unsigned <- ct %in% c(.pqCtUint32, .pqCtUint64) ||
-    identical(.pq_f(lt(10) %||% list(), 2), FALSE)
-  if (unsigned && ptype %in% c(.pqInt32, .pqInt64)) {
+  # read unsigned already; signed INT32 values given here are moved up by 2^32,
+  # which is exact (2^64 would round a second time, so INT64 is never moved)
+  if (.pq_is_unsigned(ptype, converted, logical)) {
     v <- as.numeric(v)
     neg <- !is.na(v) & v < 0
-    v[neg] <- v[neg] + if (ptype == .pqInt32) 2^32 else 2^64
+    if (ptype == .pqInt32) v[neg] <- v[neg] + 2^32
   }
   if (ptype == .pqInt64) {
     .pq_inexact(v, name)
@@ -1096,6 +1100,12 @@
 #'   refused. A UUID is text (`"8-4-4-4-12"` lower-case hexadecimal), and a
 #'   FLOAT16 a double. Other fixed-length bytes (an INTERVAL, or bytes with no
 #'   logical type) are refused by name.
+#'
+#'   An INT32 column is an integer column, unless it holds -2147483648 (-2^31),
+#'   which is R's `NA_integer_` and no R integer: then the whole column is a
+#'   double. An unsigned 32-bit column and every 64-bit one are doubles: exact
+#'   below 2^53, otherwise the nearest double, with a warning that they are
+#'   rounded.
 #' @return A `data.frame`. Every error the reader raises, a missing or
 #'   damaged file included, starts with `parquet:`; no base-R warning escapes
 #'   it (a value a damaged file makes R warn about is an error instead).
@@ -1219,6 +1229,7 @@ morie_read_parquet <- function(path, columns = NULL) {
     # bytes that are not text: read as what their logical type says (a DECIMAL,
     # a UUID, a FLOAT16), otherwise refused by name rather than as damage
     if (leaf$type == .pqFlba) leaf$kind <- .pq_flba_kind(leaf)
+    if (.pq_is_unsigned(leaf$type, leaf$converted, leaf$logical)) leaf$kind <- "unsigned"
     if (leaf$type == .pqByteArray && isdec) {
       stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL stored as bytes ",
            "of varying length, which this reader does not read; name the ",
@@ -1277,7 +1288,8 @@ morie_read_parquet <- function(path, columns = NULL) {
       v <- as.numeric(col)
       if (leaf$type == .pqBoolean) {
         v <- as.logical(v)
-      } else if (leaf$type == .pqInt32) {
+      } else if (leaf$type == .pqInt32 && !is.double(col)) {
+        # doubles when the column holds -2^31 (no R integer does) or is unsigned
         v <- as.integer(v)
       }
       v <- .pq_apply_logical(v, leaf$type, leaf$converted, leaf$scale,
@@ -1375,18 +1387,10 @@ morie_read_parquet <- function(path, columns = NULL) {
   v
 }
 
-.pq_encode_i64 <- function(values) {
-  # writeBin has no 64-bit integer; emit two 32-bit halves, folding the
-  # low half back into signed range because that is all writeBin takes.
-  v <- as.numeric(values)
-  hi <- floor(v / 2^32)
-  lo <- v - hi * 2^32
-  lo <- ifelse(lo >= 2^31, lo - 2^32, lo)
-  out <- integer(2L * length(v))
-  out[seq(1L, by = 2L, length.out = length(v))] <- as.integer(lo)
-  out[seq(2L, by = 2L, length.out = length(v))] <- as.integer(hi)
-  writeBin(out, raw(), size = 4L, endian = "little")
-}
+# writeBin() has no 64-bit integer, and its two 32-bit halves went through
+# as.integer(), which made a low half of 2^31 NA (one second in every 2^29 of
+# POSIXct time): src/pqplain.c writes the 64-bit value's own bytes.
+.pq_encode_i64 <- function(values) .Call(C_rmd_pq_i64, as.numeric(values))
 
 .pq_encode_plain <- function(values, ptype, name = "a column") {
   if (length(values) == 0L) {
