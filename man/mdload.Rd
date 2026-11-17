@@ -26,7 +26,10 @@ every platform regardless of how \code{read.csv()} would have guessed.
 Every table also ships as a Parquet file holding the same typed
 frame; \code{format = "parquet"} reads that copy instead. The first load
 of a table is cached for the session; later calls return the cached
-copy unless \code{refresh = TRUE}.
+copy unless \code{refresh = TRUE}. The cached copy is what the file held when
+it was checked; when \code{\link[=mdverify]{mdverify()}} finds the file changed since, the
+cached copy is dropped, and the next load reads the file again and
+refuses it.
 }
 \examples{
 d <- mdload("arsau_2023_uof_main_records")

@@ -413,13 +413,14 @@
 # readBin(size = 4): it gives NA for the word 0x80000000 without a word, and that
 # word is a value of every 32-bit half (2^31 as an INT64's low half, -2^63 as its
 # high half, 2^31 as a UINT_32). Signed 4-byte values are integers, or doubles when
-# one is -2^31; unsigned ones and 8-byte ones are doubles, each rounded once.
+# one in the block is -2^31 (.pq_read() decides the column's type from its rows);
+# unsigned ones and 8-byte ones are doubles, each rounded once.
 .pq_ints <- function(r, width, unsigned = FALSE, pos = 1L,
                      count = length(r) %/% width) {
   .Call(C_rmd_pq_ints, r, pos, count, width, unsigned)
 }
 
-# unsigned 32-bit values: the footer length, a level length, an INT96 Julian day
+# unsigned 32-bit values: the footer length, a level length
 .pq_u32 <- function(r) .pq_ints(r, 4L, TRUE)
 
 .pq_bit_width <- function(n) {
@@ -444,7 +445,9 @@
 # The values of a PLAIN block as one vector of their type, and the position after
 # them. FIXED_LEN_BYTE_ARRAY values are read as what `kind` says they are
 # (.pq_flba_kind()): a DECIMAL's unscaled value, a UUID's text or a FLOAT16;
-# INT32 and INT64 values as unsigned when `kind` is "unsigned".
+# INT32 and INT64 values as unsigned when `kind` is "unsigned"; INT64 values as
+# seconds when `kind` is a number, the counts per second of a time (.pq_per()), and
+# INT96 values always as seconds.
 # `cname` names the column in the reader's messages.
 .pq_decode_plain <- function(buf, pos, ptype, count, type_length = NULL,
                              cname = "?", kind = "decimal") {
@@ -466,7 +469,12 @@
   if (ptype == .pqInt32 || ptype == .pqInt64) {
     w <- if (ptype == .pqInt32) 4L else 8L
     if (pos + count * w - 1 > length(buf)) take(count * w)
-    v <- .pq_ints(buf, w, identical(kind, "unsigned"), pos, count)
+    # an INT64 time (`kind` its counts per second) as seconds, rounded once
+    v <- if (ptype == .pqInt64 && is.numeric(kind)) {
+      .Call(C_rmd_pq_secs, buf, pos, count, 8L, kind)
+    } else {
+      .pq_ints(buf, w, identical(kind, "unsigned"), pos, count)
+    }
     return(list(values = v, pos = pos + count * w))
   }
   if (ptype == .pqFloat) {
@@ -492,12 +500,9 @@
     return(list(values = vals, pos = pos + count * type_length))
   }
   if (ptype == .pqInt96) {
-    block <- take(count * 12L)
-    o <- rep((seq_len(count) - 1L) * 12L, each = 8L)
-    nanos <- .pq_ints(block[o + 1:8], 8L)
-    o <- rep((seq_len(count) - 1L) * 12L, each = 4L)
-    jday <- .pq_u32(block[o + 9:12])
-    vals <- (jday - 2440588) * 86400 * 1e9 + nanos
+    # the legacy timestamp, as seconds since the epoch rounded once (src/pqplain.c)
+    if (pos + count * 12 - 1 > length(buf)) take(count * 12L)
+    vals <- .Call(C_rmd_pq_secs, buf, pos, count, 12L, 1e9)
     return(list(values = vals, pos = pos + count * 12L))
   }
   stop("unsupported physical type ", ptype, call. = FALSE)
@@ -529,20 +534,41 @@
   }
 }
 
+# The counts per second of a TIMESTAMP (named "ts") or a TIME (named "time") column,
+# from its LogicalType first or its converted type; NULL for any other column (a
+# timestamp of a unit the file does not name included).
+.pq_per <- function(converted, logical) {
+  lt <- function(id) if (is.null(logical)) NULL else .pq_f(logical, id)
+  ct <- if (is.null(converted)) -1L else as.integer(converted)
+  ts <- if (!is.null(lt(8))) .pq_unit(lt(8)) else if (ct == .pqCtTsMillis) 1e3
+    else if (ct == .pqCtTsMicros) 1e6
+  if (!is.null(ts)) return(c(ts = ts))
+  tm <- if (!is.null(lt(7))) .pq_unit(lt(7)) else if (ct == .pqCtTimeMillis) 1e3
+    else if (ct == .pqCtTimeMicros) 1e6
+  if (!is.null(tm)) c(time = tm)
+}
+
 # TRUE when the schema element marks its column a DECIMAL.
 .pq_is_decimal <- function(converted, logical) {
   identical(as.integer(converted), .pqCtDecimal) ||
     (!is.null(logical) && !is.null(.pq_f(logical, 5)))
 }
 
-# TRUE when an INT32 or INT64 column holds unsigned whole numbers: marked so (UINT_32,
-# UINT_64, or an IntType that is not signed), and not as a DECIMAL, a date, a time or
-# a timestamp, which .pq_apply_logical() reads first and as signed. The values are
-# decoded unsigned (.pq_decode_plain()), so a UINT_64 is rounded once.
+# TRUE when an INT32 or INT64 column holds unsigned whole numbers of 32 or 64 bits:
+# marked so (UINT_32, UINT_64, or an IntType of 32 or 64 bits that is not signed),
+# and not as a DECIMAL, a date, a time or a timestamp, which .pq_apply_logical()
+# reads first and as signed. The values are decoded unsigned (.pq_decode_plain()),
+# so a UINT_64 is rounded once. An unsigned 8- or 16-bit column (UINT_8, UINT_16, or
+# an IntType of 8 or 16 bits, as arrow marks uint8 and uint16) is read as the INT32
+# it is stored as: every such value is an R integer.
 .pq_is_unsigned <- function(ptype, converted, logical) {
   ct <- if (is.null(converted)) -1L else as.integer(converted)
+  it <- .pq_f(logical, 10) %||% list()
+  # an IntType without its (required) bit width is taken to be as wide as its type
+  bw <- .pq_f(it, 1) %||% 64
   marked <- any(ct %in% c(.pqCtUint32, .pqCtUint64),
-                identical(.pq_f(.pq_f(logical, 10) %||% list(), 2), FALSE))
+                identical(.pq_f(it, 2), FALSE) &&
+                  is.numeric(bw) && length(bw) == 1L && !is.na(bw) && bw >= 32)
   # a date (6), a time (7) or a timestamp (8)
   first <- !all(vapply(c(6, 7, 8), function(id) is.null(.pq_f(logical, id)), NA))
   all(ptype %in% c(.pqInt32, .pqInt64), marked, !first,
@@ -648,22 +674,18 @@
     .pq_inexact(v, name)
     return(.pq_unscale(as.numeric(v), s))
   }
-  # INT96 is the legacy timestamp: nanoseconds since the epoch
+  # INT96 is the legacy timestamp, decoded as seconds (.pq_decode_plain())
   if (ptype == .pqInt96) {
-    return(posix(v / 1e9))
+    return(posix(v))
   }
   if ((ct == .pqCtDate || !is.null(lt(6))) && ptype == .pqInt32) {
     return(structure(as.numeric(v), class = "Date"))
   }
-  per <- if (!is.null(lt(8))) .pq_unit(lt(8)) else if (ct == .pqCtTsMillis) 1e3
-    else if (ct == .pqCtTsMicros) 1e6
+  # a time of INT64 is decoded as seconds; one of INT32 is a count, exact, divided once
+  per <- .pq_per(converted, logical)
   if (!is.null(per)) {
-    return(posix(v / per))
-  }
-  per <- if (!is.null(lt(7))) .pq_unit(lt(7)) else if (ct == .pqCtTimeMillis) 1e3
-    else if (ct == .pqCtTimeMicros) 1e6
-  if (!is.null(per)) {
-    return(as.difftime(as.numeric(v) / per, units = "secs"))
+    s <- if (ptype == .pqInt64) v else as.numeric(v) / per[[1L]]
+    return(if (names(per) == "ts") posix(s) else as.difftime(s, units = "secs"))
   }
   # read unsigned already; signed INT32 values given here are moved up by 2^32,
   # which is exact (2^64 would round a second time, so INT64 is never moved)
@@ -1066,9 +1088,10 @@
 #' Read a Parquet file
 #'
 #' Native Parquet reader: no nanoparquet, no arrow. Handles the v1
-#' format with PLAIN, RLE and dictionary encodings, GZIP, Snappy, Zstandard
-#' (ZSTD) or no compression. ZSTD pages are read by a decoder in the package
-#' (RFC 8878, without dictionaries), so no other package is needed for them;
+#' format with PLAIN, RLE and dictionary encodings, GZIP (one or more gzip
+#' members a page), Snappy, Zstandard (ZSTD) or no compression. ZSTD pages
+#' are read by a decoder in the package (RFC 8878, without dictionaries), so
+#' no other package is needed for them;
 #' the writer does not write ZSTD. Nested and repeated columns are refused.
 #'
 #' @param path Path to a `.parquet` file.
@@ -1101,11 +1124,30 @@
 #'   FLOAT16 a double. Other fixed-length bytes (an INTERVAL, or bytes with no
 #'   logical type) are refused by name.
 #'
-#'   An INT32 column is an integer column, unless it holds -2147483648 (-2^31),
-#'   which is R's `NA_integer_` and no R integer: then the whole column is a
-#'   double. An unsigned 32-bit column and every 64-bit one are doubles: exact
-#'   below 2^53, otherwise the nearest double, with a warning that they are
-#'   rounded.
+#'   An INT32 column is an integer column unless one of its values cannot be
+#'   an R integer, which is -2147483648 (-2^31, R's `NA_integer_`): then the
+#'   whole column is a double. This is decided once for the whole column,
+#'   across all its pages and row groups, from the values in its rows: an
+#'   entry of a dictionary that no row uses does not count. Unsigned 8- and
+#'   16-bit columns (stored as INT32) always fit and are integer columns, and
+#'   an unsigned 32-bit column is a double column, whether the file marks the
+#'   type by its converted type (`UINT_8`, `UINT_16`, `UINT_32`) or by its
+#'   logical type (an unsigned `INT(8)`, `INT(16)` or `INT(32)`, as arrow
+#'   writes them). Every other 64-bit column is a double column: exact below
+#'   2^53, otherwise the nearest double, with a warning that it is rounded.
+#'
+#'   A TIMESTAMP (in milliseconds, microseconds or nanoseconds, or the legacy
+#'   INT96) is a `POSIXct` in UTC, and a TIME a `difftime` in seconds. Each
+#'   is the double nearest to its exact number of seconds, rounded once and
+#'   without a warning. A `POSIXct` is a double: it holds about 16 significant
+#'   digits, so within 2^33 seconds (272 years) of 1970 it resolves a
+#'   microsecond and around 2025 steps of about 238 nanoseconds; a time in
+#'   nanoseconds is the nearest such value, not the nanosecond itself.
+#'
+#'   Column names are the file's names exactly: an empty name stays `""`, a
+#'   name used twice stays twice, and no name is changed to make it
+#'   syntactic or unique (text that is valid UTF-8 is marked UTF-8). A file
+#'   with no columns reads as a data frame of its rows and no columns.
 #' @return A `data.frame`. Every error the reader raises, a missing or
 #'   damaged file included, starts with `parquet:`; no base-R warning escapes
 #'   it (a value a damaged file makes R warn about is an error instead).
@@ -1120,9 +1162,8 @@ morie_read_parquet <- function(path, columns = NULL) {
   tryCatch(
     withCallingHandlers(.pq_read(path, columns, size), warning = function(w) {
       m <- conditionMessage(w)
-      # the reader's own two warnings pass; any other is damage
-      if (!startsWith(m, "duplicate column names in ") &&
-          !grepl("holds whole numbers of 2^53", m, fixed = TRUE)) {
+      # the reader's own warning passes; any other is damage
+      if (!grepl("holds whole numbers of 2^53", m, fixed = TRUE)) {
         stop("parquet: the file is damaged (", m, ")", call. = FALSE)
       }
     }),
@@ -1143,6 +1184,14 @@ morie_read_parquet <- function(path, columns = NULL) {
                      "|FIXED_LEN_BYTE_ARRAY |unsupported physical |data page v2 ",
                      "|compression codec |BIT_PACKED |dictionary-encoded |encoding ",
                      "|nested schema |repeated column |no such column|footer says )")
+
+# A column name from the footer, marked UTF-8 when it is (a Parquet string is UTF-8)
+# and otherwise left as its bytes: never changed.
+.pq_name <- function(b) {
+  s <- rawToChar(b)
+  if (validUTF8(s)) Encoding(s) <- "UTF-8"
+  s
+}
 
 .pq_read <- function(path, columns, size) {
   con <- file(path, "rb")
@@ -1169,10 +1218,11 @@ morie_read_parquet <- function(path, columns = NULL) {
     stop("parquet: row groups hold ", sum(rg_rows), " rows; the footer says ",
          num_rows, call. = FALSE)
   }
-  if (is.null(schema) || length(schema) < 2L) stop("parquet: empty schema", call. = FALSE)
+  # the root alone is a table of no columns (arrow writes one for a frame of none)
+  if (is.null(schema) || !length(schema)) stop("parquet: empty schema", call. = FALSE)
 
   leaves <- list()
-  for (i in seq.int(2L, length(schema))) {
+  for (i in seq_along(schema)[-1L]) {
     el <- schema[[i]]
     if (!is.null(.pq_f(el, 5))) {
       stop("nested schema not implemented: group field ",
@@ -1194,7 +1244,7 @@ morie_read_parquet <- function(path, columns = NULL) {
       )
     }
     leaves[[length(leaves) + 1L]] <- list(
-      name = rawToChar(.pq_f(el, 4)),
+      name = .pq_name(.pq_f(el, 4)),
       type = as.integer(.pq_f(el, 1)),
       typelen = .pq_f(el, 2),
       converted = .pq_f(el, 6),
@@ -1230,6 +1280,10 @@ morie_read_parquet <- function(path, columns = NULL) {
     # a UUID, a FLOAT16), otherwise refused by name rather than as damage
     if (leaf$type == .pqFlba) leaf$kind <- .pq_flba_kind(leaf)
     if (.pq_is_unsigned(leaf$type, leaf$converted, leaf$logical)) leaf$kind <- "unsigned"
+    # an INT64 time is decoded straight to seconds: as a double count it was rounded
+    # before it was divided
+    per <- .pq_per(leaf$converted, leaf$logical)
+    if (leaf$type == .pqInt64 && !isdec && !is.null(per)) leaf$kind <- per[[1L]]
     if (leaf$type == .pqByteArray && isdec) {
       stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL stored as bytes ",
            "of varying length, which this reader does not read; name the ",
@@ -1288,8 +1342,11 @@ morie_read_parquet <- function(path, columns = NULL) {
       v <- as.numeric(col)
       if (leaf$type == .pqBoolean) {
         v <- as.logical(v)
-      } else if (leaf$type == .pqInt32 && !is.double(col)) {
-        # doubles when the column holds -2^31 (no R integer does) or is unsigned
+      } else if (leaf$type == .pqInt32 && !identical(leaf$kind, "unsigned") &&
+                   !any(v == -2^31, na.rm = TRUE)) {
+        # decided once for the whole column, from its values: a page or a
+        # dictionary decoded as doubles (it held -2^31, used or not) does not decide
+        # it. Doubles when a value is -2^31 (no R integer is) or 32-bit unsigned.
         v <- as.integer(v)
       }
       v <- .pq_apply_logical(v, leaf$type, leaf$converted, leaf$scale,
@@ -1298,28 +1355,19 @@ morie_read_parquet <- function(path, columns = NULL) {
     out[[length(out) + 1L]] <- v
     out_names <- c(out_names, leaf$name)
   }
-  if (anyDuplicated(out_names)) {
-    warning("duplicate column names in ", basename(path), ": ",
-            paste(sQuote(unique(out_names[duplicated(out_names)])),
-                  collapse = ", "), "; made unique with make.unique()",
-            call. = FALSE)
-    out_names <- make.unique(out_names)
-  }
-  names(out) <- out_names
-
-  # columns = character(0) asks for no column: a frame with the file's rows and none
-  df <- if (length(out)) {
-    as.data.frame(out, stringsAsFactors = FALSE, check.names = FALSE)
-  } else {
-    structure(list(), names = character(), class = "data.frame",
-              row.names = .set_row_names(as.integer(num_rows)))
-  }
-  if (nrow(df) != num_rows) {
-    stop("footer says ", num_rows, " rows, decoded ", nrow(df),
+  # exact, never padded or recycled: a column of another length is damage
+  short <- lengths(out) != num_rows
+  if (any(short)) {
+    stop("footer says ", num_rows, " rows, decoded ", lengths(out)[short][1L],
       call. = FALSE
     )
   }
-  df
+  # the file's names as they are: "" stays "" and a name used twice stays twice.
+  # as.data.frame() named an unnamed column after a deparse of its values, and
+  # check.names or make.unique() would change names the file gives.
+  # columns = character(0) asks for no column: a frame with the file's rows and none
+  structure(out, names = out_names, class = "data.frame",
+            row.names = .set_row_names(as.integer(num_rows)))
 }
 
 # ----------------------------------------------------------------- write
@@ -1345,12 +1393,12 @@ morie_read_parquet <- function(path, columns = NULL) {
     return(list(type = .pqInt32, converted = .pqCtDate))
   }
   if (inherits(v, "POSIXct")) {
-    if (any(abs(floor(as.numeric(v) * 1000)) >= 2^63, na.rm = TRUE)) {
+    if (any(!(abs(as.numeric(v)) < 2^63 / 1e6), na.rm = TRUE)) {
       stop("column ", sQuote(name), " has a time that is infinite or outside the ",
-           "range a Parquet TIMESTAMP holds (2^63 milliseconds either side of 1970).",
+           "range a Parquet TIMESTAMP holds (2^63 microseconds either side of 1970).",
            call. = FALSE)
     }
-    return(list(type = .pqInt64, converted = .pqCtTsMillis))
+    return(list(type = .pqInt64, converted = .pqCtTsMicros))
   }
   # written as text these would read back as a different type: refused, not converted
   # an integer64's bits are not a double's value: written as a DOUBLE it read back wrong
@@ -1373,26 +1421,29 @@ morie_read_parquet <- function(path, columns = NULL) {
   list(type = .pqByteArray, converted = .pqCtUtf8)
 }
 
-# Down to whole days and whole milliseconds, as R prints them: as.integer() cut
-# Date(-0.5), which prints as 1969-12-31, to day 0 (1970-01-01), and rounding moved
-# 23:59:59.9996 to the next day.
+# Down to whole days, as R prints them: as.integer() cut Date(-0.5), which prints as
+# 1969-12-31, to day 0 (1970-01-01). A time stays in seconds: .pq_encode_i64() writes
+# its nearest whole microsecond, worked out exactly.
 # (.pq_infer() has refused values outside the range of either)
 .pq_prep_write <- function(v, inf) {
   if (inherits(v, "Date")) {
     return(as.integer(floor(unclass(v))))
   }
   if (inherits(v, "POSIXct")) {
-    return(floor(as.numeric(v) * 1000))
+    return(as.numeric(v))
   }
   v
 }
 
 # writeBin() has no 64-bit integer, and its two 32-bit halves went through
 # as.integer(), which made a low half of 2^31 NA (one second in every 2^29 of
-# POSIXct time): src/pqplain.c writes the 64-bit value's own bytes.
-.pq_encode_i64 <- function(values) .Call(C_rmd_pq_i64, as.numeric(values))
+# POSIXct time): src/pqplain.c writes the 64-bit value's own bytes. With `per` 1e6
+# the values are times in seconds, written as their nearest whole microsecond.
+.pq_encode_i64 <- function(values, per = 1) {
+  .Call(C_rmd_pq_i64, as.numeric(values), per)
+}
 
-.pq_encode_plain <- function(values, ptype, name = "a column") {
+.pq_encode_plain <- function(values, ptype, name = "a column", per = 1) {
   if (length(values) == 0L) {
     return(raw(0))
   }
@@ -1409,7 +1460,7 @@ morie_read_parquet <- function(path, columns = NULL) {
     ))
   }
   if (ptype == .pqInt64) {
-    return(.pq_encode_i64(values))
+    return(.pq_encode_i64(values, per))
   }
   if (ptype == .pqDouble) {
     return(writeBin(as.numeric(values), raw(),
@@ -1463,11 +1514,16 @@ morie_read_parquet <- function(path, columns = NULL) {
 #' @param path Destination path.
 #' @param compression `"gzip"` (default; zlib level 9), `"snappy"`, or `NULL`
 #'   for uncompressed pages.
-#' @details A `Date` column is written as a Parquet DATE (whole days) and a
-#'   `POSIXct` column as a Parquet TIMESTAMP (whole milliseconds since
-#'   1970-01-01 UTC), each taken down to the whole day or millisecond as R
-#'   prints them, before 1970 too: a fractional `Date` of -0.5 (printed
-#'   1969-12-31) is written as 1969-12-31. The format stores the instant
+#' @details A `Date` column is written as a Parquet DATE (whole days), taken
+#'   down to the whole day as R prints it, before 1970 too: a fractional `Date`
+#'   of -0.5 (printed 1969-12-31) is written as 1969-12-31. A `POSIXct` column
+#'   is written as a Parquet TIMESTAMP of whole microseconds since 1970-01-01
+#'   UTC, each time the nearest microsecond to it (ties to even), up to 2^63
+#'   microseconds (about 292,000 years) either side of 1970. A time read from a
+#'   file of milliseconds or microseconds within 2^33 seconds (272 years) of
+#'   1970, where a double still resolves a microsecond, is written back as the
+#'   count it was read from, so it reads back identical; finer parts of a
+#'   second are rounded to the microsecond. The format stores the instant
 #'   but not a time zone, so it reads back as the same instant in UTC: a column in
 #'   `America/Chicago` comes back with `tz = "UTC"`. Set the zone again with
 #'   `attr(x, "tzone") <- "America/Chicago"`, or keep an ISO 8601 text column
@@ -1500,8 +1556,7 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
   if (anyDuplicated(names_)) {
     stop("duplicate column names: ",
          paste(sQuote(unique(names_[duplicated(names_)])), collapse = ", "),
-         "; a Parquet reader cannot address them, and this one would ",
-         "keep only the last.", call. = FALSE)
+         "; a Parquet reader cannot address them by name.", call. = FALSE)
   }
   # every column's type is settled (or refused) before the file is opened
   infs <- lapply(seq_along(names_), function(k) .pq_infer(df[[k]], names_[k]))
@@ -1523,7 +1578,8 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
 
     body <- c(
       .pq_encode_levels(defs, 1L),
-      .pq_encode_plain(present, inf$type, names_[k])
+      .pq_encode_plain(present, inf$type, names_[k],
+                       if (identical(inf$converted, .pqCtTsMicros)) 1e6 else 1)
     )
     # page sizes are 32-bit in the page header (and the codecs take no more)
     if (length(body) > .Machine$integer.max) {

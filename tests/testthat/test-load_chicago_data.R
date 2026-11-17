@@ -519,3 +519,38 @@ test_that("options cache_dir and mirror that are not one string are refused", {
   withr::local_options(rmoriedata.mirror = NULL)
   expect_s3_class(chiload("arrests", mirror = tempdir()), "data.frame")
 })
+
+test_that("the call that writes the full cache returns what every later call reads", {
+  for (type in c("arrests", "complaints")) {
+    local_chicago_cache()
+    s <- .rmd_sample(type)
+    m <- withr::local_tempdir()
+    # times with a part of a millisecond, as arrow and pandas keep them: written in
+    # microseconds they are read back as the same doubles
+    s$date <- s$date + 0.000123
+    s$case_number[1L] <- ""
+    mf <- file.path(m, paste0(type, "_full.parquet"))
+    morie_write_parquet(s, mf)
+    testthat::local_mocked_bindings(.rmd_full_count_or_na = function(type) nrow(s))
+    a <- chiload(type, full = TRUE, mirror = m)
+    b <- chiload(type, full = TRUE, mirror = m)
+    expect_identical(a, b)
+    expect_identical(as.numeric(a$date), as.numeric(morie_read_parquet(mf)$date))
+    expect_identical(round(as.numeric(a$date) %% 1, 6), round(as.numeric(s$date) %% 1, 6))
+    expect_identical(chiload(type, full = TRUE, mirror = m, as = "tibble"),
+                     chiload(type, full = TRUE, mirror = m, as = "tibble"))
+  }
+  # a mirror holding what the cache cannot (finer than a microsecond, as a file of
+  # nanoseconds gives): the first call returns what the cache holds too
+  for (type in c("arrests", "complaints")) {
+    local_chicago_cache()
+    m <- withr::local_tempdir()
+    fine <- .rmd_sample(type)
+    fine$date <- fine$date + 1e-7
+    testthat::local_mocked_bindings(.rmd_mirror_read = function(u) fine,
+                                    .rmd_full_count_or_na = function(type) nrow(fine))
+    a <- chiload(type, full = TRUE, mirror = m)
+    expect_identical(chiload(type, full = TRUE, mirror = m), a)
+    expect_true(file.exists(file.path(.rmd_cache_dir(), paste0(type, "_full.parquet"))))
+  }
+})

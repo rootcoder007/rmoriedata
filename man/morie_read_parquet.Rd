@@ -20,9 +20,10 @@ it (a value a damaged file makes R warn about is an error instead).
 }
 \description{
 Native Parquet reader: no nanoparquet, no arrow. Handles the v1
-format with PLAIN, RLE and dictionary encodings, GZIP, Snappy, Zstandard
-(ZSTD) or no compression. ZSTD pages are read by a decoder in the package
-(RFC 8878, without dictionaries), so no other package is needed for them;
+format with PLAIN, RLE and dictionary encodings, GZIP (one or more gzip
+members a page), Snappy, Zstandard (ZSTD) or no compression. ZSTD pages
+are read by a decoder in the package (RFC 8878, without dictionaries), so
+no other package is needed for them;
 the writer does not write ZSTD. Nested and repeated columns are refused.
 }
 \details{
@@ -52,10 +53,29 @@ refused. A UUID is text (\code{"8-4-4-4-12"} lower-case hexadecimal), and a
 FLOAT16 a double. Other fixed-length bytes (an INTERVAL, or bytes with no
 logical type) are refused by name.
 
-An INT32 column is an integer column, unless it holds -2147483648 (-2^31),
-which is R's \code{NA_integer_} and no R integer: then the whole column is a
-double. An unsigned 32-bit column and every 64-bit one are doubles: exact
-below 2^53, otherwise the nearest double, with a warning that they are
-rounded.
+An INT32 column is an integer column unless one of its values cannot be
+an R integer, which is -2147483648 (-2^31, R's \code{NA_integer_}): then the
+whole column is a double. This is decided once for the whole column,
+across all its pages and row groups, from the values in its rows: an
+entry of a dictionary that no row uses does not count. Unsigned 8- and
+16-bit columns (stored as INT32) always fit and are integer columns, and
+an unsigned 32-bit column is a double column, whether the file marks the
+type by its converted type (\code{UINT_8}, \code{UINT_16}, \code{UINT_32}) or by its
+logical type (an unsigned \code{INT(8)}, \code{INT(16)} or \code{INT(32)}, as arrow
+writes them). Every other 64-bit column is a double column: exact below
+2^53, otherwise the nearest double, with a warning that it is rounded.
+
+A TIMESTAMP (in milliseconds, microseconds or nanoseconds, or the legacy
+INT96) is a \code{POSIXct} in UTC, and a TIME a \code{difftime} in seconds. Each
+is the double nearest to its exact number of seconds, rounded once and
+without a warning. A \code{POSIXct} is a double: it holds about 16 significant
+digits, so within 2^33 seconds (272 years) of 1970 it resolves a
+microsecond and around 2025 steps of about 238 nanoseconds; a time in
+nanoseconds is the nearest such value, not the nanosecond itself.
+
+Column names are the file's names exactly: an empty name stays \code{""}, a
+name used twice stays twice, and no name is changed to make it
+syntactic or unique (text that is valid UTF-8 is marked UTF-8). A file
+with no columns reads as a data frame of its rows and no columns.
 }
 \keyword{internal}

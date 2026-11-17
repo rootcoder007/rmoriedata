@@ -29,12 +29,22 @@
   }
   svc <- .rmd_services_data()
   if (is.null(svc)) return("https://data.rmorie.com")
-  if (!identical(svc[["mode"]], "key") || !nzchar(svc[["base_url"]] %||% "")) {
+  u <- .rmd_svc_field(svc, "base_url")
+  if (!identical(.rmd_svc_field(svc, "mode"), "key") || is.null(u) ||
+        !grepl("^https?://[^/[:space:]]+", u, ignore.case = TRUE)) {
     stop("the curated-data service is not available right now (see ",
-         svc[["request_access"]] %||% "https://www.rmorie.com/access/", ")",
-         call. = FALSE)
+         .rmd_svc_field(svc, "request_access") %||% "https://www.rmorie.com/access/",
+         ")", call. = FALSE)
   }
-  svc[["base_url"]]
+  u
+}
+
+# A field of the services document's entry for the data service when it is one
+# string, else NULL: a document in another shape (not an object, a field that is a
+# list, several strings, NA) says the service is not available, never where it is.
+.rmd_svc_field <- function(svc, name) {
+  v <- if (is.list(svc)) svc[[name]]
+  if (.rmd_string(v)) v
 }
 
 # The stored key, or NULL: sent only to the address of the signed services document,
@@ -54,10 +64,8 @@
   m <- .rmd_locked(paste0(p, ".lock"), "the manifest of data.rmorie.com",
                    function() if (file.exists(p)) .rmd_manifest_parse(p))
   if (!is.list(m)) return(NULL)
-  for (d in m[["datasets"]]) {
-    if (identical(d[["key"]], key)) return(.rmd_size_ok(d[["bytes_gz"]], key))
-  }
-  NULL
+  d <- .rmd_entry_of(m[["datasets"]], key)
+  if (is.null(d)) NULL else .rmd_size_ok(d[["bytes_gz"]], key)
 }
 
 # The largest table size believed from a manifest (1 TiB): a size past it, or one that
@@ -104,10 +112,24 @@
 
 # The manifest's entry for a table, or NULL when it is not listed.
 .rmd_manifest_entry <- function(key, refresh = FALSE) {
-  for (d in .rmd_manifest(refresh)[["datasets"]]) {
-    if (identical(d[["key"]], key)) return(d)
+  .rmd_entry_of(.rmd_manifest(refresh)[["datasets"]], key)
+}
+
+# The entry the datasets `ds` list for `key`, or NULL. A key listed more than once
+# is one table: an entry that is not served decides it (the first served one was
+# used, and an entry marked restricted after it was ignored), and entries that
+# differ in anything else are a damaged manifest, not a choice.
+.rmd_entry_of <- function(ds, key) {
+  hit <- Filter(function(d) identical(d[["key"]], key), ds)
+  if (length(hit) < 2L) return(if (length(hit)) hit[[1L]])
+  off <- vapply(hit, .rmd_unserved, NA)
+  if (any(off)) return(hit[[which(off)[1L]]])
+  if (!all(vapply(hit, identical, NA, hit[[1L]]))) {
+    stop("the manifest of data.rmorie.com lists ", key, " ", length(hit), " times, ",
+         "not all the same; the manifest is damaged: try again later, or run ",
+         "hostcat(refresh = TRUE)", call. = FALSE)
   }
-  NULL
+  hit[[1L]]
 }
 
 # The manifest, fetched when the cached copy is over a day old or `refresh`.
@@ -205,23 +227,44 @@
 
 # Tables data.rmorie.com does not serve: their source terms do not allow
 # redistribution (ICPSR studies, the NCVS 38604 extract among them). This is the
-# one list; a table the manifest itself marks (`access` other than "open" or
-# "public", or `restricted: true`, on the entry or in its `meta`) is treated the
-# same. They are left out of hostcat() and refused before any request.
+# one list; a table the manifest itself marks is treated the same. They are left
+# out of hostcat() and refused before any request.
+# A mark fails closed: an entry is served only when its key is one string and every
+# mark it carries, on the entry or in its `meta` object, is one the package knows to
+# be open, in the shape it knows: `access` absent or the one string "open" or
+# "public" (in any case), and `restricted` absent or JSON false. Any other value,
+# type or length ("closed", ["open"], which is parsed as a list, "true", 1, null,
+# two values) is a table not served, and so is a `meta` that is an array.
 .rmd_unserved_re <- "^(icpsr_|ncvs_38604)"
 
 .rmd_unserved <- function(d) {
   k <- d[["key"]]
-  if (is.character(k) && length(k) == 1L && grepl(.rmd_unserved_re, k)) return(TRUE)
-  for (x in list(d, d[["meta"]])) {
-    if (!is.list(x)) next
-    a <- x[["access"]]
-    if (is.character(a) && length(a) == 1L && !tolower(a) %in% c("open", "public")) {
-      return(TRUE)
-    }
-    if (isTRUE(x[["restricted"]])) return(TRUE)
-  }
-  FALSE
+  m <- d[["meta"]]
+  array <- is.list(m) && length(m) && is.null(names(m))
+  !.rmd_string(k) || grepl(.rmd_unserved_re, k) || array ||
+    !.rmd_open_marks(d) || !.rmd_open_marks(if (is.list(m)) m)
+}
+
+# One string, not NA.
+.rmd_string <- function(x) is.character(x) && length(x) == 1L && !is.na(x)
+
+# Whether every `access` and `restricted` mark of the object `x` (a field given
+# twice is checked twice) is a known open value in its known shape.
+.rmd_open_marks <- function(x) {
+  nm <- names(x)
+  open <- function(a) .rmd_string(a) && tolower(a) %in% c("open", "public")
+  all(vapply(x[nm %in% "access"], open, NA)) &&
+    all(vapply(x[nm %in% "restricted"], identical, NA, FALSE))
+}
+
+# Which datasets `ds` are not served: their own marks, or their key listed again in
+# an entry that is not served (.rmd_entry_of()).
+.rmd_off <- function(ds) {
+  off <- vapply(ds, .rmd_unserved, NA)
+  keys <- vapply(ds, function(d) {
+    if (.rmd_string(d[["key"]])) d[["key"]] else NA_character_
+  }, "")
+  off | keys %in% keys[off]
 }
 
 .rmd_unserved_stop <- function(key) {
@@ -582,7 +625,10 @@
 #' tables whose source terms do not allow redistribution (ICPSR studies,
 #' among them the NCVS 38604 extract, and any table the manifest marks
 #' restricted) are not served: they are left out, with a message counting
-#' them, and \code{hostload()} refuses them before any request.
+#' them, and \code{hostload()} refuses them before any request. A table is
+#' served only when its \code{access} mark, if any, is \code{"open"} or
+#' \code{"public"} and its \code{restricted} mark, if any, is \code{false};
+#' a mark of any other value or shape counts as restricted.
 #' \code{hostload()} checks each table against the SHA-256 the manifest
 #' lists for it (\code{sha256_gz}, \code{sha256} or \code{sha}) and refuses
 #' a file that does not match; a table listed without any digest is used
@@ -647,7 +693,7 @@ hostcat <- function(refresh = FALSE) {
   .rmd_ctx$fn <- "hostcat()"
   on.exit(.rmd_ctx$fn <- NULL, add = TRUE)
   ds <- .rmd_manifest(refresh)[["datasets"]]
-  off <- vapply(ds, .rmd_unserved, NA)
+  off <- .rmd_off(ds)
   if (any(off)) {
     message(sprintf(
       ngettext(sum(off), "%d table is not served: its source terms do not",

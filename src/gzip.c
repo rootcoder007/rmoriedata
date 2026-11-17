@@ -1,8 +1,8 @@
 /* SPDX-License-Identifier: AGPL-3.0-or-later
  *
  * gzip.c -- the Parquet GZIP page codec (RFC 1952 members) through zlib,
- * which R itself links. Compression at level 9; decompression accepts a
- * gzip or zlib stream (windowBits 15 + 32 detects the header).
+ * which R itself links. Compression at level 9; decompression accepts one or
+ * more gzip members, or one zlib stream (windowBits 15 + 32 detects the header).
  */
 #include <R.h>
 #include <Rinternals.h>
@@ -38,30 +38,53 @@ SEXP C_rmd_gzip_compress(SEXP x) {
     return out;
 }
 
+/* RFC 1952, 2.2: a gzip file is a series of members, and a page may hold several
+ * (concatenated gzip output). Each is inflated in turn into the one buffer of the
+ * stated size, so the bounds below hold for all of them together: no member writes
+ * past `want`, and a member split from a bomb stops there. A page must come out at
+ * exactly `want` bytes with all its input used: bytes after the last member that are
+ * not a member are refused, as is a zlib stream followed by anything. */
 SEXP C_rmd_gzip_decompress(SEXP x, SEXP size) {
     if (TYPEOF(x) != RAWSXP) Rf_error("gzip: expected a raw vector");
     double want = asReal(size);
     if (!R_FINITE(want) || want < 0 || want != floor(want)) Rf_error("gzip: bad uncompressed size");
+    /* avail_in is 32-bit: a longer page would be cut short without a word */
+    if ((double) XLENGTH(x) > 4294967295.0)
+        Rf_error("gzip: a page of %.0f bytes is more than this codec takes", (double) XLENGTH(x));
     /* checked before allocating, as in snappy.c: deflate expands at most 1032 to 1, and avail_out is 32-bit */
     if (want > 4294967295.0 || want > (double) XLENGTH(x) * 1032.0 + 1024.0)
         Rf_error("gzip: page states %.0f bytes, more than %.0f compressed bytes can hold", want, (double) XLENGTH(x));
     /* before the cast: where R_xlen_t is 32 bits, a larger size is undefined behaviour */
     if (want > (double) R_XLEN_T_MAX) Rf_error("gzip: page states %.0f bytes, more than this R can allocate", want);
     SEXP out = PROTECT(allocVector(RAWSXP, (R_xlen_t) want));
+    unsigned char spare = 0; /* somewhere to point for a page of no bytes */
+    const unsigned char *in = RAW(x);
+    int gz = XLENGTH(x) >= 2 && in[0] == 0x1f && in[1] == 0x8b, rc;
     z_stream s;
     memset(&s, 0, sizeof s);
     if (inflateInit2(&s, 15 + 32) != Z_OK) Rf_error("gzip: inflateInit2 failed");
-    s.next_in = (Bytef *) RAW(x);
+    s.next_in = (Bytef *) in;
     s.avail_in = (uInt) XLENGTH(x);
-    s.next_out = RAW(out);
+    s.next_out = want > 0 ? RAW(out) : &spare;
     s.avail_out = (uInt) want;
-    int rc = inflate(&s, Z_FINISH);
-    size_t got = (size_t) s.total_out;
+    for (;;) {
+        rc = inflate(&s, Z_FINISH);
+        if (rc != Z_STREAM_END || s.avail_in == 0 || !gz) break;
+        /* the next bytes must be another gzip member, not a zlib stream */
+        if (inflateReset2(&s, 15 + 16) != Z_OK) break;
+    }
+    /* total_out restarts at each member: what is left of the buffer counts */
+    double got = want - (double) s.avail_out;
+    uInt left = s.avail_in;
     inflateEnd(&s);
-    if (rc != Z_STREAM_END || got != (size_t) want)
-        Rf_error("gzip: page did not decompress to its stated %.0f bytes", want);
-    UNPROTECT(1);
-    return out;
+    if (rc == Z_STREAM_END && left == 0 && got == want) {
+        UNPROTECT(1);
+        return out;
+    }
+    if (got == want && left > 0)
+        Rf_error("gzip: page holds data after its stated %.0f bytes", want);
+    Rf_error("gzip: page did not decompress to its stated %.0f bytes", want);
+    return R_NilValue; /* not reached */
 }
 
 /* CRC-32 (zlib's, the polynomial Parquet uses for PageHeader.crc) of a raw vector, as a

@@ -21,6 +21,13 @@ against the signed manifest first. The Parquet path is the bridge to
 Python: \code{pandas.read_parquet(path)} gives the same typed table
 \code{\link[=mdload]{mdload()}} returns.
 }
+\details{
+Every call checks the file again: its SHA-256 is computed and compared
+with the manifest's (the store's files are small; the largest takes a few
+tens of milliseconds), so a file changed since an earlier call is refused,
+whatever else about it stayed the same. What is not covered: a change
+made after the path is returned, before it is read.
+}
 \examples{
 p <- mdpath("arsau_2023_uof_main_records")
 file.exists(p)

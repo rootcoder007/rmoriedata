@@ -197,7 +197,8 @@ test_that("Dates and times before 1970 or with fractions keep the day and second
   morie_write_parquet(data.frame(t = tt), f)
   back <- morie_read_parquet(f)$t
   expect_identical(format(back, "%Y-%m-%d %H:%M:%S"), format(tt, "%Y-%m-%d %H:%M:%S"))
-  expect_identical(as.numeric(back) * 1000, floor(as.numeric(tt) * 1000))
+  # the nearest microsecond: each of these is one, so it reads back as it was
+  expect_identical(as.numeric(back), as.numeric(tt))
 })
 
 # A page header: type, sizes, and for a data page its value count and
@@ -393,6 +394,28 @@ pq_text_file <- function(pages, N, codec = .pqCGzip, optional = FALSE,
              charToRaw("PAR1")), f)
   f
 }
+
+test_that("a GZIP page of several members is read; bytes after the last are not", {
+  body <- writeBin(1:3000, raw(), size = 4L, endian = "little")
+  gz <- function(b) .Call(C_rmd_gzip_compress, b)
+  one <- function(stored) {
+    pq_text_file(list(list(n = 3000L, body = body, stored = stored)), 3000L,
+                 ptype = .pqInt32)
+  }
+  expect_identical(morie_read_parquet(one(c(gz(body[1:6000]), gz(body[6001:12000]))))$x,
+                   1:3000)
+  expect_identical(morie_read_parquet(one(c(gz(body[1:5]), gz(raw(0)),
+                                            gz(body[-(1:5)]))))$x, 1:3000)
+  for (tail in list(raw(4), as.raw(1:9), memCompress(as.raw(1:9), "gzip"))) {
+    expect_error(morie_read_parquet(one(c(gz(body), tail))),
+                 "^parquet: gzip: page holds data after its stated 12000 bytes")
+  }
+  # members that inflate to more than the page states: refused at that size
+  expect_error(morie_read_parquet(one(c(gz(body), gz(body)))),
+               "^parquet: gzip: page holds data after its stated 12000 bytes")
+  expect_error(morie_read_parquet(one(gz(body[-1]))),
+               "^parquet: gzip: page did not decompress to its stated 12000 bytes")
+})
 
 # an RLE run of `n` copies of `v` at bit width `w` (w <= 8)
 pq_run <- function(n, v = 0L, w = 1L) {

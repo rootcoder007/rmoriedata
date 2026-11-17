@@ -21,9 +21,9 @@
     stop("rmoriedata data store not found; reinstall rmoriedata.",
          call. = FALSE)
   }
-  # everything in .rmoriedata_cache (the manifest, the files verified, the catalog,
-  # the schema, the tables) belongs to one store: another store empties it, or a
-  # file verified in the first was served from the second unchecked
+  # everything in .rmoriedata_cache (the manifest, the catalog, the schema, the
+  # tables) belongs to one store: another store empties it, or a table read from the
+  # first was served for the second
   id <- normalizePath(p, winslash = "/", mustWork = FALSE)
   if (!identical(.rmoriedata_cache[["_store"]], id)) {
     .rmoriedata_reset_cache()
@@ -119,7 +119,10 @@ mdcat <- function() {
 #' Every table also ships as a Parquet file holding the same typed
 #' frame; `format = "parquet"` reads that copy instead. The first load
 #' of a table is cached for the session; later calls return the cached
-#' copy unless `refresh = TRUE`.
+#' copy unless `refresh = TRUE`. The cached copy is what the file held when
+#' it was checked; when [mdverify()] finds the file changed since, the
+#' cached copy is dropped, and the next load reads the file again and
+#' refuses it.
 #'
 #' @param slug Dataset slug; see the `slug` column of [mdcat()].
 #' @param refresh Re-read the file, and check it against the signed manifest
@@ -164,12 +167,6 @@ mdload <- function(slug, refresh = FALSE,
     stop(sprintf("No dataset '%s'. See mdcat() for valid slugs.",
                  slug), call. = FALSE)
   }
-  if (isTRUE(refresh)) {
-    # re-read means re-verified: a file changed since its first check is caught
-    v <- .rmd_cached("_verified")
-    assign("_verified", setdiff(v, c(row$source_path[1L], row$parquet_path[1L])),
-           envir = .rmoriedata_cache)
-  }
   if (format == "parquet") {
     rel <- row$parquet_path[1L]
     f <- file.path(.rmoriedata_extdata(), rel)
@@ -202,6 +199,12 @@ mdload <- function(slug, refresh = FALSE,
 #' against the signed manifest first. The Parquet path is the bridge to
 #' Python: `pandas.read_parquet(path)` gives the same typed table
 #' [mdload()] returns.
+#'
+#' Every call checks the file again: its SHA-256 is computed and compared
+#' with the manifest's (the store's files are small; the largest takes a few
+#' tens of milliseconds), so a file changed since an earlier call is refused,
+#' whatever else about it stayed the same. What is not covered: a change
+#' made after the path is returned, before it is read.
 #'
 #' @param slug Dataset slug; see the `slug` column of [mdcat()].
 #' @param format `"parquet"` (default) or `"csv"`. A dictionary or other non-table
@@ -302,8 +305,8 @@ mddict <- function(slug) {
 # Integrity. Every shipped file is listed with its SHA-256 in
 # `_checksums.csv`; the SHA-256 of that manifest is signed with an XMSS
 # (RFC 8391, SHA-256) key whose public half ships as `_signing_key.json`.
-# The signature is checked once per session and each file when it is
-# first read, so a modified or corrupted install fails loudly instead of
+# The signature is checked once per session and each file every time it is
+# read, so a modified or corrupted install fails loudly instead of
 # returning altered data. data-raw/sign_store.R produces the three files.
 
 .rmoriedata_json <- function(name, class) {
@@ -359,14 +362,14 @@ mddict <- function(slug) {
   m <- utils::read.csv(f, stringsAsFactors = FALSE,
                        colClasses = c("character", "numeric", "character"))
   assign("_manifest", m, envir = .rmoriedata_cache)
-  assign("_verified", character(0), envir = .rmoriedata_cache)
   m
 }
 
+# Every call hashes the file: the store is small (14 MB in 210 files, the largest
+# 2.3 MB), so a check costs a read of the file, at most about 50 ms. A list of the
+# files verified once was returned unchecked after the file changed in place, even
+# after mdverify() had reported it.
 .rmoriedata_check_file <- function(rel) {
-  if (rel %in% .rmd_cached("_verified")) {
-    return(invisible(TRUE))
-  }
   m <- .rmoriedata_manifest()
   row <- m[m$path == rel, , drop = FALSE]
   if (!nrow(row)) {
@@ -387,9 +390,23 @@ mddict <- function(slug) {
                         "Reinstall rmoriedata."),
                  rel, row$sha256[1L], got), call. = FALSE)
   }
-  assign("_verified", c(.rmoriedata_cache[["_verified"]], rel),
-         envir = .rmoriedata_cache)
   invisible(TRUE)
+}
+
+# Drops what the session cache built from the store files `bad`: the catalog, the
+# schema (and with it every table read from a CSV, which it typed) and the tables
+# read from them, so the next load reads the file again, checks it and refuses it.
+.rmoriedata_forget <- function(bad) {
+  if (!length(bad)) return(invisible(NULL))
+  keys <- ls(.rmoriedata_cache, all.names = TRUE)
+  cat <- .rmoriedata_cache[["_catalog"]]
+  csv <- grep("^table:csv:", keys, value = TRUE)
+  drop <- c(if ("_catalog.csv" %in% bad) "_catalog",
+            if ("_schema.csv" %in% bad) c("_schema", csv),
+            paste0("table:csv:", cat$slug[cat$source_path %in% bad]),
+            paste0("table:parquet:", cat$slug[cat$parquet_path %in% bad]))
+  rm(list = intersect(drop, keys), envir = .rmoriedata_cache)
+  invisible(NULL)
 }
 
 # Whether a store file resolves inside the store: a listed file replaced by a
@@ -412,7 +429,10 @@ mddict <- function(slug) {
 #' Every file rmoriedata ships is listed with its SHA-256 in a manifest,
 #' and the manifest is signed with an XMSS (RFC 8391, SHA-256) key whose
 #' public half ships with the package. Loading a table checks its file
-#' against the manifest; this function checks all of them at once.
+#' against the manifest; this function checks all of them at once. What the
+#' session has cached from a file found changed or missing (a table loaded
+#' by [mdload()], the catalog, the schema) is dropped, so the next load reads
+#' the file again and refuses it.
 #'
 #' A file present in the installed store but absent from the manifest is
 #' reported too, hidden (dot) files included, as a row with
@@ -461,6 +481,7 @@ mdverify <- function() {
       listed = FALSE, ok = FALSE, stringsAsFactors = FALSE
     )[names(m)])
   }
+  .rmoriedata_forget(m$path[m$listed & !m$ok])
   attr(m, "signature") <- TRUE
   m
 }

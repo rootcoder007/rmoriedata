@@ -32,7 +32,10 @@ description, rows and BigQuery source (the manifest is kept for a day);
 tables whose source terms do not allow redistribution (ICPSR studies,
 among them the NCVS 38604 extract, and any table the manifest marks
 restricted) are not served: they are left out, with a message counting
-them, and \code{hostload()} refuses them before any request.
+them, and \code{hostload()} refuses them before any request. A table is
+served only when its \code{access} mark, if any, is \code{"open"} or
+\code{"public"} and its \code{restricted} mark, if any, is \code{false};
+a mark of any other value or shape counts as restricted.
 \code{hostload()} checks each table against the SHA-256 the manifest
 lists for it (\code{sha256_gz}, \code{sha256} or \code{sha}) and refuses
 a file that does not match; a table listed without any digest is used

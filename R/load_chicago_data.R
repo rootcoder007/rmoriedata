@@ -465,7 +465,13 @@ chiclr <- function() {
     # Without the service's count a short export cannot be told from a
     # complete one, so the data is returned but not written across
     # sessions: a bad day stays confined to this session.
-    if (!bounded && !is.na(expected)) try(.rmd_cache_write(df, cache), silent = TRUE)
+    # the call that writes the cache returns what the cache holds, as every later
+    # call (which reads it) does: the two gave different times, and could differ
+    # in anything else the round trip through Parquet changes
+    if (!bounded && !is.na(expected) &&
+        !inherits(try(.rmd_cache_write(df, cache), silent = TRUE), "try-error")) {
+      df <- .rmd_cache_read(cache) %||% df
+    }
     attr(df, "rmd_src") <- if (grepl("\\.parquet$", u)) {
       sprintf("the mirror's %s (%s)", basename(u), u)
     } else {

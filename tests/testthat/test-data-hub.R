@@ -703,3 +703,65 @@ test_that("a refresh that failed for one cache folder does not hold back another
   expect_no_message(.rmd_manifest_get(ps[2], FALSE))
   expect_identical(tries, 2)
 })
+
+test_that("a manifest mark the package does not know is a table not served", {
+  withr::local_envvar(MORIE_HOSTED_KEY = NA, MORIE_DATA_URL = "https://data.example.test",
+                      XDG_CONFIG_HOME = withr::local_tempdir())
+  d <- withr::local_tempdir()
+  dir.create(file.path(d, "hosted"))
+  withr::local_options(rmoriedata.cache_dir = d)
+  testthat::local_mocked_bindings(
+    .rmd_data_get = function(...) stop("no request expected", call. = FALSE)
+  )
+  closed <- c('"access":["closed"]', '"access":["open"]', '"access":"closed"',
+              '"access":""', '"access":null', '"access":1', '"access":true',
+              '"access":["open","public"]', '"access":{"is":"open"}', '"access":" open"',
+              '"restricted":"true"', '"restricted":"false"', '"restricted":1',
+              '"restricted":0', '"restricted":null', '"restricted":true',
+              '"restricted":[false]',
+              '"meta":{"access":["closed"]}', '"meta":{"restricted":"yes"}',
+              '"meta":[{"access":"closed"}]')
+  open <- c('"access":"open"', '"access":"Public"', '"access":"OPEN"',
+            '"restricted":false', '"meta":{"access":"open","restricted":false}',
+            '"meta":"a description"', '"rows":1')
+  ent <- function(k, mark) sprintf('{"key":"db/%s",%s}', k, mark)
+  writeLines(paste0('{"datasets":[',
+                    paste(c(ent(paste0("c", seq_along(closed)), closed),
+                            ent(paste0("o", seq_along(open)), open),
+                            '{"key":5}', '{"key":["db/k"]}', '{"key":null}',
+                            # a key listed again, closed: not served at all
+                            '{"key":"db/twice"}', '{"key":"db/twice","access":"closed"}',
+                            # listed twice, differently: a damaged manifest
+                            '{"key":"db/odd","rows":1}', '{"key":"db/odd","rows":2}'),
+                          collapse = ","), "]}"),
+             file.path(d, "hosted", "manifest.json"))
+  expect_message(k <- hostcat()$key, "^25 tables are not served")
+  expect_identical(k, c(paste0("db/o", seq_along(open)), "db/odd", "db/odd"))
+  for (x in c(paste0("db/c", seq_along(closed)), "db/twice")) {
+    expect_error(hostload(x), paste0(x, " is not served by data.rmorie.com"),
+                 fixed = TRUE)
+  }
+  expect_error(hostload("db/odd"), "lists db/odd 2 times, not all the same")
+})
+
+test_that("a services document in another shape names no address", {
+  withr::local_envvar(MORIE_DATA_URL = NA)
+  svc <- NULL
+  testthat::local_mocked_bindings(.rmd_services_data = function() svc)
+  expect_identical(.rmd_data_url(), "https://data.rmorie.com")
+  svc <- list(mode = "key", base_url = "https://data.example.test")
+  expect_identical(.rmd_data_url(), "https://data.example.test")
+  bad <- list(list(mode = "key", base_url = list("https://data.example.test")),
+              list(mode = "key", base_url = c("https://a.test", "https://b.test")),
+              list(mode = "key", base_url = NA_character_),
+              list(mode = "key", base_url = 5),
+              list(mode = "key", base_url = "data.example.test"),
+              list(mode = list("key"), base_url = "https://data.example.test"),
+              list(mode = "off", base_url = "https://data.example.test"),
+              "https://data.example.test")
+  for (svc in bad) {
+    expect_error(.rmd_data_url(), "not available right now \\(see https://www.rmorie")
+  }
+  svc <- list(mode = "off", request_access = list("x", "y"))
+  expect_error(.rmd_data_url(), "(see https://www.rmorie.com/access/)", fixed = TRUE)
+})

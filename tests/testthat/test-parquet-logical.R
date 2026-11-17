@@ -248,20 +248,27 @@ test_that("times and timestamps are read as times, in every unit", {
   ts <- function(unit) {
     list("8" = list("1" = TRUE, "2" = stats::setNames(list(list()), unit)))
   }
-  expect_identical(.pq_apply_logical(1.5e12, .pqInt64, NULL, NULL, ts("1")), utc(1.5e9))
-  expect_identical(.pq_apply_logical(1.5e15, .pqInt64, NULL, NULL, ts("2")), utc(1.5e9))
-  expect_no_warning(
-    expect_identical(.pq_apply_logical(1.5e18, .pqInt64, NULL, NULL, ts("3")), utc(1.5e9))
-  )
-  expect_identical(.pq_apply_logical(1.5e12, .pqInt64, .pqCtTsMillis), utc(1.5e9))
-  expect_identical(.pq_apply_logical(1.5e15, .pqInt64, .pqCtTsMicros), utc(1.5e9))
-  # the legacy 96-bit timestamp: nanoseconds since the epoch
-  expect_identical(.pq_apply_logical(1.5e18, .pqInt96, NULL), utc(1.5e9))
+  # INT64 and INT96 times reach it as seconds (decoded so, rounded once, by
+  # .pq_decode_plain()); every unit, by logical or by converted type, is a time
+  for (u in c("1", "2", "3")) {
+    expect_no_warning(
+      expect_identical(.pq_apply_logical(1.5e9, .pqInt64, NULL, NULL, ts(u)), utc(1.5e9))
+    )
+  }
+  expect_identical(.pq_apply_logical(1.5e9, .pqInt64, .pqCtTsMillis), utc(1.5e9))
+  expect_identical(.pq_apply_logical(1.5e9, .pqInt64, .pqCtTsMicros), utc(1.5e9))
+  expect_identical(.pq_per(.pqCtTsMicros, NULL), c(ts = 1e6))
+  expect_identical(.pq_per(NULL, ts("3")), c(ts = 1e9))
+  # the legacy 96-bit timestamp
+  expect_identical(.pq_apply_logical(1.5e9, .pqInt96, NULL), utc(1.5e9))
+  expect_identical(.pq_decode_plain(c(rep(as.raw(0), 8), as.raw(c(0x8c, 0x3d, 0x25, 0))),
+                                    1L, .pqInt96, 1L)$values, 0)
   hour <- as.difftime(3600, units = "secs")
   expect_identical(.pq_apply_logical(3600000L, .pqInt32, .pqCtTimeMillis), hour)
-  expect_identical(.pq_apply_logical(3.6e9, .pqInt64, .pqCtTimeMicros), hour)
+  expect_identical(.pq_apply_logical(3600, .pqInt64, .pqCtTimeMicros), hour)
   tm <- list("7" = list("1" = TRUE, "2" = list("3" = list())))
-  expect_identical(.pq_apply_logical(3.6e12, .pqInt64, NULL, NULL, tm), hour)
+  expect_identical(.pq_apply_logical(3600, .pqInt64, NULL, NULL, tm), hour)
+  expect_identical(.pq_per(NULL, tm), c(time = 1e9))
   day <- structure(18262, class = "Date")
   dt <- list("6" = list())
   expect_identical(.pq_apply_logical(18262L, .pqInt32, NULL, NULL, dt), day)

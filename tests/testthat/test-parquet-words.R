@@ -134,6 +134,74 @@ pq_each <- function(ptype, vals, want, big = FALSE, ...) {
   }
 }
 
+# Exact whole numbers past 2^53 for the references below, which must not round: a
+# sign and base-10^6 digits, least first. big() takes a whole number below 2^53,
+# big_mul() a whole factor of at most 2^32 (every product stays below 2^53).
+big <- function(x) {
+  m <- abs(x)
+  d <- numeric()
+  repeat {
+    d <- c(d, m %% 1e6)
+    m <- m %/% 1e6
+    if (m == 0) break
+  }
+  list(s = if (x < 0) -1 else 1, d = d)
+}
+big_norm <- function(d) {
+  carry <- 0
+  for (i in seq_along(d)) {
+    t <- d[i] + carry
+    d[i] <- t %% 1e6
+    carry <- t %/% 1e6
+  }
+  while (carry > 0) {
+    d <- c(d, carry %% 1e6)
+    carry <- carry %/% 1e6
+  }
+  while (length(d) > 1L && d[length(d)] == 0) d <- d[-length(d)]
+  d
+}
+big_mul <- function(a, f) {
+  list(s = a$s * (if (f < 0) -1 else 1), d = big_norm(a$d * abs(f)))
+}
+big_add <- function(a, b) {
+  n <- max(length(a$d), length(b$d))
+  x <- c(a$d, rep(0, n - length(a$d)))
+  y <- c(b$d, rep(0, n - length(b$d)))
+  if (a$s == b$s) return(list(s = a$s, d = big_norm(x + y)))
+  k <- which(x != y)
+  if (!length(k)) return(big(0))
+  if (x[max(k)] < y[max(k)]) {
+    z <- x
+    x <- y
+    y <- z
+    a$s <- b$s
+  }
+  borrow <- 0
+  for (i in seq_len(n)) {
+    t <- x[i] - y[i] - borrow
+    borrow <- as.numeric(t < 0)
+    x[i] <- t + borrow * 1e6
+  }
+  list(s = a$s, d = big_norm(x))
+}
+# The nearest double to the whole number `a` divided by 10^k, from its exact decimal
+# text, read by strtod() (correctly rounded): a reference that is rounded once.
+big_near <- function(a, k) {
+  d <- rev(a$d)
+  txt <- paste0(sprintf("%.0f", d[1L]), paste(sprintf("%06.0f", d[-1L]), collapse = ""))
+  neg <- a$s < 0 && any(a$d != 0)
+  .rmd_num(paste0(if (neg) "-", txt, "e-", k))
+}
+# The signed 64-bit whole number of the words lo and hi (each 0 to 2^32 - 1).
+big64 <- function(lo, hi) {
+  big_add(big_mul(big(if (hi >= 2^31) hi - 2^32 else hi), 2^32), big(lo))
+}
+# INT96: nanoseconds within the day (words lo, hi) and the Julian day j.
+big96 <- function(lo, hi, j) {
+  big_add(big_mul(big_mul(big(j - 2440588), 86400), 1e9), big64(lo, hi))
+}
+
 i64s <- as.vector(rbind(sapply(pairs$lo, le4), sapply(pairs$hi, le4)))
 hi_s <- ifelse(pairs$hi >= 2^31, pairs$hi - 2^32, pairs$hi)
 signed64 <- hi_s * 2^32 + pairs$lo # exact product, one rounding of the sum
@@ -164,20 +232,89 @@ test_that("INT64 and UINT_64 read every pair of boundary words, rounded once", {
 
 test_that("timestamps, INT64 decimals and INT96 times read every boundary word", {
   utc <- function(x) as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
-  pq_each(.pqInt64, i64s, utc(signed64 / 1e3), conv = .pqCtTsMillis)
-  pq_each(.pqInt64, i64s, utc(signed64 / 1e6), conv = .pqCtTsMicros)
-  for (u in 1:3) {
-    pq_each(.pqInt64, i64s, utc(signed64 / 10^(3 * u)),
-            lt = pq_st(8L, pq_st(2L, pq_st(u))))
+  # each time the nearest double to its exact number of seconds, rounded once
+  secs <- function(k) {
+    mapply(function(lo, hi) big_near(big64(lo, hi), k), pairs$lo, pairs$hi)
   }
+  pq_each(.pqInt64, i64s, utc(secs(3)), conv = .pqCtTsMillis)
+  pq_each(.pqInt64, i64s, utc(secs(6)), conv = .pqCtTsMicros)
+  for (u in 1:3) {
+    pq_each(.pqInt64, i64s, utc(secs(3 * u)), lt = pq_st(8L, pq_st(2L, pq_st(u))))
+    pq_each(.pqInt64, i64s, as.difftime(secs(3 * u), units = "secs"),
+            lt = pq_st(7L, pq_st(2L, pq_st(u))))
+  }
+  pq_each(.pqInt64, i64s, as.difftime(secs(6), units = "secs"), conv = .pqCtTimeMicros)
   pq_each(.pqInt64, i64s, .pq_unscale(signed64, 2), big = TRUE,
           conv = .pqCtDecimal, scale = 2L, prec = 18L)
   jday <- c(2440588, 0, 2^31, 2^32 - 1)
   for (j in jday) {
     vals <- as.vector(rbind(sapply(pairs$lo, le4), sapply(pairs$hi, le4),
                             matrix(le4(j), 4L, nrow(pairs))))
-    pq_each(.pqInt96, vals, utc(((j - 2440588) * 86400 * 1e9 + signed64) / 1e9))
+    want <- mapply(function(lo, hi) big_near(big96(lo, hi, j), 9), pairs$lo, pairs$hi)
+    pq_each(.pqInt96, vals, utc(want))
   }
+})
+
+test_that("times from 1900 to 2100 and at the extremes are rounded once", {
+  utc <- function(x) as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
+  set.seed(20261117)
+  # 2024-03-05 12:34:56.123456836 UTC: the count is past 2^53, and divided after
+  # being rounded it was 1 unit in the last place off
+  one <- big_near(big64(0xa87e2d44, 0x17b9de6d), 9)
+  expect_identical(one, .rmd_num("1709642096.123456836"))
+  f <- pq_words(.pqInt64, c(le4(0xa87e2d44), le4(0x17b9de6d)), 1L,
+                lt = pq_st(8L, pq_st(2L, pq_st(3L))))
+  expect_identical(pq_got(f)$x, utc(one))
+  # random counts in each unit over 1900 to 2100 (-2.2e9 to 4.1e9 seconds), and the
+  # largest and smallest 64-bit counts
+  for (u in 1:3) {
+    hs <- round(stats::runif(400, -2.21e9, 4.11e9) * 10^(3 * u) / 2^32)
+    hs <- c(hs, -2^31, 2^31 - 1)
+    lo <- c(floor(stats::runif(400) * 2^32), 0, 2^32 - 1)
+    hi <- ifelse(hs < 0, hs + 2^32, hs)
+    want <- mapply(function(l, h) big_near(big64(l, h), 3 * u), lo, hi)
+    vals <- as.vector(rbind(sapply(lo, le4), sapply(hi, le4)))
+    got <- pq_got(pq_words(.pqInt64, vals, length(lo),
+                           lt = pq_st(8L, pq_st(2L, pq_st(u)))))
+    expect_identical(got$x, utc(want), label = paste("unit", u))
+    expect_length(got$w, 0L)
+  }
+  # INT96 over 1900 to 2100: Julian days 2415021 to 2488070, nanoseconds within the
+  # day, and the extremes of both words
+  j <- c(floor(stats::runif(400, 2415021, 2488071)), 0, 2^32 - 1)
+  ns <- c(floor(stats::runif(400) * 86400e9), 0, 0)
+  lo <- c(ns[1:400] %% 2^32, 0, 2^32 - 1)
+  hi <- c(ns[1:400] %/% 2^32, 2^31, 2^31 - 1)
+  want <- mapply(function(l, h, d) big_near(big96(l, h, d), 9), lo, hi, j)
+  vals <- as.vector(rbind(sapply(lo, le4), sapply(hi, le4), sapply(j, le4)))
+  expect_identical(pq_got(pq_words(.pqInt96, vals, length(lo)))$x, utc(want))
+})
+
+test_that("an INT32 column's type follows its values, however the type is marked", {
+  vals <- as.vector(sapply(c(0, 200, 255), le4))
+  int <- function(bits, signed) {
+    pq_st(10L, as.raw(c(0x13, bits, if (signed) 0x11 else 0x12, 0)))
+  }
+  # unsigned 8 and 16 bits always fit an R integer: by converted type, by logical
+  # type (as arrow writes uint8 and uint16), or both
+  for (b in c(8, 16)) {
+    ct <- if (b == 8) 11L else 12L
+    pq_each(.pqInt32, vals, c(0L, 200L, 255L), conv = ct)
+    pq_each(.pqInt32, vals, c(0L, 200L, 255L), lt = int(b, FALSE))
+    pq_each(.pqInt32, vals, c(0L, 200L, 255L), conv = ct, lt = int(b, FALSE))
+  }
+  # unsigned 32 bits is a double column, marked either way; signed 32 an integer one
+  pq_each(.pqInt32, vals, c(0, 200, 255), conv = .pqCtUint32, lt = int(32, FALSE))
+  pq_each(.pqInt32, vals, c(0L, 200L, 255L), lt = int(32, TRUE))
+  # a dictionary holding -2^31 that no row uses: an integer column; used, a double one
+  dict <- pq_page(c(le4(5), le4(2^31)), 2L, dict = TRUE)
+  rows <- function(idx) {
+    pq_page(c(as.raw(8L), as.raw(rbind(2L, idx))), length(idx), .pqERleDict)
+  }
+  f <- pq_words(.pqInt32, NULL, 2L, pages = c(dict, rows(c(0L, 0L))))
+  expect_identical(pq_got(f)$x, c(5L, 5L))
+  f <- pq_words(.pqInt32, NULL, 2L, pages = c(dict, rows(c(0L, 1L))))
+  expect_identical(pq_got(f)$x, c(5, -2^31))
 })
 
 test_that("pages of integers and of -2^31 make one column of doubles", {
@@ -207,6 +344,21 @@ test_that("the writer keeps the times whose low word is 0x80000000", {
   expect_no_warning(morie_write_parquet(data.frame(t = t), f))
   back <- morie_read_parquet(f)$t
   expect_identical(as.numeric(back), as.numeric(t))
+  # times read from a file of milliseconds or microseconds are written back as the
+  # counts they were read from, and read back identical
+  cnt <- c(1342177280123, -2^31, 2^31, 1709642096123, 4102444799999, -2208988800001)
+  for (k in c(3, 6)) {
+    x <- .POSIXct(.rmd_num(paste0(sprintf("%.0f", cnt), "e-", k)), tz = "UTC")
+    morie_write_parquet(data.frame(t = x), f)
+    expect_identical(morie_read_parquet(f)$t, x)
+  }
+  # the nearest microsecond, ties to even, either side of 1970
+  # (1/128 s is 7812.5 microseconds exactly)
+  us <- .pq_encode_i64(c(1 / 128, 3 / 128, -1 / 128, 1e-7, 0.9999996), 1e6)
+  expect_identical(us, c(le4(7812), le4(0), le4(23438), le4(0), le4(2^32 - 7812),
+                         le4(2^32 - 1), le4(0), le4(0), le4(1e6), le4(0)))
+  expect_error(morie_write_parquet(data.frame(t = .POSIXct(2^63 / 1e6, tz = "UTC")), f),
+               "2\\^63 microseconds")
   expect_identical(.pq_encode_i64(c(2^31, -2^31, 2^31 + 2^32, -2^63 + 2048, 2^63 - 1024)),
                    c(le4(2^31), le4(0), le4(2^31), le4(2^32 - 1), le4(2^31), le4(1),
                      le4(2048), le4(2^31), le4(2^32 - 1024), le4(2^31 - 1)))

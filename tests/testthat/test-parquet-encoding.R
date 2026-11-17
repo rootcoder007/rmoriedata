@@ -65,7 +65,7 @@ test_that("a data page v2 is reported as such before any decompression", {
   expect_error(rmoriedata:::morie_read_parquet(f), "data page v2")
 })
 
-test_that("duplicate column names are refused on write and kept apart on read", {
+test_that("duplicate column names are refused on write and kept as they are on read", {
   f <- tempfile(fileext = ".parquet")
   dup <- setNames(data.frame(1:3, 4:6), c("x", "x"))
   expect_error(rmoriedata:::morie_write_parquet(dup, f), "duplicate column names: .x.")
@@ -77,10 +77,53 @@ test_that("duplicate column names are refused on write and kept apart on read", 
   skip_if_not(sum(raw == as.raw(0x79)) == 2L, "fixture layout changed")
   raw[raw == as.raw(0x79)] <- as.raw(0x78)
   writeBin(raw, f)
-  expect_warning(d <- rmoriedata:::morie_read_parquet(f), "duplicate column names")
-  expect_identical(names(d), c("x", "x.1"))
-  expect_identical(d$x, 1:3)
-  expect_identical(d$x.1, 4:6)
+  expect_no_warning(d <- rmoriedata:::morie_read_parquet(f))
+  expect_identical(names(d), c("x", "x"))
+  expect_identical(d[[1L]], 1:3)
+  expect_identical(d[[2L]], 4:6)
+  # `columns` names the first of them
+  expect_identical(rmoriedata:::morie_read_parquet(f, columns = "x")[[1L]], 1:3)
+})
+
+test_that("column names come back as the file has them, whatever they are", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  nm <- c("20", "", "NA", "NULL", "TRUE", "a b-c\u00e9", "1x", "x.1")
+  d <- as.data.frame(lapply(seq_along(nm), function(i) c(i, i + 20L)))
+  names(d) <- nm
+  rmoriedata:::morie_write_parquet(d, f)
+  r <- rmoriedata:::morie_read_parquet(f)
+  expect_identical(names(r), nm)
+  expect_identical(unname(as.list(r)), unname(as.list(d)))
+  expect_identical(attr(r, "row.names"), 1:2)
+  expect_identical(names(rmoriedata:::morie_read_parquet(f, columns = c("", "NA"))),
+                   c("", "NA"))
+  # no rows: the same names and types
+  z <- structure(lapply(d, function(x) x[0]), names = nm, class = "data.frame",
+                 row.names = integer())
+  rmoriedata:::morie_write_parquet(z, f)
+  r <- rmoriedata:::morie_read_parquet(f)
+  expect_identical(names(r), nm)
+  expect_identical(unname(lapply(r, class)), rep(list("integer"), length(nm)))
+  expect_identical(nrow(r), 0L)
+  # a file of no columns (its schema is the root alone): its rows and no columns
+  root <- .pq_writer()
+  l <- .pq_wbytes(root, 4L, "schema", 0L)
+  l <- .pq_wi32(root, 5L, 0L, l)
+  rg <- .pq_writer()
+  l <- .pq_wliststruct(rg, 1L, list(), 0L)
+  l <- .pq_wi64(rg, 2L, 0, l)
+  l <- .pq_wi64(rg, 3L, 3, l)
+  fm <- .pq_writer()
+  l <- .pq_wi32(fm, 1L, 1L, 0L)
+  l <- .pq_wliststruct(fm, 2L, list(.pq_wstop(root)), l)
+  l <- .pq_wi64(fm, 3L, 3, l)
+  l <- .pq_wliststruct(fm, 4L, list(.pq_wstop(rg)), l)
+  ft <- .pq_wstop(fm)
+  writeBin(c(charToRaw("PAR1"), ft, writeBin(length(ft), raw(), size = 4L,
+                                             endian = "little"), charToRaw("PAR1")), f)
+  r <- rmoriedata:::morie_read_parquet(f)
+  expect_identical(dim(r), c(3L, 0L))
+  expect_s3_class(r, "data.frame")
 })
 
 test_that("text the reader returns is UTF-8; text that is not is refused (N11)", {

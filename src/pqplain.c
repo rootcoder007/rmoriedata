@@ -17,7 +17,8 @@
  * C_rmd_pq_rle reads the RLE / bit-packed hybrid, C_rmd_pq_rows puts a data
  * page's values (or its dictionary's) into their rows, and C_rmd_pq_flba reads
  * FIXED_LEN_BYTE_ARRAY values; C_rmd_pq_ints reads INT32, INT64 and unsigned
- * 32-bit words, and C_rmd_pq_i64 writes INT64 values; see each below.
+ * 32-bit words, C_rmd_pq_secs reads INT64 and INT96 times as seconds, and
+ * C_rmd_pq_i64 writes INT64 values; see each below.
  */
 #include <R.h>
 #include <Rinternals.h>
@@ -25,6 +26,8 @@
 #include <stdint.h>
 #include <limits.h>
 #include <math.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 /* RFC 3629: no overlong forms, no surrogates, nothing past U+10FFFF. */
 static int rmd_utf8_ok(const unsigned char *s, size_t n) {
@@ -442,12 +445,108 @@ SEXP C_rmd_pq_ints(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP unsigned_) {
     return out;
 }
 
-/* C_rmd_pq_i64(x): the doubles `x`, whole numbers above -2^63 and below 2^63 (the
- * writer has refused others), as INT64 values: 8 little-endian bytes each, made
- * from the 64-bit value itself. The R side split them into two 32-bit halves for
- * writeBin(), and a low half of 2^31 went through as.integer() as NA. */
-SEXP C_rmd_pq_i64(SEXP x) {
+/* The nearest double to S + r / per (0 <= r < per; per 10^d, d = 3, 6 or 9), rounded
+ * once. Converting the count to a double and dividing it rounded twice: a time in
+ * nanoseconds is past 2^53, so the count was already rounded before the division.
+ * Fast path: s + f, with f = r / per rounded once, is s + r / per to within 2^-54,
+ * and Fast2Sum gives its own rounding error exactly; unless that leaves the exact
+ * value within 2^-53 of half a unit in the last place either side, it rounds to the
+ * same double. Otherwise, and past 2^53 seconds, the C library's correctly rounded
+ * strtod() reads the exact value written in decimal (no decimal point, so no locale
+ * enters into it). */
+static double rmd_secs(int64_t S, int64_t r, int64_t per, int d) {
+    const int64_t big = (int64_t) 1 << 53;
+    if (S == 0) return (double) r / (double) per;
+    if (S > -big && S < big) {
+        double s = (double) S, f = (double) r / (double) per, x = s + f;
+        double err = f - (x - s);
+        double up = (nextafter(x, R_PosInf) - x) / 2, dn = (x - nextafter(x, R_NegInf)) / 2;
+        if (up - err > 0x1p-53 && dn + err > 0x1p-53) return x;
+    }
+    /* S + r / per = -(-S - 1 + (per - r) / per) when S < 0 and r > 0 */
+    int neg = S < 0;
+    int64_t q = neg ? (r ? -S - 1 : -S) : S, m = neg && r ? per - r : r;
+    char txt[64];
+    snprintf(txt, sizeof txt, "%s%lld%0*llde-%d", neg ? "-" : "", (long long) q, d,
+             (long long) m, d);
+    return strtod(txt, NULL);
+}
+
+/* C_rmd_pq_secs(buf, pos, count, width, per): `count` times from the 1-based byte
+ * `pos` of `buf` as seconds since the epoch, each the nearest double to its exact
+ * value:
+ *   width 8: INT64 counts of 1 / per seconds (a TIMESTAMP or TIME in MILLIS,
+ *     MICROS or NANOS; per 1e3, 1e6 or 1e9);
+ *   width 12: INT96, nanoseconds within the day (8 bytes, signed) and the Julian
+ *     day (4 bytes, unsigned; 2440588 is 1970-01-01); per 1e9.
+ * Whole seconds and the remainder are split in 64-bit integers (the INT96 day is at
+ * most 2^32 days, 3.7e14 seconds), then combined once by rmd_secs(). */
+SEXP C_rmd_pq_secs(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP per_) {
+    if (TYPEOF(buf) != RAWSXP) error("parquet: internal: `buf` must be raw");
+    double p0 = asReal(pos), nc = asReal(count), pd = asReal(per_);
+    int w = asInteger(width);
+    R_xlen_t len = XLENGTH(buf);
+    int d = pd == 1e3 ? 3 : pd == 1e6 ? 6 : pd == 1e9 ? 9 : 0;
+    if (!R_FINITE(p0) || p0 < 1 || !R_FINITE(nc) || nc < 0 || (w != 8 && w != 12) ||
+        !d || (w == 12 && d != 9) || nc * w > (double) len - (p0 - 1))
+        error("parquet: internal: bad position, count, width or unit");
+    R_xlen_t n = (R_xlen_t) nc;
+    int64_t per = (int64_t) pd;
+    const unsigned char *b = RAW(buf) + (R_xlen_t) p0 - 1;
+    SEXP out = PROTECT(allocVector(REALSXP, n));
+    double *o = REAL(out);
+    for (R_xlen_t i = 0; i < n; i++) {
+        const unsigned char *p = b + i * w;
+        uint64_t u = 0;
+        for (int k = 7; k >= 0; k--) u = (u << 8) | p[k];
+        int64_t v, S, r;
+        memcpy(&v, &u, 8); /* two's complement, as int64_t is */
+        S = v / per;
+        r = v % per;
+        if (r < 0) {
+            r += per;
+            S -= 1;
+        }
+        if (w == 12) {
+            uint32_t jd = (uint32_t) p[8] | ((uint32_t) p[9] << 8) |
+                ((uint32_t) p[10] << 16) | ((uint32_t) p[11] << 24);
+            S += ((int64_t) jd - 2440588) * 86400;
+        }
+        o[i] = rmd_secs(S, r, per, d);
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* C_rmd_pq_i64(x, per): the doubles `x` as INT64 values, 8 little-endian bytes each,
+ * made from the 64-bit value itself. The R side split them into two 32-bit halves
+ * for writeBin(), and a low half of 2^31 went through as.integer() as NA.
+ *   per 1: `x` are whole numbers above -2^63 and below 2^63 (the writer has refused
+ *     others), written as they are.
+ *   per 1e6: `x` are times in seconds, each written as the whole number of
+ *     microseconds nearest to it (ties to even), worked out exactly: |x| is split
+ *     into whole seconds and a fraction f (both exact), the fraction's microseconds
+ *     are found with fma(), which rounds f * 10^6 - c once and so keeps its sign,
+ *     and the two are joined in 64-bit integers. A time read from a file of
+ *     milliseconds or microseconds is the nearest double to its count, and that
+ *     count is what is written back. */
+static int64_t rmd_us(double x) {
+    double a = fabs(x), fl = floor(a), f = a - fl, c = floor(f * 1e6);
+    while (fma(f, 1e6, -c) < 0) c -= 1;
+    while (fma(f, 1e6, -(c + 1)) >= 0) c += 1;
+    double h = fma(f, 1e6, -(c + 0.5));
+    if (h > 0 || (h == 0 && fmod(c, 2) != 0)) c += 1;
+    int64_t S = (int64_t) fl;
+    if (S > (INT64_MAX - (int64_t) c) / 1000000)
+        error("parquet: internal: %g seconds is past the range of a TIMESTAMP", x);
+    int64_t us = S * 1000000 + (int64_t) c;
+    return x < 0 ? -us : us;
+}
+
+SEXP C_rmd_pq_i64(SEXP x, SEXP per_) {
     if (TYPEOF(x) != REALSXP) error("parquet: internal: `x` must be double");
+    double per = asReal(per_);
+    if (per != 1 && per != 1e6) error("parquet: internal: `per` must be 1 or 1e6");
     R_xlen_t n = XLENGTH(x);
     if ((double) n * 8.0 > (double) R_XLEN_T_MAX) error("parquet: column too large to write");
     SEXP out = PROTECT(allocVector(RAWSXP, n * 8));
@@ -455,9 +554,9 @@ SEXP C_rmd_pq_i64(SEXP x) {
     const double *v = REAL(x);
     for (R_xlen_t i = 0; i < n; i++) {
         if (!(v[i] > -9223372036854775808.0 && v[i] < 9223372036854775808.0) ||
-            v[i] != floor(v[i]))
+            (per == 1 && v[i] != floor(v[i])))
             error("parquet: internal: %g is not a 64-bit whole number", v[i]);
-        int64_t s = (int64_t) v[i];
+        int64_t s = per == 1 ? (int64_t) v[i] : rmd_us(v[i]);
         uint64_t u;
         memcpy(&u, &s, 8);
         for (int k = 0; k < 8; k++) o[8 * i + k] = (unsigned char) (u >> (8 * k));
