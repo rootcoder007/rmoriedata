@@ -473,9 +473,12 @@ test_that("a dictionary column costs about its result, not copies of it", {
   run <- list(n = n, enc = .pqERleDict, body = c(as.raw(1L), pq_run(n)))
   f <- pq_text_file(list(dict, run), n)
   invisible(gc())
+  # the megabytes beside "max used": its column is not the same on every
+  # platform (macOS has a "limit (Mb)" column before it)
   before <- gc(reset = TRUE)[2L, 2L]
   r <- morie_read_parquet(f)
-  peak <- gc()[2L, 6L] - before
+  g <- gc()
+  peak <- g[2L, which(colnames(g) == "max used") + 1L] - before
   expect_identical(r$x, rep(s, n))
   size <- as.numeric(object.size(r$x)) / 2^20
   # the result is 8 bytes a row; expanding the indices in R cost four times it
