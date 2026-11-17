@@ -2,6 +2,39 @@
 
 ## rmoriedata 0.4.3
 
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  honours what other writers mark a column as, or refuses the column by
+  name. A DECIMAL (kept as whole numbers, or as fixed-length bytes as
+  arrow’s `decimal128` is) is read with its scale: 12.34 came back
+  as 1234. An unsigned column no longer wraps to negative numbers
+  (3000000000 came back as -1294967296). A TIME column is a `difftime`,
+  and a timestamp in nanoseconds or in the legacy 96-bit form is a
+  `POSIXct`, not a bare count. A 64-bit whole number of 2^53 or more is
+  rounded, as before, and now with a warning. Fixed-length bytes that
+  are not a DECIMAL (a UUID, an interval) and a DECIMAL of varying
+  length are refused in the reader’s words rather than as a damaged
+  file, and a file whose row group holds no rows (as arrow writes an
+  empty table) is read as no rows.
+
+- The Parquet reader decodes run-length data in compiled code: a 29 KB
+  file of fifteen million rows, each a run of its own, took two to three
+  minutes and now takes under two seconds.
+
+- `chiload(full = TRUE, mirror = )` keeps the instants of a mirror file
+  in Socrata’s columns whose `date` is a timestamp: midnight became
+  `NA`, and every other time moved by Chicago’s offset from UTC.
+
+- [`mdsha()`](https://rootcoder007.github.io/rmoriedata/reference/morie_core.md)
+  takes one string or a raw vector, as its help says: a number, a
+  logical, a factor or a date was hashed as its text, so `mdsha(1)`
+  equalled `mdsha("1")`.
+
+- [`mdload()`](https://rootcoder007.github.io/rmoriedata/reference/mdload.md)
+  with a slug of thousands of bytes says there is no such dataset, not
+  base R’s “variable names are limited to 10000 bytes”; and a
+  `MORIE_DATA_URL` that is not an http(s) address is refused by name,
+  where the failure was laid on data.rmorie.com.
+
 - The options the package reads are checked where they are read, and a
   value of the wrong kind is refused in the package’s own words:
   `options(rmoriedata.store = )` and `options(rmoriedata.cache_dir = )`
@@ -552,8 +585,7 @@ CRAN release: 2026-11-12
   need no sign-in; a key stored earlier is still sent. ICPSR studies are
   no longer served by data.rmorie.com (ICPSR’s terms do not allow
   redistribution); asking for one says where to get it.
-- `hostlogin()`’s help names the arguments
-  [`rmoriebricklayer::dlogin()`](https://rootcoder007.github.io/rmorie-bricklayer/reference/dlogin.html)
+- `hostlogin()`’s help names the arguments `rmoriebricklayer::dlogin()`
   takes (`affil`, `purp`, `restr`; it listed `affiliation`, `purpose`,
   `restricted`). A table refused with 403 is reported as a key asked for
   or refused: no table sits behind accepted terms any more.
