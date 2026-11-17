@@ -14,14 +14,16 @@
  * C_rmd_pq_bytes(strings) writes the strings (no NA) the same way, byte for byte
  * as R holds them: the R side has already made them UTF-8.
  *
- * C_rmd_pq_rle reads the RLE / bit-packed hybrid, and C_rmd_pq_rows puts a data
- * page's values (or its dictionary's) into their rows; see each below.
+ * C_rmd_pq_rle reads the RLE / bit-packed hybrid, C_rmd_pq_rows puts a data
+ * page's values (or its dictionary's) into their rows, and C_rmd_pq_flba reads
+ * FIXED_LEN_BYTE_ARRAY values; see each below.
  */
 #include <R.h>
 #include <Rinternals.h>
 #include <string.h>
 #include <stdint.h>
 #include <limits.h>
+#include <math.h>
 
 /* RFC 3629: no overlong forms, no surrogates, nothing past U+10FFFF. */
 static int rmd_utf8_ok(const unsigned char *s, size_t n) {
@@ -265,6 +267,9 @@ SEXP C_rmd_pq_rows(SEXP page, SEXP dpos, SEXP dend, SEXP ipos, SEXP iwidth, SEXP
             if (!rmd_rle_next(&d, &v))
                 error("parquet: RLE data ran out after %.0f of %.0f values",
                       (double) i, (double) n);
+            if (v > 1)
+                error("parquet: column %s has a definition level of %d, above its "
+                      "maximum of 1", col, v);
             present += v != 0;
         }
         rmd_rle_init(&d, b, (R_xlen_t) dp - 1, de < dp - 1 ? (R_xlen_t) dp - 1 :
@@ -299,6 +304,95 @@ SEXP C_rmd_pq_rows(SEXP page, SEXP dpos, SEXP dend, SEXP ipos, SEXP iwidth, SEXP
         case REALSXP: REAL(out)[i] = j < 0 ? NA_REAL : REAL(vals)[j]; break;
         default: SET_VECTOR_ELT(out, i, j < 0 ? R_NilValue : VECTOR_ELT(vals, j));
         }
+    }
+    UNPROTECT(1);
+    return out;
+}
+
+/* C_rmd_pq_flba(buf, pos, count, width, kind): `count` FIXED_LEN_BYTE_ARRAY values
+ * of `width` bytes each, from the 1-based byte `pos` of `buf`, as a vector of what
+ * they mean, never a list of raw vectors (56 bytes of overhead a value, and copies
+ * of every byte of a long one):
+ *   kind 1, DECIMAL: the unscaled value, a big-endian two's complement whole
+ *     number of any width, as the nearest double. Only its leading 8 significant
+ *     bytes and whether any byte after them is nonzero matter to that: the 64 bits
+ *     are converted once, with the rest folded into the lowest bit, which rounds
+ *     as the whole number would. Past the range of a double it is infinite, and
+ *     the R side refuses it. A width of 200 holding 1 was 0 * 256^199 = NaN.
+ *   kind 2, UUID: its 16 bytes as lower-case text, 8-4-4-4-12.
+ *   kind 3, FLOAT16: the IEEE half-precision number, little-endian.
+ * A bound the caller has already checked is checked again: the block must lie
+ * inside `buf`. */
+static uint8_t rmd_mag(const unsigned char *p, R_xlen_t j, int neg, R_xlen_t t) {
+    /* byte j of |x| for x = p[0 .. w-1]: for a negative x, ~x + 1, where the
+     * carry of the +1 stops at the last nonzero byte t of x */
+    if (!neg) return p[j];
+    if (j < t) return (uint8_t) (255 - p[j]);
+    return j == t ? (uint8_t) (256 - p[j]) : 0;
+}
+
+SEXP C_rmd_pq_flba(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP kind_) {
+    if (TYPEOF(buf) != RAWSXP) error("parquet: internal: `buf` must be raw");
+    double p0 = asReal(pos), nc = asReal(count), wd = asReal(width);
+    int kind = asInteger(kind_);
+    R_xlen_t len = XLENGTH(buf);
+    if (!R_FINITE(p0) || p0 < 1 || !R_FINITE(nc) || nc < 0 || nc > (double) INT_MAX ||
+        !R_FINITE(wd) || wd < 1 || wd > (double) INT_MAX ||
+        wd != (double) (R_xlen_t) wd || kind < 1 || kind > 3 ||
+        (kind == 2 && wd != 16) || (kind == 3 && wd != 2) ||
+        nc * wd > (double) len - (p0 - 1))
+        error("parquet: internal: bad position, count or width");
+    R_xlen_t n = (R_xlen_t) nc, w = (R_xlen_t) wd;
+    const unsigned char *b = RAW(buf) + (R_xlen_t) p0 - 1;
+    if (kind == 2) {
+        static const char hx[] = "0123456789abcdef";
+        SEXP out = PROTECT(allocVector(STRSXP, n));
+        char s[37];
+        for (R_xlen_t i = 0; i < n; i++) {
+            const unsigned char *p = b + i * 16;
+            int o = 0;
+            for (int j = 0; j < 16; j++) {
+                if (j == 4 || j == 6 || j == 8 || j == 10) s[o++] = '-';
+                s[o++] = hx[p[j] >> 4];
+                s[o++] = hx[p[j] & 15];
+            }
+            s[o] = 0;
+            SET_STRING_ELT(out, i, mkChar(s));
+        }
+        UNPROTECT(1);
+        return out;
+    }
+    SEXP out = PROTECT(allocVector(REALSXP, n));
+    double *o = REAL(out);
+    for (R_xlen_t i = 0; i < n; i++) {
+        const unsigned char *p = b + i * w;
+        if (kind == 3) {
+            unsigned int h = (unsigned int) p[0] | ((unsigned int) p[1] << 8);
+            int e = (int) ((h >> 10) & 31);
+            double f = (double) (h & 1023);
+            double v = e == 0 ? ldexp(f, -24) :
+                e == 31 ? (f != 0 ? R_NaN : R_PosInf) : ldexp(f + 1024, e - 25);
+            o[i] = (h & 0x8000) ? -v : v;
+            continue;
+        }
+        int neg = p[0] >= 128;
+        R_xlen_t t = w - 1;
+        if (neg) while (t > 0 && p[t] == 0) t--;
+        R_xlen_t f = 0;
+        while (f < w && rmd_mag(p, f, neg, t) == 0) f++;
+        R_xlen_t m = w - f, top = m < 8 ? m : 8;
+        uint64_t u = 0;
+        for (R_xlen_t j = 0; j < top; j++) u = (u << 8) | rmd_mag(p, f + j, neg, t);
+        if (m > 8) {
+            /* sticky bit: u has at least 57 bits, so bit 0 lies below the
+             * rounding position and only says "a little more than u" */
+            int sticky = neg ? t >= f + 8 : 0;
+            for (R_xlen_t j = f + 8; !neg && j < w && !sticky; j++) sticky = p[j] != 0;
+            u |= (uint64_t) sticky;
+        }
+        double v = (double) u;
+        if (m > 8) v = (m - 8) * 8.0 > 2000.0 ? R_PosInf : ldexp(v, (int) ((m - 8) * 8));
+        o[i] = neg ? -v : v;
     }
     UNPROTECT(1);
     return out;

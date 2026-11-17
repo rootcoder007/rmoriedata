@@ -4,9 +4,10 @@
 # refused by name. Never the unscaled or wrapped number without a word.
 
 # A one-column file, built byte by byte: `ptype` the physical type, `page` the
-# PLAIN body of its one data page, `n` the rows.
+# PLAIN body of its one data page, `n` the rows; `prec` the precision and `lt`
+# the bytes of a LogicalType struct.
 pq_lone <- function(ptype, page, n, conv = NULL, scale = NULL, typelen = NULL,
-                    off = 4, usize = length(page)) {
+                    off = 4, usize = length(page), prec = NULL, lt = NULL) {
   ph <- .pq_writer()
   m <- .pq_wi32(ph, 1L, n, 0L)
   m <- .pq_wi32(ph, 2L, .pqEPlain, m)
@@ -40,6 +41,8 @@ pq_lone <- function(ptype, page, n, conv = NULL, scale = NULL, typelen = NULL,
   l <- .pq_wbytes(se, 4L, "x", l)
   if (!is.null(conv)) l <- .pq_wi32(se, 6L, conv, l)
   if (!is.null(scale)) l <- .pq_wi32(se, 7L, scale, l)
+  if (!is.null(prec)) l <- .pq_wi32(se, 8L, prec, l)
+  if (!is.null(lt)) l <- .pq_wstruct(se, 10L, lt, l)
   rg <- .pq_writer()
   l <- .pq_wliststruct(rg, 1L, list(.pq_wstop(cc)), 0L)
   l <- .pq_wi64(rg, 2L, length(blob), l)
@@ -80,7 +83,140 @@ test_that("a DECIMAL kept as fixed-length bytes is read; other bytes are refused
   f <- pq_lone(.pqByteArray, c(i32(1), as.raw(0x05)), 1L, conv = .pqCtDecimal,
                scale = 0L)
   expect_error(morie_read_parquet(f), "DECIMAL stored as bytes of varying length")
-  expect_identical(.pq_flba_whole(list(NULL, as.raw(c(0, 7))), 2L), c(NA, 7))
+  expect_identical(.Call(C_rmd_pq_flba, as.raw(c(9, 0, 7)), 2, 1, 2, 1L), 7)
+  expect_error(.Call(C_rmd_pq_flba, as.raw(c(0, 7)), 2, 1, 2, 1L), "internal")
+})
+
+# `w` bytes, big-endian, of the whole number with the bits `bits` set, negated
+# in two's complement when `neg`
+pq_be <- function(w, bits = integer(), neg = FALSE) {
+  b <- integer(w)
+  for (k in bits) b[w - k %/% 8] <- b[w - k %/% 8] + 2^(k %% 8)
+  if (neg) {
+    b <- 255 - b
+    i <- w
+    while ((b[i] <- b[i] + 1) == 256) {
+      b[i] <- 0
+      i <- i - 1L
+    }
+  }
+  as.raw(b)
+}
+# a LogicalType of member `id`, its own struct `inner` (empty by default)
+pq_lt <- function(id, inner = as.raw(0)) {
+  w <- .pq_writer()
+  .pq_wstruct(w, id, inner, 0L)
+  .pq_wstop(w)
+}
+dec <- function(w, vals, scale = 0L, ...) {
+  morie_read_parquet(pq_lone(.pqFlba, unlist(vals), length(vals),
+                             conv = .pqCtDecimal, scale = scale, typelen = w,
+                             ...))$x
+}
+
+test_that("a DECIMAL in fixed bytes reads exactly at every length", {
+  small <- c(0, 1, -1, 123, -123)
+  for (w in c(1, 2, 7, 8, 9, 16, 17, 32, 33, 128, 129, 200, 4096)) {
+    vals <- list(pq_be(w), pq_be(w, 0), pq_be(w, 0, TRUE),
+                 pq_be(w, c(0, 1, 3:6)), pq_be(w, c(0, 1, 3:6), TRUE))
+    # a length of 200 read 0 and 1 as NaN (0 * 256^199)
+    expect_identical(dec(w, vals), small, info = w)
+    # no precision given: the most the length holds, so a scale of 2 is allowed
+    expect_identical(dec(w, vals, 2L), small / 100, info = w)
+  }
+  # the format's digits for each length (Parquet's own table)
+  most <- vapply(1:32, function(n) {
+    floor((8 * n - 1) * log10(2))
+  }, numeric(1))
+  expect_identical(most[c(1:9, 16, 32)], c(2, 4, 6, 9, 11, 14, 16, 18, 21, 38, 76))
+})
+
+test_that("a long DECIMAL rounds as its whole number would, or is refused", {
+  # 2^100 + 2^47 + 1 is past halfway between two doubles: up, as the +1 says
+  up <- pq_be(16, c(100, 47, 0))
+  tie <- pq_be(16, c(100, 47))
+  expect_warning(x <- dec(16, list(up, pq_be(16, c(100, 47, 0), TRUE), tie)),
+                 "2^53", fixed = TRUE)
+  expect_identical(x, c(2^100 + 2^48, -(2^100 + 2^48), 2^100))
+  # the ends of 128 bytes; one byte more holds a number no double can
+  ends <- list(pq_be(128, 1023, TRUE), pq_be(128, 0:1022))
+  expect_identical(suppressWarnings(dec(128, ends)), c(-2^1023, 2^1023))
+  expect_identical(suppressWarnings(dec(129, list(pq_be(129, 1023)))), 2^1023)
+  expect_error(dec(129, list(pq_be(129), pq_be(129, 1024))),
+               paste0("^parquet: column .x. holds a DECIMAL whose unscaled value ",
+                      "is past the range of a double \\(2\\^1024\\)$"))
+  # a scale past 308: 10^s is infinite, and the value is not 0 or NaN
+  x <- suppressWarnings(dec(200, list(pq_be(200, 1000)), 310L, prec = 400L))
+  expect_equal(x, 2^1000 / 1e300 / 1e10, tolerance = 1e-14)
+  expect_identical(dec(200, list(pq_be(200, 0)), 400L, prec = 450L), 0)
+})
+
+test_that("a DECIMAL's precision and scale are held to the format", {
+  msg <- function(p, s) {
+    paste0("^parquet: column .x. is a DECIMAL of precision ", p, " and scale ",
+           s, "; Parquet needs a precision of 1 or more and a scale from 0 to ",
+           "the precision$")
+  }
+  one <- list(pq_be(2, 0))
+  expect_error(dec(2, one, 0L, prec = 0L), msg(0, 0))
+  expect_error(dec(2, one, -1L, prec = 3L), msg(3, -1))
+  expect_error(dec(2, one, 3L, prec = 2L), msg(2, 3))
+  expect_error(dec(2, one, 0L, prec = 5L),
+               paste0("^parquet: column .x. is a DECIMAL of precision 5 in 2 ",
+                      "bytes, which hold at most 4 digits$"))
+  expect_error(dec(16, list(pq_be(16)), 0L, prec = 1e9),
+               "precision 1000000000 in 16 bytes, which hold at most 38 digits$")
+  expect_identical(dec(2, one, 4L, prec = 4L), 1e-4)
+  f <- pq_lone(.pqInt32, i32(1), 1L, conv = .pqCtDecimal, scale = 0L, prec = 10L)
+  expect_error(morie_read_parquet(f), "precision 10 in INT32, which holds at most 9")
+  f <- pq_lone(.pqInt64, i32(c(1, 0)), 1L, conv = .pqCtDecimal, scale = 0L,
+               prec = 19L)
+  expect_error(morie_read_parquet(f), "precision 19 in INT64, which holds at most 18")
+  f <- pq_lone(.pqDouble, raw(8), 1L, conv = .pqCtDecimal, scale = 0L)
+  expect_error(morie_read_parquet(f), "DECIMAL stored as physical type 5")
+  # the newer logical type's scale and precision are the ones read
+  w <- .pq_writer()
+  l <- .pq_wi32(w, 1L, 3L, 0L)
+  l <- .pq_wi32(w, 2L, 4L, l)
+  f <- pq_lone(.pqFlba, pq_be(2, 0), 1L, typelen = 2L, lt = pq_lt(5L, .pq_wstop(w)))
+  expect_identical(morie_read_parquet(f)$x, 1e-3)
+  l <- .pq_wi32(w <- .pq_writer(), 1L, 3L, 0L)
+  l <- .pq_wi32(w, 2L, 9L, l)
+  f <- pq_lone(.pqFlba, pq_be(2, 0), 1L, typelen = 2L, lt = pq_lt(5L, .pq_wstop(w)))
+  expect_error(morie_read_parquet(f), "precision 9 in 2 bytes")
+})
+
+test_that("a fixed length the file states is a whole number from 1 up", {
+  for (tl in list(0L, -1L, 2^31, NULL)) {
+    f <- pq_lone(.pqFlba, raw(2), 1L, conv = .pqCtDecimal, scale = 0L, typelen = tl)
+    expect_error(morie_read_parquet(f),
+                 paste0("^parquet: column .x. holds fixed-length bytes of length ",
+                        if (is.null(tl)) "\\(none\\)" else format(tl, scientific = FALSE),
+                        "; Parquet needs a length from 1 to 2147483647$"),
+                 info = format(tl))
+  }
+})
+
+test_that("a UUID is read as text and a FLOAT16 as a number", {
+  id <- as.raw(c(0:15, 0xf0:0xff))
+  f <- pq_lone(.pqFlba, id, 2L, typelen = 16L, lt = pq_lt(14L))
+  expect_identical(morie_read_parquet(f)$x,
+                   c("00010203-0405-0607-0809-0a0b0c0d0e0f",
+                     "f0f1f2f3-f4f5-f6f7-f8f9-fafbfcfdfeff"))
+  expect_error(morie_read_parquet(pq_lone(.pqFlba, id[1:15], 1L, typelen = 15L,
+                                          lt = pq_lt(14L))),
+               "^parquet: column .x. is a UUID of 15 bytes; Parquet's is 16$")
+  h <- c(0x3c00, 0xc000, 0x7bff, 0x0001, 0x0400, 0x3555, 0x7c00, 0xfc00, 0x8000,
+         0x7e00)
+  page <- as.raw(rbind(h %% 256, h %/% 256))
+  x <- morie_read_parquet(pq_lone(.pqFlba, page, 10L, typelen = 2L,
+                                  lt = pq_lt(15L)))$x
+  expect_identical(x[1:9], c(1, -2, 65504, 2^-24, 2^-14, 1365 / 4096, Inf, -Inf, 0))
+  expect_identical(1 / x[9], -Inf)
+  expect_true(is.nan(x[10]))
+  expect_error(morie_read_parquet(pq_lone(.pqFlba, raw(4), 1L, typelen = 4L,
+                                          lt = pq_lt(15L))),
+               "^parquet: column .x. is a FLOAT16 of 4 bytes; Parquet's is 2$")
 })
 
 test_that("unsigned columns are not read as negative numbers", {

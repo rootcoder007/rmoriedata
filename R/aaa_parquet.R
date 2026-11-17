@@ -450,14 +450,15 @@
   hi * 2^32 + lo
 }
 
-# The values of a PLAIN block as one vector of their type (a list of raw vectors for
-# FIXED_LEN_BYTE_ARRAY), and the position after them. `cname` names the column in
-# the reader's messages.
+# The values of a PLAIN block as one vector of their type, and the position after
+# them. FIXED_LEN_BYTE_ARRAY values are read as what `kind` says they are
+# (.pq_flba_kind()): a DECIMAL's unscaled value, a UUID's text or a FLOAT16.
+# `cname` names the column in the reader's messages.
 .pq_decode_plain <- function(buf, pos, ptype, count, type_length = NULL,
-                             cname = "?") {
+                             cname = "?", kind = "decimal") {
   if (count == 0L) {
     empty <- if (ptype == .pqBoolean) logical() else if (ptype == .pqInt32) integer()
-      else if (ptype == .pqByteArray) character() else if (ptype == .pqFlba) list()
+      else if (ptype == .pqByteArray || identical(kind, "uuid")) character()
       else numeric()
     return(list(values = empty, pos = pos))
   }
@@ -494,10 +495,10 @@
     if (is.null(type_length) || type_length < 1) {
       stop("FIXED_LEN_BYTE_ARRAY without a positive type_length", call. = FALSE)
     }
-    block <- take(count * type_length)
-    vals <- lapply(seq_len(count), function(i) {
-      block[seq.int((i - 1L) * type_length + 1L, length.out = type_length)]
-    })
+    if (pos + count * type_length - 1 > length(buf)) take(count * type_length)
+    # src/pqplain.c, in place: no copy of the block, no raw vector a value
+    vals <- .Call(C_rmd_pq_flba, buf, pos, count, type_length,
+                  match(kind, c("decimal", "uuid", "float16")))
     return(list(values = vals, pos = pos + count * type_length))
   }
   if (ptype == .pqInt96) {
@@ -554,22 +555,78 @@
   invisible(NULL)
 }
 
-# The values of a DECIMAL stored as fixed-length big-endian two's complement
-# bytes, unscaled. `col` is a list of raw vectors, NULL where a value is missing.
-.pq_flba_whole <- function(col, typelen) {
-  out <- rep(NA_real_, length(col))
-  has <- !vapply(col, is.null, logical(1))
-  if (any(has)) {
-    m <- matrix(as.numeric(unlist(col[has])), nrow = typelen)
-    neg <- m[1L, ] >= 128
-    # a negative value is read from its complement, so that a small one in many
-    # bytes is not the difference of two huge numbers
-    m[, neg] <- 255 - m[, neg]
-    val <- drop(256^((typelen - 1L):0) %*% m)
-    val[neg] <- -(val[neg] + 1)
-    out[has] <- val
+# What a FIXED_LEN_BYTE_ARRAY column holds, from its logical type: "decimal",
+# "uuid" or "float16". Its length is the file's word, so it is held to what that
+# kind is: a whole number of bytes from 1 to 2^31 - 1, 16 for a UUID and 2 for a
+# FLOAT16. Bytes of no such kind (an INTERVAL, or bytes with no logical type)
+# have no R value and are refused by name.
+.pq_flba_kind <- function(leaf) {
+  tl <- leaf$typelen
+  nm <- sQuote(leaf$name)
+  if (!(is.numeric(tl) && length(tl) == 1L && tl >= 1 && tl <= .Machine$integer.max)) {
+    stop("parquet: column ", nm, " holds fixed-length bytes of length ",
+         if (is.numeric(tl) && length(tl) == 1L) tl else "(none)",
+         "; Parquet needs a length from 1 to 2147483647", call. = FALSE)
   }
-  out
+  lt <- function(id) !is.null(leaf$logical) && !is.null(.pq_f(leaf$logical, id))
+  kind <- if (.pq_is_decimal(leaf$converted, leaf$logical)) "decimal"
+    else if (lt(14)) "uuid" else if (lt(15)) "float16"
+  if (is.null(kind)) {
+    stop("parquet: column ", nm, " holds fixed-length bytes (an interval, or ",
+         "bytes of no logical type), which this reader does not read; name the ",
+         "columns to read in `columns`", call. = FALSE)
+  }
+  need <- c(uuid = 16, float16 = 2)[kind]
+  if (!is.na(need) && tl != need) {
+    stop("parquet: column ", nm, " is a ", toupper(kind), " of ", tl,
+         " bytes; Parquet's is ", need, call. = FALSE)
+  }
+  kind
+}
+
+# The precision and scale of a DECIMAL column, checked against the format: a
+# precision of 1 or more, a scale from 0 to the precision, and no more digits
+# than the physical type holds (INT32 9, INT64 18, and n fixed bytes
+# floor(log10(2^(8n - 1) - 1)), which is 38 for 16 and 76 for 32). The newer
+# logical type's values are taken first; a precision that is not given (the
+# format requires one) is taken to be the most the type holds.
+.pq_decimal <- function(leaf) {
+  dt <- if (is.null(leaf$logical)) NULL else .pq_f(leaf$logical, 5)
+  if (!is.list(dt)) dt <- list()
+  most <- switch(as.character(leaf$type), "1" = 9, "2" = 18,
+                 "7" = floor((8 * leaf$typelen - 1) * log10(2)),
+                 stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL ",
+                      "stored as physical type ", leaf$type, ", which Parquet ",
+                      "does not allow", call. = FALSE))
+  s <- .pq_f(dt, 1) %||% leaf$scale %||% 0
+  p <- .pq_f(dt, 2) %||% leaf$precision %||% most
+  whole <- function(x) {
+    is.numeric(x) && length(x) == 1L && is.finite(x) && x == floor(x)
+  }
+  num <- function(x) if (whole(x)) format(x, scientific = FALSE) else "(none)"
+  if (!(whole(p) && whole(s) && p >= 1 && s >= 0 && s <= p)) {
+    stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL of precision ",
+         num(p), " and scale ", num(s), "; Parquet needs a precision of 1 or ",
+         "more and a scale from 0 to the precision", call. = FALSE)
+  }
+  if (p > most) {
+    held <- switch(as.character(leaf$type), "1" = "INT32, which holds",
+                   "2" = "INT64, which holds",
+                   paste(leaf$typelen, "bytes, which hold"))
+    stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL of precision ",
+         num(p), " in ", held, " at most ", most, " digits", call. = FALSE)
+  }
+  c(precision = p, scale = s)
+}
+
+# x / 10^s in steps no larger than 10^300, so that a scale past 308 (10^s is
+# infinite) divides rather than giving 0 or NaN.
+.pq_unscale <- function(x, s) {
+  while (s > 300) {
+    x <- x / 1e300
+    s <- s - 300
+  }
+  x / 10^s
 }
 
 .pq_apply_logical <- function(v, ptype, converted, scale = NULL, logical = NULL,
@@ -579,8 +636,13 @@
   posix <- function(x) as.POSIXct(x, origin = "1970-01-01", tz = "UTC")
   if (.pq_is_decimal(converted, logical)) {
     s <- as.numeric(.pq_f(lt(5) %||% list(), 1) %||% scale %||% 0)
+    # fixed bytes of more than 128 can hold a whole number past 2^1024
+    if (any(is.infinite(v))) {
+      stop("parquet: column ", sQuote(name), " holds a DECIMAL whose unscaled ",
+           "value is past the range of a double (2^1024)", call. = FALSE)
+    }
     .pq_inexact(v, name)
-    return(as.numeric(v) / 10^s)
+    return(.pq_unscale(as.numeric(v), s))
   }
   # INT96 is the legacy timestamp: nanoseconds since the epoch
   if (ptype == .pqInt96) {
@@ -811,26 +873,34 @@
 # file just under it took 27 to 31 seconds to read. Text per row runs from
 # 27 bytes to 74 KB in those files, so the budget is not scaled by the row
 # count.
+# Fixed-length bytes count toward the same budget: a page of them is bounded by
+# its count times the column's length, but the length is the file's word, and a
+# 65 KB gzip file of 1024 values of 65536 bytes each inflated to 64 MiB (and its
+# old decoding took 1.1 GB). One budget, not a second option: both are the
+# bytes a file's own sizes make the reader inflate, and one knob to raise is
+# what a user who meets the refusal needs. Real fixed-length columns are small
+# by comparison (16 bytes a DECIMAL(38) or UUID: 5e7 rows are 800 MB).
 .pq_max_text <- function() .pq_cap("rmoriedata.parquet_max_text_bytes", 2^32)
 
-# Refuse a file whose compressed text says it inflates to more than
-# .pq_max_text(). `inflated` and `stored` are byte totals per column (doubles:
-# a file's total can pass 2^31).
+# Refuse a file whose compressed text and fixed-length bytes say they inflate
+# to more than .pq_max_text(). `inflated` and `stored` are byte totals per
+# column (doubles: a file's total can pass 2^31).
 .pq_text_budget <- function(inflated, stored) {
   most <- .pq_max_text()
   total <- sum(inflated)
   if (total <= most) return(invisible(TRUE))
   k <- which.max(inflated)
-  stop("parquet: the compressed text pages of this file say they inflate to ",
+  stop("parquet: the compressed pages of text and fixed-length bytes in this ",
+       "file say they inflate to ",
        format(total, scientific = FALSE), " bytes in all, ",
        format(inflated[[k]], scientific = FALSE), " of them in column ",
        names(inflated)[k], " from ", format(stored[[k]], scientific = FALSE),
-       " stored bytes; text is inflated up to ",
+       " stored bytes; such pages are inflated up to ",
        format(most, scientific = FALSE), " bytes a file (option ",
        "rmoriedata.parquet_max_text_bytes)", call. = FALSE)
 }
 
-.pq_column_values <- function(con, ch, maxdef, typelen, cname) {
+.pq_column_values <- function(con, ch, maxdef, typelen, cname, kind = NULL) {
   ptype <- ch$ptype
   codec <- ch$codec
   total_values <- ch$total_values
@@ -899,7 +969,7 @@
     }
 
     if (ptype_page == .pqPDict) {
-      dec <- .pq_decode_plain(page, 1L, ptype, n, typelen, cname)
+      dec <- .pq_decode_plain(page, 1L, ptype, n, typelen, cname, kind)
       if (dec$pos != length(page) + 1L) {
         stop("parquet: dictionary page of column ", cname, " holds ",
              length(page) - dec$pos + 1L, " bytes beyond its ", n, " values",
@@ -945,12 +1015,17 @@
                    n, cname)
     } else {
       # PLAIN: .pq_data_most() refused every other encoding before inflating
-      present <- if (maxdef > 0L) {
-        sum(.pq_read_rle(page, dpos, 1L, n, dend)$values)
-      } else {
-        n
+      present <- n
+      if (maxdef > 0L) {
+        lv <- .pq_read_rle(page, dpos, 1L, n, dend)$values
+        # as src/pqplain.c says it for a dictionary-encoded page
+        if (any(lv > 1L)) {
+          stop("parquet: column ", cname, " has a definition level of ",
+               lv[lv > 1L][1L], ", above its maximum of 1", call. = FALSE)
+        }
+        present <- sum(lv)
       }
-      dec <- .pq_decode_plain(page, p, ptype, present, typelen, cname)
+      dec <- .pq_decode_plain(page, p, ptype, present, typelen, cname, kind)
       # PLAIN values fill the page exactly: bytes left over (or a shortfall, caught above)
       # mean the declared type is not the type the page was written with
       if (dec$pos != length(page) + 1L) {
@@ -1008,9 +1083,19 @@
 #'   inflated: `rmoriedata.parquet_max_rows` (default 5e7 rows),
 #'   `rmoriedata.parquet_max_page_bytes` (default 2^30 bytes a page) and
 #'   `rmoriedata.parquet_max_text_bytes` (default 2^32 bytes, 4 GiB). The
-#'   last is the most text the compressed pages of one file may inflate to,
-#'   summed over the columns read; pages stored uncompressed are not counted.
-#'   A file past a bound is refused with an error naming the option to raise.
+#'   last is the most text and fixed-length bytes the compressed pages of one
+#'   file may inflate to, summed over the columns read; pages stored
+#'   uncompressed are not counted. A file past a bound is refused with an
+#'   error naming the option to raise.
+#'
+#'   A DECIMAL is a double: its scaled value, exact when the unscaled whole
+#'   number is below 2^53 and the scale at most 22, otherwise the nearest
+#'   double to the whole number, divided by the power of ten, with a warning
+#'   that it is rounded. One whose whole number is past the range of a double,
+#'   or whose precision and scale the format does not allow for its type, is
+#'   refused. A UUID is text (`"8-4-4-4-12"` lower-case hexadecimal), and a
+#'   FLOAT16 a double. Other fixed-length bytes (an INTERVAL, or bytes with no
+#'   logical type) are refused by name.
 #' @return A `data.frame`. Every error the reader raises, a missing or
 #'   damaged file included, starts with `parquet:`; no base-R warning escapes
 #'   it (a value a damaged file makes R warn about is an error instead).
@@ -1086,6 +1171,11 @@ morie_read_parquet <- function(path, columns = NULL) {
       )
     }
     rep_type <- .pq_f(el, 3, .pqRequired)
+    if (!(is.numeric(rep_type) && length(rep_type) == 1L &&
+            rep_type %in% c(.pqRequired, .pqOptional, .pqRepeated))) {
+      stop("parquet: the file is damaged: column ", rawToChar(.pq_f(el, 4)),
+           " has no valid repetition type", call. = FALSE)
+    }
     if (rep_type == .pqRepeated) {
       stop("repeated column ", rawToChar(.pq_f(el, 4)), " not ",
         "implemented; decoding it as flat would silently change ",
@@ -1099,6 +1189,7 @@ morie_read_parquet <- function(path, columns = NULL) {
       typelen = .pq_f(el, 2),
       converted = .pq_f(el, 6),
       scale = .pq_f(el, 7),
+      precision = .pq_f(el, 8),
       logical = .pq_f(el, 10),
       maxdef = if (rep_type == .pqOptional) 1L else 0L
     )
@@ -1125,18 +1216,16 @@ morie_read_parquet <- function(path, columns = NULL) {
     i <- wanted[w]
     leaf <- leaves[[i]]
     isdec <- .pq_is_decimal(leaf$converted, leaf$logical)
-    # bytes that are not text: read as a DECIMAL when marked one and of fixed
-    # length, otherwise refused by name rather than as damage
-    if (leaf$type == .pqFlba && !isdec) {
-      stop("parquet: column ", sQuote(leaf$name), " holds fixed-length bytes (a ",
-           "UUID, an interval or the like), which this reader does not read; ",
-           "name the columns to read in `columns`", call. = FALSE)
-    }
+    # bytes that are not text: read as what their logical type says (a DECIMAL,
+    # a UUID, a FLOAT16), otherwise refused by name rather than as damage
+    if (leaf$type == .pqFlba) leaf$kind <- .pq_flba_kind(leaf)
     if (leaf$type == .pqByteArray && isdec) {
       stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL stored as bytes ",
            "of varying length, which this reader does not read; name the ",
            "columns to read in `columns`", call. = FALSE)
     }
+    if (isdec) leaf$scale <- .pq_decimal(leaf)[["scale"]]
+    leaves[[i]] <- leaf
     chs[[w]] <- list()
     for (rg in row_groups) {
       chunks <- .pq_f(rg, 1)
@@ -1149,7 +1238,10 @@ morie_read_parquet <- function(path, columns = NULL) {
       ch <- .pq_chunk_pages(con, .pq_f(chunks[[i]], 3), .pq_f(rg, 3),
                             leaf$type, size, leaf$name)
       chs[[w]][[length(chs[[w]]) + 1L]] <- ch
-      if (leaf$type == .pqByteArray && ch$codec != .pqCUncompressed) {
+      # the two types whose bytes a value takes the file states: text by each
+      # value's length, fixed-length bytes by the column's
+      if (leaf$type %in% c(.pqByteArray, .pqFlba) &&
+            ch$codec != .pqCUncompressed) {
         sizes <- vapply(ch$pages, function(p) as.numeric(c(p$usize, p$csize)),
                         numeric(2))
         inflated[w] <- inflated[w] + sum(sizes[1L, ])
@@ -1167,7 +1259,8 @@ morie_read_parquet <- function(path, columns = NULL) {
     col <- NULL
     at <- 0
     for (ch in chs[[w]]) {
-      v <- .pq_column_values(con, ch, leaf$maxdef, leaf$typelen, leaf$name)
+      v <- .pq_column_values(con, ch, leaf$maxdef, leaf$typelen, leaf$name,
+                             leaf$kind)
       # one row group holds the column, or each goes into a vector made once at
       # the file's row count (c() on each row group copied the column so far)
       if (length(v) == num_rows) {
@@ -1178,16 +1271,10 @@ morie_read_parquet <- function(path, columns = NULL) {
       }
       at <- at + length(v)
     }
-    if (leaf$type == .pqByteArray) {
+    if (leaf$type == .pqByteArray || identical(leaf$kind, "uuid")) {
       v <- if (is.null(col)) character() else col
     } else {
-      v <- if (leaf$type == .pqFlba) {
-        .pq_flba_whole(as.list(col), as.integer(leaf$typelen))
-      } else if (is.list(col)) {
-        vapply(col, function(x) if (is.null(x)) NA_real_ else as.numeric(x), numeric(1))
-      } else {
-        as.numeric(col)
-      }
+      v <- as.numeric(col)
       if (leaf$type == .pqBoolean) {
         v <- as.logical(v)
       } else if (leaf$type == .pqInt32) {

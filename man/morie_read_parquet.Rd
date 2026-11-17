@@ -38,8 +38,18 @@ from the file's footer and page headers before anything is allocated or
 inflated: \code{rmoriedata.parquet_max_rows} (default 5e7 rows),
 \code{rmoriedata.parquet_max_page_bytes} (default 2^30 bytes a page) and
 \code{rmoriedata.parquet_max_text_bytes} (default 2^32 bytes, 4 GiB). The
-last is the most text the compressed pages of one file may inflate to,
-summed over the columns read; pages stored uncompressed are not counted.
-A file past a bound is refused with an error naming the option to raise.
+last is the most text and fixed-length bytes the compressed pages of one
+file may inflate to, summed over the columns read; pages stored
+uncompressed are not counted. A file past a bound is refused with an
+error naming the option to raise.
+
+A DECIMAL is a double: its scaled value, exact when the unscaled whole
+number is below 2^53 and the scale at most 22, otherwise the nearest
+double to the whole number, divided by the power of ten, with a warning
+that it is rounded. One whose whole number is past the range of a double,
+or whose precision and scale the format does not allow for its type, is
+refused. A UUID is text (\code{"8-4-4-4-12"} lower-case hexadecimal), and a
+FLOAT16 a double. Other fixed-length bytes (an INTERVAL, or bytes with no
+logical type) are refused by name.
 }
 \keyword{internal}

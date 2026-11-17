@@ -338,8 +338,10 @@ test_that("a text page is held to what its codec can inflate it to", {
 # A file of one BYTE_ARRAY column `x` of N rows from `pages`, each a list of n
 # (values), body (the page as it inflates), and optionally dict = TRUE, enc,
 # and usize (what the header claims, the body's size when NULL); `pay` maps a
-# body to its stored bytes for `codec`.
-pq_text_file <- function(pages, N, codec = .pqCGzip, optional = FALSE) {
+# body to its stored bytes for `codec`. `ptype`, `typelen` and `prec` make it
+# a column of another type (`prec` a DECIMAL of that precision and scale 0).
+pq_text_file <- function(pages, N, codec = .pqCGzip, optional = FALSE,
+                         ptype = .pqByteArray, typelen = NULL, prec = NULL) {
   pay <- switch(as.character(codec),
                 "2" = function(b) .Call(C_rmd_gzip_compress, b),
                 "1" = .pq_snappy_compress, function(b) b)
@@ -351,7 +353,7 @@ pq_text_file <- function(pages, N, codec = .pqCGzip, optional = FALSE) {
                            n = pg$n, enc = pg$enc %||% .pqEPlain), p)
   }
   cmd <- .pq_writer()
-  l <- .pq_wi32(cmd, 1L, .pqByteArray, 0L)
+  l <- .pq_wi32(cmd, 1L, ptype, 0L)
   l <- .pq_wlisti32(cmd, 2L, c(.pqERle, .pqEPlain, .pqERleDict), l)
   l <- .pq_wlistbin(cmd, 3L, "x", l)
   l <- .pq_wi32(cmd, 4L, codec, l)
@@ -366,9 +368,15 @@ pq_text_file <- function(pages, N, codec = .pqCGzip, optional = FALSE) {
   l <- .pq_wbytes(root, 4L, "schema", 0L)
   l <- .pq_wi32(root, 5L, 1L, l)
   se <- .pq_writer()
-  l <- .pq_wi32(se, 1L, .pqByteArray, 0L)
+  l <- .pq_wi32(se, 1L, ptype, 0L)
+  if (!is.null(typelen)) l <- .pq_wi32(se, 2L, typelen, l)
   l <- .pq_wi32(se, 3L, if (optional) .pqOptional else .pqRequired, l)
   l <- .pq_wbytes(se, 4L, "x", l)
+  if (!is.null(prec)) {
+    l <- .pq_wi32(se, 6L, .pqCtDecimal, l)
+    l <- .pq_wi32(se, 7L, 0L, l)
+    l <- .pq_wi32(se, 8L, prec, l)
+  }
   rg <- .pq_writer()
   l <- .pq_wliststruct(rg, 1L, list(.pq_wstop(cc)), 0L)
   l <- .pq_wi64(rg, 2L, length(blob), l)
@@ -406,10 +414,11 @@ test_that("the text budget is summed in doubles and holds at its limit", {
   ok <- c(x = 2^31, y = 2^31)
   expect_invisible(.pq_text_budget(ok, c(x = 1, y = 1)))
   expect_error(.pq_text_budget(ok + c(0, 1), c(x = 10, y = 20)),
-               paste0("^parquet: the compressed text pages of this file say ",
-                      "they inflate to 4294967297 bytes in all, 2147483649 of ",
-                      "them in column y from 20 stored bytes; text is inflated ",
-                      "up to 4294967296 bytes a file \\(option ",
+               paste0("^parquet: the compressed pages of text and fixed-length ",
+                      "bytes in this file say they inflate to 4294967297 bytes ",
+                      "in all, 2147483649 of them in column y from 20 stored ",
+                      "bytes; such pages are inflated up to 4294967296 bytes a ",
+                      "file \\(option ",
                       "rmoriedata.parquet_max_text_bytes\\)$"))
   withr::local_options(rmoriedata.parquet_max_text_bytes = 5)
   expect_invisible(.pq_text_budget(c(x = 2, y = 3), c(1, 1)))
@@ -431,10 +440,11 @@ test_that("compressed text past the budget is refused before any of it is inflat
   f <- pq_text_file(rep(list(junk), 160L), 160)
   t0 <- proc.time()[["elapsed"]]
   expect_error(morie_read_parquet(f),
-               paste0("^parquet: the compressed text pages of this file say ",
-                      "they inflate to 10066329600 bytes in all, 10066329600 ",
-                      "of them in column x from 2560 stored bytes; text is ",
-                      "inflated up to 4294967296 bytes a file \\(option ",
+               paste0("^parquet: the compressed pages of text and fixed-length ",
+                      "bytes in this file say they inflate to 10066329600 bytes ",
+                      "in all, 10066329600 of them in column x from 2560 stored ",
+                      "bytes; such pages are inflated up to 4294967296 bytes a ",
+                      "file \\(option ",
                       "rmoriedata.parquet_max_text_bytes\\)$"))
   expect_lt(proc.time()[["elapsed"]] - t0, 5)
   # the same file under a larger budget gets as far as inflating
@@ -528,4 +538,88 @@ test_that("the package's own writer reads back a text column past 64 MiB", {
   f <- withr::local_tempfile(fileext = ".parquet")
   morie_write_parquet(x, f)
   expect_identical(morie_read_parquet(f)$x, x$x)
+})
+
+test_that("fixed-length bytes count toward the budget, before any is inflated", {
+  # values of 65536 bytes (a DECIMAL of 38 digits): a 65 KB file of 1024 of
+  # them inflated to 64 MiB, and cost 1.1 GB to read
+  tl <- 65536
+  n <- 256L
+  pg <- list(n = n, body = raw(tl * n))
+  f <- pq_text_file(list(pg), n, ptype = .pqFlba, typelen = tl, prec = 38L)
+  withr::local_options(rmoriedata.parquet_max_text_bytes = tl * n - 1)
+  t0 <- proc.time()[["elapsed"]]
+  expect_error(morie_read_parquet(f),
+               paste0("^parquet: the compressed pages of text and fixed-length ",
+                      "bytes in this file say they inflate to 16777216 bytes in ",
+                      "all, 16777216 of them in column x from [0-9]+ stored ",
+                      "bytes; such pages are inflated up to 16777215 bytes a ",
+                      "file \\(option rmoriedata.parquet_max_text_bytes\\)$"))
+  expect_lt(proc.time()[["elapsed"]] - t0, 2)
+  withr::local_options(rmoriedata.parquet_max_text_bytes = tl * n)
+  invisible(gc())
+  before <- gc(reset = TRUE)
+  before <- sum(before[, which(colnames(before) == "max used") + 1L])
+  expect_identical(morie_read_parquet(f)$x, numeric(n))
+  g <- gc()
+  peak <- sum(g[, which(colnames(g) == "max used") + 1L]) - before
+  # the page itself, and little more: no raw vector a value, no copy of the block
+  expect_lt(peak, 2.5 * tl * n / 2^20)
+  # stored as they are, they cost what the file holds and are not counted
+  f <- pq_text_file(list(list(n = 4L, body = raw(4 * tl))), 4, ptype = .pqFlba,
+                    typelen = tl, prec = 38L, codec = .pqCUncompressed)
+  withr::local_options(rmoriedata.parquet_max_text_bytes = 1)
+  expect_identical(morie_read_parquet(f)$x, numeric(4))
+})
+
+test_that("fixed-length pages fill their rows from a dictionary, missing in place", {
+  lv <- function(d) .pq_encode_levels(d, 1L)
+  be <- function(v) writeBin(as.integer(v), raw(), size = 4L, endian = "big")
+  dict <- list(n = 3L, dict = TRUE, body = c(be(-5), be(70000), be(0)))
+  p1 <- list(n = 4L, enc = .pqERleDict,
+             body = c(lv(c(1L, 0L, 1L, 1L)), as.raw(2L), pq_run(1L, 1L, 2L),
+                      pq_run(2L, 0L, 2L)))
+  p2 <- list(n = 2L, body = c(lv(c(0L, 1L)), be(-1)))
+  f <- pq_text_file(list(dict, p1, p2), 6, optional = TRUE, ptype = .pqFlba,
+                    typelen = 4L, prec = 9L)
+  expect_identical(morie_read_parquet(f)$x, c(70000, NA, -5, -5, NA, -1))
+  # a page with every row missing, alone and after the dictionary
+  none <- list(n = 2L, body = lv(c(0L, 0L)))
+  for (pages in list(list(none), list(dict, none))) {
+    f <- pq_text_file(pages, 2, optional = TRUE, ptype = .pqFlba, typelen = 4L,
+                      prec = 9L)
+    expect_identical(morie_read_parquet(f)$x, c(NA_real_, NA_real_))
+  }
+  # a definition level above 1 is refused the same way on either kind of page
+  bad <- function(body) {
+    pq_text_file(list(dict, list(n = 1L, enc = body$enc, body = body$b)), 1,
+                 optional = TRUE, ptype = .pqFlba, typelen = 4L, prec = 9L)
+  }
+  lv3 <- c(writeBin(2L, raw(), size = 4L, endian = "little"), pq_run(1L, 3L))
+  msg <- "^parquet: column x has a definition level of 3, above its maximum of 1$"
+  expect_error(morie_read_parquet(bad(list(enc = .pqERleDict,
+                                           b = c(lv3, as.raw(0L))))), msg)
+  expect_error(morie_read_parquet(bad(list(enc = .pqEPlain, b = c(lv3, be(1))))),
+               msg)
+})
+
+test_that("each size a column's metadata states is bounded before it is used", {
+  # INT96 and fixed-length pages are held to their count times their width
+  f <- pq_text_file(list(list(n = 1L, body = raw(12), usize = 13)), 1,
+                    ptype = .pqInt96)
+  expect_error(morie_read_parquet(f), "its 1 values take at most 12$")
+  f <- pq_text_file(list(list(n = 2L, body = raw(8), usize = 9)), 2,
+                    ptype = .pqFlba, typelen = 4L, prec = 9L)
+  expect_error(morie_read_parquet(f), "its 2 values take at most 8$")
+  # a repetition type the format does not define
+  f <- pq_text_file(list(list(n = 1L, body = raw(4))), 1, ptype = .pqInt32,
+                    codec = .pqCUncompressed)
+  expect_identical(morie_read_parquet(f)$x, 0L)
+  b <- readBin(f, "raw", file.size(f))
+  # the schema element's field 3 (REQUIRED, 0) between its type and its name
+  at <- max(grepRaw(as.raw(c(0x25, 0x00, 0x18)), b, fixed = TRUE, all = TRUE))
+  b[at + 1L] <- as.raw(10L)
+  writeBin(b, f)
+  expect_error(morie_read_parquet(f),
+               "^parquet: the file is damaged: column x has no valid repetition type$")
 })

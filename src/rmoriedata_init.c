@@ -60,6 +60,7 @@ SEXP C_rmd_pq_bytes(SEXP x);
 SEXP C_rmd_pq_rle(SEXP buf, SEXP pos, SEXP width, SEXP count, SEXP end);
 SEXP C_rmd_pq_rows(SEXP page, SEXP dpos, SEXP dend, SEXP ipos, SEXP iwidth, SEXP vals,
                    SEXP n, SEXP column);
+SEXP C_rmd_pq_flba(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP kind);
 SEXP C_rmd_strtod(SEXP x);
 
 static const R_CallMethodDef CallEntries[] = {
@@ -75,6 +76,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_rmd_pq_bytes",          (DL_FUNC) &C_rmd_pq_bytes,          1},
     {"C_rmd_pq_rle",            (DL_FUNC) &C_rmd_pq_rle,            5},
     {"C_rmd_pq_rows",           (DL_FUNC) &C_rmd_pq_rows,           8},
+    {"C_rmd_pq_flba",           (DL_FUNC) &C_rmd_pq_flba,           5},
     {"C_rmd_strtod",            (DL_FUNC) &C_rmd_strtod,            1},
     {"C_morie_core_mean",   (DL_FUNC) &C_morie_core_mean,   1},
     {NULL, NULL, 0}
