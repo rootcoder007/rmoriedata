@@ -437,10 +437,6 @@ test_that("a label on a number is not another kind of number", {
                 labels = c(low = 1), label = "n")
     }
   )
-  if (requireNamespace("haven", quietly = TRUE)) {
-    lab$real <- function(v) {
-      getExportedValue("haven", "labelled")(as.double(v), c(low = 1))
-    }
   }
   for (nm in names(lab)) {
     mk <- lab[[nm]]
