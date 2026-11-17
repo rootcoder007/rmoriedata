@@ -156,7 +156,7 @@ head(ck[order(-ck$bytes), c("file", "bytes")], 3)
 #>                              file   bytes
 #> 181  siu_directors_reports.csv.gz 2378925
 #> 153 siu_directors_reports.parquet 2053237
-#> 33            describe_corpus.Rds 1712072
+#> 34            describe_corpus.Rds 1712072
 
 # The same compiled SHA256 kernel the whole ecosystem uses:
 mdsha("abc")
@@ -178,17 +178,17 @@ dplapcnt(truecnt = 42, epsilon = 1.0)
 
 # The mechanism is unbiased -- averaging many releases recovers the truth.
 mean(replicate(2000, dplapcnt(42, epsilon = 1.0)))
-#> [1] 42.0445
+#> [1] 42.0345
 
 # A private mean of bounded data.
 x <- runif(1000, 0, 1)
 dpgmean(x, lower = 0, upper = 1, epsilon = 1.0)
-#> [1] 0.5117231
+#> [1] 0.5008717
 
 # A private histogram straight from tabulated data.
 counts <- as.integer(table(comp$year))
 round(pmax(0, dplaphist(counts, epsilon = 1.0)))
-#> [1] 24999     2
+#> [1] 24999     0
 ```
 
 ## 5. Re-identification risk

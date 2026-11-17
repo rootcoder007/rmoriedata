@@ -63,7 +63,8 @@ function is the per-file record an analysis can pin and compare later.</p>
 
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
-    <p>A data frame with one row per bundled file and columns
+    <p>A data frame with one row per bundled file, in the byte order of
+<code>path</code> (the same in every locale), and columns
 <code>path</code> (relative to the extdata root, forward slashes, unique),
 <code>file</code> (the bare basename), <code>bytes</code>, <code>sha256</code>, and
 <code>in_manifest</code> (TRUE when the signed manifest lists the file with

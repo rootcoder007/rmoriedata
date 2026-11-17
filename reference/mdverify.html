@@ -64,7 +64,8 @@ the file again and refuses it.</p>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A data frame with one row per manifest entry, then one per
-unlisted file: <code>path</code>, <code>bytes</code>, <code>sha256</code> (the manifest digest, or the
+unlisted file (in the byte order of their paths, the same in every
+locale): <code>path</code>, <code>bytes</code>, <code>sha256</code> (the manifest digest, or the
 file's own for an unlisted file: <code>NA</code> when it is not a regular file or is
 larger than 1 GiB), <code>listed</code>, <code>ok</code> (the file on disk is
 listed and matches). The attribute <code>"signature"</code> is <code>TRUE</code> when the

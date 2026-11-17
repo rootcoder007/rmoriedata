@@ -140,7 +140,14 @@ sample's rows otherwise). Give either
 <dt id="arg-refresh">refresh<a class="anchor" aria-label="anchor" href="#arg-refresh"></a></dt>
 <dd><p>If <code>TRUE</code>, ignore the cache of the
 complete dataset and fetch it again (the cache is rewritten). A cache
-file that cannot be read is discarded and refetched regardless.</p></dd>
+whose bytes do not match its <code>.sha256</code>, or that is not a Parquet
+file, is deleted and fetched again regardless, and one without a usable
+<code>.sha256</code> is fetched again and rewritten. A cache that cannot be
+read for any other reason (memory that runs short, a read that fails,
+an option such as <code>rmoriedata.parquet_max_rows</code>) is kept: the call
+stops and says why. The cache is opened once and read a page at a
+time, each part checked against the digest taken as it was opened; it
+is never held whole.</p></dd>
 
 </dl></div>
     <div class="section level2">

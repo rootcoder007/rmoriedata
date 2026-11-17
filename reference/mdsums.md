@@ -17,12 +17,12 @@ mdsums()
 
 ## Value
 
-A data frame with one row per bundled file and columns `path` (relative
-to the extdata root, forward slashes, unique), `file` (the bare
-basename), `bytes`, `sha256`, and `in_manifest` (TRUE when the signed
-manifest lists the file with this digest; NA for the manifest's own
-files). Use `path` to locate a file; several basenames recur in more
-than one directory.
+A data frame with one row per bundled file, in the byte order of `path`
+(the same in every locale), and columns `path` (relative to the extdata
+root, forward slashes, unique), `file` (the bare basename), `bytes`,
+`sha256`, and `in_manifest` (TRUE when the signed manifest lists the
+file with this digest; NA for the manifest's own files). Use `path` to
+locate a file; several basenames recur in more than one directory.
 
 ## Examples
 

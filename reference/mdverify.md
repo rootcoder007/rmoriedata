@@ -18,11 +18,12 @@ mdverify()
 
 ## Value
 
-A data frame with one row per manifest entry, then one per unlisted
-file: `path`, `bytes`, `sha256` (the manifest digest, or the file's own
-for an unlisted file: `NA` when it is not a regular file or is larger
-than 1 GiB), `listed`, `ok` (the file on disk is listed and matches).
-The attribute `"signature"` is `TRUE` when the manifest's signature
+A data frame with one row per manifest entry, then one per unlisted file
+(in the byte order of their paths, the same in every locale): `path`,
+`bytes`, `sha256` (the manifest digest, or the file's own for an
+unlisted file: `NA` when it is not a regular file or is larger than 1
+GiB), `listed`, `ok` (the file on disk is listed and matches). The
+attribute `"signature"` is `TRUE` when the manifest's signature
 verified, and the function errors if it did not.
 
 ## Details

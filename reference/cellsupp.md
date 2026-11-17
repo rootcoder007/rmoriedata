@@ -137,7 +137,7 @@ t2 <- as.table(matrix(c(2, 40, 30, 1), 2,
   dimnames = list(c("a", "b"), c("c", "d"))
 ))
 cellsupp(t2, threshold = 5)$suppressed
-#>   c d
-#> a    
-#> b    
+#>    c  d
+#> a NA NA
+#> b NA NA
 ```

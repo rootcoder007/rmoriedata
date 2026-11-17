@@ -63,8 +63,9 @@ the writer does not write ZSTD. Nested and repeated columns are refused.</p>
 
 
 <dl><dt id="arg-path">path<a class="anchor" aria-label="anchor" href="#arg-path"></a></dt>
-<dd><p>Path to a <code>.parquet</code> file (read once, whole, and only when it
-is a regular file), or the file's bytes as a raw vector.</p></dd>
+<dd><p>Path to a <code>.parquet</code> file (opened once, only when it is a
+regular file, and read a page at a time, never held whole), or the
+file's bytes as a raw vector.</p></dd>
 
 
 <dt id="arg-columns">columns<a class="anchor" aria-label="anchor" href="#arg-columns"></a></dt>

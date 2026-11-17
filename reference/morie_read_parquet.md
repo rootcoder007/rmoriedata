@@ -17,8 +17,9 @@ morie_read_parquet(path, columns = NULL)
 
 - path:
 
-  Path to a `.parquet` file (read once, whole, and only when it is a
-  regular file), or the file's bytes as a raw vector.
+  Path to a `.parquet` file (opened once, only when it is a regular
+  file, and read a page at a time, never held whole), or the file's
+  bytes as a raw vector.
 
 - columns:
 

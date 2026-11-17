@@ -87,8 +87,14 @@ chiload(
 - refresh:
 
   If `TRUE`, ignore the cache of the complete dataset and fetch it again
-  (the cache is rewritten). A cache file that cannot be read is
-  discarded and refetched regardless.
+  (the cache is rewritten). A cache whose bytes do not match its
+  `.sha256`, or that is not a Parquet file, is deleted and fetched again
+  regardless, and one without a usable `.sha256` is fetched again and
+  rewritten. A cache that cannot be read for any other reason (memory
+  that runs short, a read that fails, an option such as
+  `rmoriedata.parquet_max_rows`) is kept: the call stops and says why.
+  The cache is opened once and read a page at a time, each part checked
+  against the digest taken as it was opened; it is never held whole.
 
 ## Value
 
