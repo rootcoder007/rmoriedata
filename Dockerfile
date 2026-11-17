@@ -17,13 +17,19 @@ RUN apt-get update \
 # is not on CRAN: prefer its GitHub HEAD (always the latest, e.g. new
 # exports like bricklayer_fetch), fall back to the r-universe binary; the
 # rest resolve from Posit's CRAN mirror.
+# The remaining dependencies are installed by name from those two
+# repositories: remotes::install_deps() would resolve the Remotes field
+# through the GitHub API, which refuses unauthenticated calls from a shared
+# build machine once its hourly allowance is used.
 COPY DESCRIPTION /pkg/DESCRIPTION
 RUN R -e "options(repos = c('https://rootcoder007.r-universe.dev', 'https://packagemanager.posit.co/cran/__linux__/jammy/latest')); \
           install.packages('remotes'); \
           ok <- tryCatch({ remotes::install_github('rootcoder007/rmorie-bricklayer@v1.1.1', upgrade = 'never'); TRUE }, error = function(e) { message(conditionMessage(e)); FALSE }); \
           if (!ok || !requireNamespace('rmoriebricklayer', quietly = TRUE)) install.packages('rmoriebricklayer'); \
           stopifnot(requireNamespace('rmoriebricklayer', quietly = TRUE)); \
-          remotes::install_deps('/pkg', dependencies = c('Depends', 'Imports', 'LinkingTo'))"
+          need <- setdiff(remotes::local_package_deps('/pkg', dependencies = c('Depends', 'Imports', 'LinkingTo')), rownames(installed.packages())); \
+          if (length(need)) install.packages(need); \
+          stopifnot(all(need %in% rownames(installed.packages())))"
 
 COPY . /pkg
 
