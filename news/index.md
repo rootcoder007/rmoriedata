@@ -54,6 +54,18 @@
   Results keep names, dimensions and labels, never the input’s class (a
   table’s noised counts are a plain array).
 
+- A number with a label on it (`haven::labelled()`, `Hmisc::label()`,
+  [`I()`](https://rdrr.io/r/base/AsIs.html)) is taken as its numbers by
+  those functions: survey data read from SPSS or Stata works as it is.
+
+- A hosted table whose cached copy was damaged and removed is said to
+  have been removed: the message ended by saying the copy was left in
+  place.
+
+- A Parquet file whose page headers are longer than 1 KiB (long text
+  statistics) is read in time proportional to its size; each page had
+  the whole column chunk read again.
+
 - [`mdsums()`](https://rootcoder007.github.io/rmoriedata/reference/mdsums.md)
   lists files, and
   [`mdverify()`](https://rootcoder007.github.io/rmoriedata/reference/mdverify.md)
