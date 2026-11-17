@@ -4,7 +4,7 @@
 
 * `morie_read_parquet()` reads a short page whose missing-value levels are padded to a whole block, as DuckDB writes them: a DuckDB file of 2 to 13 rows with a `NULL` was refused ("says it inflates to 45 bytes; its 3 values take at most 23"). The allowance is a constant, so the bound still refuses a page that claims more than its values can take.
 
-* The Parquet reader holds a page of text to 64 MiB, or 16 times its compressed size if that is more, before it inflates it: a 33 KB file whose one page said it inflated to 1 GiB was inflated in full (a gigabyte of memory) before its single value was read. Pages of numbers were already bounded by their count.
+* The Parquet reader holds a page of text to 64 MiB, or 16 times its compressed size if that is more, before it inflates it: a 33 KB file whose one page said it inflated to 1 GiB was inflated in full (a gigabyte of memory) before its single value was read. Pages of numbers were already bounded by their count. For gzip and snappy the larger bound is what the codec can inflate the page to (1032 and 22 times), so a large, repetitive text column written by `morie_write_parquet()`, which puts a column in one page, is read back: 8 million category labels were refused at 16 times, and the cache of `chiload(full = TRUE)` was then deleted and fetched again on every call.
 
 * The Parquet reader decodes run-length data in compiled code: a 29 KB file of fifteen million rows, each a run of its own, took two to three minutes and now takes under two seconds.
 

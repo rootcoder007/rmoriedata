@@ -673,10 +673,17 @@
 .pq_hybrid_most <- function(n, w) n * (1 + ceiling(w / 8)) + 32 * w + 2
 
 # The most bytes a page of text (BYTE_ARRAY, PLAIN or a dictionary) is taken
-# to inflate to, from its compressed size: 64 MiB, which no writer's page
-# comes near (their pages are about 1 MiB), or 16 times what is on disk for
-# the rare page that is larger.
-.pq_text_most <- function(csize) max(64 * 2^20, 16 * csize)
+# to inflate to, from its compressed size: 64 MiB, which no other writer's
+# page comes near (their pages are about 1 MiB), or more for a larger page.
+# How much more is the codec's own limit where it has one: deflate cannot
+# exceed 1032 to 1 and snappy 64 bytes from a 3-byte copy, so a page that
+# says more is not one. This package's writer puts a column in one page, and
+# 8 million repeated category labels (5.9 MB of gzip, 115 MB of text) were
+# refused at 16 times. A codec without such a limit keeps 16 times.
+.pq_text_most <- function(csize, codec) {
+  ratio <- if (codec == .pqCGzip) 1032 else if (codec == .pqCSnappy) 22 else 16
+  max(64 * 2^20, ratio * csize)
+}
 
 .pq_plain_most <- function(ptype, n, typelen) {
   if (ptype == .pqByteArray) return(Inf)
@@ -799,11 +806,11 @@
     # text gives no bound by its count (a value carries its own length), so a
     # page of it is held to .pq_text_most(): a 33 KB zstd frame said it
     # inflated to 1 GiB, and was inflated before its one value was looked at
-    if (is.infinite(most) && usize > .pq_text_most(csize)) {
+    if (is.infinite(most) && usize > .pq_text_most(csize, codec)) {
       stop("parquet: page of column ", cname, " says its ", csize,
            " bytes inflate to ", usize, " bytes of text; a page of text is ",
-           "read up to ", .pq_text_most(csize), " (64 MiB, or 16 times its ",
-           "compressed size)", call. = FALSE)
+           "read up to ", .pq_text_most(csize, codec), " (64 MiB, or what ",
+           "its codec can inflate its compressed size to)", call. = FALSE)
     }
     if (codec == .pqCSnappy) {
       page <- .pq_snappy_decompress(raw_page)

@@ -234,8 +234,8 @@ test_that("levels padded to a whole block, as DuckDB writes them, are read", {
 })
 
 test_that("a page of text is not inflated past what its size on disk allows", {
-  expect_identical(.pq_text_most(100), 64 * 2^20)
-  expect_identical(.pq_text_most(8 * 2^20), 128 * 2^20)
+  expect_identical(.pq_text_most(100, .pqCZstd), 64 * 2^20)
+  expect_identical(.pq_text_most(8 * 2^20, .pqCZstd), 128 * 2^20)
   # one string column, one row
   body <- c(i32(1L), as.raw(0x61))
   expect_identical(morie_read_parquet(pq_lone(.pqByteArray, body, 1L))$x, "a")

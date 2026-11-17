@@ -318,3 +318,19 @@ test_that("a Parquet cap option that is not a positive number is refused", {
   }
   expect_identical(morie_read_parquet(f)$a, 1:3)
 })
+
+test_that("a text page is held to what its codec can inflate it to", {
+  # the package's writer puts a column in one page: 5.9 MB of gzip held
+  # 115 MB of category labels and was refused at 16 times
+  expect_gte(.pq_text_most(5880731, .pqCGzip), 115014338)
+  expect_lt(.pq_text_most(33000, .pqCGzip), 2^30)
+  expect_identical(.pq_text_most(1e7, .pqCSnappy), 22 * 1e7)
+  expect_identical(.pq_text_most(1e7, .pqCZstd), 16 * 1e7)
+  expect_identical(.pq_text_most(100, .pqCZstd), 64 * 2^20)
+  x <- data.frame(x = rep(strrep("ab", 500), 7e4), stringsAsFactors = FALSE)
+  f <- withr::local_tempfile(fileext = ".parquet")
+  for (co in c("gzip", "snappy")) {
+    morie_write_parquet(x, f, compression = co)
+    expect_identical(morie_read_parquet(f)$x, x$x)
+  }
+})
