@@ -3,6 +3,26 @@
 ## rmoriedata 0.4.3
 
 - [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  weighs the text a file’s compressed pages say they inflate to, from
+  the page headers of every column it reads, before it inflates any of
+  them, and refuses a file past 4 GiB
+  (`options(rmoriedata.parquet_max_text_bytes = )`) with an error that
+  names the totals, the largest column and the option: a 912 KB file of
+  160 zstd pages, each saying 64 MiB of one repeated string, took about
+  a minute to read and is now refused at once. Pages stored uncompressed
+  are not counted. The 8-million-row cache of
+  `chiload("complaints", full = TRUE)` holds 1.6 GB of text, and the
+  most in any of 335 Parquet files of public data was 146 MB.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
+  builds a column’s rows in one pass in compiled code, at their final
+  length, without expanding the dictionary indices and missing-value
+  levels into vectors of their own, and puts the pages and row groups of
+  a column into one vector made once: a 184-byte file holding one run of
+  5e7 dictionary indices took 1.75 GB of memory for a 400 MB result, and
+  now takes 412 MB.
+
+- [`morie_read_parquet()`](https://rootcoder007.github.io/rmoriedata/reference/morie_read_parquet.md)
   honours what other writers mark a column as, or refuses the column by
   name. A DECIMAL (kept as whole numbers, or as fixed-length bytes as
   arrow’s `decimal128` is) is read with its scale: 12.34 came back

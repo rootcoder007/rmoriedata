@@ -40,3 +40,12 @@ that holds a NUL byte, is refused with a `parquet:` error naming the
 column: returned, it would fail later in
 [`nchar()`](https://rdrr.io/r/base/nchar.html) or
 [`toupper()`](https://rdrr.io/r/base/chartr.html).
+
+Three options bound what a file can make the reader do, each checked
+from the file's footer and page headers before anything is allocated or
+inflated: `rmoriedata.parquet_max_rows` (default 5e7 rows),
+`rmoriedata.parquet_max_page_bytes` (default 2^30 bytes a page) and
+`rmoriedata.parquet_max_text_bytes` (default 2^32 bytes, 4 GiB). The
+last is the most text the compressed pages of one file may inflate to,
+summed over the columns read; pages stored uncompressed are not counted.
+A file past a bound is refused with an error naming the option to raise.
