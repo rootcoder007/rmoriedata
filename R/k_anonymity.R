@@ -11,8 +11,9 @@
 # with ("p\003q", "r").
 .morie_qi_classes <- function(qi) {
   id <- integer(nrow(qi))
-  for (nm in names(qi)) {
-    code <- .morie_qi_code(qi[[nm]], nm)
+  # by position: a column named "" is not reached by qi[[""]]
+  for (j in seq_along(qi)) {
+    code <- .morie_qi_code(qi[[j]], names(qi)[[j]])
     code[is.na(code)] <- 0L
     # two integers written in decimal and joined by "." cannot be read two ways
     pair <- paste(id, code, sep = ".")
@@ -142,13 +143,7 @@ kanonvrf <- function(data, qids, k = 5) {
     )
   }
   .rmd_nobytes(qids, "qids")
-  missing_cols <- setdiff(qids, names(data))
-  if (length(missing_cols) > 0L) {
-    stop("Columns not found in `data`: ",
-      paste(missing_cols, collapse = ", "),
-      call. = FALSE
-    )
-  }
+  at <- .rmd_cols(data, qids, "qids")
   if (length(k) != 1L || !is.numeric(k) || is.na(k) ||
     k < 1 || k > .Machine$integer.max || k != as.integer(k)) {
     stop("`k` must be a single positive integer.", call. = FALSE)
@@ -156,7 +151,7 @@ kanonvrf <- function(data, qids, k = 5) {
   k <- as.integer(k)
   .rmd_rows(data)
 
-  qi <- data[, qids, drop = FALSE]
+  qi <- .rmd_pick(data, at)
   cls <- .morie_qi_classes(qi)
   class_sizes <- cls$keys
   class_sizes$.n <- as.integer(tabulate(cls$id, nbins = nrow(cls$keys)))
@@ -256,13 +251,8 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
   }
   .rmd_nobytes(qids, "qids")
   .rmd_nobytes(sensitive, "sensitive")
-  missing_cols <- setdiff(c(qids, sensitive), names(data))
-  if (length(missing_cols) > 0L) {
-    stop("Columns not found in `data`: ",
-      paste(missing_cols, collapse = ", "),
-      call. = FALSE
-    )
-  }
+  at <- .rmd_cols(data, qids, "qids")
+  s_at <- .rmd_cols(data, sensitive, "sensitive", reserved = character())
   if (length(l) != 1L || !is.numeric(l) || is.na(l) ||
     l < 1 || l > .Machine$integer.max || l != as.integer(l)) {
     stop("`l` must be a single positive integer.", call. = FALSE)
@@ -270,8 +260,8 @@ ldivvrf <- function(data, qids, sensitive, l = 3) {
   l <- as.integer(l)
   .rmd_rows(data)
 
-  qi <- data[, qids, drop = FALSE]
-  sens <- data[[sensitive]]
+  qi <- .rmd_pick(data, at)
+  sens <- data[[s_at]]
   cls <- .morie_qi_classes(qi)
   diversity_tbl <- cls$keys
   # a missing sensitive value is the absence of a value, not a second one: a class whose
@@ -519,6 +509,47 @@ cellsupp <- function(tbl, threshold = 5, retcomp = TRUE) {
   Q <- qr.Q(q)[, seq_len(q$rank), drop = FALSE]
   out[idx[rowSums(Q^2) > 1 - 1e-7, , drop = FALSE]] <- TRUE
   out
+}
+
+# The positions in `data` of the columns named `cols` (each once), refused in words
+# where a name is NA, names no column, or names more than one: data[, ""] and
+# data[[""]] stopped in base R's words, and of two columns of one name the first
+# was used without a word. "" is a name like any other (a file can leave a column
+# unnamed). Names in `reserved` (the columns the results add to the classes, which
+# would replace a quasi-identifier of that name) are refused.
+.rmd_cols <- function(data, cols, what, reserved = c(".n", ".diversity")) {
+  if (anyNA(cols)) {
+    stop(sprintf("`%s` holds NA, which names no column.", what), call. = FALSE)
+  }
+  nm <- names(data)
+  missing_cols <- setdiff(cols, nm)
+  if (length(missing_cols) > 0L) {
+    stop("Columns not found in `data`: ",
+      paste(ifelse(nzchar(missing_cols), missing_cols, "\"\""), collapse = ", "),
+      call. = FALSE
+    )
+  }
+  twice <- unique(cols[cols %in% nm[duplicated(nm)]])
+  if (length(twice)) {
+    stop(sprintf(paste0("`data` has more than one column named %s: rename them so ",
+                        "that each name is one column."),
+                 paste0("\"", twice, "\"", collapse = ", ")), call. = FALSE)
+  }
+  added <- intersect(cols, reserved)
+  if (length(added)) {
+    stop(sprintf(paste0("a column named \"%s\" cannot be checked here: the result adds ",
+                        "a column of that name; rename it first."), added[[1L]]),
+         call. = FALSE)
+  }
+  match(unique(cols), nm)
+}
+
+# The columns of `data` at positions `at`, as a plain data frame with their names as
+# they are ("" kept, and a tibble's or data.table's own `[` not involved).
+.rmd_pick <- function(data, at) {
+  out <- lapply(at, function(j) data[[j]])
+  names(out) <- names(data)[at]
+  structure(out, class = "data.frame", row.names = .set_row_names(nrow(data)))
 }
 
 # A table with no rows has no classes: every one of them meets any threshold

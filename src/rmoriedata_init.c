@@ -65,6 +65,8 @@ SEXP C_rmd_pq_ints(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP unsigned_);
 SEXP C_rmd_pq_i64(SEXP x, SEXP per);
 SEXP C_rmd_pq_secs(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP per);
 SEXP C_rmd_strtod(SEXP x);
+SEXP C_rmd_pq_usfit(SEXP x);
+SEXP C_rmd_readfile(SEXP path, SEXP max);
 
 static const R_CallMethodDef CallEntries[] = {
     {"C_morie_core_sha256", (DL_FUNC) &C_morie_core_sha256, 1},
@@ -84,6 +86,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"C_rmd_pq_i64",            (DL_FUNC) &C_rmd_pq_i64,            2},
     {"C_rmd_pq_secs",           (DL_FUNC) &C_rmd_pq_secs,           5},
     {"C_rmd_strtod",            (DL_FUNC) &C_rmd_strtod,            1},
+    {"C_rmd_pq_usfit",          (DL_FUNC) &C_rmd_pq_usfit,          1},
+    {"C_rmd_readfile",          (DL_FUNC) &C_rmd_readfile,          2},
     {"C_morie_core_mean",   (DL_FUNC) &C_morie_core_mean,   1},
     {NULL, NULL, 0}
 };

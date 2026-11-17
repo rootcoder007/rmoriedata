@@ -3,8 +3,9 @@
 #' SHA256 checksums of bundled rmoriedata files
 #'
 #' Computes the SHA256 digest of every file rmoriedata bundles in
-#' \code{inst/extdata}, using the shared provenance layer
-#' (\code{rmoriebricklayer::sha256file()}), and compares each with
+#' \code{inst/extdata}, each file read once and only when it is a regular file
+#' (\code{NA} for any other path, and for a file larger than 1 GiB), and compares
+#' each with
 #' the digest the signed manifest records for it (\code{in_manifest}).
 #' For the full check, signature included, use [mdverify()]; this
 #' function is the per-file record an analysis can pin and compare later.
@@ -53,7 +54,8 @@ mdsums <- function() {
     path = substring(files, nchar(dir) + 2L),
     file = basename(files),
     bytes = file.size(files),
-    sha256 = vapply(files, .rmd_bl("sha256file"), character(1)),
+    # read once each, a regular file only (a FIFO blocked this): NA otherwise
+    sha256 = vapply(files, .rmd_digest, character(1), max = .rmd_extra_max),
     row.names = NULL,
     stringsAsFactors = FALSE
   )

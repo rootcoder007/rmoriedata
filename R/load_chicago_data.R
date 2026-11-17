@@ -262,7 +262,7 @@ chiload <- function(type = c("arrests", "complaints"),
           .rmd_ptime(x)
         }
       } else if (is.character(to)) {
-        if (is.atomic(x)) as.character(x)
+        if (is.atomic(x)) .rmd_text(x)
       } else if (is.atomic(x) && !is.object(x)) {
         .rmd_exact(x, typeof(to))
       }
@@ -277,7 +277,7 @@ chiload <- function(type = c("arrests", "complaints"),
       warning(sprintf(paste0("%s has %d value(s) in column `%s` that cannot be read ",
                              "as the sample's %s (the first: \"%s\"); they are NA"),
                       src, sum(gone), nm, class(to)[[1L]],
-                      as.character(x[which(gone)[[1L]]])), call. = FALSE)
+                      .rmd_text(x[which(gone)[[1L]]])), call. = FALSE)
     }
     if (inherits(to, "POSIXct")) attr(y, "tzone") <- attr(to, "tzone")
     raw[[nm]] <- y
@@ -321,7 +321,9 @@ chiload <- function(type = c("arrests", "complaints"),
   if (inherits(v, "Date")) {
     return(format(v, "%Y-%m-%dT00:00:00"))
   }
-  as.character(v)
+  # a number in full, the same under any options(scipen = ): as.character() kept 15
+  # digits and wrote 1e+05
+  .rmd_text(v)
 }
 
 # ISO 8601 text as POSIXct. A time with an offset or "Z" is that instant (strptime
@@ -388,7 +390,7 @@ chiclr <- function() {
 .rmd_full_count <- function(type) {
   u <- paste0(.rmd_endpoint(type), "?$select=count(*)")
   n <- tryCatch(
-    suppressWarnings(as.numeric(utils::read.csv(u)[1, 1])),
+    suppressWarnings(as.numeric(utils::read.csv(file(u, encoding = "native.enc"))[1, 1])),
     error = function(e) NA_real_
   )
   if (is.na(n) || n < 1) {
@@ -439,7 +441,9 @@ chiclr <- function() {
           # fill = FALSE: a row with a field missing or one too many is a garbled
           # export, an error here rather than a padded row in the cache. Every column
           # as text: a number guessed from the first rows loses an IUCR's leading zero.
-          utils::read.csv(u, stringsAsFactors = FALSE, check.names = TRUE,
+          # native.enc: the bytes as they are, whatever options(encoding = ) says
+          utils::read.csv(file(u, encoding = "native.enc"), stringsAsFactors = FALSE,
+                          check.names = TRUE,
                           encoding = "UTF-8", fill = FALSE, colClasses = "character")
         },
         warning = function(w) {
@@ -495,11 +499,7 @@ chiclr <- function() {
   if (!grepl("^[A-Za-z][A-Za-z0-9+.-]*://", u)) {
     f <- u
     side <- paste0(u, ".sha256")
-    want <- if (file.exists(side)) {
-      tolower(sub("[[:space:]].*$", "", trimws(readLines(side, n = 1L, warn = FALSE))))
-    } else {
-      NA_character_
-    }
+    want <- if (file.exists(side)) .rmd_side_digest(side) else NA_character_
   } else {
     f <- tempfile("mirror-", fileext = ".parquet")
     side <- paste0(f, ".sha256")
@@ -507,24 +507,35 @@ chiclr <- function() {
     .rmd_dl(u, f, label = basename(u))
     want <- tryCatch({
       .rmd_dl(paste0(u, ".sha256"), side, label = basename(side), quiet = TRUE)
-      tolower(sub("[[:space:]].*$", "", trimws(readLines(side, n = 1L, warn = FALSE))))
+      .rmd_side_digest(side)
     }, error = function(e) NA_character_, warning = function(w) NA_character_)
   }
-  if (!length(want)) want <- ""
-  if (length(want) && !is.na(want)) {
-    if (!grepl("^[0-9a-f]{64}$", want)) {
+  # read once: the bytes checked are the bytes read
+  b <- .rmd_bytes(f)
+  if (!is.raw(b)) stop("the mirror's ", basename(u), " ", b, call. = FALSE)
+  if (!is.na(want)) {
+    if (!grepl("^[0-9a-f]{64}$", want, useBytes = TRUE)) {
       stop("the mirror's ", basename(u), ".sha256 is not a SHA-256 digest", call. = FALSE)
     }
-    have <- tolower(.rmd_bl("sha256file")(f))
-    if (!identical(have, want)) {
+    if (!identical(.Call(C_morie_core_sha256, b), want)) {
       stop("the mirror's ", basename(u), " does not match its SHA-256", call. = FALSE)
     }
   }
-  morie_read_parquet(f)
+  morie_read_parquet(b)
+}
+
+# The digest a `<file>.sha256` holds: its first word, ASCII case folded ("" when it
+# is empty). Read once, a regular file only: a FIFO in its place blocked the reader.
+.rmd_side_digest <- function(side) {
+  b <- .rmd_bytes(side, 2^16)
+  if (!is.raw(b)) stop(basename(side), " ", b, call. = FALSE)
+  first <- .rmd_lines(b)[1L]
+  if (is.na(first)) return("")
+  .rmd_lower(sub("[[:space:]].*$", "", trimws(first)))
 }
 
 .rmd_full_url <- function(type, n) {
-  paste0(.rmd_endpoint(type), "?$limit=", format(n, scientific = FALSE))
+  paste0(.rmd_endpoint(type), "?$limit=", .rmd_ntxt(n))
 }
 
 .rmd_full_count_or_na <- function(type) {
@@ -557,7 +568,7 @@ chiclr <- function() {
   tmp2 <- paste0(tmp, ".sha256")
   on.exit(unlink(c(tmp, tmp2)), add = TRUE)
   morie_write_parquet(as.data.frame(df), tmp)
-  writeLines(.rmd_bl("sha256file")(tmp), tmp2)
+  writeLines(.rmd_digest(tmp), tmp2)
   # data first, then its digest: a reader between the two renames sees
   # the new file against the old sidecar and refetches (a wasted fetch),
   # never the new digest against the old file
@@ -569,12 +580,16 @@ chiclr <- function() {
 
 # The cached frame, or NULL when the file is unreadable, has no sidecar,
 # or no longer matches it.
+# The file is read once, and its bytes are both checked and read: checked by path and
+# opened again, a file replaced between the two (another session refreshing the
+# cache) was read unchecked. The sidecar and the file must be regular files.
 .rmd_cache_read <- function(path) {
   side <- paste0(path, ".sha256")
   if (!file.exists(side)) return(NULL)
-  want <- readLines(side, n = 1L, warn = FALSE)
-  if (!identical(.rmd_bl("sha256file")(path), want)) return(NULL)
-  tryCatch(morie_read_parquet(path), error = function(e) NULL)
+  want <- tryCatch(.rmd_side_digest(side), error = function(e) NULL)
+  b <- .rmd_bytes(path)
+  if (!is.raw(b) || !identical(.Call(C_morie_core_sha256, b), want)) return(NULL)
+  tryCatch(morie_read_parquet(b), error = function(e) NULL)
 }
 
 .rmd_write_parquet <- function(df, type, full) {

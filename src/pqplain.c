@@ -530,17 +530,37 @@ SEXP C_rmd_pq_secs(SEXP buf, SEXP pos, SEXP count, SEXP width, SEXP per_) {
  *     and the two are joined in 64-bit integers. A time read from a file of
  *     milliseconds or microseconds is the nearest double to its count, and that
  *     count is what is written back. */
-static int64_t rmd_us(double x) {
+static int rmd_us(double x, int64_t *us) {
     double a = fabs(x), fl = floor(a), f = a - fl, c = floor(f * 1e6);
     while (fma(f, 1e6, -c) < 0) c -= 1;
     while (fma(f, 1e6, -(c + 1)) >= 0) c += 1;
     double h = fma(f, 1e6, -(c + 0.5));
     if (h > 0 || (h == 0 && fmod(c, 2) != 0)) c += 1;
+    /* the whole seconds and c (at most 10^6) must make a count below 2^63, compared
+     * in integers: a bound of 2^63 / 10^6 in doubles is rounded */
+    if (!(fl < 9223372036854775808.0)) return 0;
     int64_t S = (int64_t) fl;
-    if (S > (INT64_MAX - (int64_t) c) / 1000000)
-        error("parquet: internal: %g seconds is past the range of a TIMESTAMP", x);
-    int64_t us = S * 1000000 + (int64_t) c;
-    return x < 0 ? -us : us;
+    if (S > (INT64_MAX - (int64_t) c) / 1000000) return 0;
+    int64_t u = S * 1000000 + (int64_t) c;
+    *us = x < 0 ? -u : u;
+    return 1;
+}
+
+/* C_rmd_pq_usfit(x): for each double `x` (times in seconds), TRUE when it is finite
+ * and its nearest whole microsecond (ties to even) is a count a TIMESTAMP_MICROS
+ * holds, from -(2^63 - 1) to 2^63 - 1; FALSE otherwise. NA and NaN, which the
+ * writer writes as missing, are NA. */
+SEXP C_rmd_pq_usfit(SEXP x) {
+    if (TYPEOF(x) != REALSXP) error("parquet: internal: `x` must be double");
+    R_xlen_t n = XLENGTH(x);
+    SEXP out = PROTECT(allocVector(LGLSXP, n));
+    const double *v = REAL(x);
+    int *o = LOGICAL(out);
+    int64_t us;
+    for (R_xlen_t i = 0; i < n; i++)
+        o[i] = ISNAN(v[i]) ? NA_LOGICAL : (R_FINITE(v[i]) && rmd_us(v[i], &us));
+    UNPROTECT(1);
+    return out;
 }
 
 SEXP C_rmd_pq_i64(SEXP x, SEXP per_) {
@@ -556,7 +576,11 @@ SEXP C_rmd_pq_i64(SEXP x, SEXP per_) {
         if (!(v[i] > -9223372036854775808.0 && v[i] < 9223372036854775808.0) ||
             (per == 1 && v[i] != floor(v[i])))
             error("parquet: internal: %g is not a 64-bit whole number", v[i]);
-        int64_t s = per == 1 ? (int64_t) v[i] : rmd_us(v[i]);
+        int64_t s;
+        if (per == 1) s = (int64_t) v[i];
+        else if (!rmd_us(v[i], &s))
+            error("parquet: internal: %g seconds is past the range of a TIMESTAMP",
+                  v[i]);
         uint64_t u;
         memcpy(&u, &s, 8);
         for (int k = 0; k < 8; k++) o[8 * i + k] = (unsigned char) (u >> (8 * k));

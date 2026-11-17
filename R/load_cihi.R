@@ -52,8 +52,9 @@ cihitbls <- function(archonly = FALSE) {
   }
   # the catalogue's URLs feed downloads: it is checked against the signed manifest
   # like every other bundled file before anything in it is believed
-  .rmoriedata_check_file("cihi_data_tables.csv")
-  df <- utils::read.csv(path, stringsAsFactors = FALSE, check.names = FALSE)
+  # (read once: the bytes checked are the bytes read)
+  df <- .rmd_csv_bytes(.rmoriedata_bytes("cihi_data_tables.csv"),
+                       stringsAsFactors = FALSE, check.names = FALSE, encoding = "UTF-8")
   if (isTRUE(archonly) && "wayback_url" %in% names(df)) {
     df <- df[nzchar(df[["wayback_url"]]), , drop = FALSE]
     rownames(df) <- NULL
@@ -126,7 +127,8 @@ cihiget <- function(which, dest = NULL, timeout = 120L) {
     idx <- as.integer(which)
   } else {
     .rmoriedata_scalar(which, "which")
-    hits <- grep(tolower(which), tolower(cat_df$title), fixed = TRUE)
+    # ASCII case only, the same in every locale (in Turkish tolower("I") is not "i")
+    hits <- grep(.rmd_lower(which), .rmd_lower(cat_df$title), fixed = TRUE)
     if (length(hits) == 0L) stop("no CIHI table matches '", which, "'.", call. = FALSE)
     if (length(hits) > 1L) {
       stop("'", which, "' matches ", length(hits), " tables; be more specific:\n  ",
@@ -175,7 +177,7 @@ cihiget <- function(which, dest = NULL, timeout = 120L) {
     stop("the download is empty; the service returned no data.", call. = FALSE)
   }
   magic <- readBin(dest, "raw", 4L)
-  ok <- switch(tolower(format),
+  ok <- switch(.rmd_lower(format),
     xlsx = , zip = identical(magic, as.raw(c(0x50, 0x4b, 0x03, 0x04))),
     xls = identical(magic, as.raw(c(0xd0, 0xcf, 0x11, 0xe0))),
     # a text table: not an HTML page, and more than a header line

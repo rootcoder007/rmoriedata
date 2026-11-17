@@ -191,7 +191,7 @@ big_near <- function(a, k) {
   d <- rev(a$d)
   txt <- paste0(sprintf("%.0f", d[1L]), paste(sprintf("%06.0f", d[-1L]), collapse = ""))
   neg <- a$s < 0 && any(a$d != 0)
-  .rmd_num(paste0(if (neg) "-", txt, "e-", k))
+  .rmd_num(paste0(if (neg) "-", txt, "e-", sprintf("%d", k)))
 }
 # The signed 64-bit whole number of the words lo and hi (each 0 to 2^32 - 1).
 big64 <- function(lo, hi) {
@@ -348,7 +348,8 @@ test_that("the writer keeps the times whose low word is 0x80000000", {
   # counts they were read from, and read back identical
   cnt <- c(1342177280123, -2^31, 2^31, 1709642096123, 4102444799999, -2208988800001)
   for (k in c(3, 6)) {
-    x <- .POSIXct(.rmd_num(paste0(sprintf("%.0f", cnt), "e-", k)), tz = "UTC")
+    x <- .POSIXct(.rmd_num(paste0(sprintf("%.0f", cnt), "e-", sprintf("%d", k))),
+                  tz = "UTC")
     morie_write_parquet(data.frame(t = x), f)
     expect_identical(morie_read_parquet(f)$t, x)
   }
@@ -357,8 +358,11 @@ test_that("the writer keeps the times whose low word is 0x80000000", {
   us <- .pq_encode_i64(c(1 / 128, 3 / 128, -1 / 128, 1e-7, 0.9999996), 1e6)
   expect_identical(us, c(le4(7812), le4(0), le4(23438), le4(0), le4(2^32 - 7812),
                          le4(2^32 - 1), le4(0), le4(0), le4(1e6), le4(0)))
-  expect_error(morie_write_parquet(data.frame(t = .POSIXct(2^63 / 1e6, tz = "UTC")), f),
-               "2\\^63 microseconds")
+  # the bound is the count, 2^63 - 1 microseconds, decided in integers: 2^63 / 1e6 is
+  # rounded to 9223372036854.775390625 s, inside it (the reader's value for 2^63 - 1),
+  # and the next double above is outside
+  past <- .POSIXct(2^63 / 1e6 + 2^-9, tz = "UTC")
+  expect_error(morie_write_parquet(data.frame(t = past), f), "2\\^63 microseconds")
   expect_identical(.pq_encode_i64(c(2^31, -2^31, 2^31 + 2^32, -2^63 + 2048, 2^63 - 1024)),
                    c(le4(2^31), le4(0), le4(2^31), le4(2^32 - 1), le4(2^31), le4(1),
                      le4(2048), le4(2^31), le4(2^32 - 1024), le4(2^31 - 1)))
@@ -368,4 +372,26 @@ test_that("the writer keeps the times whose low word is 0x80000000", {
   d <- c(2^31, -2^31, 2^31 - 1, -2^31 + 1, 2^53 - 1, -2^53 + 1, 2^53, -2^53, 2^53 + 2)
   morie_write_parquet(data.frame(d = d), f)
   expect_identical(morie_read_parquet(f)$d, d)
+})
+
+test_that("the writer takes every time whose microsecond count fits, both ends exactly", {
+  f <- withr::local_tempfile(fileext = ".parquet")
+  top <- 9223372036854.775390625 # the double nearest 2^63 / 1e6, 2^63 - 417 us
+  for (s in c(top, -top)) {
+    x <- .POSIXct(s, tz = "UTC")
+    morie_write_parquet(data.frame(t = x), f)
+    b1 <- readBin(f, "raw", file.size(f))
+    back <- morie_read_parquet(f)$t
+    expect_identical(back, x)
+    morie_write_parquet(data.frame(t = back), f)
+    expect_identical(readBin(f, "raw", file.size(f)), b1)
+    expect_identical(.pq_encode_i64(s, 1e6),
+                     if (s > 0) c(le4(2^32 - 417), le4(2^31 - 1))
+                     else c(le4(417), le4(2^31)))
+    nxt <- s + sign(s) * 2^-9
+    expect_error(morie_write_parquet(data.frame(t = .POSIXct(nxt, tz = "UTC")), f),
+                 "outside the range a Parquet TIMESTAMP holds")
+  }
+  expect_identical(.Call(C_rmd_pq_usfit, c(top, -top, top + 2^-9, NA, NaN, Inf)),
+                   c(TRUE, TRUE, FALSE, NA, NA, FALSE))
 })

@@ -41,13 +41,101 @@
 .rmoriedata_csv <- function(name, colClasses = NA) {
   f <- file.path(.rmoriedata_extdata(), name)
   if (!file.exists(f)) return(NULL)
-  .rmoriedata_check_file(name)
   # encoding =, not fileEncoding =: fileEncoding re-encodes through the
   # session locale, and in a C locale every non-ASCII byte truncates the
   # field (22 of 99 tables short, 5 empty, 2026-09-18). encoding = marks
   # the strings as UTF-8 and leaves the bytes alone. The store has no BOM.
-  utils::read.csv(f, check.names = FALSE, stringsAsFactors = FALSE,
-                  encoding = "UTF-8", colClasses = colClasses)
+  .rmd_csv_bytes(.rmoriedata_bytes(name), check.names = FALSE,
+                 stringsAsFactors = FALSE, encoding = "UTF-8", colClasses = colClasses)
+}
+
+# The bytes of the file `f`, read once (src/readfile.c), or a string saying why
+# they cannot be: it is missing, is not a regular file, is larger than `max` bytes,
+# or was replaced while it was read. Every file the package checks against a digest
+# and then reads is read here, once, and the digest and the reader both take these
+# bytes: checked by path and opened again to be read, a file replaced between the
+# two was read unchecked. A path that is a FIFO, a directory or a device is refused
+# before it is opened (a FIFO blocked the reader for ever).
+.rmd_bytes <- function(f, max = Inf) .Call(C_rmd_readfile, f, as.numeric(max))
+
+# The SHA-256 of a file's bytes (lower-case hex), or NA when they cannot be read.
+.rmd_digest <- function(f, max = Inf) {
+  b <- .rmd_bytes(f, max)
+  if (is.raw(b)) .Call(C_morie_core_sha256, b) else NA_character_
+}
+
+# A text-mode connection over bytes, plain or gzip: read.csv() and count.fields()
+# push lines back, which only a text-mode connection allows. Text that is valid UTF-8,
+# without a NUL byte and under 2^31 bytes (every store file) is one string, left
+# unmarked so that its bytes pass as they are in any locale, read through a text
+# connection: the fastest way (readLines() of a raw connection took half again the
+# time of reading the file). Other bytes go through gzcon(text = TRUE), which drops a
+# last line that has no newline: one is added after the bytes (a gzip member of one
+# newline after gzip bytes), and the blank line it can make is skipped by the readers.
+.rmd_textcon <- function(b) {
+  x <- if (.rmd_gz(b)) .rmd_inflate(b) else b
+  s <- if (length(x) < 2^31 - 1 && !any(x == as.raw(0L))) rawToChar(x)
+  if (!is.null(s) && validUTF8(s)) return(textConnection(s))
+  nl <- if (.rmd_gz(b)) .Call(C_rmd_gzip_compress, as.raw(10L)) else as.raw(10L)
+  gzcon(rawConnection(c(b, nl)), text = TRUE)
+}
+
+# gzip bytes inflated (every member, as gzfile() reads them), in blocks of 16 MiB.
+.rmd_inflate <- function(b) {
+  con <- gzcon(rawConnection(b))
+  on.exit(close(con))
+  out <- list()
+  repeat {
+    x <- readBin(con, "raw", 2^24)
+    if (!length(x)) break
+    out[[length(out) + 1L]] <- x
+  }
+  if (length(out)) unlist(out, use.names = FALSE) else raw(0)
+}
+
+# Whether bytes start as gzip does.
+.rmd_gz <- function(b) {
+  length(b) >= 2L && b[[1L]] == as.raw(0x1f) && b[[2L]] == as.raw(0x8b)
+}
+
+# read.csv() of bytes, as of the file they were read from.
+.rmd_csv_bytes <- function(b, ...) {
+  con <- .rmd_textcon(b)
+  on.exit(close(con))
+  utils::read.csv(con, ...)
+}
+
+# The lines of bytes, plain or gzip, as readLines() reads them from the file, a last
+# line without its newline included; a NUL byte, which no R string holds, is dropped.
+.rmd_lines <- function(b) {
+  con <- if (.rmd_gz(b)) gzcon(rawConnection(b)) else rawConnection(b)
+  on.exit(close(con))
+  readLines(con, warn = FALSE, skipNul = TRUE, encoding = "UTF-8")
+}
+
+# Numbers as text, the same whatever options(scipen, OutDec, digits) say: as
+# R writes them by default (15 significant digits), and in 17 where 15 do not read
+# back as the same double. Whole numbers are written in full: as.character(1e5) is
+# "1e+05", and under options(scipen = -5) as.character(3) is "3e+00".
+.rmd_ntxt <- function(x) {
+  x <- as.numeric(x)
+  s <- sprintf("%.15g", x)
+  far <- !is.na(x) & is.finite(x) & .rmd_num(s) != x
+  s[far] <- sprintf("%.17g", x[far])
+  s[is.na(x) & !is.nan(x)] <- NA_character_
+  s
+}
+
+# A column as text: a double through .rmd_ntxt(), anything else by as.character().
+.rmd_text <- function(x) {
+  if (is.double(x) && !is.object(x)) .rmd_ntxt(x) else as.character(x)
+}
+
+# Text compared without regard to ASCII case, the same in every locale: tolower()
+# follows the locale, and in Turkish "I" is lowered to a dotless "i" (U+0131), so
+# "INJURY" did not match "injury". Other letters are left as they are.
+.rmd_lower <- function(x) {
+  chartr("ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz", x)
 }
 
 # Decimal text as doubles, the same on every platform (src/strtod.c): R's own
@@ -174,8 +262,9 @@ mdload <- function(slug, refresh = FALSE,
       stop(sprintf("The Parquet file for '%s' is missing; reinstall rmoriedata.",
                    slug), call. = FALSE)
     }
-    .rmoriedata_check_file(rel)
-    d <- as.data.frame(morie_read_parquet(f), stringsAsFactors = FALSE)
+    # the bytes that were checked are the bytes that are read
+    d <- as.data.frame(morie_read_parquet(.rmoriedata_bytes(rel)),
+                       stringsAsFactors = FALSE)
   } else {
     # the double columns are read as text and converted here, correctly rounded
     s <- .rmoriedata_schema()
@@ -204,7 +293,8 @@ mdload <- function(slug, refresh = FALSE,
 #' with the manifest's (the store's files are small; the largest takes a few
 #' tens of milliseconds), so a file changed since an earlier call is refused,
 #' whatever else about it stayed the same. What is not covered: a change
-#' made after the path is returned, before it is read.
+#' made after the path is returned, before it is read. [mdload()] has no such
+#' gap: it reads a file's bytes once, checks them and reads the table from them.
 #'
 #' @param slug Dataset slug; see the `slug` column of [mdcat()].
 #' @param format `"parquet"` (default) or `"csv"`. A dictionary or other non-table
@@ -236,7 +326,7 @@ mdpath <- function(slug, format = c("parquet", "csv")) {
     stop(sprintf("The %s file for '%s' is missing; reinstall rmoriedata.",
                  format, slug), call. = FALSE)
   }
-  .rmoriedata_check_file(rel)
+  .rmoriedata_bytes(rel)
   normalizePath(f, winslash = "/")
 }
 
@@ -261,7 +351,7 @@ mdpath <- function(slug, format = c("parquet", "csv")) {
       integer = as.integer(v),
       numeric = if (is.character(v)) .rmd_num(v, special = TRUE) else as.numeric(v),
       logical = as.logical(v),
-      character = if (is.character(v)) v else as.character(v),
+      character = if (is.character(v)) v else .rmd_text(v),
       Date = as.Date(v),
       v)
   }
@@ -297,9 +387,7 @@ mddict <- function(slug) {
     message("No data dictionaries are bundled in this installation.")
     return(invisible(NULL))
   }
-  .rmoriedata_check_file(row$source_path[1L])
-  txt <- readLines(f, warn = FALSE, encoding = "UTF-8")
-  paste(txt, collapse = "\n")
+  paste(.rmd_lines(.rmoriedata_bytes(row$source_path[1L])), collapse = "\n")
 }
 
 # Integrity. Every shipped file is listed with its SHA-256 in
@@ -315,7 +403,7 @@ mddict <- function(slug) {
     stop("rmoriedata's ", name, " is missing; reinstall rmoriedata.",
          call. = FALSE)
   }
-  txt <- paste(readLines(f, warn = FALSE, encoding = "UTF-8"), collapse = "\n")
+  txt <- paste(.rmd_lines(.rmoriedata_trust_bytes(f, name)), collapse = "\n")
   out <- .rmd_bl("fromjs")(txt)
   class(out) <- c(class, "list")
   out
@@ -331,7 +419,8 @@ mddict <- function(slug) {
     stop("rmoriedata's checksum manifest is missing; reinstall rmoriedata.",
          call. = FALSE)
   }
-  bytes <- readBin(f, "raw", n = file.size(f))
+  # read once: the bytes whose signature is checked are the manifest that is read
+  bytes <- .rmoriedata_trust_bytes(f, "checksum manifest")
   sig <- .rmoriedata_json("_checksums.sig", "bricklayer_signature")
   pub <- .rmoriedata_json("_signing_key.json", "bricklayer_public_key")
   # The trust root is pinned here, not read from the same directory the
@@ -359,17 +448,30 @@ mddict <- function(slug) {
          "package's signing key: the installed data store has been ",
          "modified. Reinstall rmoriedata.", call. = FALSE)
   }
-  m <- utils::read.csv(f, stringsAsFactors = FALSE,
-                       colClasses = c("character", "numeric", "character"))
+  m <- .rmd_csv_bytes(bytes, stringsAsFactors = FALSE,
+                      colClasses = c("character", "numeric", "character"))
   assign("_manifest", m, envir = .rmoriedata_cache)
   m
 }
 
-# Every call hashes the file: the store is small (14 MB in 210 files, the largest
-# 2.3 MB), so a check costs a read of the file, at most about 50 ms. A list of the
-# files verified once was returned unchecked after the file changed in place, even
-# after mdverify() had reported it.
-.rmoriedata_check_file <- function(rel) {
+# The bytes of one of the trust files (the manifest, its signature, the key), or an
+# error naming it: one that is not a regular file is not read.
+.rmoriedata_trust_bytes <- function(f, what) {
+  b <- .rmd_bytes(f)
+  if (!is.raw(b)) {
+    stop("rmoriedata's ", what, " ", b, "; reinstall rmoriedata.", call. = FALSE)
+  }
+  b
+}
+
+# The bytes of the store file `rel`, checked against the signed manifest: read once
+# (.rmd_bytes()), and what is returned is what was hashed. Every call reads and hashes
+# the file: the store is small (14 MB in 210 files, the largest 2.3 MB), at most
+# about 50 ms. A list of the files verified once was returned unchecked after the
+# file changed in place, even after mdverify() had reported it; and a file checked
+# by its path and then opened again to be read could be replaced between the two.
+# A file larger than the manifest says is not read past that size.
+.rmoriedata_bytes <- function(rel) {
   m <- .rmoriedata_manifest()
   row <- m[m$path == rel, , drop = FALSE]
   if (!nrow(row)) {
@@ -382,15 +484,18 @@ mddict <- function(slug) {
                         "the data store: only the store's own files are ",
                         "trusted. Reinstall rmoriedata."), rel), call. = FALSE)
   }
-  got <- .rmd_bl("sha256file")(f)
+  b <- .rmd_bytes(f, row$bytes[1L])
+  got <- if (is.raw(b)) .Call(C_morie_core_sha256, b)
   if (!identical(got, row$sha256[1L])) {
+    why <- if (is.null(got)) paste("the file", b) else
+      sprintf("expected sha256 %s, got %s", row$sha256[1L], got)
     stop(sprintf(paste0("rmoriedata's bundled file '%s' does not match the ",
-                        "signed manifest (expected sha256 %s, got %s): the ",
+                        "signed manifest (%s): the ",
                         "installed copy has been modified or corrupted. ",
                         "Reinstall rmoriedata."),
-                 rel, row$sha256[1L], got), call. = FALSE)
+                 rel, why), call. = FALSE)
   }
-  invisible(TRUE)
+  b
 }
 
 # Drops what the session cache built from the store files `bad`: the catalog, the
@@ -449,9 +554,14 @@ mddict <- function(slug) {
 #' package itself, which `tools::checkMD5sums("rmoriedata")` checks
 #' against the `MD5` file of a CRAN install.
 #'
+#' A listed path that holds anything but the file (it is missing, a directory, a
+#' FIFO, a device, a link that loops or leaves the store, or cannot be read) is
+#' a row with `ok = FALSE`; nothing at such a path is waited on.
+#'
 #' @return A data frame with one row per manifest entry, then one per
 #'   unlisted file: `path`, `bytes`, `sha256` (the manifest digest, or the
-#'   file's own for an unlisted file), `listed`, `ok` (the file on disk is
+#'   file's own for an unlisted file: `NA` when it is not a regular file or is
+#'   larger than 1 GiB), `listed`, `ok` (the file on disk is
 #'   listed and matches). The attribute `"signature"` is `TRUE` when the
 #'   manifest's signature verified, and the function errors if it did not.
 #' @examples
@@ -463,10 +573,13 @@ mdverify <- function() {
   m <- .rmoriedata_manifest()
   ed <- .rmoriedata_extdata()
   m$listed <- rep(TRUE, nrow(m))
+  # whatever is at the path (missing, a directory, a FIFO, a device, a link that
+  # loops, a file that cannot be read) is a row that is not ok, never an error or a
+  # wait: a directory stopped this function, and a FIFO blocked it
   m$ok <- vapply(seq_len(nrow(m)), function(i) {
     f <- file.path(ed, m$path[i])
     file.exists(f) && .rmoriedata_inside(f, ed) &&
-      identical(.rmd_bl("sha256file")(f), m$sha256[i])
+      identical(.rmd_digest(f, m$bytes[i]), m$sha256[i])
   }, TRUE)
   # the manifest, its signature and the public key are the trust machinery, not data
   # hidden files too: a dot-file added to the store is as much a change as any other
@@ -477,7 +590,8 @@ mdverify <- function() {
     fx <- file.path(ed, extra)
     m <- rbind(m, data.frame(
       path = extra, bytes = file.size(fx),
-      sha256 = vapply(fx, .rmd_bl("sha256file"), character(1), USE.NAMES = FALSE),
+      sha256 = vapply(fx, .rmd_digest, character(1), max = .rmd_extra_max,
+                      USE.NAMES = FALSE),
       listed = FALSE, ok = FALSE, stringsAsFactors = FALSE
     )[names(m)])
   }
@@ -485,6 +599,10 @@ mdverify <- function() {
   attr(m, "signature") <- TRUE
   m
 }
+
+# The largest unlisted file mdverify() and mdsums() hash (1 GiB): the store's own
+# files are small, and the digest of a file that is not the store's is only shown.
+.rmd_extra_max <- 2^30
 
 # XMSS public root and public seed of the store's signing key (RFC 8391,
 # SHA-256). Pinned in code so the verifier's trust anchor does not travel

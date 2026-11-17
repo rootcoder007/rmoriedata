@@ -487,7 +487,7 @@ test_that("the text budget reads a file at its limit and refuses one byte more",
     withr::local_options(rmoriedata.parquet_max_text_bytes = 4 * each)
     expect_identical(morie_read_parquet(f)$x, rep(s, 4000))
     withr::local_options(rmoriedata.parquet_max_text_bytes = 4 * each - 1)
-    expect_error(morie_read_parquet(f), paste0("inflate to ", 4 * each,
+    expect_error(morie_read_parquet(f), paste0("inflate to ", sprintf("%d", 4L * each),
                                                " bytes in all"))
   }
   # pages stored as they are cost what the file holds, and are not counted

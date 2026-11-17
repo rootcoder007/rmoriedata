@@ -229,8 +229,11 @@
   }
 }
 
+# A field by its id. The key is the id's digits (sprintf("%d")): as.character() of a
+# double follows options(scipen = ), and at -5 it wrote 3 as "3e+00", so no field was
+# found and every file was "damaged".
 .pq_f <- function(st, id, default = NULL) {
-  v <- st[[as.character(id)]]
+  v <- st[[sprintf("%d", id)]]
   if (is.null(v)) default else v
 }
 
@@ -554,32 +557,85 @@
     (!is.null(logical) && !is.null(.pq_f(logical, 5)))
 }
 
-# TRUE when an INT32 or INT64 column holds unsigned whole numbers of 32 or 64 bits:
-# marked so (UINT_32, UINT_64, or an IntType of 32 or 64 bits that is not signed),
-# and not as a DECIMAL, a date, a time or a timestamp, which .pq_apply_logical()
-# reads first and as signed. The values are decoded unsigned (.pq_decode_plain()),
-# so a UINT_64 is rounded once. An unsigned 8- or 16-bit column (UINT_8, UINT_16, or
-# an IntType of 8 or 16 bits, as arrow marks uint8 and uint16) is read as the INT32
-# it is stored as: every such value is an R integer.
-.pq_is_unsigned <- function(ptype, converted, logical) {
+# The converted type to read, or NULL when the LogicalType names the column's type:
+# the format gives the LogicalType precedence, and arrow follows it. It won for a
+# DECIMAL, a time and a timestamp, but an unsigned converted type was taken with a
+# signed LogicalType, so UINT_32 with INT(32, signed) read the word 0xFFFFFFFF as
+# 4294967295 where arrow reads -1. Dropped here, once, for every check that reads both.
+.pq_converted <- function(converted, logical) {
+  if (is.list(logical) && length(logical)) NULL else converted
+}
+
+# The width and signedness an INT32 or INT64 column is marked with,
+# c(bits = , signed = ), from its IntType (LogicalType INTEGER) or its converted type
+# (UINT_8 ... INT_64); NULL when it carries neither. An IntType without its (required)
+# bit width is as wide as its type, and one without its signedness is signed. A width
+# the format does not give its type (INT(8), INT(16) and INT(32) mark an INT32,
+# INT(64) an INT64; arrow refuses the others) is refused by name.
+.pq_int_mark <- function(ptype, converted, logical, name = "?") {
+  m <- if (ptype %in% c(.pqInt32, .pqInt64)) .pq_int_given(ptype, converted, logical)
+  if (is.null(m)) return(NULL)
+  bw <- m$bits
+  ok <- if (ptype == .pqInt64) c(64) else c(8, 16, 32)
+  if (!(is.numeric(bw) && length(bw) == 1L && bw %in% ok)) {
+    stop("parquet: column ", sQuote(name, FALSE), " is marked as a whole number of ",
+         if (length(bw) == 1L) bw else "(no)", " bits stored as ",
+         if (ptype == .pqInt64) "INT64" else "INT32", ", which Parquet does not allow",
+         call. = FALSE)
+  }
+  c(bits = bw, signed = m$signed)
+}
+
+# The width and signedness as the column gives them (list(bits, signed)), unchecked,
+# or NULL: from the IntType, else from the converted type.
+.pq_int_given <- function(ptype, converted, logical) {
+  it <- if (is.list(logical)) .pq_f(logical, 10)
+  if (!is.null(it)) {
+    return(list(bits = .pq_f(it, 1) %||% if (ptype == .pqInt64) 64 else 32,
+                signed = !identical(.pq_f(it, 2), FALSE)))
+  }
   ct <- if (is.null(converted)) -1L else as.integer(converted)
-  it <- .pq_f(logical, 10) %||% list()
-  # an IntType without its (required) bit width is taken to be as wide as its type
-  bw <- .pq_f(it, 1) %||% 64
-  marked <- any(ct %in% c(.pqCtUint32, .pqCtUint64),
-                identical(.pq_f(it, 2), FALSE) &&
-                  is.numeric(bw) && length(bw) == 1L && !is.na(bw) && bw >= 32)
-  # a date (6), a time (7) or a timestamp (8)
-  first <- !all(vapply(c(6, 7, 8), function(id) is.null(.pq_f(logical, id)), NA))
-  all(ptype %in% c(.pqInt32, .pqInt64), marked, !first,
-      !.pq_is_decimal(converted, logical))
+  # UINT_8, UINT_16, UINT_32, UINT_64, INT_8, INT_16, INT_32, INT_64
+  if (ct %in% 11:18) {
+    list(bits = c(8, 16, 32, 64)[(ct - 11L) %% 4L + 1L], signed = ct >= 15L)
+  }
+}
+
+# TRUE when an INT32 or INT64 column holds unsigned whole numbers of 32 or 64 bits
+# (UINT_32, UINT_64, or an unsigned IntType of 32 or 64 bits). The values are decoded
+# unsigned (.pq_decode_plain()), so a UINT_64 is rounded once. A DECIMAL, a date, a
+# time or a timestamp carries no int mark (.pq_converted()).
+.pq_is_unsigned <- function(ptype, converted, logical) {
+  m <- .pq_int_mark(ptype, converted, logical)
+  !is.null(m) && !m[["signed"]] && m[["bits"]] >= 32
+}
+
+# An INT32 column marked 8 or 16 bits wide holds only what that width holds (0 to
+# 255 for UINT_8, -128 to 127 for INT_8, ...): any other word is a damaged file, as a
+# definition level past the column's maximum is, and is refused naming the column and
+# the value. It came back negative (UINT_8 0xFFFFFFFF as -1), or turned the column
+# into doubles (0x80000000).
+.pq_int_range <- function(v, mark, name) {
+  if (is.null(mark) || mark[["bits"]] >= 32) return(invisible(TRUE))
+  b <- mark[["bits"]]
+  lim <- if (mark[["signed"]]) c(-2^(b - 1), 2^(b - 1) - 1) else c(0, 2^b - 1)
+  bad <- which(v < lim[1L] | v > lim[2L])
+  if (!length(bad)) return(invisible(TRUE))
+  x <- v[[bad[[1L]]]]
+  w <- if (x < 0) x + 2^32 else x
+  stop(sprintf(paste0("parquet: column '%s' is marked as %s %d-bit whole numbers ",
+                      "(%.0f to %.0f) but holds the 32-bit word %.0f (0x%04X%04X); ",
+                      "the file is damaged"),
+               name, if (mark[["signed"]]) "signed" else "unsigned", as.integer(b),
+               lim[1L], lim[2L], x, as.integer(w %/% 65536), as.integer(w %% 65536)),
+       call. = FALSE)
 }
 
 # R holds whole numbers exactly up to 2^53: past that a 64-bit value is rounded,
 # which is said once per column.
 .pq_inexact <- function(v, name) {
   if (any(abs(v) >= 2^53, na.rm = TRUE)) {
-    warning("parquet: column ", sQuote(name), " holds whole numbers of 2^53 or ",
+    warning("parquet: column ", sQuote(name, FALSE), " holds whole numbers of 2^53 or ",
             "more, which R keeps as doubles: they are rounded", call. = FALSE)
   }
   invisible(NULL)
@@ -592,7 +648,7 @@
 # have no R value and are refused by name.
 .pq_flba_kind <- function(leaf) {
   tl <- leaf$typelen
-  nm <- sQuote(leaf$name)
+  nm <- sQuote(leaf$name, FALSE)
   if (!(is.numeric(tl) && length(tl) == 1L && tl >= 1 && tl <= .Machine$integer.max)) {
     stop("parquet: column ", nm, " holds fixed-length bytes of length ",
          if (is.numeric(tl) && length(tl) == 1L) tl else "(none)",
@@ -608,7 +664,9 @@
   }
   need <- c(uuid = 16, float16 = 2)[kind]
   if (!is.na(need) && tl != need) {
-    stop("parquet: column ", nm, " is a ", toupper(kind), " of ", tl,
+    # the type's name as the format spells it (toupper() follows the locale)
+    stop("parquet: column ", nm, " is a ", c(uuid = "UUID", float16 = "FLOAT16")[[kind]],
+         " of ", tl,
          " bytes; Parquet's is ", need, call. = FALSE)
   }
   kind
@@ -625,7 +683,7 @@
   if (!is.list(dt)) dt <- list()
   most <- switch(as.character(leaf$type), "1" = 9, "2" = 18,
                  "7" = floor((8 * leaf$typelen - 1) * log10(2)),
-                 stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL ",
+                 stop("parquet: column ", sQuote(leaf$name, FALSE), " is a DECIMAL ",
                       "stored as physical type ", leaf$type, ", which Parquet ",
                       "does not allow", call. = FALSE))
   s <- .pq_f(dt, 1) %||% leaf$scale %||% 0
@@ -635,7 +693,7 @@
   }
   num <- function(x) if (whole(x)) format(x, scientific = FALSE) else "(none)"
   if (!(whole(p) && whole(s) && p >= 1 && s >= 0 && s <= p)) {
-    stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL of precision ",
+    stop("parquet: column ", sQuote(leaf$name, FALSE), " is a DECIMAL of precision ",
          num(p), " and scale ", num(s), "; Parquet needs a precision of 1 or ",
          "more and a scale from 0 to the precision", call. = FALSE)
   }
@@ -643,7 +701,7 @@
     held <- switch(as.character(leaf$type), "1" = "INT32, which holds",
                    "2" = "INT64, which holds",
                    paste(leaf$typelen, "bytes, which hold"))
-    stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL of precision ",
+    stop("parquet: column ", sQuote(leaf$name, FALSE), " is a DECIMAL of precision ",
          num(p), " in ", held, " at most ", most, " digits", call. = FALSE)
   }
   c(precision = p, scale = s)
@@ -668,7 +726,7 @@
     s <- as.numeric(.pq_f(lt(5) %||% list(), 1) %||% scale %||% 0)
     # fixed bytes of more than 128 can hold a whole number past 2^1024
     if (any(is.infinite(v))) {
-      stop("parquet: column ", sQuote(name), " holds a DECIMAL whose unscaled ",
+      stop("parquet: column ", sQuote(name, FALSE), " holds a DECIMAL whose unscaled ",
            "value is past the range of a double (2^1024)", call. = FALSE)
     }
     .pq_inexact(v, name)
@@ -702,14 +760,14 @@
 
 # ------------------------------------------------------------------ read
 
-.pq_read_footer <- function(con, size) {
+# `buf` is the whole file (read once, by morie_read_parquet()).
+.pq_read_footer <- function(buf) {
+  size <- length(buf)
   if (size < 12) stop("not a parquet file: ", size, " bytes", call. = FALSE)
-  seek(con, 0L)
-  if (!identical(readBin(con, "raw", 4L), charToRaw("PAR1"))) {
+  if (!identical(buf[1:4], charToRaw("PAR1"))) {
     stop("not a parquet file: missing leading PAR1", call. = FALSE)
   }
-  seek(con, size - 8L)
-  tail <- readBin(con, "raw", 8L)
+  tail <- buf[size - 7:0]
   if (!identical(tail[5:8], charToRaw("PAR1"))) {
     stop("not a parquet file: missing trailing PAR1", call. = FALSE)
   }
@@ -718,8 +776,7 @@
     stop("parquet: footer length ", n, " does not fit a ", size, "-byte file",
          call. = FALSE)
   }
-  seek(con, size - 8L - n)
-  .pq_struct(.pq_reader(readBin(con, "raw", n)))
+  .pq_struct(.pq_reader(buf[seq.int(size - 8 - n + 1, length.out = n)]))
 }
 
 # The largest page this reader will inflate, and the most rows it will build. A
@@ -801,7 +858,7 @@
 # each page its header, where its stored bytes start, and its sizes. Everything
 # a header alone can show to be wrong is refused here, so the whole file's text
 # can be weighed (.pq_text_budget()) before any of it is inflated.
-.pq_chunk_pages <- function(con, cm, num_rows, stype, fsize, cname) {
+.pq_chunk_pages <- function(buf, cm, num_rows, stype, fsize, cname) {
   ptype <- as.integer(.pq_f(cm, 1))
   if (!identical(ptype, as.integer(stype))) {
     stop("parquet: column ", cname, " is declared type ", stype,
@@ -828,7 +885,7 @@
     stop("parquet: column ", cname, " chunk (", clen, " bytes at ", start,
          ") lies outside the ", fsize, "-byte file", call. = FALSE)
   }
-  blob <- .pq_chunk_blob(con, start, clen, cname)
+  blob <- .pq_chunk_blob(buf, start, clen, cname)
 
   pos <- 1L
   heads <- list()
@@ -878,9 +935,8 @@
        clen = clen, pages = heads)
 }
 
-.pq_chunk_blob <- function(con, start, clen, cname) {
-  seek(con, start)
-  blob <- readBin(con, "raw", clen)
+.pq_chunk_blob <- function(buf, start, clen, cname) {
+  blob <- buf[seq.int(start + 1, length.out = min(clen, max(0, length(buf) - start)))]
   if (length(blob) != clen) {
     stop("parquet: column ", cname, " chunk is truncated", call. = FALSE)
   }
@@ -926,11 +982,11 @@
        "rmoriedata.parquet_max_text_bytes)", call. = FALSE)
 }
 
-.pq_column_values <- function(con, ch, maxdef, typelen, cname, kind = NULL) {
+.pq_column_values <- function(buf, ch, maxdef, typelen, cname, kind = NULL) {
   ptype <- ch$ptype
   codec <- ch$codec
   total_values <- ch$total_values
-  blob <- .pq_chunk_blob(con, ch$start, ch$clen, cname)
+  blob <- .pq_chunk_blob(buf, ch$start, ch$clen, cname)
   dictionary <- NULL
   out <- NULL
   got <- 0
@@ -1094,10 +1150,12 @@
 #' no other package is needed for them;
 #' the writer does not write ZSTD. Nested and repeated columns are refused.
 #'
-#' @param path Path to a `.parquet` file.
+#' @param path Path to a `.parquet` file (read once, whole, and only when it
+#'   is a regular file), or the file's bytes as a raw vector.
 #' @param columns Optional character vector of column names to decode;
 #'   the rest are skipped entirely. `character(0)` gives a data frame with
-#'   the file's rows and no columns.
+#'   the file's rows and no columns. A name the file gives two columns names
+#'   the first of them.
 #' @details A string column comes back as text marked UTF-8 (ASCII text stays
 #'   unmarked, as R keeps it). A Parquet string is UTF-8 by definition, and
 #'   [morie_write_parquet()] refuses to write anything else, so a value that
@@ -1128,13 +1186,24 @@
 #'   an R integer, which is -2147483648 (-2^31, R's `NA_integer_`): then the
 #'   whole column is a double. This is decided once for the whole column,
 #'   across all its pages and row groups, from the values in its rows: an
-#'   entry of a dictionary that no row uses does not count. Unsigned 8- and
-#'   16-bit columns (stored as INT32) always fit and are integer columns, and
-#'   an unsigned 32-bit column is a double column, whether the file marks the
-#'   type by its converted type (`UINT_8`, `UINT_16`, `UINT_32`) or by its
-#'   logical type (an unsigned `INT(8)`, `INT(16)` or `INT(32)`, as arrow
-#'   writes them). Every other 64-bit column is a double column: exact below
-#'   2^53, otherwise the nearest double, with a warning that it is rounded.
+#'   entry of a dictionary that no row uses does not count. Columns of 8 and
+#'   16 bits (stored as INT32) are integer columns, and an unsigned 32-bit
+#'   column is a double column, whether the file marks the type by its
+#'   converted type (`UINT_8`, `INT_16`, `UINT_32`, ...) or by its logical
+#'   type (`INT(8, false)`, as arrow writes `uint8`, ...). A value outside
+#'   the marked width (an unsigned 8-bit column holding 256, or the word
+#'   0xFFFFFFFF, which is -1 as an INT32) is a damaged file and is refused,
+#'   naming the column and the value, as other values the format does not
+#'   allow are; so is a width the format does not give the stored type (an
+#'   INT32 marked 64 bits wide, an INT64 marked 8, 16 or 32). Every 32- and
+#'   64-bit word is a value of its width, signed or unsigned. Every other
+#'   64-bit column is a double column: exact below 2^53, otherwise the nearest
+#'   double, with a warning that it is rounded.
+#'
+#'   Where a column's logical type and its converted type disagree (`UINT_32`
+#'   with a signed `INT(32)`, or with an unsigned `INT(8)`), the logical type
+#'   is read, as the format says and arrow does, for every type: the
+#'   converted type is read only when the file gives no logical type.
 #'
 #'   A TIMESTAMP (in milliseconds, microseconds or nanoseconds, or the legacy
 #'   INT96) is a `POSIXct` in UTC, and a TIME a `difftime` in seconds. Each
@@ -1153,14 +1222,23 @@
 #'   it (a value a damaged file makes R warn about is an error instead).
 #' @keywords internal
 morie_read_parquet <- function(path, columns = NULL) {
-  size <- file.info(path)$size
-  if (is.na(size)) stop("parquet: no such file: ", path, call. = FALSE)
+  # the whole file, read once, a regular file only (a FIFO blocked the reader), or
+  # the bytes a caller read and checked
+  one <- .rmd_string(path)
+  buf <- if (is.raw(path)) path else if (one) .rmd_bytes(path)
+  if (!is.raw(buf)) {
+    stop("parquet: ", if (one && file.exists(path)) paste(path, buf) else
+      paste("no such file:", paste(path, collapse = " ")), call. = FALSE)
+  }
+  where <- if (is.raw(path)) "the file" else path
+  op <- .pq_opts()
+  on.exit(options(op), add = TRUE)
   # A check the reader makes says what is wrong, after the `parquet: ` every reader
   # error starts with; anything else a damaged footer or page trips over (a NULL
   # field, an index past the end) is said to be damage too. A base-R warning on the
   # way (a count past the integer range, say) is damage as well, not a stray warning.
   tryCatch(
-    withCallingHandlers(.pq_read(path, columns, size), warning = function(w) {
+    withCallingHandlers(.pq_read(buf, columns, where), warning = function(w) {
       m <- conditionMessage(w)
       # the reader's own warning passes; any other is damage
       if (!grepl("holds whole numbers of 2^53", m, fixed = TRUE)) {
@@ -1170,12 +1248,32 @@ morie_read_parquet <- function(path, columns = NULL) {
     error = function(e) {
       m <- conditionMessage(e)
       if (startsWith(m, "parquet: ")) stop(e)
-      if (grepl(.pq_own_re, m) || grepl("^cannot allocate", m)) {
+      if (grepl(.pq_own_re, m) || .pq_alloc_failed(m)) {
         stop("parquet: ", m, call. = FALSE)
       }
       stop("parquet: the file is damaged (", m, ")", call. = FALSE)
     }
   )
+}
+
+# Whether an error is R failing to allocate memory, which is not damage. R gives that
+# error no class, so it is told by its text, in the session's language: R's own
+# translation of the message, from the "R" domain, whatever LANGUAGE is.
+.pq_alloc_failed <- function(m) {
+  pre <- vapply(c("cannot allocate vector of size %0.1f Gb",
+                  "cannot allocate vector of size %0.1f Mb",
+                  "cannot allocate vector of size %0.f Kb"),
+                function(f) sub(" *%.*$", "", gettext(f, domain = "R")), "")
+  any(startsWith(m, c(pre, "cannot allocate")))
+}
+
+# The options the reader and the writer must not follow, at their defaults while
+# they run (the old values are returned, to be restored): the numbers in their
+# messages are written the same whatever options(scipen = , OutDec = , digits = )
+# say, and options(check.bounds = TRUE) made the lists they grow warn, which the
+# reader turned into "the file is damaged" for every file.
+.pq_opts <- function() {
+  options(scipen = 0L, OutDec = ".", digits = 7L, check.bounds = FALSE)
 }
 
 # The reader's own error messages, passed on with the `parquet: ` prefix.
@@ -1193,11 +1291,9 @@ morie_read_parquet <- function(path, columns = NULL) {
   s
 }
 
-.pq_read <- function(path, columns, size) {
-  con <- file(path, "rb")
-  on.exit(close(con), add = TRUE)
-
-  meta <- .pq_read_footer(con, size)
+.pq_read <- function(buf, columns, where) {
+  size <- length(buf)
+  meta <- .pq_read_footer(buf)
   schema <- .pq_f(meta, 2)
   num_rows <- .pq_f(meta, 3)
   row_groups <- .pq_f(meta, 4)
@@ -1247,7 +1343,7 @@ morie_read_parquet <- function(path, columns = NULL) {
       name = .pq_name(.pq_f(el, 4)),
       type = as.integer(.pq_f(el, 1)),
       typelen = .pq_f(el, 2),
-      converted = .pq_f(el, 6),
+      converted = .pq_converted(.pq_f(el, 6), .pq_f(el, 10)),
       scale = .pq_f(el, 7),
       precision = .pq_f(el, 8),
       logical = .pq_f(el, 10),
@@ -1260,7 +1356,7 @@ morie_read_parquet <- function(path, columns = NULL) {
     nm <- vapply(leaves, function(l) l$name, character(1))
     missing <- setdiff(columns, nm)
     if (length(missing)) {
-      stop("no such column(s) in ", path, ": ",
+      stop("no such column(s) in ", where, ": ",
         paste(missing, collapse = ", "),
         call. = FALSE
       )
@@ -1279,13 +1375,14 @@ morie_read_parquet <- function(path, columns = NULL) {
     # bytes that are not text: read as what their logical type says (a DECIMAL,
     # a UUID, a FLOAT16), otherwise refused by name rather than as damage
     if (leaf$type == .pqFlba) leaf$kind <- .pq_flba_kind(leaf)
+    leaf$mark <- .pq_int_mark(leaf$type, leaf$converted, leaf$logical, leaf$name)
     if (.pq_is_unsigned(leaf$type, leaf$converted, leaf$logical)) leaf$kind <- "unsigned"
     # an INT64 time is decoded straight to seconds: as a double count it was rounded
     # before it was divided
     per <- .pq_per(leaf$converted, leaf$logical)
     if (leaf$type == .pqInt64 && !isdec && !is.null(per)) leaf$kind <- per[[1L]]
     if (leaf$type == .pqByteArray && isdec) {
-      stop("parquet: column ", sQuote(leaf$name), " is a DECIMAL stored as bytes ",
+      stop("parquet: column ", sQuote(leaf$name, FALSE), " is a DECIMAL stored as bytes ",
            "of varying length, which this reader does not read; name the ",
            "columns to read in `columns`", call. = FALSE)
     }
@@ -1300,7 +1397,7 @@ morie_read_parquet <- function(path, columns = NULL) {
       }
       # a row group of no rows holds no pages (arrow writes one for an empty table)
       if (.pq_f(rg, 3) == 0) next
-      ch <- .pq_chunk_pages(con, .pq_f(chunks[[i]], 3), .pq_f(rg, 3),
+      ch <- .pq_chunk_pages(buf, .pq_f(chunks[[i]], 3), .pq_f(rg, 3),
                             leaf$type, size, leaf$name)
       chs[[w]][[length(chs[[w]]) + 1L]] <- ch
       # the two types whose bytes a value takes the file states: text by each
@@ -1324,7 +1421,7 @@ morie_read_parquet <- function(path, columns = NULL) {
     col <- NULL
     at <- 0
     for (ch in chs[[w]]) {
-      v <- .pq_column_values(con, ch, leaf$maxdef, leaf$typelen, leaf$name,
+      v <- .pq_column_values(buf, ch, leaf$maxdef, leaf$typelen, leaf$name,
                              leaf$kind)
       # one row group holds the column, or each goes into a vector made once at
       # the file's row count (c() on each row group copied the column so far)
@@ -1340,6 +1437,7 @@ morie_read_parquet <- function(path, columns = NULL) {
       v <- if (is.null(col)) character() else col
     } else {
       v <- as.numeric(col)
+      if (leaf$type == .pqInt32) .pq_int_range(v, leaf$mark, leaf$name)
       if (leaf$type == .pqBoolean) {
         v <- as.logical(v)
       } else if (leaf$type == .pqInt32 && !identical(leaf$kind, "unsigned") &&
@@ -1372,11 +1470,14 @@ morie_read_parquet <- function(path, columns = NULL) {
 
 # ----------------------------------------------------------------- write
 
+# A POSIXct is refused unless each time's nearest microsecond fits the 64-bit count,
+# decided in integers (src/pqplain.c): a bound of 2^63 / 1e6 is itself rounded, to
+# the time the reader returns for 2^63 - 1 microseconds, which was refused.
 .pq_infer <- function(v, name = "a column") {
   # a matrix column holds several values per row: written flat it had more values
   # than rows, which other readers cut short without a word
   if (!is.null(dim(v))) {
-    stop("column ", sQuote(name), " is a ",
+    stop("column ", sQuote(name, FALSE), " is a ",
          if (is.data.frame(v)) "data frame" else "matrix or array",
          " column, with more than one value per row, which Parquet as written here ",
          "cannot hold; split it into one column per value first.", call. = FALSE)
@@ -1387,14 +1488,14 @@ morie_read_parquet <- function(path, columns = NULL) {
   # other engine, and off by a factor of 1e6 from where it started.
   if (inherits(v, "Date")) {
     if (any(abs(floor(unclass(v))) > .Machine$integer.max, na.rm = TRUE)) {
-      stop("column ", sQuote(name), " has a Date outside the range a Parquet DATE ",
-           "holds (2^31 days either side of 1970-01-01).", call. = FALSE)
+      stop("column ", sQuote(name, FALSE), " has a Date outside the range a Parquet ",
+           "DATE holds (2^31 days either side of 1970-01-01).", call. = FALSE)
     }
     return(list(type = .pqInt32, converted = .pqCtDate))
   }
   if (inherits(v, "POSIXct")) {
-    if (any(!(abs(as.numeric(v)) < 2^63 / 1e6), na.rm = TRUE)) {
-      stop("column ", sQuote(name), " has a time that is infinite or outside the ",
+    if (!all(.Call(C_rmd_pq_usfit, as.numeric(v)), na.rm = TRUE)) {
+      stop("column ", sQuote(name, FALSE), " has a time that is infinite or outside the ",
            "range a Parquet TIMESTAMP holds (2^63 microseconds either side of 1970).",
            call. = FALSE)
     }
@@ -1404,7 +1505,7 @@ morie_read_parquet <- function(path, columns = NULL) {
   # an integer64's bits are not a double's value: written as a DOUBLE it read back wrong
   if (is.list(v) || is.complex(v) || is.raw(v) ||
         inherits(v, c("difftime", "integer64"))) {
-    stop("column ", sQuote(name), " is of type ",
+    stop("column ", sQuote(name, FALSE), " is of type ",
          if (is.object(v)) class(v)[[1L]] else typeof(v),
          ", which Parquet as written here cannot hold; convert it first (for ",
          "example with as.character() or as.numeric()).", call. = FALSE)
@@ -1470,7 +1571,8 @@ morie_read_parquet <- function(path, columns = NULL) {
   }
   if (ptype == .pqByteArray) {
     # src/pqplain.c: each value's 4-byte length and its UTF-8 bytes, in one pass
-    return(.Call(C_rmd_pq_bytes, .pq_utf8(values, paste0("column ", sQuote(name)))))
+    return(.Call(C_rmd_pq_bytes,
+                 .pq_utf8(values, paste0("column ", sQuote(name, FALSE)))))
   }
   stop("cannot PLAIN-encode physical type ", ptype, call. = FALSE)
 }
@@ -1534,10 +1636,12 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
   if (!is.null(compression) &&
         !(identical(compression, "gzip") || identical(compression, "snappy"))) {
     stop("compression must be \"gzip\", \"snappy\" or NULL; got ",
-      sQuote(compression),
+      sQuote(compression, FALSE),
       call. = FALSE
     )
   }
+  op <- .pq_opts()
+  on.exit(options(op), add = TRUE)
   codec <- if (is.null(compression)) {
     .pqCUncompressed
   } else if (compression == "gzip") {
@@ -1555,7 +1659,7 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
   }
   if (anyDuplicated(names_)) {
     stop("duplicate column names: ",
-         paste(sQuote(unique(names_[duplicated(names_)])), collapse = ", "),
+         paste(sQuote(unique(names_[duplicated(names_)]), FALSE), collapse = ", "),
          "; a Parquet reader cannot address them by name.", call. = FALSE)
   }
   # every column's type is settled (or refused) before the file is opened
@@ -1583,8 +1687,8 @@ morie_write_parquet <- function(df, path, compression = "gzip") {
     )
     # page sizes are 32-bit in the page header (and the codecs take no more)
     if (length(body) > .Machine$integer.max) {
-      stop("column ", sQuote(names_[k]), " needs a page of more than the 2^31 - 1 ",
-           "bytes a Parquet page header can state; write the table in smaller ",
+      stop("column ", sQuote(names_[k], FALSE), " needs a page of more than the ",
+           "2^31 - 1 bytes a Parquet page header can state; write the table in smaller ",
            "pieces.", call. = FALSE)
     }
     payload <- switch(as.character(codec),

@@ -9,7 +9,8 @@ mdverify()
 \value{
 A data frame with one row per manifest entry, then one per
 unlisted file: \code{path}, \code{bytes}, \code{sha256} (the manifest digest, or the
-file's own for an unlisted file), \code{listed}, \code{ok} (the file on disk is
+file's own for an unlisted file: \code{NA} when it is not a regular file or is
+larger than 1 GiB), \code{listed}, \code{ok} (the file on disk is
 listed and matches). The attribute \code{"signature"} is \code{TRUE} when the
 manifest's signature verified, and the function errors if it did not.
 }
@@ -37,6 +38,10 @@ objects \link{complaint_sample} and \link{arrest_sample} (stored in the package'
 \code{data} database, not in \code{extdata}); these are installed files of the
 package itself, which \code{tools::checkMD5sums("rmoriedata")} checks
 against the \code{MD5} file of a CRAN install.
+
+A listed path that holds anything but the file (it is missing, a directory, a
+FIFO, a device, a link that loops or leaves the store, or cannot be read) is
+a row with \code{ok = FALSE}; nothing at such a path is waited on.
 }
 \examples{
 v <- mdverify()

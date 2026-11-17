@@ -121,14 +121,15 @@ siuload <- function(lang = c("all", "en", "fr"),
     # the typed table's Parquet copy as text: the corpus ships one Parquet copy, not two
     d <- mdload("siu_directors_reports", format = "parquet")
     d[] <- lapply(d, function(z) {
-      z <- as.character(z)
+      # a number as text the same under any options(scipen = )
+      z <- .rmd_text(z)
       z[is.na(z)] <- ""
       z
     })
     d
   } else {
-    .rmoriedata_check_file(rel)
-    utils::read.csv(gzfile(path),
+    # read once: the bytes checked are the bytes read
+    .rmd_csv_bytes(.rmoriedata_bytes(rel),
       stringsAsFactors = FALSE, encoding = "UTF-8",
       colClasses = "character", check.names = FALSE
     )

@@ -121,7 +121,9 @@ test_that("hidden files in the store are reported, and readers read the verified
   writeLines(c("a,b", "1,2"), con)
   close(con)
   expect_error(siuload(), "does not match")
-  testthat::local_mocked_bindings(.rmoriedata_check_file = function(rel) invisible(TRUE))
+  testthat::local_mocked_bindings(.rmoriedata_bytes = function(rel) {
+    .rmd_bytes(file.path(.rmoriedata_extdata(), rel))
+  })
   expect_identical(nrow(cihitbls()), 2L)
   expect_identical(nrow(siuload()), 1L)
 })

@@ -12,7 +12,10 @@ hostload(key, refresh = FALSE)
 \arguments{
 \item{refresh}{Fetch again even when a day-old copy is cached.}
 
-\item{key}{A \code{db/table} key from the catalog.}
+\item{key}{A \code{db/table} key from the catalog: segments of ASCII
+letters, digits, \code{_}, \code{-} and \code{.}, none starting with a dot,
+joined by single slashes. Any other key is refused before anything is
+requested, and a manifest entry whose key is not of this form is not served.}
 }
 \value{
 \code{hostcat()}: a data frame with \code{key},
@@ -61,7 +64,8 @@ such as \code{"046"} keeps its leading zero, and \code{"+3"},
 digits keep every character. A column with no value at all is logical
 \code{NA}.
 Text is marked UTF-8, whatever the session's locale; bytes that are not
-valid UTF-8 are marked \code{"bytes"}. Quoted fields may hold commas,
+valid UTF-8 are marked \code{"bytes"}, and a NUL byte, which no R string
+holds, is dropped. Quoted fields may hold commas,
 quotes and line breaks (a Windows line end inside a field reads as
 \code{"\\n"}); Windows line ends and a byte-order mark are allowed. A
 record with more or fewer fields than the header is a damaged download:

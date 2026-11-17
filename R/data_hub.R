@@ -20,8 +20,8 @@
     # an address, not a bare host: the failure would otherwise be laid on
     # data.rmorie.com, which was never asked
     # (a scheme is written in either case: RFC 3986, section 3.1)
-    if (!grepl("^https?://[^/[:space:]]+", env, ignore.case = TRUE)) {
-      stop("the environment variable MORIE_DATA_URL is ", sQuote(env), ", which ",
+    if (!grepl(.rmd_http_re, env)) {
+      stop("the environment variable MORIE_DATA_URL is ", sQuote(env, FALSE), ", which ",
            "is not an http(s) address: unset it, or give one such as ",
            "https://data.rmorie.com", call. = FALSE)
     }
@@ -31,13 +31,17 @@
   if (is.null(svc)) return("https://data.rmorie.com")
   u <- .rmd_svc_field(svc, "base_url")
   if (!identical(.rmd_svc_field(svc, "mode"), "key") || is.null(u) ||
-        !grepl("^https?://[^/[:space:]]+", u, ignore.case = TRUE)) {
+        !grepl(.rmd_http_re, u)) {
     stop("the curated-data service is not available right now (see ",
          .rmd_svc_field(svc, "request_access") %||% "https://www.rmorie.com/access/",
          ")", call. = FALSE)
   }
   u
 }
+
+# An http(s) address with a host: the scheme in either case, spelled out rather
+# than matched with ignore.case, which follows the locale.
+.rmd_http_re <- "^[Hh][Tt][Tt][Pp][Ss]?://[^/[:space:]]+"
 
 # A field of the services document's entry for the data service when it is one
 # string, else NULL: a document in another shape (not an object, a field that is a
@@ -80,7 +84,8 @@
                         "which is not a whole number from 1 to 2^40 (1 TiB); the ",
                         "manifest is damaged: try again later, or run ",
                         "hostcat(refresh = TRUE)"),
-                 key, paste(format(v), collapse = " ")), call. = FALSE)
+                 key, paste(if (is.numeric(v)) .rmd_ntxt(v) else format(v),
+                            collapse = " ")), call. = FALSE)
   }
   v
 }
@@ -103,7 +108,7 @@
     s <- d[[f]]
     if (is.null(s)) next
     s <- if (is.character(s) && length(s) == 1L) sub("^sha256:", "", s) else NA
-    if (!is.na(s) && grepl("^[0-9a-fA-F]{64}$", s)) return(tolower(s))
+    if (!is.na(s) && grepl("^[0-9a-fA-F]{64}$", s, useBytes = TRUE)) return(.rmd_lower(s))
     stop(sprintf("the manifest's %s for %s is not a SHA-256 hex digest", f, key),
          call. = FALSE)
   }
@@ -211,8 +216,11 @@
 # hostcat() and hostload() with "subscript out of bounds", or read as an empty
 # catalogue.
 .rmd_manifest_parse <- function(p) {
-  txt <- paste(readLines(p, warn = FALSE), collapse = "\n")
-  m <- tryCatch(.rmd_bl("fromjs")(txt, simplifyVector = FALSE),
+  # read once, a regular file only (a FIFO in its place blocked the reader)
+  b <- .rmd_bytes(p)
+  if (!is.raw(b)) return(paste("the file", b))
+  m <- tryCatch(.rmd_bl("fromjs")(paste(.rmd_lines(b), collapse = "\n"),
+                                  simplifyVector = FALSE),
                 error = function(e) e)
   if (inherits(m, "error")) return(conditionMessage(m))
   if (!is.list(m) || is.null(names(m))) return("not a JSON object")
@@ -241,18 +249,32 @@
   k <- d[["key"]]
   m <- d[["meta"]]
   array <- is.list(m) && length(m) && is.null(names(m))
-  !.rmd_string(k) || grepl(.rmd_unserved_re, k) || array ||
+  !.rmd_key_ok(k) || grepl(.rmd_unserved_re, k) || array ||
     !.rmd_open_marks(d) || !.rmd_open_marks(if (is.list(m)) m)
 }
 
 # One string, not NA.
 .rmd_string <- function(x) is.character(x) && length(x) == 1L && !is.na(x)
 
+# Whether `key` is a key as the manifest writes them: two or more segments joined by
+# single slashes, each of ASCII letters, digits, "_", "-" and ".", not starting with
+# a dot. Nothing else names a table, so nothing else is looked up, requested or
+# made into a file name: "db/./t", "db/x/../t" and "./db/t" were requested (a
+# client removes the dot segments, so the request named "db/t", which the manifest
+# closes), and ".." would leave the cache folder.
+.rmd_key_ok <- function(key) {
+  .rmd_string(key) &&
+    grepl("^[A-Za-z0-9_-][A-Za-z0-9_.-]*(/[A-Za-z0-9_-][A-Za-z0-9_.-]*)+$", key,
+          useBytes = TRUE)
+}
+
 # Whether every `access` and `restricted` mark of the object `x` (a field given
 # twice is checked twice) is a known open value in its known shape.
 .rmd_open_marks <- function(x) {
   nm <- names(x)
-  open <- function(a) .rmd_string(a) && tolower(a) %in% c("open", "public")
+  # ASCII case only: in Turkish tolower("PUBLIC") has a dotless i, and the table was
+  # not served
+  open <- function(a) .rmd_string(a) && .rmd_lower(a) %in% c("open", "public")
   all(vapply(x[nm %in% "access"], open, NA)) &&
     all(vapply(x[nm %in% "restricted"], identical, NA, FALSE))
 }
@@ -293,7 +315,10 @@
 
 # A downloaded table is used only when it matches the manifest's SHA-256 (fetched again
 # once before a mismatch is called a damaged or tampered file); a table the manifest
-# lists without a digest is used with a warning (once per session).
+# lists without a digest is used with a warning (once per session). The file is read
+# once and its bytes returned: they are what was checked, and what hostload() reads
+# (checked by path and read again by path, a copy replaced between the two was read
+# unchecked).
 .rmd_check_sha <- function(key, dest) {
   unlisted <- function() {
     unlink(dest)
@@ -301,12 +326,24 @@
   }
   want <- .rmd_manifest_sha(key)
   if (is.null(want)) unlisted()
-  if (is.na(want)) return(.rmd_warn_nodigest(key))
-  have <- tolower(.rmd_bl("sha256file")(dest))
+  b <- .rmd_bytes(dest)
+  if (!is.raw(b)) {
+    unlink(dest)
+    stop(sprintf("the cached copy of %s %s: it was deleted; run again", key, b),
+         call. = FALSE)
+  }
+  if (is.na(want)) {
+    .rmd_warn_nodigest(key)
+    return(b)
+  }
+  have <- .Call(C_morie_core_sha256, b)
   if (!identical(have, want)) {
     want <- .rmd_manifest_sha(key, refresh = TRUE)
     if (is.null(want)) unlisted()
-    if (is.na(want)) return(.rmd_warn_nodigest(key))
+    if (is.na(want)) {
+      .rmd_warn_nodigest(key)
+      return(b)
+    }
   }
   if (!identical(have, want)) {
     unlink(dest)
@@ -315,7 +352,7 @@
                         "was altered in transit"),
                  key, substr(have, 1L, 12L), substr(want, 1L, 12L)), call. = FALSE)
   }
-  invisible(TRUE)
+  b
 }
 
 .rmd_data_get <- function(path, dest, timeout = 600) {
@@ -363,7 +400,8 @@
 # download resumes from its parts), checked against the manifest's SHA-256, and
 # only then renamed over `dest`. A session that waited and finds a table finished
 # while it waited uses it. Join and download files left by a killed session are
-# removed: under the lock, no live session owns one.
+# removed: under the lock, no live session owns one. Returns the table's bytes, read
+# once under the lock and checked.
 .rmd_fetch <- function(key, path, dest, refresh) {
   before <- file.mtime(dest)
   .rmd_locked(paste0(dest, ".lock"), key, function() {
@@ -378,10 +416,10 @@
     unlink(c(tmp, left[stale]))
     on.exit(unlink(tmp), add = TRUE)
     .rmd_data_get(path, tmp)
-    .rmd_check_sha(key, tmp)
+    b <- .rmd_check_sha(key, tmp)
     .rmd_move(tmp, dest)
+    b
   })
-  invisible(dest)
 }
 
 # Runs fn() holding the lock file `lock`, waiting (with one message) while another
@@ -653,7 +691,8 @@
 #' digits keep every character. A column with no value at all is logical
 #' \code{NA}.
 #' Text is marked UTF-8, whatever the session's locale; bytes that are not
-#' valid UTF-8 are marked \code{"bytes"}. Quoted fields may hold commas,
+#' valid UTF-8 are marked \code{"bytes"}, and a NUL byte, which no R string
+#' holds, is dropped. Quoted fields may hold commas,
 #' quotes and line breaks (a Windows line end inside a field reads as
 #' \code{"\\n"}); Windows line ends and a byte-order mark are allowed. A
 #' record with more or fewer fields than the header is a damaged download:
@@ -675,7 +714,10 @@
 #' stalled.
 #'
 #' @param refresh Fetch again even when a day-old copy is cached.
-#' @param key A \code{db/table} key from the catalog.
+#' @param key A \code{db/table} key from the catalog: segments of ASCII
+#'   letters, digits, \code{_}, \code{-} and \code{.}, none starting with a dot,
+#'   joined by single slashes. Any other key is refused before anything is
+#'   requested, and a manifest entry whose key is not of this form is not served.
 #' @return \code{hostcat()}: a data frame with \code{key},
 #'   \code{name}, \code{rows} (\code{NA} where the manifest gives no whole
 #'   count) and \code{source};
@@ -711,7 +753,7 @@ hostcat <- function(refresh = FALSE) {
     v <- if (!identical(what, "name")) d[[what]] else if (is.list(m)) {
       m[["description"]]
     }
-    if (is.null(v) || !length(v)) "" else as.character(v)[[1L]]
+    if (is.null(v) || !length(v)) "" else .rmd_text(v)[[1L]]
   }
   data.frame(
     key = vapply(ds, pick, "", what = "key"),
@@ -741,12 +783,12 @@ hostload <- function(key, refresh = FALSE) {
     stop("`refresh` must be TRUE or FALSE", call. = FALSE)
   }
   .rmd_nobytes(key, "key")
-  ok <- is.character(key) && length(key) == 1L && grepl("/", key, fixed = TRUE) &&
-    !startsWith(key, "/") && !endsWith(key, "/")
-  if (!ok) {
-    stop("key must be db/table (see hostcat())", call. = FALSE)
+  # checked before any lookup, request or file name is made from it
+  if (!.rmd_key_ok(key)) {
+    stop("key must be db/table as hostcat() lists it: segments of ASCII letters, ",
+         "digits, \"_\", \"-\" and \".\", none starting with a dot, joined by single ",
+         "slashes", call. = FALSE)
   }
-  .rmd_nobytes(key, "key")
   .rmd_ctx$fn <- "hostload()"
   on.exit(.rmd_ctx$fn <- NULL, add = TRUE)
   # a table that is not served is refused here, before any request: by its key
@@ -760,12 +802,12 @@ hostload <- function(key, refresh = FALSE) {
   # a cached copy is checked under the same lock as a download: checked unlocked, a
   # copy another session had just refreshed could be hashed half replaced, called
   # damaged and deleted
-  .rmd_fetch(key, sprintf("/%s/%s.csv.gz", parts[[1L]],
-                          paste(parts[-1L], collapse = "/")), dest, refresh)
+  b <- .rmd_fetch(key, sprintf("/%s/%s.csv.gz", parts[[1L]],
+                               paste(parts[-1L], collapse = "/")), dest, refresh)
   # a record with a field missing or one too many is a damaged download; it is
   # removed so the next call fetches it again instead of padding the rows
   tryCatch(
-    .rmd_read_hosted(dest),
+    .rmd_read_hosted(b),
     error = function(e) {
       unlink(dest)
       stop(sprintf(paste0("the table %s did not parse (%s); ",
@@ -791,16 +833,19 @@ hostload <- function(key, refresh = FALSE) {
 # - text that is valid UTF-8 is marked UTF-8, whatever the session's locale; other
 #   bytes are marked "bytes";
 # - a record with more or fewer fields than the header is an error.
-.rmd_read_hosted <- function(path) {
-  nf <- utils::count.fields(gzfile(path), sep = ",", quote = "\"", comment.char = "",
-                            blank.lines.skip = TRUE)
+.rmd_read_hosted <- function(b) {
+  # the bytes that were checked (a path is read once, for the tests)
+  if (!is.raw(b)) b <- .rmd_bytes(b)
+  con <- .rmd_textcon(b)
+  nf <- tryCatch(utils::count.fields(con, sep = ",", quote = "\"", comment.char = "",
+                                     blank.lines.skip = TRUE), finally = close(con))
   nf <- nf[!is.na(nf)]
   bad <- which(nf != nf[1L])
   if (length(bad)) {
     stop(sprintf("record %d has %d fields, the header %d", bad[[1L]],
                  nf[[bad[[1L]]]], nf[[1L]]), call. = FALSE)
   }
-  d <- utils::read.csv(gzfile(path), colClasses = "character", na.strings = character(),
+  d <- .rmd_csv_bytes(b, colClasses = "character", na.strings = character(),
                        check.names = FALSE, stringsAsFactors = FALSE, encoding = "UTF-8",
                        fill = FALSE, comment.char = "", strip.white = FALSE,
                        row.names = NULL)
@@ -853,8 +898,16 @@ hostload <- function(key, refresh = FALSE) {
   # a decimal of up to 17 is a double printed in full (as Python and JSON print them)
   ok <- dec & sig <= ifelse(pt, 17L, 15L) & !is.na(n) & (n == 0 | abs(n) >= 1e-300)
   ex <- !ok & grepl("e", v, fixed = TRUE, useBytes = TRUE) & !is.na(n) & is.finite(n)
-  ok[ex] <- as.character(n[ex]) == v[ex]
+  ok[ex] <- .rmd_rtxt(n[ex]) == v[ex]
   ok
+}
+
+# as.character() of numbers as it is under the default options: R's own form, which
+# options(scipen = ) changes ("1e-05" was a number at scipen 0 and text at 100).
+.rmd_rtxt <- function(x) {
+  op <- options(scipen = 0L, OutDec = ".")
+  on.exit(options(op))
+  as.character(x)
 }
 
 # Text marked UTF-8 where it is valid UTF-8, and "bytes" where it is not.

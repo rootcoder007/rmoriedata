@@ -57,8 +57,7 @@ mdask <- function(question, model = NULL, route = NULL) {
   # the catalogue itself, so the model can name tables rather than guess
   cat_tbl <- tryCatch(mdcat(), error = function(e) NULL)
   rows <- if (is.null(cat_tbl)) character() else
-    ifelse(is.na(cat_tbl$n_rows), "-",
-           format(cat_tbl$n_rows, big.mark = ",", trim = TRUE))
+    ifelse(is.na(cat_tbl$n_rows), "-", .rmd_count_txt(cat_tbl$n_rows))
   listing <- if (is.null(cat_tbl) || !nrow(cat_tbl)) "" else paste0(
     " The bundled catalogue (slug: kind, rows): ",
     paste(sprintf("%s: %s, %s", cat_tbl$slug, cat_tbl$kind, rows), collapse = "; "),
@@ -113,7 +112,14 @@ mdask <- function(question, model = NULL, route = NULL) {
   }
   set <- cfg$source != "default"
   any(set & (startsWith(cfg$key, "ollama.") |
-               (cfg$key == "route" & tolower(cfg$value) == "ollama")))
+               (cfg$key == "route" & .rmd_lower(cfg$value) == "ollama")))
+}
+
+# Whole counts with a comma every three digits, "1,234,567", whatever
+# options(OutDec = ) says: format(big.mark = ",") warned, and under warn = 2 stopped,
+# when OutDec was "," too.
+.rmd_count_txt <- function(n) {
+  formatC(as.integer(n), format = "d", big.mark = ",", decimal.mark = ".")
 }
 
 # A non-NA, non-blank character scalar, or an error naming the argument.

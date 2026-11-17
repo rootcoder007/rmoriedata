@@ -153,8 +153,9 @@ test_that("a long DECIMAL rounds as its whole number would, or is refused", {
 
 test_that("a DECIMAL's precision and scale are held to the format", {
   msg <- function(p, s) {
-    paste0("^parquet: column .x. is a DECIMAL of precision ", p, " and scale ",
-           s, "; Parquet needs a precision of 1 or more and a scale from 0 to ",
+    paste0("^parquet: column .x. is a DECIMAL of precision ", sprintf("%d", p),
+           " and scale ", sprintf("%d", s),
+           "; Parquet needs a precision of 1 or more and a scale from 0 to ",
            "the precision$")
   }
   one <- list(pq_be(2, 0))
@@ -387,4 +388,69 @@ test_that("a page of text is not inflated past what its size on disk allows", {
   t0 <- proc.time()[["elapsed"]]
   expect_error(morie_read_parquet(f), "inflate to 1073741824 bytes of text")
   expect_lt(proc.time()[["elapsed"]] - t0, 5)
+})
+
+# 32-bit words, little-endian, from their signed or unsigned values (-2^31 included,
+# which as.integer() makes NA with a warning)
+w32 <- function(x) {
+  x <- ifelse(x < 0, x + 2^32, x)
+  as.raw(vapply(x, function(v) (v %/% 256^(0:3)) %% 256, numeric(4)))
+}
+# an IntType LogicalType of `bw` bits, signed or not
+pq_int <- function(bw, signed) {
+  pq_lt(10L, as.raw(c(0x13, bw, if (signed) 0x11 else 0x12, 0)))
+}
+
+test_that("a value outside an 8- or 16-bit column's width is refused as damage", {
+  for (m in list(list(conv = 11L), list(lt = pq_int(8, FALSE)),
+                 list(conv = 12L, lt = pq_int(16, FALSE)), list(conv = 15L),
+                 list(lt = pq_int(16, TRUE)))) {
+    ok <- if (identical(m$conv, 15L)) {
+      c(-128, 127)
+    } else if (identical(m$lt, pq_int(16, TRUE))) {
+      c(-32768, 32767)
+    } else if (identical(m$conv, 12L)) {
+      c(0, 65535)
+    } else {
+      c(0, 255)
+    }
+    f <- do.call(pq_lone, c(list(.pqInt32, i32(ok), 2L), m))
+    expect_identical(morie_read_parquet(f)$x, as.integer(ok))
+    for (bad in c(ok[1L] - 1, ok[2L] + 1, -1, -2^31)) {
+      if (bad >= ok[1L] && bad <= ok[2L]) next
+      f <- do.call(pq_lone, c(list(.pqInt32, w32(c(ok[1L], bad)), 2L), m))
+      expect_error(morie_read_parquet(f),
+                   sprintf(paste0("^parquet: column 'x' is marked as .* holds the ",
+                                  "32-bit word %.0f "), bad),
+                   info = paste(bad, names(m)))
+    }
+  }
+  # every word is a value of a 32-bit column, signed or not
+  f <- pq_lone(.pqInt32, i32(c(-1, -2^31 + 1)), 2L, lt = pq_int(32, TRUE))
+  expect_identical(morie_read_parquet(f)$x, c(-1L, -2147483647L))
+  # a width the stored type does not have is refused by name
+  expect_error(morie_read_parquet(pq_lone(.pqInt32, i32(1), 1L, lt = pq_int(64, FALSE))),
+               "marked as a whole number of 64 bits stored as INT32")
+  expect_error(morie_read_parquet(pq_lone(.pqInt64, i32(c(1, 0)), 1L, conv = 17L)),
+               "marked as a whole number of 32 bits stored as INT64")
+  expect_error(morie_read_parquet(pq_lone(.pqInt32, i32(1), 1L, lt = pq_int(12, TRUE))),
+               "whole number of 12 bits")
+})
+
+test_that("the logical type wins where it and the converted type disagree", {
+  w <- i32(c(5, -1))
+  expect_identical(morie_read_parquet(pq_lone(.pqInt32, w, 2L, conv = .pqCtUint32,
+                                              lt = pq_int(32, TRUE)))$x, c(5L, -1L))
+  expect_error(morie_read_parquet(pq_lone(.pqInt32, w, 2L, conv = .pqCtUint32,
+                                          lt = pq_int(8, FALSE))),
+               "unsigned 8-bit .* word -1 \\(0xFFFFFFFF\\)")
+  expect_identical(morie_read_parquet(pq_lone(.pqInt32, i32(c(5, 255)), 2L,
+                                              conv = .pqCtUint32,
+                                              lt = pq_int(8, FALSE)))$x, c(5L, 255L))
+  # a DATE converted type under an integer logical type is the integer
+  expect_identical(morie_read_parquet(pq_lone(.pqInt32, i32(3), 1L, conv = .pqCtDate,
+                                              lt = pq_int(32, TRUE)))$x, 3L)
+  # and with no logical type the converted type is read
+  expect_identical(morie_read_parquet(pq_lone(.pqInt32, i32(3), 1L,
+                                              conv = .pqCtDate))$x, as.Date(3))
 })
