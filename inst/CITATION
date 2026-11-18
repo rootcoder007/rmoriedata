@@ -1,5 +1,6 @@
 citHeader(
-  "To cite rmoriedata in publications, please cite the software."
+  "To cite rmoriedata in publications, please cite the software. ",
+  "See also the 'rmoriebricklayer' package."
 )
 
 bibentry(
