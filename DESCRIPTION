@@ -1,6 +1,6 @@
 Package: rmoriedata
 Type: Package
-Title: Disclosure Control for Aggregate Releases, with Open Datasets
+Title: Disclosure Control for Aggregate Releases with Open Datasets
 Version: 0.4.3
 Authors@R: c(
   person(
