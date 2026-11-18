@@ -236,7 +236,7 @@ mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 If you use rmoriedata in your research, please cite the software:
 
 > Ruhela, V. S. (2026). *rmoriedata: Disclosure Control for Aggregate
-> Releases, with Open Datasets.* R package version 0.4.3.
+> Releases with Open Datasets.* R package version 0.4.3.
 > <doi:10.32614/CRAN.package.rmoriedata>.
 > <https://rootcoder007.r-universe.dev/rmoriedata>
 
@@ -245,7 +245,7 @@ stamped with the exact installed version, sourced from `inst/CITATION`):
 
 ``` bibtex
 @Manual{ruhela_rmoriedata_2026,
-  title  = {rmoriedata: Disclosure Control for Aggregate Releases, with Open Datasets},
+  title  = {rmoriedata: Disclosure Control for Aggregate Releases with Open Datasets},
   author = {Ruhela, Vansh Singh},
   year   = {2026},
   doi    = {10.32614/CRAN.package.rmoriedata},
