@@ -13,9 +13,6 @@
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^AGENTS\.md$
-^CLAUDE\.md$
-^GEMINI\.md$
 ^SECURITY\.md$
 ^LICENSE$
 ^CITATION\.cff$
