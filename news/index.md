@@ -2,6 +2,8 @@
 
 ## rmoriedata 0.4.3
 
+CRAN release: 2026-11-18
+
 - The copy of a hosted table that an earlier version cached beside the
   manifest is removed once the table is held under its new name: it was
   left on disk, never read again. Ctrl-C stops the inflating of a large
