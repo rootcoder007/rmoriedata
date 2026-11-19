@@ -173,6 +173,18 @@ mdask("which tables cover police stops?")
 mdask("which tables cover police stops?", route = "ollama", model = "qwen3:8b")
 ```
 
+## Acknowledgements
+
+The data here are other people's work. The package carries or reaches
+tables that public bodies publish, and the help page of each names its
+publisher and terms: Ontario's Special Investigations Unit (the director's
+reports), the Canadian Institute for Health Information, the City of
+Chicago, Statistics Canada, and the courts, police services and survey
+programmes whose tables the hosted catalogue serves. Studies held by the
+Inter-university Consortium for Political and Social Research are read
+from a copy you hold and are never redistributed. The compiled core is
+that of rmoriebricklayer.
+
 ## Citation
 
 If you use rmoriedata in your research, please cite the software:
